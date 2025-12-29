@@ -1,0 +1,142 @@
+<?xml version="1.0" encoding="utf-8"?>
+<odoo>
+    <!-- Vista de Formulario - Logs de Sincronización -->
+    <record id="view_pos_sync_log_form" model="ir.ui.view">
+        <field name="name">pos.sync.log.form</field>
+        <field name="model">pos.sync.log</field>
+        <field name="arch" type="xml">
+            <form string="Log de Sincronización" create="0" edit="0">
+                <sheet>
+                    <group>
+                        <group string="Información General">
+                            <field name="name"/>
+                            <field name="create_date"/>
+                            <field name="sync_config_id"/>
+                            <field name="warehouse_id"/>
+                            <field name="user_id"/>
+                        </group>
+                        <group string="Operación">
+                            <field name="action"/>
+                            <field name="level" widget="badge"
+                                   decoration-info="level == 'info'"
+                                   decoration-warning="level == 'warning'"
+                                   decoration-danger="level in ('error', 'critical')"/>
+                            <field name="model_name"/>
+                            <field name="record_id"/>
+                            <field name="queue_id"/>
+                        </group>
+                    </group>
+                    <group string="Métricas" invisible="not duration and not records_processed">
+                        <group>
+                            <field name="duration" widget="float_time"/>
+                            <field name="records_processed"/>
+                            <field name="errors_count"/>
+                        </group>
+                    </group>
+                    <group string="Mensaje">
+                        <field name="message" nolabel="1"/>
+                    </group>
+                    <group string="Detalles" invisible="not details">
+                        <field name="details" widget="text" nolabel="1"/>
+                    </group>
+                </sheet>
+            </form>
+        </field>
+    </record>
+
+    <!-- Vista de Lista - Logs de Sincronización -->
+    <record id="view_pos_sync_log_tree" model="ir.ui.view">
+        <field name="name">pos.sync.log.tree</field>
+        <field name="model">pos.sync.log</field>
+        <field name="arch" type="xml">
+            <tree string="Logs de Sincronización" create="0"
+                  decoration-danger="level in ('error', 'critical')"
+                  decoration-warning="level == 'warning'"
+                  decoration-muted="level == 'debug'">
+                <field name="create_date"/>
+                <field name="action"/>
+                <field name="level" widget="badge"
+                       decoration-info="level in ('info', 'debug')"
+                       decoration-warning="level == 'warning'"
+                       decoration-danger="level in ('error', 'critical')"/>
+                <field name="sync_config_id"/>
+                <field name="model_name" optional="show"/>
+                <field name="message"/>
+                <field name="duration" widget="float_time" optional="hide"/>
+                <field name="records_processed" optional="hide"/>
+                <field name="errors_count" optional="hide"/>
+                <field name="user_id" optional="hide"/>
+            </tree>
+        </field>
+    </record>
+
+    <!-- Vista de Búsqueda -->
+    <record id="view_pos_sync_log_search" model="ir.ui.view">
+        <field name="name">pos.sync.log.search</field>
+        <field name="model">pos.sync.log</field>
+        <field name="arch" type="xml">
+            <search string="Buscar Logs">
+                <field name="message"/>
+                <field name="sync_config_id"/>
+                <field name="model_name"/>
+                <separator/>
+                <filter string="Errores" name="errors"
+                        domain="[('level', 'in', ['error', 'critical'])]"/>
+                <filter string="Advertencias" name="warnings"
+                        domain="[('level', '=', 'warning')]"/>
+                <filter string="Información" name="info"
+                        domain="[('level', '=', 'info')]"/>
+                <separator/>
+                <filter string="Sincronización Completa" name="full_sync"
+                        domain="[('action', '=', 'full_sync')]"/>
+                <filter string="Push" name="push"
+                        domain="[('action', '=', 'push')]"/>
+                <filter string="Pull" name="pull"
+                        domain="[('action', '=', 'pull')]"/>
+                <separator/>
+                <filter string="Hoy" name="today"
+                        domain="[('create_date', '&gt;=', time.strftime('%%Y-%%m-%%d'))]"/>
+                <filter string="Última Semana" name="week"
+                        domain="[('create_date', '&gt;=', (context_today() - relativedelta(days=7)).strftime('%%Y-%%m-%%d'))]"/>
+                <separator/>
+                <group expand="0" string="Agrupar por">
+                    <filter string="Nivel" name="group_level"
+                            context="{'group_by': 'level'}"/>
+                    <filter string="Acción" name="group_action"
+                            context="{'group_by': 'action'}"/>
+                    <filter string="Configuración" name="group_config"
+                            context="{'group_by': 'sync_config_id'}"/>
+                    <filter string="Fecha" name="group_date"
+                            context="{'group_by': 'create_date:day'}"/>
+                </group>
+            </search>
+        </field>
+    </record>
+
+    <!-- Acción de Ventana -->
+    <record id="action_pos_sync_log" model="ir.actions.act_window">
+        <field name="name">Logs de Sincronización</field>
+        <field name="res_model">pos.sync.log</field>
+        <field name="view_mode">tree,form</field>
+        <field name="search_view_id" ref="view_pos_sync_log_search"/>
+        <field name="context">{}</field>
+        <field name="help" type="html">
+            <p class="o_view_nocontent_smiling_face">
+                No hay logs de sincronización
+            </p>
+            <p>
+                Los logs de sincronización aparecerán aquí cuando
+                se ejecuten operaciones de sincronización.
+            </p>
+        </field>
+    </record>
+
+    <!-- Acción de Ventana - Solo Errores -->
+    <record id="action_pos_sync_log_errors" model="ir.actions.act_window">
+        <field name="name">Errores de Sincronización</field>
+        <field name="res_model">pos.sync.log</field>
+        <field name="view_mode">tree,form</field>
+        <field name="domain">[('level', 'in', ['error', 'critical'])]</field>
+        <field name="context">{}</field>
+    </record>
+</odoo>

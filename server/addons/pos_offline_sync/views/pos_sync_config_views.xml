@@ -1,0 +1,196 @@
+<?xml version="1.0" encoding="utf-8"?>
+<odoo>
+    <!-- Vista de Formulario - Configuración de Sincronización -->
+    <record id="view_pos_sync_config_form" model="ir.ui.view">
+        <field name="name">pos.sync.config.form</field>
+        <field name="model">pos.sync.config</field>
+        <field name="arch" type="xml">
+            <form string="Configuración de Sincronización">
+                <header>
+                    <button name="action_test_connection"
+                            string="Probar Conexión"
+                            type="object"
+                            class="btn-primary"
+                            icon="fa-plug"/>
+                    <button name="action_force_sync"
+                            string="Sincronizar Ahora"
+                            type="object"
+                            class="btn-secondary"
+                            icon="fa-refresh"/>
+                    <button name="action_run_migration"
+                            string="Migración Inicial"
+                            type="object"
+                            class="btn-secondary"
+                            icon="fa-download"
+                            invisible="operation_mode != 'offline'"
+                            confirm="¿Descargar todos los datos maestros desde el servidor PRINCIPAL? Esta operación puede tardar varios minutos."/>
+                    <field name="sync_status" widget="statusbar"
+                           statusbar_visible="idle,syncing,success,error"/>
+                </header>
+                <sheet>
+                    <div class="oe_button_box" name="button_box">
+                        <button name="action_view_pending_records" type="object"
+                                class="oe_stat_button" icon="fa-clock-o">
+                            <field name="pending_sync_count" widget="statinfo"
+                                   string="Pendientes"/>
+                        </button>
+                        <button name="action_view_sync_logs" type="object"
+                                class="oe_stat_button" icon="fa-list-alt">
+                            <span class="o_stat_text">Logs</span>
+                        </button>
+                    </div>
+                    <widget name="web_ribbon" title="Inactivo"
+                            bg_color="bg-danger" invisible="active"/>
+                    <div class="oe_title">
+                        <h1>
+                            <field name="name" placeholder="Nombre de la configuración"/>
+                        </h1>
+                    </div>
+                    <group>
+                        <group string="Sucursal">
+                            <field name="warehouse_id" options="{'no_create': True}"/>
+                            <field name="pos_config_ids" widget="many2many_tags"
+                                   options="{'no_create': True}"/>
+                            <field name="active" invisible="1"/>
+                        </group>
+                        <group string="Conexión">
+                            <field name="cloud_url" placeholder="https://cloud.ejemplo.com"/>
+                            <field name="api_key" password="True"/>
+                            <field name="sync_interval"/>
+                            <field name="operation_mode"/>
+                        </group>
+                    </group>
+                    <notebook>
+                        <page string="Entidades a Sincronizar" name="entities">
+                            <group>
+                                <group string="Datos de Ventas">
+                                    <field name="sync_orders"/>
+                                    <field name="sync_partners"/>
+                                </group>
+                                <group string="Datos de Inventario">
+                                    <field name="sync_products"/>
+                                    <field name="sync_stock"/>
+                                </group>
+                                <group string="Programas de Lealtad">
+                                    <field name="sync_loyalty"/>
+                                </group>
+                                <group string="Otros">
+                                    <field name="sync_employees"/>
+                                    <field name="sync_payment_methods"/>
+                                </group>
+                            </group>
+                        </page>
+                        <page string="Restricciones" name="restrictions">
+                            <group>
+                                <group string="Contabilidad Offline">
+                                    <field name="skip_accounting"/>
+                                    <field name="skip_invoice_generation"/>
+                                </group>
+                            </group>
+                            <div class="alert alert-info" role="alert">
+                                <strong>Nota:</strong> En modo offline, se recomienda
+                                omitir la generación de registros contables para evitar
+                                duplicados cuando se sincronice con la nube.
+                            </div>
+                        </page>
+                        <page string="Configuración Avanzada" name="advanced">
+                            <group>
+                                <group string="Rendimiento">
+                                    <field name="batch_size"/>
+                                    <field name="sync_timeout"/>
+                                </group>
+                                <group string="Reintentos">
+                                    <field name="retry_attempts"/>
+                                </group>
+                            </group>
+                        </page>
+                        <page string="Estado" name="status">
+                            <group>
+                                <group string="Última Sincronización">
+                                    <field name="last_sync_date" readonly="1"/>
+                                    <field name="total_synced_orders" readonly="1"/>
+                                </group>
+                                <group string="Errores">
+                                    <field name="last_error_message" readonly="1"/>
+                                </group>
+                            </group>
+                        </page>
+                    </notebook>
+                </sheet>
+            </form>
+        </field>
+    </record>
+
+    <!-- Vista de Lista - Configuración de Sincronización -->
+    <record id="view_pos_sync_config_tree" model="ir.ui.view">
+        <field name="name">pos.sync.config.tree</field>
+        <field name="model">pos.sync.config</field>
+        <field name="arch" type="xml">
+            <tree string="Configuraciones de Sincronización"
+                  decoration-muted="not active"
+                  decoration-danger="sync_status == 'error'"
+                  decoration-success="sync_status == 'success'">
+                <field name="sequence" widget="handle"/>
+                <field name="name"/>
+                <field name="warehouse_id"/>
+                <field name="operation_mode"/>
+                <field name="sync_status" widget="badge"
+                       decoration-info="sync_status == 'idle'"
+                       decoration-warning="sync_status == 'syncing'"
+                       decoration-success="sync_status == 'success'"
+                       decoration-danger="sync_status == 'error'"/>
+                <field name="last_sync_date"/>
+                <field name="pending_sync_count"/>
+                <field name="active" optional="hide"/>
+            </tree>
+        </field>
+    </record>
+
+    <!-- Vista de Búsqueda -->
+    <record id="view_pos_sync_config_search" model="ir.ui.view">
+        <field name="name">pos.sync.config.search</field>
+        <field name="model">pos.sync.config</field>
+        <field name="arch" type="xml">
+            <search string="Buscar Configuración">
+                <field name="name"/>
+                <field name="warehouse_id"/>
+                <separator/>
+                <filter string="Activos" name="active"
+                        domain="[('active', '=', True)]"/>
+                <filter string="Con Errores" name="errors"
+                        domain="[('sync_status', '=', 'error')]"/>
+                <filter string="Modo Offline" name="offline"
+                        domain="[('operation_mode', '=', 'offline')]"/>
+                <filter string="Modo Híbrido" name="hybrid"
+                        domain="[('operation_mode', '=', 'hybrid')]"/>
+                <separator/>
+                <group expand="0" string="Agrupar por">
+                    <filter string="Almacén" name="group_warehouse"
+                            context="{'group_by': 'warehouse_id'}"/>
+                    <filter string="Modo de Operación" name="group_mode"
+                            context="{'group_by': 'operation_mode'}"/>
+                    <filter string="Estado" name="group_status"
+                            context="{'group_by': 'sync_status'}"/>
+                </group>
+            </search>
+        </field>
+    </record>
+
+    <!-- Acción de Ventana -->
+    <record id="action_pos_sync_config" model="ir.actions.act_window">
+        <field name="name">Configuración de Sincronización</field>
+        <field name="res_model">pos.sync.config</field>
+        <field name="view_mode">tree,form</field>
+        <field name="search_view_id" ref="view_pos_sync_config_search"/>
+        <field name="context">{'search_default_active': 1}</field>
+        <field name="help" type="html">
+            <p class="o_view_nocontent_smiling_face">
+                Configurar sincronización offline para sucursales
+            </p>
+            <p>
+                Configure cada sucursal que operará en modo offline,
+                definiendo qué datos sincronizar y con qué frecuencia.
+            </p>
+        </field>
+    </record>
+</odoo>

@@ -1,0 +1,111 @@
+<?xml version="1.0" encoding="utf-8"?>
+<odoo>
+    <!-- Vista del Wizard de Migración -->
+    <record id="view_pos_migration_wizard_form" model="ir.ui.view">
+        <field name="name">pos.migration.wizard.form</field>
+        <field name="model">pos.migration.wizard</field>
+        <field name="arch" type="xml">
+            <form string="Migración Inicial desde PRINCIPAL">
+                <!-- Estado: Configuración -->
+                <group invisible="state != 'config'">
+                    <div class="alert alert-info" role="alert">
+                        <strong>Migración Inicial</strong><br/>
+                        Este asistente descargará todos los datos maestros desde el servidor PRINCIPAL
+                        a esta base de datos OFFLINE. Use esto para configurar una nueva sucursal.
+                    </div>
+
+                    <group string="Conexión al Servidor PRINCIPAL">
+                        <field name="cloud_url" placeholder="https://principal.miempresa.com"/>
+                        <field name="api_key" password="True"/>
+                        <button name="action_test_connection"
+                                string="Probar Conexión"
+                                type="object"
+                                class="btn-secondary"
+                                icon="fa-plug"/>
+                    </group>
+
+                    <group string="Datos a Migrar">
+                        <group>
+                            <field name="migrate_categories"/>
+                            <field name="migrate_uom"/>
+                            <field name="migrate_taxes"/>
+                            <field name="migrate_fiscal_positions"/>
+                            <field name="migrate_payment_methods"/>
+                        </group>
+                        <group>
+                            <field name="migrate_partners"/>
+                            <field name="migrate_pricelists"/>
+                            <field name="migrate_products"/>
+                            <field name="migrate_loyalty"/>
+                        </group>
+                    </group>
+
+                    <group string="Opciones Avanzadas" groups="base.group_no_one">
+                        <field name="batch_size"/>
+                    </group>
+                </group>
+
+                <!-- Estado: En Progreso -->
+                <group invisible="state != 'progress'">
+                    <div class="alert alert-warning" role="alert">
+                        <i class="fa fa-spinner fa-spin"/> <strong>Migración en progreso...</strong><br/>
+                        Por favor espere. Esto puede tardar varios minutos dependiendo de la cantidad de datos.
+                    </div>
+                    <field name="progress_message" readonly="1" nolabel="1"
+                           widget="text" style="font-family: monospace; background: #f5f5f5; padding: 10px;"/>
+                </group>
+
+                <!-- Estado: Completado -->
+                <group invisible="state != 'done'">
+                    <div class="alert alert-success" role="alert">
+                        <i class="fa fa-check-circle"/> <strong>Migración completada exitosamente</strong>
+                    </div>
+                    <field name="result_message" readonly="1" nolabel="1"
+                           widget="text" style="font-family: monospace; background: #f5f5f5; padding: 10px;"/>
+                </group>
+
+                <!-- Estado: Error -->
+                <group invisible="state != 'error'">
+                    <div class="alert alert-danger" role="alert">
+                        <i class="fa fa-exclamation-triangle"/> <strong>Error en la migración</strong>
+                    </div>
+                    <field name="result_message" readonly="1" nolabel="1"
+                           widget="text" style="font-family: monospace; background: #f5f5f5; padding: 10px;"/>
+                </group>
+
+                <field name="state" invisible="1"/>
+
+                <footer>
+                    <button name="action_run_migration"
+                            string="Iniciar Migración"
+                            type="object"
+                            class="btn-primary"
+                            icon="fa-download"
+                            invisible="state != 'config'"
+                            confirm="¿Está seguro de iniciar la migración? Esta operación puede tardar varios minutos."/>
+                    <button name="action_close"
+                            string="Cerrar"
+                            type="object"
+                            class="btn-secondary"
+                            invisible="state not in ('done', 'error')"/>
+                    <button string="Cancelar" class="btn-secondary" special="cancel"
+                            invisible="state != 'config'"/>
+                </footer>
+            </form>
+        </field>
+    </record>
+
+    <!-- Acción para abrir el wizard -->
+    <record id="action_pos_migration_wizard" model="ir.actions.act_window">
+        <field name="name">Migración Inicial</field>
+        <field name="res_model">pos.migration.wizard</field>
+        <field name="view_mode">form</field>
+        <field name="view_id" ref="view_pos_migration_wizard_form"/>
+        <field name="target">new</field>
+        <field name="help" type="html">
+            <p class="o_view_nocontent_smiling_face">
+                Migrar datos desde el servidor PRINCIPAL
+            </p>
+        </field>
+    </record>
+</odoo>

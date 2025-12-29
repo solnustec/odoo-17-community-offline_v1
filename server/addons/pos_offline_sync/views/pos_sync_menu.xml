@@ -1,0 +1,57 @@
+<?xml version="1.0" encoding="utf-8"?>
+<odoo>
+    <!-- Menú Principal - POS Offline Sync -->
+    <menuitem id="menu_pos_offline_sync_root"
+              name="Sincronización Offline"
+              parent="point_of_sale.menu_point_config_product"
+              sequence="100"/>
+
+    <!-- Submenú - Migración Inicial (para nuevas sucursales) -->
+    <menuitem id="menu_pos_migration_wizard"
+              name="Migración Inicial"
+              parent="menu_pos_offline_sync_root"
+              action="action_pos_migration_wizard"
+              sequence="5"/>
+
+    <!-- Submenú - Configuración -->
+    <menuitem id="menu_pos_sync_config"
+              name="Configuración"
+              parent="menu_pos_offline_sync_root"
+              action="action_pos_sync_config"
+              sequence="10"/>
+
+    <!-- Submenú - Cola de Sincronización -->
+    <menuitem id="menu_pos_sync_queue"
+              name="Cola de Sincronización"
+              parent="menu_pos_offline_sync_root"
+              action="action_pos_sync_queue"
+              sequence="20"/>
+
+    <!-- Submenú - Pendientes -->
+    <menuitem id="menu_pos_sync_queue_pending"
+              name="Pendientes"
+              parent="menu_pos_offline_sync_root"
+              action="action_pos_sync_queue_pending"
+              sequence="21"/>
+
+    <!-- Submenú - Errores de Cola -->
+    <menuitem id="menu_pos_sync_queue_errors"
+              name="Errores en Cola"
+              parent="menu_pos_offline_sync_root"
+              action="action_pos_sync_queue_errors"
+              sequence="22"/>
+
+    <!-- Submenú - Logs -->
+    <menuitem id="menu_pos_sync_log"
+              name="Logs"
+              parent="menu_pos_offline_sync_root"
+              action="action_pos_sync_log"
+              sequence="30"/>
+
+    <!-- Submenú - Errores de Log -->
+    <menuitem id="menu_pos_sync_log_errors"
+              name="Errores en Logs"
+              parent="menu_pos_offline_sync_root"
+              action="action_pos_sync_log_errors"
+              sequence="31"/>
+</odoo>

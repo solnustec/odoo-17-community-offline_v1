@@ -1,0 +1,192 @@
+<?xml version="1.0" encoding="utf-8"?>
+<odoo>
+    <!-- Vista de Formulario - Cola de Sincronización -->
+    <record id="view_pos_sync_queue_form" model="ir.ui.view">
+        <field name="name">pos.sync.queue.form</field>
+        <field name="model">pos.sync.queue</field>
+        <field name="arch" type="xml">
+            <form string="Registro de Sincronización">
+                <header>
+                    <button name="action_retry" string="Reintentar"
+                            type="object" class="btn-primary"
+                            invisible="state != 'error'"/>
+                    <button name="action_skip" string="Omitir"
+                            type="object" class="btn-secondary"
+                            invisible="state not in ('pending', 'error')"/>
+                    <button name="reset_to_pending" string="Resetear"
+                            type="object" class="btn-secondary"
+                            invisible="state not in ('error', 'skipped')"/>
+                    <field name="state" widget="statusbar"
+                           statusbar_visible="pending,processing,synced,error"/>
+                </header>
+                <sheet>
+                    <group>
+                        <group string="Identificación">
+                            <field name="name"/>
+                            <field name="model_name"/>
+                            <field name="record_id"/>
+                            <field name="record_ref"/>
+                            <field name="operation"/>
+                        </group>
+                        <group string="Contexto">
+                            <field name="warehouse_id"/>
+                            <field name="pos_config_id"/>
+                            <field name="session_id"/>
+                            <field name="user_id"/>
+                        </group>
+                    </group>
+                    <group>
+                        <group string="Control">
+                            <field name="priority"/>
+                            <field name="attempt_count"/>
+                            <field name="max_attempts"/>
+                            <field name="last_attempt_date"/>
+                            <field name="next_retry_date"/>
+                        </group>
+                        <group string="Resultado">
+                            <field name="sync_date"/>
+                            <field name="cloud_record_id"/>
+                        </group>
+                    </group>
+                    <notebook>
+                        <page string="Datos JSON" name="data">
+                            <field name="data_json" widget="text"
+                                   readonly="state == 'synced'"/>
+                        </page>
+                        <page string="Respuesta" name="response"
+                              invisible="not response_json">
+                            <field name="response_json" widget="text" readonly="1"/>
+                        </page>
+                        <page string="Error" name="error"
+                              invisible="not error_message">
+                            <field name="error_message" widget="text" readonly="1"/>
+                        </page>
+                        <page string="Dependencias" name="dependencies">
+                            <group>
+                                <field name="depends_on_ids" widget="many2many_tags"/>
+                                <field name="dependent_ids" widget="many2many_tags"
+                                       readonly="1"/>
+                            </group>
+                        </page>
+                    </notebook>
+                </sheet>
+            </form>
+        </field>
+    </record>
+
+    <!-- Vista de Lista - Cola de Sincronización -->
+    <record id="view_pos_sync_queue_tree" model="ir.ui.view">
+        <field name="name">pos.sync.queue.tree</field>
+        <field name="model">pos.sync.queue</field>
+        <field name="arch" type="xml">
+            <tree string="Cola de Sincronización"
+                  decoration-danger="state == 'error'"
+                  decoration-success="state == 'synced'"
+                  decoration-warning="state == 'processing'"
+                  decoration-muted="state == 'skipped'">
+                <field name="name"/>
+                <field name="model_name"/>
+                <field name="record_ref"/>
+                <field name="operation"/>
+                <field name="warehouse_id"/>
+                <field name="priority" widget="priority"/>
+                <field name="state" widget="badge"
+                       decoration-info="state == 'pending'"
+                       decoration-warning="state == 'processing'"
+                       decoration-success="state == 'synced'"
+                       decoration-danger="state == 'error'"
+                       decoration-muted="state == 'skipped'"/>
+                <field name="attempt_count"/>
+                <field name="create_date"/>
+                <field name="sync_date" optional="show"/>
+                <field name="cloud_record_id" optional="hide"/>
+            </tree>
+        </field>
+    </record>
+
+    <!-- Vista de Búsqueda -->
+    <record id="view_pos_sync_queue_search" model="ir.ui.view">
+        <field name="name">pos.sync.queue.search</field>
+        <field name="model">pos.sync.queue</field>
+        <field name="arch" type="xml">
+            <search string="Buscar en Cola">
+                <field name="name"/>
+                <field name="model_name"/>
+                <field name="record_ref"/>
+                <field name="warehouse_id"/>
+                <separator/>
+                <filter string="Pendientes" name="pending"
+                        domain="[('state', '=', 'pending')]"/>
+                <filter string="Procesando" name="processing"
+                        domain="[('state', '=', 'processing')]"/>
+                <filter string="Sincronizados" name="synced"
+                        domain="[('state', '=', 'synced')]"/>
+                <filter string="Con Error" name="error"
+                        domain="[('state', '=', 'error')]"/>
+                <filter string="Omitidos" name="skipped"
+                        domain="[('state', '=', 'skipped')]"/>
+                <separator/>
+                <filter string="Órdenes" name="orders"
+                        domain="[('model_name', '=', 'pos.order')]"/>
+                <filter string="Clientes" name="partners"
+                        domain="[('model_name', '=', 'res.partner')]"/>
+                <filter string="Productos" name="products"
+                        domain="[('model_name', '=', 'product.product')]"/>
+                <separator/>
+                <filter string="Hoy" name="today"
+                        domain="[('create_date', '&gt;=', time.strftime('%%Y-%%m-%%d'))]"/>
+                <filter string="Última Semana" name="week"
+                        domain="[('create_date', '&gt;=', (context_today() - relativedelta(days=7)).strftime('%%Y-%%m-%%d'))]"/>
+                <separator/>
+                <group expand="0" string="Agrupar por">
+                    <filter string="Estado" name="group_state"
+                            context="{'group_by': 'state'}"/>
+                    <filter string="Modelo" name="group_model"
+                            context="{'group_by': 'model_name'}"/>
+                    <filter string="Almacén" name="group_warehouse"
+                            context="{'group_by': 'warehouse_id'}"/>
+                    <filter string="Operación" name="group_operation"
+                            context="{'group_by': 'operation'}"/>
+                    <filter string="Fecha" name="group_date"
+                            context="{'group_by': 'create_date:day'}"/>
+                </group>
+            </search>
+        </field>
+    </record>
+
+    <!-- Acción de Ventana -->
+    <record id="action_pos_sync_queue" model="ir.actions.act_window">
+        <field name="name">Cola de Sincronización</field>
+        <field name="res_model">pos.sync.queue</field>
+        <field name="view_mode">tree,form</field>
+        <field name="search_view_id" ref="view_pos_sync_queue_search"/>
+        <field name="context">{'search_default_pending': 1}</field>
+        <field name="help" type="html">
+            <p class="o_view_nocontent_smiling_face">
+                No hay registros en la cola de sincronización
+            </p>
+            <p>
+                Los registros generados en el POS offline aparecerán aquí
+                hasta que sean sincronizados con el servidor cloud.
+            </p>
+        </field>
+    </record>
+
+    <!-- Acción de Ventana - Solo Pendientes -->
+    <record id="action_pos_sync_queue_pending" model="ir.actions.act_window">
+        <field name="name">Pendientes de Sincronización</field>
+        <field name="res_model">pos.sync.queue</field>
+        <field name="view_mode">tree,form</field>
+        <field name="domain">[('state', 'in', ['pending', 'error'])]</field>
+        <field name="context">{}</field>
+    </record>
+
+    <!-- Acción de Ventana - Con Errores -->
+    <record id="action_pos_sync_queue_errors" model="ir.actions.act_window">
+        <field name="name">Errores de Sincronización</field>
+        <field name="res_model">pos.sync.queue</field>
+        <field name="view_mode">tree,form</field>
+        <field name="domain">[('state', '=', 'error')]</field>
+        <field name="context">{}</field>
+    </record>
+</odoo>
