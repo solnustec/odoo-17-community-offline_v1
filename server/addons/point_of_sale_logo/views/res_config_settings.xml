@@ -1,0 +1,29 @@
+<?xml version="1.0" encoding="utf-8"?>
+<odoo>
+    <data>
+
+        <record id="res_config_settings_pos_logo_view_form" model="ir.ui.view">
+            <field name="name">
+                res.config.settings.view.form.inherit.pos.image
+            </field>
+            <field name="model">res.config.settings</field>
+            <field name="inherit_id"
+                   ref="point_of_sale.res_config_settings_view_form"/>
+            <field name="arch" type="xml">
+                <xpath expr="//block[@id='restaurant_section']" position="after">
+                    <block title="Logo para el punto de venta">
+                        <div class="col-12">
+
+                            <div class="o_setting_right_pane">
+
+                                <field name="logo" widget="image"
+                                       readonly="False"/>
+                            </div>
+
+                        </div>
+                    </block>
+                </xpath>
+            </field>
+        </record>
+    </data>
+</odoo>

@@ -1,0 +1,20 @@
+<odoo>
+    <data>
+        <record id="view_error_popup_form" model="ir.ui.view">
+            <field name="name">error.popup.custom.form</field>
+            <field name="model">error.popup.custom</field>
+            <field name="arch" type="xml">
+                <form>
+                    <group>
+                        <h3>Atención Alerta</h3>
+                        <field name="error_messages" readonly="1" nolabel="1" string=""/>
+                    </group>
+                    <footer>
+                        <button string="Continuar de todos modos" class="btn-warning" type="object" name="continue_process"/>
+                        <button string="Cancelar" class="btn-primary" special="cancel"/>
+                    </footer>
+                </form>
+            </field>
+        </record>
+    </data>
+</odoo>

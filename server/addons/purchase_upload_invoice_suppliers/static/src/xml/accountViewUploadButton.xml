@@ -1,0 +1,18 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<templates id="template" xml:space="preserve">
+    <t t-name="purchase_upload_invoice_suppliers.ListView.Buttons"
+       t-inherit="account.ListView.Buttons"
+       t-inherit-mode="extension"
+       owl="1">
+        <xpath expr="//div[hasclass('o_list_buttons')]" position="inside">
+            <!-- Mostrar solo en facturas de proveedores-->
+            <t t-if="props?.context?.default_move_type === 'in_invoice'">
+                <button type="button"
+                        t-on-click="openMovementHistory"
+                        class="btn btn-secondary o_button_upload_bill">
+                    Subir .txt
+                </button>
+            </t>
+        </xpath>
+    </t>
+</templates>

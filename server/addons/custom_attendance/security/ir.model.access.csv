@@ -1,0 +1,12 @@
+id,name,model_id:id,group_id:id,perm_read,perm_write,perm_create,perm_unlink
+access_hr_attendance,hr.attendance,model_hr_attendance,base.group_user,1,1,1,1
+access_hr_attendance_import,hr.attendance.import,model_hr_attendance_import,base.group_user,1,1,1,1
+access_hr_attendance_inconsistencies,hr.attendance.inconsistencies,model_hr_attendance_inconsistencies,base.group_user,1,1,1,1
+access_autocomplete_attendance_hours,autocomplete.attendance.hours,model_autocomplete_attendance_hours,base.group_user,1,1,1,1
+access_hr_attendance_general,hr.attendance.general,model_hr_attendance_general,base.group_user,1,1,1,1
+access_employee_schedule_history,employee.schedule.history,model_employee_schedule_history,base.group_user,1,1,1,1
+access_hr_attendance_general_modal,hr.attendance.general.modal,model_hr_attendance_general_modal,base.group_user,1,1,1,1
+access_hr_attendance_popup,hr.attendance.popup,model_hr_attendance_popup,base.group_user,1,1,1,1
+access_employee_work_entry_projection,employee.work.entry.projection,model_employee_work_entry_projection,base.group_user,1,1,1,1
+access_hr_expected_locations,hr.expected.locations,model_hr_expected_locations,base.group_user,1,1,1,1
+access_error_popup_custom,error.popup.custom,model_error_popup_custom,base.group_user,1,1,1,1

@@ -1,0 +1,38 @@
+<?xml version="1.0" encoding="utf-8"?>
+<odoo>
+    <data>
+        <record id="payment_transaction_form_app_mobile" model="ir.ui.view">
+            <field name="name">payment.transaction.form.app.mobile</field>
+            <field name="model">payment.transaction</field>
+            <field name="inherit_id" ref="payment.payment_transaction_form"/>
+            <field name="arch" type="xml">
+
+                <xpath expr="//sheet/group" position="after">
+                    <group class="">
+                        <group>
+                            <field name="is_app_transaction" class="o_app_mobile_full_width"/>
+                        </group>
+                        <group>
+                            <field name="payment_transaction_id" class="o_app_mobile_full_width"/>
+                        </group>
+                    </group>
+                    <group>
+                        <group>
+                            <field name="payment_json_data" class="o_app_mobile_full_width" groups="base.group_no_one"/>
+                        </group>
+                        <group>
+                            <field name="expiration_payment_date" groups="base.group_no_one"/>
+                        </group>
+                    </group>
+                    <group>
+                        <field name="checkout_url"/>
+                        <field name="qr_code" groups="base.group_no_one"/>
+
+                        <field name="url_type"/>
+                    </group>
+
+                </xpath>
+            </field>
+        </record>
+    </data>
+</odoo>

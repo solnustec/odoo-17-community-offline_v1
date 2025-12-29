@@ -1,0 +1,17 @@
+<?xml version="1.0" encoding="utf-8"?>
+<odoo>
+    <record id="view_employee_form_helpdesk_areas" model="ir.ui.view">
+        <field name="name">hr.employee.form.helpdesk.areas</field>
+        <field name="model">hr.employee</field>
+        <field name="inherit_id" ref="hr.view_employee_form"/>
+        <field name="arch" type="xml">
+            <notebook position="inside">
+                <page string="Áreas de Soporte" name="helpdesk_areas_tab" groups="odoo_website_helpdesk.helpdesk_manager">
+                    <group>
+                        <field name="helpdesk_area_ids" widget="many2many_tags" options="{'no_create': True, 'no_open': True}"/>
+                    </group>
+                </page>
+            </notebook>
+        </field>
+    </record>
+</odoo>

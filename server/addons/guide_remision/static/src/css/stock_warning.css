@@ -1,0 +1,5 @@
+.o_stock_warning[data-oe-field-value="0"],
+.o_stock_warning[data-oe-field-value="0.0"] {
+    color: red !important;
+    font-weight: bold;
+}

@@ -1,0 +1,41 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<template id="template_historial" owl="1">
+    <t t-name="HistoricalPopupTemplate">
+    <div class="popup popup-med" style="min-width: 80%; max-width: 1200px;">
+        <h2 class="pt-2 pb-1" t-esc="props.title"></h2>
+        <div class="content px-3" style="max-height: 400px; overflow-y: auto;">
+            <table class="table table-sm table-striped">
+                <thead class="bg-dark text-white">
+                    <tr>
+                        <th>Fecha</th>
+                        <th>Referencia</th>
+                        <th>Producto</th>
+                        <th>Desde</th>
+                        <th>A</th>
+                        <th>Cantidad</th>
+                        <th>Unidad</th>
+                        <th>Estado</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    <tr t-foreach="state.history" t-as="record" t-key="record.id">
+                        <td t-esc="record.date"/>
+                        <td t-esc="record.reference"/>
+                        <td t-esc="record.product_name"/>
+                        <td t-esc="record.location_dest"/>
+                        <td t-esc="record.location"/>
+                        <td t-esc="record.quantity"/>
+                        <td t-esc="record.product_uom"/>
+                        <td t-esc="record.state"/>
+                    </tr>
+                </tbody>
+            </table>
+        </div>
+        <div class="footer pb-3 px-4" style="text-align: right;">
+            <button class="btn btn-primary" t-on-click="closePopup">
+                Fechar
+            </button>
+        </div>
+    </div>
+    </t>
+</template>

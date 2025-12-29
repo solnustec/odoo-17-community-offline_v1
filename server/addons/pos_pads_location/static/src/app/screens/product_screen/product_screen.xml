@@ -1,0 +1,27 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<templates xml:space="preserve">
+    <t t-name="point_of_sale.ProductScreen" t-inherit="point_of_sale.ProductScreen" t-inherit-mode="extension">
+        <xpath expr="//div[hasclass('pads')]" position="replace"/>
+
+        <xpath expr="//ProductsWidget" position="after">
+            <div class="pads border-top">
+                <div class="control-buttons d-flex flex-wrap border-bottom overflow-hidden bg-300"
+                     t-if="!ui.isSmall">
+                    <t t-foreach="controlButtons" t-as="cb" t-key="cb.name">
+                        <t t-component="cb.component" t-key="cb.name"/>
+                    </t>
+                </div>
+                <div class="subpads d-flex">
+                    <ActionpadWidget
+                            partner="partner"
+                            actionName="constructor.numpadActionName"
+                            actionType="'payment'"
+                            onClickMore.bind="displayAllControlPopup"/>
+                    <Numpad buttons="getNumpadButtons()" onClick.bind="onNumpadClick" class="'w-100'"/>
+                </div>
+            </div>
+        </xpath>
+
+    </t>
+
+</templates>

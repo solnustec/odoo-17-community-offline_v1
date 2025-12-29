@@ -1,0 +1,15 @@
+<odoo>
+    <record id="cron_assign_company_products" model="ir.cron">
+        <field name="name">Asignar compañía a productos (una sola vez)</field>
+        <field name="model_id" ref="product.model_product_template"/>
+        <field name="state">code</field>
+        <field name="code">model.cron_assign_company_to_products()</field>
+        <field name="active">True</field>
+
+        <!-- Ejecutar lo antes posible -->
+        <field name="interval_number">1</field>
+        <field name="interval_type">minutes</field>
+        <field name="numbercall">1</field>
+        <field name="doall">False</field>
+    </record>
+</odoo>

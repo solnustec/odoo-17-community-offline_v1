@@ -1,0 +1,153 @@
+<odoo>
+    <template id="job_thank_you_template" name="Gracias por su postulación" inherit_id="website.website_info">
+        <xpath expr="//div[@id='wrap']" position="replace">
+            <div class="row p-md-5">
+                <div class="col pt24 pb24 text-center">
+                    <div class="row p-md-4">
+                        <div class="col-md-6 p-md-4">
+                            <div class="row">
+                                <div class="col-md-5">
+                                    <img class="img-fluid o_we_custom_image"
+                                         t-attf-style="width:{{ '100%' if (job_sudo and job_sudo.user_id) else '100%' }} !important;"
+                                         src="/custom/static/src/img/check.jpeg"
+                                         alt="Congratulations!"/>
+                                </div>
+                                <div class="col-md-7 d-flex flex-column"
+                                     style="justify-content: center;">
+                                    <div class="text-start mb-md-3">
+                                        <h1 style="font-size:40px;color: #003D8B !important;">¡Listo!
+                                        </h1>
+                                    </div>
+                                    <div style="background-color: #F8E032 !important;color: #003D8B !important;border-radius:10px">
+                                        <p class="fw-light pt-3">Su postulación ha sido recibida con
+                                            éxito
+                                        </p>
+                                    </div>
+                                </div>
+                            </div>
+                            <p style="color: #003D8B !important;" class="mt-5">El periodo de respuesta a
+                                las postulaciones podría tardar hasta 72 horas. Manténgase atento a su
+                                correo electrónico proporcionado en el proceso.
+                            </p>
+                        </div>
+                        <div class="col-md-6">
+                            <div style="width: 632px; height: 581px; position: relative">
+                                <div style="width: 632px; height: 581px; left: 0px; top: 0px; position: absolute; background: #FCFAF7; box-shadow: 0px 4px 4px rgba(0, 0, 0, 0.25); border-radius: 8px"></div>
+                                <div style="width: 381px; height: 44px; left: 100px; top: 200px; position: absolute; background: #D9D9D9"></div>
+                                <div style="width: 381px; height: 44px; left: 100px; top: 349px; position: absolute; background: #D9D9D9"></div>
+                                <div style="width: 45px; height: 45px; left: 80px; top: 200px; position: absolute; background: #F8E032; border-radius: 9999px"></div>
+                                <div style="width: 45px; height: 45px; left: 80px; top: 349px; position: absolute; background: #F8E032; border-radius: 9999px"></div>
+                                <div style="width: 10px; height: 41px; left: 99px; top: 210px; position: absolute; color: #003D8B; font-size: 18px;  font-weight: 700; word-wrap: break-word">
+                                    1
+                                </div>
+                                <div style="width: 10px; height: 41px; left: 98px; top: 359px; position: absolute; color: #003D8B; font-size: 18px;  font-weight: 700; word-wrap: break-word">
+                                    2
+                                </div>
+                                <div style="left: 96px; top: 43px; position: absolute; color: #003D8B; font-size: 40px;  font-weight: 700; word-wrap: break-word">
+                                    Gracias por su interés
+                                </div>
+                                <div style="text-align: start;left: 100px; top: 102px; position: absolute; color: #003D8B; font-size: 20px;  font-weight: 400; word-wrap: break-word">
+                                    en querer formar parte de nuestro equipo<br/>en Farmacias Cuxibamba
+                                </div>
+                                <div style="left: 148px; top: 260px; position: absolute; color: #003D8B; font-size: 16px;  font-weight: 400; word-wrap: break-word">
+                                    Ha completado el primer paso de su postulación.
+                                </div>
+                                <div style="text-align: start;width: 408px; left: 148px; top: 409px; position: absolute; color: #003D8B; font-size: 16px;  font-weight: 400; word-wrap: break-word">
+                                    El siguiente paso será una entrevista presencial, con nuestros
+                                    encargados de recursos humanos.
+                                </div>
+                                <div style="text-align: start;width: 408px; left: 148px; top: 479px; position: absolute">
+                                    <span style="color: #003D8B; font-size: 16px;  font-weight: 400; word-wrap: break-word">
+                                        Para continuar con este paso, podrían pasar hasta
+                                    </span>
+                                    <span style="color: #003D8B; font-size: 16px;  font-weight: 600; word-wrap: break-word">
+                                        72 horas
+                                    </span>
+                                    <span style="color: #003D8B; font-size: 16px;  font-weight: 400; word-wrap: break-word">
+                                        desde su postulación en línea.
+                                    </span>
+                                </div>
+                                <div style="left: 148px; top: 288px; position: absolute; text-align: center; color: #003D8B; font-size: 20px;  font-weight: 600; word-wrap: break-word">
+                                    ¡Nos comunicaremos pronto!
+                                </div>
+                                <div style="left: 148px; top: 208px; position: absolute; text-align: center; color: #003D8B; font-size: 20px;  font-weight: 600; word-wrap: break-word">
+                                    Postulación en línea
+                                </div>
+                                <div style="left: 148px; top: 357px; position: absolute; text-align: center; color: #003D8B; font-size: 20px;  font-weight: 600; word-wrap: break-word">
+                                    Entrevista presencial
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+
+                </div>
+                <!-- HR Recruiter Block -->
+                <t t-if="job_sudo and job_sudo.user_id">
+                    <div class="col-lg-4 align-self-center ps-4 o_cc o_cc2 rounded">
+                        <section class="s_text_block pt24" data-snippet="s_text_block" data-name="Text">
+                            <div class="container">
+                                <p class="text-center mb-0 fs-3 lead">Your <b>contact</b> information
+                                    is:
+                                </p>
+                            </div>
+                        </section>
+                        <section class="s_company_team pt12" data-snippet="s_company_team"
+                                 data-name="Team">
+                            <div class="container-fluid">
+                                <div class="row justify-content-center">
+                                    <div class="o_jobs_hr_recruiter col-10 o_cc o_cc1 mt24 p-4 border border-primary rounded shadow">
+                                        <div class="row align-items-center">
+                                            <div class="col-lg-5 pb16 o_not_editable">
+                                                <img t-att-src="image_data_uri(job_sudo.user_id.avatar_256)"
+                                                     class="img-fluid" loading="lazy"/>
+                                            </div>
+                                            <div class="col-lg-7 px-1">
+                                                <h2 class="o_default_snippet_text text-truncate"
+                                                    t-field="job_sudo.user_id.name"/>
+                                                <p class="fw-light text-truncate"
+                                                   t-field="job_sudo.user_id.job_title"/>
+                                            </div>
+                                        </div>
+                                        <div class="row">
+                                            <ul class="list-unstyled mb-0">
+                                                <li t-if="job_sudo.user_id.work_phone">
+                                                    <i class="fa fa-phone fa-fw me-2"></i>
+                                                    <span class="o_force_ltr"
+                                                          t-field="job_sudo.user_id.work_phone"/>
+                                                </li>
+                                                <li class="d-inline-flex align-items-baseline">
+                                                    <i class="fa fa-envelope fa-fw me-2"></i>
+                                                    <span>
+                                                        <a class="text-break"
+                                                           t-attf-href="mailto:#{job_sudo.user_id.email}"
+                                                           t-field="job_sudo.user_id.email"/>
+                                                    </span>
+                                                </li>
+                                            </ul>
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+                        </section>
+                        <section class="s_text_block pt24" data-snippet="s_text_block" data-name="Text">
+                            <div class="container">
+                                <p class="lead alert px-0">
+                                    I usually <strong>answer applications within 3 days</strong>.
+                                    <br/>
+                                    <br/>
+                                    The next step is either a call or a meeting in our offices.
+                                    <br/>
+                                    <br/>
+                                    Feel free to <strong>contact me if you want a faster
+                                    feedback
+                                </strong> or if you don't get news from me
+                                    quickly enough.
+                                </p>
+                            </div>
+                        </section>
+                    </div>
+                </t>
+            </div>
+        </xpath>
+    </template>
+</odoo>

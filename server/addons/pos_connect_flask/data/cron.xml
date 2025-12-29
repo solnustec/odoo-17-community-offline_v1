@@ -1,0 +1,24 @@
+<?xml version="1.0" encoding="utf-8"?>
+<odoo>
+    <data>
+        <record id="cron_update_sale_summaries_sri" model="ir.cron">
+            <field name="name">Actualizar Claves de accesso SRI/To sync</field>
+            <field name="model_id" ref="model_json_storage"/>
+            <field name="state">code</field>
+            <field name="code">model.update_key_access_to_json_storage()</field>
+            <field name="interval_number">1</field>
+            <field name="interval_type">minutes</field>
+            <field name="numbercall">-1</field>
+        </record>
+<!--        cron para enviar los datos de regulacion de stock a la base central-->
+         <record id="cron_update_stock_regulation_vf" model="ir.cron">
+            <field name="name">Stock Regulation sync vf</field>
+            <field name="model_id" ref="model_json_stock_regulation"/>
+            <field name="state">code</field>
+            <field name="code">model.sync_stock_regulation_json_to_vf()</field>
+            <field name="interval_number">5</field>
+            <field name="interval_type">minutes</field>
+            <field name="numbercall">-1</field>
+        </record>
+    </data>
+</odoo>

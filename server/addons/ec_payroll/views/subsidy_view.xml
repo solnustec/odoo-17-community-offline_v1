@@ -1,0 +1,109 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<odoo>
+	<data>
+
+		<record model="ir.ui.view" id="request_subsidio_tree_view">
+			<field name="name">request.subsidy.tree</field>
+			<field name="model">hr.request.subsidy</field>
+			<field name="arch" type="xml">
+				<tree string="Solicitud de Subsidio">
+					<field name="number" />
+					<field name="employee_id" />
+					<field name="date_start" />
+					<field name="date_end" />
+					<field name="state" />
+				</tree>
+			</field>
+		</record>
+
+		<record model="ir.ui.view" id="request_subsidy_form_view">
+			<field name="name">request.subsidy.form</field>
+			<field name="model">hr.request.subsidy</field>
+			<field name="arch" type="xml">
+				<form string="Solicitud de Subsidio">
+
+					<header>			
+						<button name="action_to_send" type="object" 
+							string="Enviar" invisible="state != 'draft'" class="oe_highlight" />
+						<button name="action_done" type="object" string="Aprobar"
+							invisible="state != 'send'" class="oe_highlight" />
+						<button name="action_draft" type="object"
+							string="Regresar a Borrador" invisible="state not in ('send', 'donde')" class="oe_highlight" />
+
+						<field name="state" widget="statusbar" />
+					</header>
+
+					<sheet>
+						<div class="oe_title">
+							<h1>
+								<label for="number" string="Número de Préstamo"
+									invisible="number != False"/>
+								<field name="number" />
+							</h1>
+						</div>
+						<group>
+							<group>
+								<field name="employee_id" />
+								<field name="contract_id" domain="[('employee_id','=',employee_id)]" />
+								<field name="date_start_contract" />
+								<field name="date_start" />
+								<field name="date_return"/>
+							
+			
+								
+
+							</group>
+
+
+							<group>
+								<field name="date_trx"/>
+								<field name="type_subsidy" />
+								<field name="days_total_subsidy"/>
+								<field name="date_end" />
+								
+
+							</group>
+
+						</group>
+
+
+					</sheet>
+
+				<!-- 	<sheet>
+						
+						<group>
+								
+							<field name="salary_acum"/>
+							<field name="other_inputs"/>
+							<field name="amount_total"/>
+						</group>
+
+
+					</sheet> -->
+
+				</form>
+			</field>
+		</record>
+
+
+	
+
+		<record model="ir.actions.act_window"
+			id="action_request_subsidy_view">
+			<field name="name">Solicitud de Subsidio</field>
+			<field name="type">ir.actions.act_window</field>
+			<field name="res_model">hr.request.subsidy</field>
+			<!-- <field name="view_type">form</field> -->
+			<field name="view_mode">tree,form</field>
+			<field name="view_id" ref="request_subsidio_tree_view" />
+		</record>
+
+
+		<menuitem id="request_subsidy_menu"
+				  name="Subsidios"
+				  parent="hr_payroll.menu_hr_payroll_payslips"
+				  sequence='120'
+				  action="action_request_subsidy_view" />
+
+	</data>
+</odoo>

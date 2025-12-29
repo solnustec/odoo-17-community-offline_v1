@@ -1,0 +1,108 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<odoo>
+
+    <!-- ================================================= -->
+    <!-- DASHBOARD KARDEX PROFESIONAL -->
+    <!-- ================================================= -->
+    <record id="view_consumibles_kardex_dashboard_form" model="ir.ui.view">
+        <field name="name">consumibles.kardex.dashboard.form</field>
+        <field name="model">consumibles.kardex.dashboard</field>
+        <field name="arch" type="xml">
+            <form string="Dashboard Kardex Farmacia">
+                <sheet>
+
+                    <!-- TÍTULO -->
+                    <div class="oe_title mb-3">
+                        <h1 class="fw-bold">
+                            📊 Dashboard de Inventario – Kardex
+                        </h1>
+                        <p class="text-muted">
+                            Control general de stock, movimientos y valorización
+                        </p>
+                    </div>
+
+                    <!-- ================= KPIs ================= -->
+                    <div class="row g-3 mb-4">
+
+                        <div class="col-lg-3 col-md-6">
+                            <div class="o_card p-3 shadow-sm border-start border-4 border-primary">
+                                <div class="fw-semibold text-muted">Stock Total</div>
+                                <div class="fs-3 fw-bold text-primary">
+                                    <field name="total_stock" readonly="1"/>
+                                </div>
+                            </div>
+                        </div>
+
+                        <div class="col-lg-3 col-md-6">
+                            <div class="o_card p-3 shadow-sm border-start border-4 border-success">
+                                <div class="fw-semibold text-muted">Valor del Inventario</div>
+                                <div class="fs-3 fw-bold text-success">
+                                    <field name="inventory_value" readonly="1"/>
+                                </div>
+                            </div>
+                        </div>
+
+                        <div class="col-lg-3 col-md-6">
+                            <div class="o_card p-3 shadow-sm border-start border-4 border-info">
+                                <div class="fw-semibold text-muted">Entradas del Mes</div>
+                                <div class="fs-3 fw-bold text-info">
+                                    <field name="total_entries_month" readonly="1"/>
+                                </div>
+                            </div>
+                        </div>
+
+                        <div class="col-lg-3 col-md-6">
+                            <div class="o_card p-3 shadow-sm border-start border-4 border-danger">
+                                <div class="fw-semibold text-muted">Salidas del Mes</div>
+                                <div class="fs-3 fw-bold text-danger">
+                                    <field name="total_outputs_month" readonly="1"/>
+                                </div>
+                            </div>
+                        </div>
+
+                    </div>
+
+                    <!-- ================= ANÁLISIS ================= -->
+                    <group string="📈 Análisis de Inventario" class="mt-2">
+
+                        <div class="d-flex gap-3 flex-wrap">
+
+                            <button name="%(action_kardex_graph_entries_outputs)d"
+                                    string="📈 Entradas vs Salidas"
+                                    type="action"
+                                    class="btn btn-primary btn-lg"/>
+
+                            <button name="%(action_kardex_graph_stock_by_product)d"
+                                    string="📊 Stock por Producto"
+                                    type="action"
+                                    class="btn btn-outline-secondary btn-lg"/>
+
+                        </div>
+
+                    </group>
+
+                </sheet>
+            </form>
+        </field>
+    </record>
+
+    <!-- ================================================= -->
+    <!-- ACTION -->
+    <!-- ================================================= -->
+    <record id="action_consumibles_kardex_dashboard" model="ir.actions.act_window">
+        <field name="name">Dashboard Kardex</field>
+        <field name="res_model">consumibles.kardex.dashboard</field>
+        <field name="view_mode">form</field>
+        <field name="target">current</field>
+    </record>
+
+    <!-- ================================================= -->
+    <!-- MENU -->
+    <!-- ================================================= -->
+    <menuitem id="menu_consumibles_dashboard"
+              name="Dashboard"
+              parent="menu_consumibles_root"
+              action="action_consumibles_kardex_dashboard"
+              sequence="5"/>
+
+</odoo>

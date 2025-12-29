@@ -1,0 +1,167 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<odoo>
+    <template id="report_referral_guide_document_test">
+        <t t-call="web.external_layout">
+            <div class="page">
+                <main>
+                    <!-- Cabecera centrada -->
+                    <div style="text-align: start;">
+                        <h4>GUÍA DE REMISIÓN</h4>
+                    </div>
+                    <table>
+                        <tbody>
+                            <tr>
+                                <td style="padding: 5px;">
+                                    <p>
+                                        <strong>R.U.C.:</strong>
+                                        <span t-out="guia_remision_data['ruc']"/>
+                                        <p>
+                                            <strong>Estado del Comprobante:</strong>
+                                            NORMAL
+                                        </p>
+                                    </p>
+
+                                </td>
+                                <td style="padding: 5px;">
+                                    <p>
+                                        <strong>Fecha y Hora de Autorización:</strong>
+                                        <span t-out="guia_remision_data['fecha_autorizacion_sri']"/>
+                                    </p>
+                                    <p>
+                                        <strong>Clave de Acceso:</strong>
+                                        <span t-out="guia_remision_data['clave_acceso']"/>
+                                    </p>
+                                </td>
+                                <td style="padding: 5px;">
+                                    <p>
+                                        <strong>Número de Autorización:</strong>
+                                        <span t-out="guia_remision_data['numero_autorizacion_sri']"/>
+                                    </p>
+                                    <p>
+                                        <strong>Ambiente:</strong>
+                                        <span t-out="guia_remision_data['ambiente_sri']"/>
+                                    </p>
+                                </td>
+                            </tr>
+                        </tbody>
+                    </table>
+                    <hr/>
+                    <br/>
+                    <table style="width: 100%; border-collapse: collapse;" border="1">
+                        <thead>
+                            <tr>
+                                <th style="padding: 5px;">Información del Transportista</th>
+                                <th style="padding: 5px;">Dirección del Transporte</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            <tr>
+                                <td style="padding: 5px;">
+                                    <strong>Razón Social / Nombres y Apellidos:</strong>
+                                    <span t-out="guia_remision_data['razon_social_transportista']"/>
+                                    <br/>
+                                    <strong>Identificación (Transportista):</strong>
+                                    <span t-out="guia_remision_data['identificacion_transportista']"/>
+                                    <br/>
+                                    <strong>Placa:</strong>
+                                    <span t-out="guia_remision_data['placa_vehiculo']"/>
+                                    <br/>
+                                    <strong>Fecha de Inicio:</strong>
+                                    <span t-out="guia_remision_data['fecha_inicio_transporte']"/>
+                                    <br/>
+                                    <strong>Fecha de Fin:</strong>
+                                    <span t-out="guia_remision_data['fecha_fin_transporte']"/>
+                                </td>
+                                <td style="padding: 5px;">
+                                    <strong>Dirección de Partida:</strong>
+                                    <span t-out="guia_remision_data['direccion_partida']"/>
+                                    <br/>
+                                    <strong>Destino (Punto de Llegada):</strong>
+                                    <span t-out="guia_remision_data['destino']"/>
+                                    <br/>
+                                    <strong>Motivo del Traslado:</strong>
+                                    <span t-out="guia_remision_data['motivo_traslado']"/>
+                                    <br/>
+                                    <strong>Ruta:</strong>
+                                    <span t-out="guia_remision_data['ruta']"/>
+                                </td>
+                            </tr>
+                        </tbody>
+                    </table>
+                    <br/>
+                    <br/>
+                    <table style="width: 100%; border-collapse: collapse;" border="1">
+                        <thead>
+                            <tr>
+                                <th style="padding: 5px;" colspan="2">Destinatario</th>
+                            </tr>
+                        </thead>
+                        <thead>
+                            <tr>
+                                <th style="padding: 5px;">Razón Social / Nombres y Apellidos</th>
+                                <th style="padding: 5px;">Identificación (Destinatario)</th>
+
+                            </tr>
+                        </thead>
+                        <tbody>
+                            <tr>
+                                <td style="padding: 5px;">
+                                    <span t-out="guia_remision_data['destinatario']"/>
+                                </td>
+                                <td style="padding: 5px;">
+                                    <span t-out="guia_remision_data['identificacion_destinatario']"/>
+                                </td>
+                            </tr>
+                        </tbody>
+                    </table>
+                    <br/>
+                    <br/>
+                    <table style="width: 100%; border-collapse: collapse;" border="1">
+                        <thead>
+                            <tr>
+                                <th style="padding: 5px;" colspan="4">Productos Transportados por Bultos</th>
+                            </tr>
+                        </thead>
+                        <t t-foreach="guia_remision_data['productos_por_bulto'].items()" t-as="bulto_group">
+                            <thead>
+                                <tr>
+                                    <th style="padding: 5px;" colspan="4">Bulto:
+                                        <span t-out="bulto_group[0]"/>
+                                    </th>
+                                </tr>
+                                <tr>
+                                    <th style="padding: 5px;">Cantidad</th>
+                                    <th style="padding: 5px;">Descripción</th>
+                                    <th style="padding: 5px;">Código Principal</th>
+                                    <th style="padding: 5px;">Código Auxiliar</th>
+                                </tr>
+                            </thead>
+                            <tbody>
+                                <t t-foreach="bulto_group[1]" t-as="producto">
+                                    <tr>
+                                        <td style="padding: 5px;">
+                                            <span t-out="producto['cantidad']"/>
+                                        </td>
+                                        <td style="padding: 5px;">
+                                            <span t-out="producto['descripcion']"/>
+                                        </td>
+                                        <td style="padding: 5px;">
+                                            <span t-out="producto['codigo_principal']"/>
+                                        </td>
+                                        <td style="padding: 5px;">
+                                            <span t-out="producto['codigo_auxiliar']"/>
+                                        </td>
+                                    </tr>
+                                </t>
+                            </tbody>
+                        </t>
+                    </table>
+                </main>
+            </div>
+        </t>
+
+    </template>
+</odoo>
+
+
+

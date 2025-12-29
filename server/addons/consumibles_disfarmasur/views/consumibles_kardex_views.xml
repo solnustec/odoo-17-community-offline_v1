@@ -1,0 +1,135 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<odoo>
+
+    <!-- ===================================================== -->
+    <!-- ACCIÓN KARDEX -->
+    <!-- ===================================================== -->
+    <record id="action_consumibles_product_kardex" model="ir.actions.act_window">
+        <field name="name">Kardex de Productos</field>
+        <field name="res_model">consumibles.product.kardex</field>
+        <field name="view_mode">tree,form</field>
+        <field name="context">{}</field>
+        <field name="help" type="html">
+            <p class="o_view_nocontent_smiling_face">
+                No existen movimientos de Kardex registrados.
+            </p>
+        </field>
+    </record>
+
+    <!-- ===================================================== -->
+    <!-- VISTA TREE KARDEX -->
+    <!-- ===================================================== -->
+    <record id="view_consumibles_product_kardex_tree" model="ir.ui.view">
+        <field name="name">consumibles.product.kardex.tree</field>
+        <field name="model">consumibles.product.kardex</field>
+        <field name="arch" type="xml">
+            <tree string="Kardex de Productos" default_order="date asc">
+                <field name="date"/>
+                <field name="product_id"/>
+                <field name="product_type_id"/>
+                <field name="reference"/>
+                <field name="movement_type"/>
+                <field name="qty_in"/>
+                <field name="qty_out"/>
+                <field name="balance_qty"/>
+                <field name="cost"/>
+                <field name="total"/>
+            </tree>
+        </field>
+    </record>
+
+
+    <!-- ===================================================== -->
+    <!-- VISTA FORM KARDEX -->
+    <!-- ===================================================== -->
+    <record id="view_consumibles_product_kardex_form" model="ir.ui.view">
+        <field name="name">consumibles.product.kardex.form</field>
+        <field name="model">consumibles.product.kardex</field>
+        <field name="arch" type="xml">
+            <form string="Movimiento de Kardex">
+                <sheet>
+
+                    <group>
+                        <group>
+                            <field name="date"/>
+                            <field name="movement_type"/>
+                            <field name="reference"/>
+                        </group>
+                        <group>
+                            <field name="product_id"/>
+                            <field name="product_type_id"/>
+                        </group>
+                    </group>
+
+                    <group>
+                        <group>
+                            <field name="qty_in"/>
+                            <field name="qty_out"/>
+                        </group>
+                        <group>
+                            <field name="balance_qty" readonly="1"/>
+                            <field name="cost"/>
+                            <field name="total" readonly="1"/>
+                        </group>
+                    </group>
+
+                    <group string="Origen del Movimiento">
+                        <field name="origin_model" readonly="1"/>
+                        <field name="origin_id" readonly="1"/>
+                    </group>
+
+                </sheet>
+            </form>
+        </field>
+    </record>
+
+    <!-- ===================================================== -->
+    <!-- VISTA SEARCH KARDEX (ODDO 17 CORRECTA) -->
+    <!-- ===================================================== -->
+    <record id="view_consumibles_product_kardex_search" model="ir.ui.view">
+        <field name="name">consumibles.product.kardex.search</field>
+        <field name="model">consumibles.product.kardex</field>
+        <field name="arch" type="xml">
+            <search string="Buscar Kardex">
+
+                <!-- Campos -->
+                <field name="product_id"/>
+                <field name="product_type_id"/>
+                <field name="reference"/>
+
+                <!-- Filtros -->
+                <filter name="filter_in"
+                        string="Entradas"
+                        domain="[('movement_type','=','in')]"/>
+
+                <filter name="filter_out"
+                        string="Salidas"
+                        domain="[('movement_type','=','out')]"/>
+
+                <!-- Agrupaciones -->
+                <filter name="group_product"
+                        string="Agrupar por Producto"
+                        context="{'group_by':'product_id'}"/>
+
+                <filter name="group_type"
+                        string="Agrupar por Tipo"
+                        context="{'group_by':'product_type_id'}"/>
+
+            </search>
+        </field>
+    </record>
+
+    <!-- ===================================================== -->
+    <!-- MENÚ -->
+    <!-- ===================================================== -->
+    <menuitem id="menu_consumibles_root"
+              name="Kardex"
+              sequence="10"/>
+
+    <menuitem id="menu_consumibles_kardex"
+              name="Kardex"
+              parent="menu_consumibles_root"
+              action="action_consumibles_product_kardex"
+              sequence="30"/>
+
+</odoo>

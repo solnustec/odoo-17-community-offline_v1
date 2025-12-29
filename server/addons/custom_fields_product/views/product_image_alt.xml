@@ -1,0 +1,18 @@
+<odoo>
+    <template id="product_image_alt_field"
+              name="Agregar alt personalizado en imagen de producto"
+              inherit_id="website_sale.shop_product_image"
+              active="True">
+        <xpath expr="//div[@t-field='product_image.image_1920']" position="attributes">
+            <attribute name="t-options">
+                {
+                    "widget": "image",
+                    "preview_image": "image_1024",
+                    "class": "oe_unmovable product_detail_img mh-100",
+                    "alt": product.image_alt or product.name,
+                    "zoom": product_image.can_image_1024_be_zoomed and "image_1920"
+                }
+            </attribute>
+        </xpath>
+    </template>
+</odoo>

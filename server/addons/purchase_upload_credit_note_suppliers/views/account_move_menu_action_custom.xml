@@ -1,0 +1,48 @@
+<odoo>
+    <!-- ========================================================= -->
+    <!-- ACCIÓN CUSTOM (idéntica a la original de account) -->
+    <!-- ========================================================= -->
+    <record id="action_move_in_refund_type_custom"
+            model="ir.actions.act_window">
+        <field name="name">Notas de crédito</field>
+        <field name="res_model">account.move</field>
+
+        <!-- Buscar exactamente la vista refund_tree, que se abria con la accion anterior -->
+        <field name="view_id" ref="account.view_in_invoice_refund_tree"/>
+
+        <field name="views" eval="[
+            (ref('account.view_in_invoice_refund_tree'), 'tree'),
+            (False, 'form')
+        ]"/>
+
+        <field name="domain">[
+            ('move_type', '=', 'in_refund')
+        ]</field>
+
+        <field name="context">
+            {
+                'default_move_type': 'in_refund',
+                'search_default_in_refund': 1
+            }
+        </field>
+    </record>
+
+    <!-- ========================================================= -->
+    <!-- MENÚ NUEVO -->
+    <!-- ========================================================= -->
+    <record id="menu_move_in_refund_type_custom"
+            model="ir.ui.menu">
+        <field name="name">Notas de crédito</field>
+        <field name="parent_id" ref="account.menu_finance_payables"/>
+        <field name="action" ref="action_move_in_refund_type_custom"/>
+        <field name="sequence">10</field>
+    </record>
+
+    <!-- ========================================================= -->
+    <!-- DESACTIVAR MENÚ ORIGINAL -->
+    <!-- ========================================================= -->
+    <record id="account.menu_action_move_in_refund_type"
+            model="ir.ui.menu">
+        <field name="active">False</field>
+    </record>
+</odoo>

@@ -1,0 +1,52 @@
+<odoo>
+    <!-- Vista de formulario para JSON Storage -->
+    <record id="view_json_purchase_orders_form" model="ir.ui.view">
+        <field name="name">purchase.data.form</field>
+        <field name="model">purchase.data</field>
+        <field name="arch" type="xml">
+            <form string="Facturas de Compras" readonly="1">
+                <sheet>
+                    <group>
+                        <field name="account_move_id"/>
+                        <field name="json_data" widget="monospaced" placeholder="JSON Data"/>
+                        <field name="invoice_id" />
+                        <field name="sent" />
+                        <field name="active" />
+                        <field name="sync_date"/>
+                        <field name="errors" readonly="0"/>
+                    </group>
+                </sheet>
+            </form>
+        </field>
+    </record>
+
+    <!-- Vista de árbol para JSON Storage -->
+    <record id="view_json_purchase_orders_form_tree" model="ir.ui.view">
+        <field name="name">purchase.data.tree</field>
+        <field name="model">purchase.data</field>
+        <field name="arch" type="xml">
+            <tree string="Compras">
+                <field name="account_move_id"/>
+                <field name="json_data" widget="monospaced" placeholder="JSON Data"/>
+                <field name="sent" readonly="1"/>
+                <field name="invoice_id" readonly="1"/>
+                <field name="active" readonly="1"/>
+                <field name="sync_date"/>
+                <field name="errors" readonly="0"/>
+            </tree>
+        </field>
+    </record>
+
+    <!-- Acción para JSON Storage -->
+    <record id="action_purchase_data_action" model="ir.actions.act_window">
+        <field name="name">Compras</field>
+        <field name="res_model">purchase.data</field>
+        <field name="view_mode">tree,form</field>
+    </record>
+
+    <!-- Menú para JSON Storage -->
+    <menuitem id="menu_json_purchase_data"
+              name="Compras"
+              parent="point_of_sale.menu_point_config_product"
+              action="action_purchase_data_action"/>
+</odoo>

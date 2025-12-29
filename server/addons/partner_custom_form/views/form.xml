@@ -1,0 +1,129 @@
+<?xml version="1.0" encoding="utf-8"?>
+<odoo>
+    <template id="customer_update_form_template" name="Customer Update Form">
+        <t t-call="website.layout">
+            <div id="wrap">
+                <div class="container mt16">
+                    <form id="customer_update_form"
+                          enctype="multipart/form-data"
+                          class="o_mark_required row"
+                          action="/customer/update" method="post">
+
+                          <input type="hidden" name="token" t-att-value="request.params.get('token')"/>
+                          
+                        <div class="s_website_form_container" style="max-height: 500px; overflow-y: auto;">
+                            <div class="s_website_form_rows row s_col_no_bgcolor">
+                                <hr/>
+                                <div class="col-6 mb-3">
+                                    <label for="name">Nombres y apellidos</label>
+                                    <input type="text" id="name" name="name" class="form-control"
+                                           t-att-value="partner.name" required="true"/>
+                                </div>
+                                <div class="col-6 mb-3">
+                                    <label for="email">Correo electronico</label>
+                                    <input type="email" id="email" name="email" class="form-control"
+                                           t-att-value="partner.email" required="true"/>
+                                </div>
+                                <div class="col-6 mb-3">
+                                    <label for="phone">Celular</label>
+                                    <input type="tel" id="phone" name="phone" class="form-control"
+                                           t-att-value="partner.phone"/>
+                                </div>
+                                <div class="col-6 mb-3">
+                                    <label for="x_gender">Género</label>
+                                    <select id="x_gender" name="x_gender" class="form-control">
+                                        <option value="" selected="selected">Seleccione...</option>
+                                        <t t-set="x_gender_values" t-value="request.env['res.partner']._fields['x_gender'].selection"/>
+                                        <t t-if="x_gender_values">
+                                            <t t-foreach="x_gender_values" t-as="gender">
+                                                <option t-att-value="gender[0]"
+                                                        t-att-selected="gender[0] == partner.x_gender">
+                                                    <t t-esc="gender[1]"/>
+                                                </option>
+                                            </t>
+                                        </t>
+                                        <t t-else="">
+                                            <option>No data available</option>
+                                        </t>
+                                     </select>
+                                    
+                                </div>
+                                <div class="col-6 mb-3">
+                                    <label for="x_birthday_date">Fecha de cumpleaños</label>
+                                    <input type="date" id="x_birthday_date" name="x_birthday_date" class="form-control"
+                                           t-att-value="partner.x_birthday_date"/>
+                                </div>
+                                <div class="col-6 mb-3">
+                                    <label for="state_id">Provincia</label>
+                                    <select id="state_id" name="state_id" class="form-control">
+                                        <option value="" selected="selected">Seleccione...</option>
+                                        <t t-foreach="request.env['res.country.state'].search([('country_id', '=', partner.country_id.id)])" t-as="state_id">
+                                                <option t-att-value="state_id.id"
+                                                    t-att-selected="state_id.id == partner.state_id.id">
+                                                <t t-esc="state_id.name"/>
+                                            </option>
+                                        </t>
+                                    </select>
+                                </div>
+                                <div class="col-6 mb-3">
+                                    <label for="city">Ciudad</label>
+                                    <input type="text" id="city" name="city" class="form-control"
+                                           t-att-value="partner.city"/>
+                                </div>
+                                 <div class="col-6 mb-3">
+                                    <label for="x_continuous_medication">Tiene medicación continua</label>
+                                    <select id="x_continuous_medication" name="x_continuous_medication" class="form-control">
+                                        <option value="no" selected="selected">No</option>
+                                        <option value="yes" >Si</option>
+                                     </select>
+                                </div>
+                                 <div class="col-6 mb-3">
+                                    <label for="x_frequency">Con qué frecuencia va a la farmacia en el mes</label>
+                                    <select id="x_frequency" name="x_frequency" class="form-control">
+                                        <option value="gt10" selected="selected">más de 10</option>
+                                        <option value="510" >entre 5 y 10</option>
+                                        <option value="35" >entre 3 y 5</option>
+                                        <option value="1" >una vez</option>
+                                        <option value="rarely" >raramente</option>
+                                     </select>
+                                </div>
+                                <div class="col-6 mb-3">
+                                    <label for="comment">Recomendaciones para mejorar</label>
+                                     <textarea name="comment" class="form-control" rows="4" placeholder="Recomendaciones...">
+                                        <t t-esc="partner.comment"/>
+                                    </textarea>
+                                </div>
+                            </div>
+                            <footer>
+                                <button type="submit" class="btn btn-primary">Save</button>
+                                <button type="button" class="btn btn-secondary" onclick="window.location.href='/cancel/url'">Cancel</button>
+                            </footer>
+                        </div>
+                    </form>
+                </div>
+            </div>
+        </t>
+    </template>
+    <data>
+        <!-- Load JavaScript assets -->
+        <template id="assets_backend" name="Custom Field Manager Assets">
+            <xpath expr="." position="inside">
+                <script>
+                    document.addEventListener('DOMContentLoaded', function() {
+                        var urlParams = new URLSearchParams(window.location.search);
+                        var token = urlParams.get('token');
+                        if (token) {
+                            var form = document.getElementById('customer_update_form');
+                            var newAction = '/customer/update?token=' + encodeURIComponent(token);
+                            form.action = newAction;
+                        }
+                    });
+                </script>
+            </xpath>
+        </template>
+    </data>
+
+    
+
+
+</odoo>

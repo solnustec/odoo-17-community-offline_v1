@@ -1,0 +1,63 @@
+<?xml version="1.0" encoding="utf-8"?>
+<odoo>
+    <data>
+        <!-- ======================= VISTA DEL WIZARD ======================= -->
+        <record id="view_product_rotation_transfer_wizard_form" model="ir.ui.view">
+            <field name="name">product.rotation.transfer.wizard.form</field>
+            <field name="model">product.rotation.transfer.wizard</field>
+            <field name="arch" type="xml">
+                <form string="Transferir Producto">
+                    <group>
+                        <group string="Producto">
+                            <field name="product_id" readonly="1"/>
+                            <field name="available_quantity" readonly="1"/>
+                        </group>
+                        <group string="Origen">
+                            <field name="source_warehouse_id" readonly="1"/>
+                            <field name="rotation_id" invisible="1"/>
+                        </group>
+                    </group>
+
+                    <group string="Destino y Cantidad">
+                        <group>
+                            <field name="dest_warehouse_id"
+                                   options="{'no_create': True, 'no_open': True}"/>
+                            <field name="suggested_warehouse_ids" widget="many2many_tags"
+                                   readonly="1"
+                                   string="Sugeridas"/>
+                        </group>
+                        <group>
+                            <field name="transfer_all"/>
+                            <field name="quantity"
+                                   readonly="transfer_all"/>
+                        </group>
+                    </group>
+
+                    <group string="Notas" col="1">
+                        <field name="notes" nolabel="1" placeholder="Notas adicionales para la transferencia..."/>
+                    </group>
+
+                    <footer>
+                        <button name="action_transfer"
+                                string="Crear Transferencia"
+                                type="object"
+                                class="btn-primary"
+                                icon="fa-truck"/>
+                        <button string="Cancelar"
+                                class="btn-secondary"
+                                special="cancel"/>
+                    </footer>
+                </form>
+            </field>
+        </record>
+
+        <!-- ======================= ACCION DEL WIZARD ======================= -->
+        <record id="action_product_rotation_transfer_wizard" model="ir.actions.act_window">
+            <field name="name">Transferir Producto</field>
+            <field name="res_model">product.rotation.transfer.wizard</field>
+            <field name="view_mode">form</field>
+            <field name="target">new</field>
+        </record>
+
+    </data>
+</odoo>

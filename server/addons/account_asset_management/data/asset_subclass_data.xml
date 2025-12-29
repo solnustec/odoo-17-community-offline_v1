@@ -1,0 +1,2099 @@
+<odoo>
+    <data noupdate="1">
+        <record id="asset_subclass_electrodomesticos__aire_condicionado" model="asset.subclass">
+            <field name="name">AIRE CONDICIONADO</field>
+            <field name="class_id" ref="asset_class_electrodomesticos"/>
+        </record>
+        <record id="asset_subclass_electrodomesticos__avanico_electronico_ventilador" model="asset.subclass">
+            <field name="name">AVANICO ELECTRONICO (VENTILADOR)</field>
+            <field name="class_id" ref="asset_class_electrodomesticos"/>
+        </record>
+        <record id="asset_subclass_electrodomesticos__cafetera" model="asset.subclass">
+            <field name="name">CAFETERA</field>
+            <field name="class_id" ref="asset_class_electrodomesticos"/>
+        </record>
+        <record id="asset_subclass_electrodomesticos__caja_activa_altavoz" model="asset.subclass">
+            <field name="name">CAJA ACTIVA (ALTAVOZ)</field>
+            <field name="class_id" ref="asset_class_electrodomesticos"/>
+        </record>
+        <record id="asset_subclass_electrodomesticos__congelador" model="asset.subclass">
+            <field name="name">CONGELADOR</field>
+            <field name="class_id" ref="asset_class_electrodomesticos"/>
+        </record>
+        <record id="asset_subclass_electrodomesticos__deshumificador" model="asset.subclass">
+            <field name="name">DESHUMIFICADOR</field>
+            <field name="class_id" ref="asset_class_electrodomesticos"/>
+        </record>
+        <record id="asset_subclass_electrodomesticos__enfriador_domestico" model="asset.subclass">
+            <field name="name">ENFRIADOR DOMESTICO</field>
+            <field name="class_id" ref="asset_class_electrodomesticos"/>
+        </record>
+        <record id="asset_subclass_electrodomesticos__equipo_de_sonido" model="asset.subclass">
+            <field name="name">EQUIPO DE SONIDO</field>
+            <field name="class_id" ref="asset_class_electrodomesticos"/>
+        </record>
+        <record id="asset_subclass_electrodomesticos__horno_microondas" model="asset.subclass">
+            <field name="name">HORNO MICROONDAS</field>
+            <field name="class_id" ref="asset_class_electrodomesticos"/>
+        </record>
+        <record id="asset_subclass_electrodomesticos__maquina_peeling_ultrasonico" model="asset.subclass">
+            <field name="name">MAQUINA PEELING ULTRASÓNICO</field>
+            <field name="class_id" ref="asset_class_electrodomesticos"/>
+        </record>
+        <record id="asset_subclass_electrodomesticos__minibar" model="asset.subclass">
+            <field name="name">MINIBAR</field>
+            <field name="class_id" ref="asset_class_electrodomesticos"/>
+        </record>
+        <record id="asset_subclass_electrodomesticos__neveras" model="asset.subclass">
+            <field name="name">NEVERAS</field>
+            <field name="class_id" ref="asset_class_electrodomesticos"/>
+        </record>
+        <record id="asset_subclass_electrodomesticos__parlantes" model="asset.subclass">
+            <field name="name">PARLANTES</field>
+            <field name="class_id" ref="asset_class_electrodomesticos"/>
+        </record>
+        <record id="asset_subclass_electrodomesticos__parlantes_de_computador" model="asset.subclass">
+            <field name="name">PARLANTES DE COMPUTADOR</field>
+            <field name="class_id" ref="asset_class_electrodomesticos"/>
+        </record>
+        <record id="asset_subclass_electrodomesticos__radio" model="asset.subclass">
+            <field name="name">RADIO</field>
+            <field name="class_id" ref="asset_class_electrodomesticos"/>
+        </record>
+        <record id="asset_subclass_electrodomesticos__recargador_situ" model="asset.subclass">
+            <field name="name">RECARGADOR SITU</field>
+            <field name="class_id" ref="asset_class_electrodomesticos"/>
+        </record>
+        <record id="asset_subclass_electrodomesticos__refrigeradoras" model="asset.subclass">
+            <field name="name">REFRIGERADORAS</field>
+            <field name="class_id" ref="asset_class_electrodomesticos"/>
+        </record>
+        <record id="asset_subclass_electrodomesticos__televisor" model="asset.subclass">
+            <field name="name">TELEVISOR</field>
+            <field name="class_id" ref="asset_class_electrodomesticos"/>
+        </record>
+        <record id="asset_subclass_electrodomesticos__ventiladores" model="asset.subclass">
+            <field name="name">VENTILADORES</field>
+            <field name="class_id" ref="asset_class_electrodomesticos"/>
+        </record>
+        <record id="asset_subclass_electrodomesticos__vitrinas" model="asset.subclass">
+            <field name="name">VITRINAS</field>
+            <field name="class_id" ref="asset_class_electrodomesticos"/>
+        </record>
+        <record id="asset_subclass_equipo_de_oficina__caja_de_dinero" model="asset.subclass">
+            <field name="name">CAJA DE DINERO</field>
+            <field name="class_id" ref="asset_class_equipo_de_oficina"/>
+        </record>
+        <record id="asset_subclass_equipo_de_oficina__camara_de_seguridad" model="asset.subclass">
+            <field name="name">CAMARA DE SEGURIDAD</field>
+            <field name="class_id" ref="asset_class_equipo_de_oficina"/>
+        </record>
+        <record id="asset_subclass_equipo_de_oficina__case" model="asset.subclass">
+            <field name="name">CASE</field>
+            <field name="class_id" ref="asset_class_equipo_de_oficina"/>
+        </record>
+        <record id="asset_subclass_equipo_de_oficina__cpu" model="asset.subclass">
+            <field name="name">CPU</field>
+            <field name="class_id" ref="asset_class_equipo_de_oficina"/>
+        </record>
+        <record id="asset_subclass_equipo_de_oficina__impresoras" model="asset.subclass">
+            <field name="name">IMPRESORAS</field>
+            <field name="class_id" ref="asset_class_equipo_de_oficina"/>
+        </record>
+        <record id="asset_subclass_equipo_de_oficina__monitor" model="asset.subclass">
+            <field name="name">MONITOR</field>
+            <field name="class_id" ref="asset_class_equipo_de_oficina"/>
+        </record>
+        <record id="asset_subclass_equipo_de_oficina__mouse" model="asset.subclass">
+            <field name="name">MOUSE</field>
+            <field name="class_id" ref="asset_class_equipo_de_oficina"/>
+        </record>
+        <record id="asset_subclass_equipo_de_oficina__nvr" model="asset.subclass">
+            <field name="name">NVR</field>
+            <field name="class_id" ref="asset_class_equipo_de_oficina"/>
+        </record>
+        <record id="asset_subclass_equipo_de_oficina__regulador_de_voltaje" model="asset.subclass">
+            <field name="name">REGULADOR DE VOLTAJE</field>
+            <field name="class_id" ref="asset_class_equipo_de_oficina"/>
+        </record>
+        <record id="asset_subclass_equipo_de_oficina__scanner" model="asset.subclass">
+            <field name="name">SCANNER</field>
+            <field name="class_id" ref="asset_class_equipo_de_oficina"/>
+        </record>
+        <record id="asset_subclass_equipo_de_oficina__teclados" model="asset.subclass">
+            <field name="name">TECLADOS</field>
+            <field name="class_id" ref="asset_class_equipo_de_oficina"/>
+        </record>
+        <record id="asset_subclass_equipo_de_oficina__ups" model="asset.subclass">
+            <field name="name">UPS</field>
+            <field name="class_id" ref="asset_class_equipo_de_oficina"/>
+        </record>
+        <record id="asset_subclass_equipos_de_computacion__adaptador" model="asset.subclass">
+            <field name="name">ADAPTADOR</field>
+            <field name="class_id" ref="asset_class_equipos_de_computacion"/>
+        </record>
+        <record id="asset_subclass_equipos_de_computacion__aps_trip_lite" model="asset.subclass">
+            <field name="name">APS TRIP-LITE</field>
+            <field name="class_id" ref="asset_class_equipos_de_computacion"/>
+        </record>
+        <record id="asset_subclass_equipos_de_computacion__basureros" model="asset.subclass">
+            <field name="name">BASUREROS</field>
+            <field name="class_id" ref="asset_class_equipos_de_computacion"/>
+        </record>
+        <record id="asset_subclass_equipos_de_computacion__cable_utp_cat_6" model="asset.subclass">
+            <field name="name">CABLE UTP CAT 6</field>
+            <field name="class_id" ref="asset_class_equipos_de_computacion"/>
+        </record>
+        <record id="asset_subclass_equipos_de_computacion__caja_de_dinero" model="asset.subclass">
+            <field name="name">CAJA DE DINERO</field>
+            <field name="class_id" ref="asset_class_equipos_de_computacion"/>
+        </record>
+        <record id="asset_subclass_equipos_de_computacion__caja_de_luz" model="asset.subclass">
+            <field name="name">CAJA DE LUZ</field>
+            <field name="class_id" ref="asset_class_equipos_de_computacion"/>
+        </record>
+        <record id="asset_subclass_equipos_de_computacion__caja_de_rack" model="asset.subclass">
+            <field name="name">CAJA DE RACK</field>
+            <field name="class_id" ref="asset_class_equipos_de_computacion"/>
+        </record>
+        <record id="asset_subclass_equipos_de_computacion__calculadoras" model="asset.subclass">
+            <field name="name">CALCULADORAS</field>
+            <field name="class_id" ref="asset_class_equipos_de_computacion"/>
+        </record>
+        <record id="asset_subclass_equipos_de_computacion__camara_de_seguridad" model="asset.subclass">
+            <field name="name">CAMARA DE SEGURIDAD</field>
+            <field name="class_id" ref="asset_class_equipos_de_computacion"/>
+        </record>
+        <record id="asset_subclass_equipos_de_computacion__case" model="asset.subclass">
+            <field name="name">CASE</field>
+            <field name="class_id" ref="asset_class_equipos_de_computacion"/>
+        </record>
+        <record id="asset_subclass_equipos_de_computacion__celular" model="asset.subclass">
+            <field name="name">CELULAR</field>
+            <field name="class_id" ref="asset_class_equipos_de_computacion"/>
+        </record>
+        <record id="asset_subclass_equipos_de_computacion__computador_de_escritorio" model="asset.subclass">
+            <field name="name">COMPUTADOR DE ESCRITORIO</field>
+            <field name="class_id" ref="asset_class_equipos_de_computacion"/>
+        </record>
+        <record id="asset_subclass_equipos_de_computacion__computador_portatil" model="asset.subclass">
+            <field name="name">COMPUTADOR PORTATIL</field>
+            <field name="class_id" ref="asset_class_equipos_de_computacion"/>
+        </record>
+        <record id="asset_subclass_equipos_de_computacion__congelador" model="asset.subclass">
+            <field name="name">CONGELADOR</field>
+            <field name="class_id" ref="asset_class_equipos_de_computacion"/>
+        </record>
+        <record id="asset_subclass_equipos_de_computacion__consola" model="asset.subclass">
+            <field name="name">CONSOLA</field>
+            <field name="class_id" ref="asset_class_equipos_de_computacion"/>
+        </record>
+        <record id="asset_subclass_equipos_de_computacion__control_con_tres_botones_para_pantalla"
+                model="asset.subclass">
+            <field name="name">CONTROL CON TRES BOTONES PARA PANTALLA</field>
+            <field name="class_id" ref="asset_class_equipos_de_computacion"/>
+        </record>
+        <record id="asset_subclass_equipos_de_computacion__cortinas" model="asset.subclass">
+            <field name="name">CORTINAS</field>
+            <field name="class_id" ref="asset_class_equipos_de_computacion"/>
+        </record>
+        <record id="asset_subclass_equipos_de_computacion__counter_de_ventas" model="asset.subclass">
+            <field name="name">COUNTER DE VENTAS</field>
+            <field name="class_id" ref="asset_class_equipos_de_computacion"/>
+        </record>
+        <record id="asset_subclass_equipos_de_computacion__cpu" model="asset.subclass">
+            <field name="name">CPU</field>
+            <field name="class_id" ref="asset_class_equipos_de_computacion"/>
+        </record>
+        <record id="asset_subclass_equipos_de_computacion__cpu_completo" model="asset.subclass">
+            <field name="name">CPU COMPLETO</field>
+            <field name="class_id" ref="asset_class_equipos_de_computacion"/>
+        </record>
+        <record id="asset_subclass_equipos_de_computacion__disco_duro" model="asset.subclass">
+            <field name="name">DISCO DURO</field>
+            <field name="class_id" ref="asset_class_equipos_de_computacion"/>
+        </record>
+        <record id="asset_subclass_equipos_de_computacion__equipo_de_control_huella_digital" model="asset.subclass">
+            <field name="name">EQUIPO DE CONTROL HUELLA DIGITAL</field>
+            <field name="class_id" ref="asset_class_equipos_de_computacion"/>
+        </record>
+        <record id="asset_subclass_equipos_de_computacion__flash_memory" model="asset.subclass">
+            <field name="name">FLASH MEMORY</field>
+            <field name="class_id" ref="asset_class_equipos_de_computacion"/>
+        </record>
+        <record id="asset_subclass_equipos_de_computacion__fotocopiadora" model="asset.subclass">
+            <field name="name">FOTOCOPIADORA</field>
+            <field name="class_id" ref="asset_class_equipos_de_computacion"/>
+        </record>
+        <record id="asset_subclass_equipos_de_computacion__fuente_de_poder" model="asset.subclass">
+            <field name="name">FUENTE DE PODER</field>
+            <field name="class_id" ref="asset_class_equipos_de_computacion"/>
+        </record>
+        <record id="asset_subclass_equipos_de_computacion__generador_de_luz" model="asset.subclass">
+            <field name="name">GENERADOR DE LUZ</field>
+            <field name="class_id" ref="asset_class_equipos_de_computacion"/>
+        </record>
+        <record id="asset_subclass_equipos_de_computacion__impresoras" model="asset.subclass">
+            <field name="name">IMPRESORAS</field>
+            <field name="class_id" ref="asset_class_equipos_de_computacion"/>
+        </record>
+        <record id="asset_subclass_equipos_de_computacion__islas" model="asset.subclass">
+            <field name="name">ISLAS</field>
+            <field name="class_id" ref="asset_class_equipos_de_computacion"/>
+        </record>
+        <record id="asset_subclass_equipos_de_computacion__lector_laser" model="asset.subclass">
+            <field name="name">LECTOR LASER</field>
+            <field name="class_id" ref="asset_class_equipos_de_computacion"/>
+        </record>
+        <record id="asset_subclass_equipos_de_computacion__mainboard" model="asset.subclass">
+            <field name="name">MAINBOARD</field>
+            <field name="class_id" ref="asset_class_equipos_de_computacion"/>
+        </record>
+        <record id="asset_subclass_equipos_de_computacion__master_varios_botones_consola" model="asset.subclass">
+            <field name="name">MASTER VARIOS BOTONES (CONSOLA)</field>
+            <field name="class_id" ref="asset_class_equipos_de_computacion"/>
+        </record>
+        <record id="asset_subclass_equipos_de_computacion__microfono" model="asset.subclass">
+            <field name="name">MICROFONO</field>
+            <field name="class_id" ref="asset_class_equipos_de_computacion"/>
+        </record>
+        <record id="asset_subclass_equipos_de_computacion__microfono_avjefe" model="asset.subclass">
+            <field name="name">MICROFONO AVJEFE</field>
+            <field name="class_id" ref="asset_class_equipos_de_computacion"/>
+        </record>
+        <record id="asset_subclass_equipos_de_computacion__mikrotik" model="asset.subclass">
+            <field name="name">MIKROTIK</field>
+            <field name="class_id" ref="asset_class_equipos_de_computacion"/>
+        </record>
+        <record id="asset_subclass_equipos_de_computacion__monitor" model="asset.subclass">
+            <field name="name">MONITOR</field>
+            <field name="class_id" ref="asset_class_equipos_de_computacion"/>
+        </record>
+        <record id="asset_subclass_equipos_de_computacion__mouse" model="asset.subclass">
+            <field name="name">MOUSE</field>
+            <field name="class_id" ref="asset_class_equipos_de_computacion"/>
+        </record>
+        <record id="asset_subclass_equipos_de_computacion__multitomas" model="asset.subclass">
+            <field name="name">MULTITOMAS</field>
+            <field name="class_id" ref="asset_class_equipos_de_computacion"/>
+        </record>
+        <record id="asset_subclass_equipos_de_computacion__nvr" model="asset.subclass">
+            <field name="name">NVR</field>
+            <field name="class_id" ref="asset_class_equipos_de_computacion"/>
+        </record>
+        <record id="asset_subclass_equipos_de_computacion__pantalla" model="asset.subclass">
+            <field name="name">PANTALLA</field>
+            <field name="class_id" ref="asset_class_equipos_de_computacion"/>
+        </record>
+        <record id="asset_subclass_equipos_de_computacion__pantalla_electrica" model="asset.subclass">
+            <field name="name">PANTALLA ELECTRICA</field>
+            <field name="class_id" ref="asset_class_equipos_de_computacion"/>
+        </record>
+        <record id="asset_subclass_equipos_de_computacion__parlantes" model="asset.subclass">
+            <field name="name">PARLANTES</field>
+            <field name="class_id" ref="asset_class_equipos_de_computacion"/>
+        </record>
+        <record id="asset_subclass_equipos_de_computacion__perchas" model="asset.subclass">
+            <field name="name">PERCHAS</field>
+            <field name="class_id" ref="asset_class_equipos_de_computacion"/>
+        </record>
+        <record id="asset_subclass_equipos_de_computacion__perforadora" model="asset.subclass">
+            <field name="name">PERFORADORA</field>
+            <field name="class_id" ref="asset_class_equipos_de_computacion"/>
+        </record>
+        <record id="asset_subclass_equipos_de_computacion__portatil" model="asset.subclass">
+            <field name="name">PORTATIL</field>
+            <field name="class_id" ref="asset_class_equipos_de_computacion"/>
+        </record>
+        <record id="asset_subclass_equipos_de_computacion__portatil_15_6" model="asset.subclass">
+            <field name="name">PORTATIL 15,6"</field>
+            <field name="class_id" ref="asset_class_equipos_de_computacion"/>
+        </record>
+        <record id="asset_subclass_equipos_de_computacion__pro_audio_voyz" model="asset.subclass">
+            <field name="name">PRO AUDIO VOYZ</field>
+            <field name="class_id" ref="asset_class_equipos_de_computacion"/>
+        </record>
+        <record id="asset_subclass_equipos_de_computacion__procesador_intel_core_i5_10400" model="asset.subclass">
+            <field name="name">PROCESADOR INTEL CORE I5-10400</field>
+            <field name="class_id" ref="asset_class_equipos_de_computacion"/>
+        </record>
+        <record id="asset_subclass_equipos_de_computacion__proyector" model="asset.subclass">
+            <field name="name">PROYECTOR</field>
+            <field name="class_id" ref="asset_class_equipos_de_computacion"/>
+        </record>
+        <record id="asset_subclass_equipos_de_computacion__punto_de_red" model="asset.subclass">
+            <field name="name">PUNTO DE RED</field>
+            <field name="class_id" ref="asset_class_equipos_de_computacion"/>
+        </record>
+        <record id="asset_subclass_equipos_de_computacion__regleta" model="asset.subclass">
+            <field name="name">REGLETA</field>
+            <field name="class_id" ref="asset_class_equipos_de_computacion"/>
+        </record>
+        <record id="asset_subclass_equipos_de_computacion__regulador_de_luz" model="asset.subclass">
+            <field name="name">REGULADOR DE LUZ</field>
+            <field name="class_id" ref="asset_class_equipos_de_computacion"/>
+        </record>
+        <record id="asset_subclass_equipos_de_computacion__regulador_de_voltaje" model="asset.subclass">
+            <field name="name">REGULADOR DE VOLTAJE</field>
+            <field name="class_id" ref="asset_class_equipos_de_computacion"/>
+        </record>
+        <record id="asset_subclass_equipos_de_computacion__router" model="asset.subclass">
+            <field name="name">ROUTER</field>
+            <field name="class_id" ref="asset_class_equipos_de_computacion"/>
+        </record>
+        <record id="asset_subclass_equipos_de_computacion__scanner" model="asset.subclass">
+            <field name="name">SCANNER</field>
+            <field name="class_id" ref="asset_class_equipos_de_computacion"/>
+        </record>
+        <record id="asset_subclass_equipos_de_computacion__sellos" model="asset.subclass">
+            <field name="name">SELLOS</field>
+            <field name="class_id" ref="asset_class_equipos_de_computacion"/>
+        </record>
+        <record id="asset_subclass_equipos_de_computacion__servidor" model="asset.subclass">
+            <field name="name">SERVIDOR</field>
+            <field name="class_id" ref="asset_class_equipos_de_computacion"/>
+        </record>
+        <record id="asset_subclass_equipos_de_computacion__servidor_1" model="asset.subclass">
+            <field name="name">SERVIDOR 1</field>
+            <field name="class_id" ref="asset_class_equipos_de_computacion"/>
+        </record>
+        <record id="asset_subclass_equipos_de_computacion__servidor_2" model="asset.subclass">
+            <field name="name">SERVIDOR 2</field>
+            <field name="class_id" ref="asset_class_equipos_de_computacion"/>
+        </record>
+        <record id="asset_subclass_equipos_de_computacion__servidor_3" model="asset.subclass">
+            <field name="name">SERVIDOR 3</field>
+            <field name="class_id" ref="asset_class_equipos_de_computacion"/>
+        </record>
+        <record id="asset_subclass_equipos_de_computacion__servidor_de_sistemas" model="asset.subclass">
+            <field name="name">SERVIDOR DE SISTEMAS</field>
+            <field name="class_id" ref="asset_class_equipos_de_computacion"/>
+        </record>
+        <record id="asset_subclass_equipos_de_computacion__servidor_de_sucursales" model="asset.subclass">
+            <field name="name">SERVIDOR DE SUCURSALES</field>
+            <field name="class_id" ref="asset_class_equipos_de_computacion"/>
+        </record>
+        <record id="asset_subclass_equipos_de_computacion__sillas" model="asset.subclass">
+            <field name="name">SILLAS</field>
+            <field name="class_id" ref="asset_class_equipos_de_computacion"/>
+        </record>
+        <record id="asset_subclass_equipos_de_computacion__supresor_de_picos" model="asset.subclass">
+            <field name="name">SUPRESOR DE PICOS</field>
+            <field name="class_id" ref="asset_class_equipos_de_computacion"/>
+        </record>
+        <record id="asset_subclass_equipos_de_computacion__switch" model="asset.subclass">
+            <field name="name">SWITCH</field>
+            <field name="class_id" ref="asset_class_equipos_de_computacion"/>
+        </record>
+        <record id="asset_subclass_equipos_de_computacion__tablet" model="asset.subclass">
+            <field name="name">TABLET</field>
+            <field name="class_id" ref="asset_class_equipos_de_computacion"/>
+        </record>
+        <record id="asset_subclass_equipos_de_computacion__teclados" model="asset.subclass">
+            <field name="name">TECLADOS</field>
+            <field name="class_id" ref="asset_class_equipos_de_computacion"/>
+        </record>
+        <record id="asset_subclass_equipos_de_computacion__telefonos" model="asset.subclass">
+            <field name="name">TELEFONOS</field>
+            <field name="class_id" ref="asset_class_equipos_de_computacion"/>
+        </record>
+        <record id="asset_subclass_equipos_de_computacion__ups" model="asset.subclass">
+            <field name="name">UPS</field>
+            <field name="class_id" ref="asset_class_equipos_de_computacion"/>
+        </record>
+        <record id="asset_subclass_equipos_de_computacion__ventiladores" model="asset.subclass">
+            <field name="name">VENTILADORES</field>
+            <field name="class_id" ref="asset_class_equipos_de_computacion"/>
+        </record>
+        <record id="asset_subclass_equipos_de_computacion__vitrinas" model="asset.subclass">
+            <field name="name">VITRINAS</field>
+            <field name="class_id" ref="asset_class_equipos_de_computacion"/>
+        </record>
+        <record id="asset_subclass_gasto_seguridad_y_vigilancia__kit_de_sirena" model="asset.subclass">
+            <field name="name">KIT DE SIRENA</field>
+            <field name="class_id" ref="asset_class_gasto_seguridad_y_vigilancia"/>
+        </record>
+        <record id="asset_subclass_gasto_seguridad_y_vigilancia__timbre" model="asset.subclass">
+            <field name="name">TIMBRE</field>
+            <field name="class_id" ref="asset_class_gasto_seguridad_y_vigilancia"/>
+        </record>
+        <record id="asset_subclass_herramientas__absolvedor_de_suelda" model="asset.subclass">
+            <field name="name">ABSOLVEDOR DE SUELDA</field>
+            <field name="class_id" ref="asset_class_herramientas"/>
+        </record>
+        <record id="asset_subclass_herramientas__armadores" model="asset.subclass">
+            <field name="name">ARMADORES</field>
+            <field name="class_id" ref="asset_class_herramientas"/>
+        </record>
+        <record id="asset_subclass_herramientas__bailejo" model="asset.subclass">
+            <field name="name">BAILEJO</field>
+            <field name="class_id" ref="asset_class_herramientas"/>
+        </record>
+        <record id="asset_subclass_herramientas__barreta" model="asset.subclass">
+            <field name="name">BARRETA</field>
+            <field name="class_id" ref="asset_class_herramientas"/>
+        </record>
+        <record id="asset_subclass_herramientas__bases" model="asset.subclass">
+            <field name="name">BASES</field>
+            <field name="class_id" ref="asset_class_herramientas"/>
+        </record>
+        <record id="asset_subclass_herramientas__bomba_para_llantas_de_bicicleta" model="asset.subclass">
+            <field name="name">BOMBA PARA LLANTAS DE BICICLETA</field>
+            <field name="class_id" ref="asset_class_herramientas"/>
+        </record>
+        <record id="asset_subclass_herramientas__broca_10_x_400mm_3_8" model="asset.subclass">
+            <field name="name">BROCA 10 X 400MM 3/8</field>
+            <field name="class_id" ref="asset_class_herramientas"/>
+        </record>
+        <record id="asset_subclass_herramientas__brocas" model="asset.subclass">
+            <field name="name">BROCAS</field>
+            <field name="class_id" ref="asset_class_herramientas"/>
+        </record>
+        <record id="asset_subclass_herramientas__cadena" model="asset.subclass">
+            <field name="name">CADENA</field>
+            <field name="class_id" ref="asset_class_herramientas"/>
+        </record>
+        <record id="asset_subclass_herramientas__cafetera" model="asset.subclass">
+            <field name="name">CAFETERA</field>
+            <field name="class_id" ref="asset_class_herramientas"/>
+        </record>
+        <record id="asset_subclass_herramientas__calculadoras" model="asset.subclass">
+            <field name="name">CALCULADORAS</field>
+            <field name="class_id" ref="asset_class_herramientas"/>
+        </record>
+        <record id="asset_subclass_herramientas__canastas_plasticas" model="asset.subclass">
+            <field name="name">CANASTAS PLASTICAS</field>
+            <field name="class_id" ref="asset_class_herramientas"/>
+        </record>
+        <record id="asset_subclass_herramientas__candados" model="asset.subclass">
+            <field name="name">CANDADOS</field>
+            <field name="class_id" ref="asset_class_herramientas"/>
+        </record>
+        <record id="asset_subclass_herramientas__casco" model="asset.subclass">
+            <field name="name">CASCO</field>
+            <field name="class_id" ref="asset_class_herramientas"/>
+        </record>
+        <record id="asset_subclass_herramientas__casco_proteccion_para_construccion" model="asset.subclass">
+            <field name="name">CASCO PROTECCION PARA CONSTRUCCION</field>
+            <field name="class_id" ref="asset_class_herramientas"/>
+        </record>
+        <record id="asset_subclass_herramientas__cautin" model="asset.subclass">
+            <field name="name">CAUTIN</field>
+            <field name="class_id" ref="asset_class_herramientas"/>
+        </record>
+        <record id="asset_subclass_herramientas__cepillo_limpia_inodoro" model="asset.subclass">
+            <field name="name">CEPILLO LIMPIA INODORO</field>
+            <field name="class_id" ref="asset_class_herramientas"/>
+        </record>
+        <record id="asset_subclass_herramientas__cerraduras" model="asset.subclass">
+            <field name="name">CERRADURAS</field>
+            <field name="class_id" ref="asset_class_herramientas"/>
+        </record>
+        <record id="asset_subclass_herramientas__cerrucho" model="asset.subclass">
+            <field name="name">CERRUCHO</field>
+            <field name="class_id" ref="asset_class_herramientas"/>
+        </record>
+        <record id="asset_subclass_herramientas__comprobador" model="asset.subclass">
+            <field name="name">COMPROBADOR</field>
+            <field name="class_id" ref="asset_class_herramientas"/>
+        </record>
+        <record id="asset_subclass_herramientas__conos" model="asset.subclass">
+            <field name="name">CONOS</field>
+            <field name="class_id" ref="asset_class_herramientas"/>
+        </record>
+        <record id="asset_subclass_herramientas__cortador" model="asset.subclass">
+            <field name="name">CORTADOR</field>
+            <field name="class_id" ref="asset_class_herramientas"/>
+        </record>
+        <record id="asset_subclass_herramientas__destornillador_estrella" model="asset.subclass">
+            <field name="name">DESTORNILLADOR ESTRELLA</field>
+            <field name="class_id" ref="asset_class_herramientas"/>
+        </record>
+        <record id="asset_subclass_herramientas__destornillador_plano" model="asset.subclass">
+            <field name="name">DESTORNILLADOR PLANO</field>
+            <field name="class_id" ref="asset_class_herramientas"/>
+        </record>
+        <record id="asset_subclass_herramientas__engrasadora" model="asset.subclass">
+            <field name="name">ENGRASADORA</field>
+            <field name="class_id" ref="asset_class_herramientas"/>
+        </record>
+        <record id="asset_subclass_herramientas__escaleras" model="asset.subclass">
+            <field name="name">ESCALERAS</field>
+            <field name="class_id" ref="asset_class_herramientas"/>
+        </record>
+        <record id="asset_subclass_herramientas__escobas" model="asset.subclass">
+            <field name="name">ESCOBAS</field>
+            <field name="class_id" ref="asset_class_herramientas"/>
+        </record>
+        <record id="asset_subclass_herramientas__escobillon" model="asset.subclass">
+            <field name="name">ESCOBILLON</field>
+            <field name="class_id" ref="asset_class_herramientas"/>
+        </record>
+        <record id="asset_subclass_herramientas__escuadra" model="asset.subclass">
+            <field name="name">ESCUADRA</field>
+            <field name="class_id" ref="asset_class_herramientas"/>
+        </record>
+        <record id="asset_subclass_herramientas__escuadra_metalica" model="asset.subclass">
+            <field name="name">ESCUADRA METALICA</field>
+            <field name="class_id" ref="asset_class_herramientas"/>
+        </record>
+        <record id="asset_subclass_herramientas__espatulas" model="asset.subclass">
+            <field name="name">ESPATULAS</field>
+            <field name="class_id" ref="asset_class_herramientas"/>
+        </record>
+        <record id="asset_subclass_herramientas__estiletes" model="asset.subclass">
+            <field name="name">ESTILETES</field>
+            <field name="class_id" ref="asset_class_herramientas"/>
+        </record>
+        <record id="asset_subclass_herramientas__extension" model="asset.subclass">
+            <field name="name">EXTENSION</field>
+            <field name="class_id" ref="asset_class_herramientas"/>
+        </record>
+        <record id="asset_subclass_herramientas__extintores" model="asset.subclass">
+            <field name="name">EXTINTORES</field>
+            <field name="class_id" ref="asset_class_herramientas"/>
+        </record>
+        <record id="asset_subclass_herramientas__forros" model="asset.subclass">
+            <field name="name">FORROS</field>
+            <field name="class_id" ref="asset_class_herramientas"/>
+        </record>
+        <record id="asset_subclass_herramientas__ganchos_metalicos" model="asset.subclass">
+            <field name="name">GANCHOS METALICOS</field>
+            <field name="class_id" ref="asset_class_herramientas"/>
+        </record>
+        <record id="asset_subclass_herramientas__guantes_de_seguridad" model="asset.subclass">
+            <field name="name">GUANTES DE SEGURIDAD</field>
+            <field name="class_id" ref="asset_class_herramientas"/>
+        </record>
+        <record id="asset_subclass_herramientas__hexagono" model="asset.subclass">
+            <field name="name">HEXAGONO</field>
+            <field name="class_id" ref="asset_class_herramientas"/>
+        </record>
+        <record id="asset_subclass_herramientas__inflador_de_globos" model="asset.subclass">
+            <field name="name">INFLADOR DE GLOBOS</field>
+            <field name="class_id" ref="asset_class_herramientas"/>
+        </record>
+        <record id="asset_subclass_herramientas__inflador_de_llantas" model="asset.subclass">
+            <field name="name">INFLADOR DE LLANTAS</field>
+            <field name="class_id" ref="asset_class_herramientas"/>
+        </record>
+        <record id="asset_subclass_herramientas__juego_de_brocas" model="asset.subclass">
+            <field name="name">JUEGO DE BROCAS</field>
+            <field name="class_id" ref="asset_class_herramientas"/>
+        </record>
+        <record id="asset_subclass_herramientas__juego_de_brocas_sierras" model="asset.subclass">
+            <field name="name">JUEGO DE BROCAS/SIERRAS</field>
+            <field name="class_id" ref="asset_class_herramientas"/>
+        </record>
+        <record id="asset_subclass_herramientas__lima_de_hierro" model="asset.subclass">
+            <field name="name">LIMA DE HIERRO</field>
+            <field name="class_id" ref="asset_class_herramientas"/>
+        </record>
+        <record id="asset_subclass_herramientas__llanas" model="asset.subclass">
+            <field name="name">LLANAS</field>
+            <field name="class_id" ref="asset_class_herramientas"/>
+        </record>
+        <record id="asset_subclass_herramientas__llave" model="asset.subclass">
+            <field name="name">LLAVE</field>
+            <field name="class_id" ref="asset_class_herramientas"/>
+        </record>
+        <record id="asset_subclass_herramientas__llave_inglesa_para_tubo" model="asset.subclass">
+            <field name="name">LLAVE INGLESA PARA TUBO</field>
+            <field name="class_id" ref="asset_class_herramientas"/>
+        </record>
+        <record id="asset_subclass_herramientas__mandil" model="asset.subclass">
+            <field name="name">MANDIL</field>
+            <field name="class_id" ref="asset_class_herramientas"/>
+        </record>
+        <record id="asset_subclass_herramientas__mangueras" model="asset.subclass">
+            <field name="name">MANGUERAS</field>
+            <field name="class_id" ref="asset_class_herramientas"/>
+        </record>
+        <record id="asset_subclass_herramientas__marco_de_sierra" model="asset.subclass">
+            <field name="name">MARCO DE SIERRA</field>
+            <field name="class_id" ref="asset_class_herramientas"/>
+        </record>
+        <record id="asset_subclass_herramientas__martillo" model="asset.subclass">
+            <field name="name">MARTILLO</field>
+            <field name="class_id" ref="asset_class_herramientas"/>
+        </record>
+        <record id="asset_subclass_herramientas__metro" model="asset.subclass">
+            <field name="name">METRO</field>
+            <field name="class_id" ref="asset_class_herramientas"/>
+        </record>
+        <record id="asset_subclass_herramientas__moladora" model="asset.subclass">
+            <field name="name">MOLADORA</field>
+            <field name="class_id" ref="asset_class_herramientas"/>
+        </record>
+        <record id="asset_subclass_herramientas__nivel" model="asset.subclass">
+            <field name="name">NIVEL</field>
+            <field name="class_id" ref="asset_class_herramientas"/>
+        </record>
+        <record id="asset_subclass_herramientas__orejera" model="asset.subclass">
+            <field name="name">OREJERA</field>
+            <field name="class_id" ref="asset_class_herramientas"/>
+        </record>
+        <record id="asset_subclass_herramientas__pala" model="asset.subclass">
+            <field name="name">PALA</field>
+            <field name="class_id" ref="asset_class_herramientas"/>
+        </record>
+        <record id="asset_subclass_herramientas__palet_de_madera" model="asset.subclass">
+            <field name="name">PALET DE MADERA</field>
+            <field name="class_id" ref="asset_class_herramientas"/>
+        </record>
+        <record id="asset_subclass_herramientas__paletas" model="asset.subclass">
+            <field name="name">PALETAS</field>
+            <field name="class_id" ref="asset_class_herramientas"/>
+        </record>
+        <record id="asset_subclass_herramientas__pistola_electrica_de_silicon" model="asset.subclass">
+            <field name="name">PISTOLA ELECTRICA DE SILICON</field>
+            <field name="class_id" ref="asset_class_herramientas"/>
+        </record>
+        <record id="asset_subclass_herramientas__pistola_manual_de_silicon" model="asset.subclass">
+            <field name="name">PISTOLA MANUAL DE SILICON</field>
+            <field name="class_id" ref="asset_class_herramientas"/>
+        </record>
+        <record id="asset_subclass_herramientas__playo" model="asset.subclass">
+            <field name="name">PLAYO</field>
+            <field name="class_id" ref="asset_class_herramientas"/>
+        </record>
+        <record id="asset_subclass_herramientas__racha" model="asset.subclass">
+            <field name="name">RACHA</field>
+            <field name="class_id" ref="asset_class_herramientas"/>
+        </record>
+        <record id="asset_subclass_herramientas__rastrillo" model="asset.subclass">
+            <field name="name">RASTRILLO</field>
+            <field name="class_id" ref="asset_class_herramientas"/>
+        </record>
+        <record id="asset_subclass_herramientas__recogedores" model="asset.subclass">
+            <field name="name">RECOGEDORES</field>
+            <field name="class_id" ref="asset_class_herramientas"/>
+        </record>
+        <record id="asset_subclass_herramientas__regleta" model="asset.subclass">
+            <field name="name">REGLETA</field>
+            <field name="class_id" ref="asset_class_herramientas"/>
+        </record>
+        <record id="asset_subclass_herramientas__rodillos" model="asset.subclass">
+            <field name="name">RODILLOS</field>
+            <field name="class_id" ref="asset_class_herramientas"/>
+        </record>
+        <record id="asset_subclass_herramientas__ruleta" model="asset.subclass">
+            <field name="name">RULETA</field>
+            <field name="class_id" ref="asset_class_herramientas"/>
+        </record>
+        <record id="asset_subclass_herramientas__secadora" model="asset.subclass">
+            <field name="name">SECADORA</field>
+            <field name="class_id" ref="asset_class_herramientas"/>
+        </record>
+        <record id="asset_subclass_herramientas__seguro_de_puerta" model="asset.subclass">
+            <field name="name">SEGURO DE PUERTA</field>
+            <field name="class_id" ref="asset_class_herramientas"/>
+        </record>
+        <record id="asset_subclass_herramientas__senaletica" model="asset.subclass">
+            <field name="name">SEÑALETICA</field>
+            <field name="class_id" ref="asset_class_herramientas"/>
+        </record>
+        <record id="asset_subclass_herramientas__soldadora" model="asset.subclass">
+            <field name="name">SOLDADORA</field>
+            <field name="class_id" ref="asset_class_herramientas"/>
+        </record>
+        <record id="asset_subclass_herramientas__taladro" model="asset.subclass">
+            <field name="name">TALADRO</field>
+            <field name="class_id" ref="asset_class_herramientas"/>
+        </record>
+        <record id="asset_subclass_herramientas__tercera_mano_con_lupa" model="asset.subclass">
+            <field name="name">TERCERA MANO CON LUPA</field>
+            <field name="class_id" ref="asset_class_herramientas"/>
+        </record>
+        <record id="asset_subclass_herramientas__tijera_de_jardineria" model="asset.subclass">
+            <field name="name">TIJERA DE JARDINERIA</field>
+            <field name="class_id" ref="asset_class_herramientas"/>
+        </record>
+        <record id="asset_subclass_herramientas__tina" model="asset.subclass">
+            <field name="name">TINA</field>
+            <field name="class_id" ref="asset_class_herramientas"/>
+        </record>
+        <record id="asset_subclass_herramientas__trapeador" model="asset.subclass">
+            <field name="name">TRAPEADOR</field>
+            <field name="class_id" ref="asset_class_herramientas"/>
+        </record>
+        <record id="asset_subclass_instalacion_y_adecuacion_de_local__instalacion_y_adecuacion_de_local"
+                model="asset.subclass">
+            <field name="name">INSTALACION Y ADECUACION DE LOCAL</field>
+            <field name="class_id" ref="asset_class_instalacion_y_adecuacion_de_local"/>
+        </record>
+        <record id="asset_subclass_maquinaria_y_equipo__matica_impresora" model="asset.subclass">
+            <field name="name">MATICA IMPRESORA</field>
+            <field name="class_id" ref="asset_class_maquinaria_y_equipo"/>
+        </record>
+        <record id="asset_subclass_movilizacion__bicicleta" model="asset.subclass">
+            <field name="name">BICICLETA</field>
+            <field name="class_id" ref="asset_class_movilizacion"/>
+        </record>
+        <record id="asset_subclass_movilizacion__carro_de_carga_metalico" model="asset.subclass">
+            <field name="name">CARRO DE CARGA METÁLICO</field>
+            <field name="class_id" ref="asset_class_movilizacion"/>
+        </record>
+        <record id="asset_subclass_movilizacion__coche_de_compras" model="asset.subclass">
+            <field name="name">COCHE DE COMPRAS</field>
+            <field name="class_id" ref="asset_class_movilizacion"/>
+        </record>
+        <record id="asset_subclass_movilizacion__coche_metalico" model="asset.subclass">
+            <field name="name">COCHE METÁLICO</field>
+            <field name="class_id" ref="asset_class_movilizacion"/>
+        </record>
+        <record id="asset_subclass_movilizacion__coche_pequeno_monta_carga" model="asset.subclass">
+            <field name="name">COCHE PEQUEÑO (MONTA CARGA)</field>
+            <field name="class_id" ref="asset_class_movilizacion"/>
+        </record>
+        <record id="asset_subclass_movilizacion__coche_supermercado_pequeno" model="asset.subclass">
+            <field name="name">COCHE SUPERMERCADO PEQUEÑO</field>
+            <field name="class_id" ref="asset_class_movilizacion"/>
+        </record>
+        <record id="asset_subclass_movilizacion__coches_de_carga" model="asset.subclass">
+            <field name="name">COCHES DE CARGA</field>
+            <field name="class_id" ref="asset_class_movilizacion"/>
+        </record>
+        <record id="asset_subclass_muebleria_basica__bancos" model="asset.subclass">
+            <field name="name">BANCOS</field>
+            <field name="class_id" ref="asset_class_muebleria_basica"/>
+        </record>
+        <record id="asset_subclass_muebleria_basica__bandeja_con_divisiones" model="asset.subclass">
+            <field name="name">BANDEJA CON DIVISIONES</field>
+            <field name="class_id" ref="asset_class_muebleria_basica"/>
+        </record>
+        <record id="asset_subclass_muebleria_basica__base_de_madera" model="asset.subclass">
+            <field name="name">BASE DE MADERA</field>
+            <field name="class_id" ref="asset_class_muebleria_basica"/>
+        </record>
+        <record id="asset_subclass_muebleria_basica__botiquin" model="asset.subclass">
+            <field name="name">BOTIQUIN</field>
+            <field name="class_id" ref="asset_class_muebleria_basica"/>
+        </record>
+        <record id="asset_subclass_muebleria_basica__butaca" model="asset.subclass">
+            <field name="name">BUTACA</field>
+            <field name="class_id" ref="asset_class_muebleria_basica"/>
+        </record>
+        <record id="asset_subclass_muebleria_basica__cajon_de_madera" model="asset.subclass">
+            <field name="name">CAJON DE MADERA</field>
+            <field name="class_id" ref="asset_class_muebleria_basica"/>
+        </record>
+        <record id="asset_subclass_muebleria_basica__cajonera" model="asset.subclass">
+            <field name="name">CAJONERA</field>
+            <field name="class_id" ref="asset_class_muebleria_basica"/>
+        </record>
+        <record id="asset_subclass_muebleria_basica__camilla" model="asset.subclass">
+            <field name="name">CAMILLA</field>
+            <field name="class_id" ref="asset_class_muebleria_basica"/>
+        </record>
+        <record id="asset_subclass_muebleria_basica__division_para_mesa" model="asset.subclass">
+            <field name="name">DIVISION PARA MESA</field>
+            <field name="class_id" ref="asset_class_muebleria_basica"/>
+        </record>
+        <record id="asset_subclass_muebleria_basica__escritorios" model="asset.subclass">
+            <field name="name">ESCRITORIOS</field>
+            <field name="class_id" ref="asset_class_muebleria_basica"/>
+        </record>
+        <record id="asset_subclass_muebleria_basica__estan_pequeno" model="asset.subclass">
+            <field name="name">ESTAN PEQUEÑO</field>
+            <field name="class_id" ref="asset_class_muebleria_basica"/>
+        </record>
+        <record id="asset_subclass_muebleria_basica__mampara_cafeteria" model="asset.subclass">
+            <field name="name">MAMPARA CAFETERÍA</field>
+            <field name="class_id" ref="asset_class_muebleria_basica"/>
+        </record>
+        <record id="asset_subclass_muebleria_basica__mesas" model="asset.subclass">
+            <field name="name">MESAS</field>
+            <field name="class_id" ref="asset_class_muebleria_basica"/>
+        </record>
+        <record id="asset_subclass_muebleria_basica__muebles" model="asset.subclass">
+            <field name="name">MUEBLES</field>
+            <field name="class_id" ref="asset_class_muebleria_basica"/>
+        </record>
+        <record id="asset_subclass_muebleria_basica__palet_de_madera" model="asset.subclass">
+            <field name="name">PALET DE MADERA</field>
+            <field name="class_id" ref="asset_class_muebleria_basica"/>
+        </record>
+        <record id="asset_subclass_muebleria_basica__perchas" model="asset.subclass">
+            <field name="name">PERCHAS</field>
+            <field name="class_id" ref="asset_class_muebleria_basica"/>
+        </record>
+        <record id="asset_subclass_muebleria_basica__puertas" model="asset.subclass">
+            <field name="name">PUERTAS</field>
+            <field name="class_id" ref="asset_class_muebleria_basica"/>
+        </record>
+        <record id="asset_subclass_muebleria_basica__sillas" model="asset.subclass">
+            <field name="name">SILLAS</field>
+            <field name="class_id" ref="asset_class_muebleria_basica"/>
+        </record>
+        <record id="asset_subclass_muebleria_basica__taburete" model="asset.subclass">
+            <field name="name">TABURETE</field>
+            <field name="class_id" ref="asset_class_muebleria_basica"/>
+        </record>
+        <record id="asset_subclass_muebleria_basica__tarimas" model="asset.subclass">
+            <field name="name">TARIMAS</field>
+            <field name="class_id" ref="asset_class_muebleria_basica"/>
+        </record>
+        <record id="asset_subclass_muebleria_basica__vitrinas" model="asset.subclass">
+            <field name="name">VITRINAS</field>
+            <field name="class_id" ref="asset_class_muebleria_basica"/>
+        </record>
+        <record id="asset_subclass_muebleria_fisica__sillas" model="asset.subclass">
+            <field name="name">SILLAS</field>
+            <field name="class_id" ref="asset_class_muebleria_fisica"/>
+        </record>
+        <record id="asset_subclass_muebles_y_enseres__aire_condicionado" model="asset.subclass">
+            <field name="name">AIRE CONDICIONADO</field>
+            <field name="class_id" ref="asset_class_muebles_y_enseres"/>
+        </record>
+        <record id="asset_subclass_muebles_y_enseres__alfombras" model="asset.subclass">
+            <field name="name">ALFOMBRAS</field>
+            <field name="class_id" ref="asset_class_muebles_y_enseres"/>
+        </record>
+        <record id="asset_subclass_muebles_y_enseres__archivador" model="asset.subclass">
+            <field name="name">ARCHIVADOR</field>
+            <field name="class_id" ref="asset_class_muebles_y_enseres"/>
+        </record>
+        <record id="asset_subclass_muebles_y_enseres__bancos" model="asset.subclass">
+            <field name="name">BANCOS</field>
+            <field name="class_id" ref="asset_class_muebles_y_enseres"/>
+        </record>
+        <record id="asset_subclass_muebles_y_enseres__base_de_madera" model="asset.subclass">
+            <field name="name">BASE DE MADERA</field>
+            <field name="class_id" ref="asset_class_muebles_y_enseres"/>
+        </record>
+        <record id="asset_subclass_muebles_y_enseres__butaca" model="asset.subclass">
+            <field name="name">BUTACA</field>
+            <field name="class_id" ref="asset_class_muebles_y_enseres"/>
+        </record>
+        <record id="asset_subclass_muebles_y_enseres__cafetera" model="asset.subclass">
+            <field name="name">CAFETERA</field>
+            <field name="class_id" ref="asset_class_muebles_y_enseres"/>
+        </record>
+        <record id="asset_subclass_muebles_y_enseres__cajonera" model="asset.subclass">
+            <field name="name">CAJONERA</field>
+            <field name="class_id" ref="asset_class_muebles_y_enseres"/>
+        </record>
+        <record id="asset_subclass_muebles_y_enseres__camara_de_seguridad" model="asset.subclass">
+            <field name="name">CAMARA DE SEGURIDAD</field>
+            <field name="class_id" ref="asset_class_muebles_y_enseres"/>
+        </record>
+        <record id="asset_subclass_muebles_y_enseres__congelador" model="asset.subclass">
+            <field name="name">CONGELADOR</field>
+            <field name="class_id" ref="asset_class_muebles_y_enseres"/>
+        </record>
+        <record id="asset_subclass_muebles_y_enseres__counter_angulo" model="asset.subclass">
+            <field name="name">COUNTER ANGULO</field>
+            <field name="class_id" ref="asset_class_muebles_y_enseres"/>
+        </record>
+        <record id="asset_subclass_muebles_y_enseres__counter_de_exhibicion" model="asset.subclass">
+            <field name="name">COUNTER DE EXHIBICION</field>
+            <field name="class_id" ref="asset_class_muebles_y_enseres"/>
+        </record>
+        <record id="asset_subclass_muebles_y_enseres__counter_de_secretaria" model="asset.subclass">
+            <field name="name">COUNTER DE SECRETARIA</field>
+            <field name="class_id" ref="asset_class_muebles_y_enseres"/>
+        </record>
+        <record id="asset_subclass_muebles_y_enseres__counter_de_ventas" model="asset.subclass">
+            <field name="name">COUNTER DE VENTAS</field>
+            <field name="class_id" ref="asset_class_muebles_y_enseres"/>
+        </record>
+        <record id="asset_subclass_muebles_y_enseres__decoracion_interior" model="asset.subclass">
+            <field name="name">DECORACION INTERIOR</field>
+            <field name="class_id" ref="asset_class_muebles_y_enseres"/>
+        </record>
+        <record id="asset_subclass_muebles_y_enseres__detector_de_humo" model="asset.subclass">
+            <field name="name">DETECTOR DE HUMO</field>
+            <field name="class_id" ref="asset_class_muebles_y_enseres"/>
+        </record>
+        <record id="asset_subclass_muebles_y_enseres__dispensador_de_agua" model="asset.subclass">
+            <field name="name">DISPENSADOR DE AGUA</field>
+            <field name="class_id" ref="asset_class_muebles_y_enseres"/>
+        </record>
+        <record id="asset_subclass_muebles_y_enseres__elemento_angulo" model="asset.subclass">
+            <field name="name">ELEMENTO ANGULO</field>
+            <field name="class_id" ref="asset_class_muebles_y_enseres"/>
+        </record>
+        <record id="asset_subclass_muebles_y_enseres__elemento_estante_de_vidrio" model="asset.subclass">
+            <field name="name">ELEMENTO ESTANTE DE VIDRIO</field>
+            <field name="class_id" ref="asset_class_muebles_y_enseres"/>
+        </record>
+        <record id="asset_subclass_muebles_y_enseres__equipo_de_control_huella_digital" model="asset.subclass">
+            <field name="name">EQUIPO DE CONTROL HUELLA DIGITAL</field>
+            <field name="class_id" ref="asset_class_muebles_y_enseres"/>
+        </record>
+        <record id="asset_subclass_muebles_y_enseres__escaleras" model="asset.subclass">
+            <field name="name">ESCALERAS</field>
+            <field name="class_id" ref="asset_class_muebles_y_enseres"/>
+        </record>
+        <record id="asset_subclass_muebles_y_enseres__escritorios" model="asset.subclass">
+            <field name="name">ESCRITORIOS</field>
+            <field name="class_id" ref="asset_class_muebles_y_enseres"/>
+        </record>
+        <record id="asset_subclass_muebles_y_enseres__estan_cajonera_x_9" model="asset.subclass">
+            <field name="name">ESTAN CAJONERA X 9</field>
+            <field name="class_id" ref="asset_class_muebles_y_enseres"/>
+        </record>
+        <record id="asset_subclass_muebles_y_enseres__estantes_para_medicina" model="asset.subclass">
+            <field name="name">ESTANTES PARA MEDICINA</field>
+            <field name="class_id" ref="asset_class_muebles_y_enseres"/>
+        </record>
+        <record id="asset_subclass_muebles_y_enseres__exhibidores" model="asset.subclass">
+            <field name="name">EXHIBIDORES</field>
+            <field name="class_id" ref="asset_class_muebles_y_enseres"/>
+        </record>
+        <record id="asset_subclass_muebles_y_enseres__impresoras" model="asset.subclass">
+            <field name="name">IMPRESORAS</field>
+            <field name="class_id" ref="asset_class_muebles_y_enseres"/>
+        </record>
+        <record id="asset_subclass_muebles_y_enseres__inflador_de_globos" model="asset.subclass">
+            <field name="name">INFLADOR DE GLOBOS</field>
+            <field name="class_id" ref="asset_class_muebles_y_enseres"/>
+        </record>
+        <record id="asset_subclass_muebles_y_enseres__islas" model="asset.subclass">
+            <field name="name">ISLAS</field>
+            <field name="class_id" ref="asset_class_muebles_y_enseres"/>
+        </record>
+        <record id="asset_subclass_muebles_y_enseres__lamparas" model="asset.subclass">
+            <field name="name">LAMPARAS</field>
+            <field name="class_id" ref="asset_class_muebles_y_enseres"/>
+        </record>
+        <record id="asset_subclass_muebles_y_enseres__letreros" model="asset.subclass">
+            <field name="name">LETREROS</field>
+            <field name="class_id" ref="asset_class_muebles_y_enseres"/>
+        </record>
+        <record id="asset_subclass_muebles_y_enseres__macetas" model="asset.subclass">
+            <field name="name">MACETAS</field>
+            <field name="class_id" ref="asset_class_muebles_y_enseres"/>
+        </record>
+        <record id="asset_subclass_muebles_y_enseres__mangueras" model="asset.subclass">
+            <field name="name">MANGUERAS</field>
+            <field name="class_id" ref="asset_class_muebles_y_enseres"/>
+        </record>
+        <record id="asset_subclass_muebles_y_enseres__mesas" model="asset.subclass">
+            <field name="name">MESAS</field>
+            <field name="class_id" ref="asset_class_muebles_y_enseres"/>
+        </record>
+        <record id="asset_subclass_muebles_y_enseres__minibar" model="asset.subclass">
+            <field name="name">MINIBAR</field>
+            <field name="class_id" ref="asset_class_muebles_y_enseres"/>
+        </record>
+        <record id="asset_subclass_muebles_y_enseres__mobiliario_de_melanina_x_6" model="asset.subclass">
+            <field name="name">MOBILIARIO DE MELANINA X 6</field>
+            <field name="class_id" ref="asset_class_muebles_y_enseres"/>
+        </record>
+        <record id="asset_subclass_muebles_y_enseres__mostrador" model="asset.subclass">
+            <field name="name">MOSTRADOR</field>
+            <field name="class_id" ref="asset_class_muebles_y_enseres"/>
+        </record>
+        <record id="asset_subclass_muebles_y_enseres__muebles" model="asset.subclass">
+            <field name="name">MUEBLES</field>
+            <field name="class_id" ref="asset_class_muebles_y_enseres"/>
+        </record>
+        <record id="asset_subclass_muebles_y_enseres__perchas" model="asset.subclass">
+            <field name="name">PERCHAS</field>
+            <field name="class_id" ref="asset_class_muebles_y_enseres"/>
+        </record>
+        <record id="asset_subclass_muebles_y_enseres__perforadora" model="asset.subclass">
+            <field name="name">PERFORADORA</field>
+            <field name="class_id" ref="asset_class_muebles_y_enseres"/>
+        </record>
+        <record id="asset_subclass_muebles_y_enseres__pila_de_madera" model="asset.subclass">
+            <field name="name">PILA DE MADERA</field>
+            <field name="class_id" ref="asset_class_muebles_y_enseres"/>
+        </record>
+        <record id="asset_subclass_muebles_y_enseres__pila_exhibidor" model="asset.subclass">
+            <field name="name">PILA EXHIBIDOR</field>
+            <field name="class_id" ref="asset_class_muebles_y_enseres"/>
+        </record>
+        <record id="asset_subclass_muebles_y_enseres__pizarra_de_melanina_movil_1_22_x_2_44_cm" model="asset.subclass">
+            <field name="name">PIZARRA DE MELANINA MOVIL 1,22 X 2,44 CM</field>
+            <field name="class_id" ref="asset_class_muebles_y_enseres"/>
+        </record>
+        <record id="asset_subclass_muebles_y_enseres__portatil" model="asset.subclass">
+            <field name="name">PORTATIL</field>
+            <field name="class_id" ref="asset_class_muebles_y_enseres"/>
+        </record>
+        <record id="asset_subclass_muebles_y_enseres__puertas" model="asset.subclass">
+            <field name="name">PUERTAS</field>
+            <field name="class_id" ref="asset_class_muebles_y_enseres"/>
+        </record>
+        <record id="asset_subclass_muebles_y_enseres__refrigeradoras" model="asset.subclass">
+            <field name="name">REFRIGERADORAS</field>
+            <field name="class_id" ref="asset_class_muebles_y_enseres"/>
+        </record>
+        <record id="asset_subclass_muebles_y_enseres__regulador_de_luz" model="asset.subclass">
+            <field name="name">REGULADOR DE LUZ</field>
+            <field name="class_id" ref="asset_class_muebles_y_enseres"/>
+        </record>
+        <record id="asset_subclass_muebles_y_enseres__repisas" model="asset.subclass">
+            <field name="name">REPISAS</field>
+            <field name="class_id" ref="asset_class_muebles_y_enseres"/>
+        </record>
+        <record id="asset_subclass_muebles_y_enseres__roda_pies_metalicos" model="asset.subclass">
+            <field name="name">RODA PIES METALICOS</field>
+            <field name="class_id" ref="asset_class_muebles_y_enseres"/>
+        </record>
+        <record id="asset_subclass_muebles_y_enseres__scanner" model="asset.subclass">
+            <field name="name">SCANNER</field>
+            <field name="class_id" ref="asset_class_muebles_y_enseres"/>
+        </record>
+        <record id="asset_subclass_muebles_y_enseres__sillas" model="asset.subclass">
+            <field name="name">SILLAS</field>
+            <field name="class_id" ref="asset_class_muebles_y_enseres"/>
+        </record>
+        <record id="asset_subclass_muebles_y_enseres__sillon" model="asset.subclass">
+            <field name="name">SILLON</field>
+            <field name="class_id" ref="asset_class_muebles_y_enseres"/>
+        </record>
+        <record id="asset_subclass_muebles_y_enseres__supresor_de_picos" model="asset.subclass">
+            <field name="name">SUPRESOR DE PICOS</field>
+            <field name="class_id" ref="asset_class_muebles_y_enseres"/>
+        </record>
+        <record id="asset_subclass_muebles_y_enseres__tarimas" model="asset.subclass">
+            <field name="name">TARIMAS</field>
+            <field name="class_id" ref="asset_class_muebles_y_enseres"/>
+        </record>
+        <record id="asset_subclass_muebles_y_enseres__telefonos" model="asset.subclass">
+            <field name="name">TELEFONOS</field>
+            <field name="class_id" ref="asset_class_muebles_y_enseres"/>
+        </record>
+        <record id="asset_subclass_muebles_y_enseres__vitrinas" model="asset.subclass">
+            <field name="name">VITRINAS</field>
+            <field name="class_id" ref="asset_class_muebles_y_enseres"/>
+        </record>
+        <record id="asset_subclass_otros_suministros__accesorios" model="asset.subclass">
+            <field name="name">ACCESORIOS</field>
+            <field name="class_id" ref="asset_class_otros_suministros"/>
+        </record>
+        <record id="asset_subclass_otros_suministros__alfombras" model="asset.subclass">
+            <field name="name">ALFOMBRAS</field>
+            <field name="class_id" ref="asset_class_otros_suministros"/>
+        </record>
+        <record id="asset_subclass_otros_suministros__inflable" model="asset.subclass">
+            <field name="name">INFLABLE</field>
+            <field name="class_id" ref="asset_class_otros_suministros"/>
+        </record>
+        <record id="asset_subclass_otros_suministros__jarron_de_vidrio" model="asset.subclass">
+            <field name="name">JARRON DE VIDRIO</field>
+            <field name="class_id" ref="asset_class_otros_suministros"/>
+        </record>
+        <record id="asset_subclass_suministros_de_computacion__alarma" model="asset.subclass">
+            <field name="name">ALARMA</field>
+            <field name="class_id" ref="asset_class_suministros_de_computacion"/>
+        </record>
+        <record id="asset_subclass_suministros_de_computacion__am_deactivador" model="asset.subclass">
+            <field name="name">AM DEACTIVADOR</field>
+            <field name="class_id" ref="asset_class_suministros_de_computacion"/>
+        </record>
+        <record id="asset_subclass_suministros_de_computacion__ampliador_de_puertos" model="asset.subclass">
+            <field name="name">AMPLIADOR DE PUERTOS</field>
+            <field name="class_id" ref="asset_class_suministros_de_computacion"/>
+        </record>
+        <record id="asset_subclass_suministros_de_computacion__aspiradora" model="asset.subclass">
+            <field name="name">ASPIRADORA</field>
+            <field name="class_id" ref="asset_class_suministros_de_computacion"/>
+        </record>
+        <record id="asset_subclass_suministros_de_computacion__base_para_portatil" model="asset.subclass">
+            <field name="name">BASE PARA PORTATIL</field>
+            <field name="class_id" ref="asset_class_suministros_de_computacion"/>
+        </record>
+        <record id="asset_subclass_suministros_de_computacion__brocha_1" model="asset.subclass">
+            <field name="name">BROCHA 1"</field>
+            <field name="class_id" ref="asset_class_suministros_de_computacion"/>
+        </record>
+        <record id="asset_subclass_suministros_de_computacion__cable_utp_cat_6" model="asset.subclass">
+            <field name="name">CABLE UTP CAT 6</field>
+            <field name="class_id" ref="asset_class_suministros_de_computacion"/>
+        </record>
+        <record id="asset_subclass_suministros_de_computacion__camara_de_seguridad" model="asset.subclass">
+            <field name="name">CAMARA DE SEGURIDAD</field>
+            <field name="class_id" ref="asset_class_suministros_de_computacion"/>
+        </record>
+        <record id="asset_subclass_suministros_de_computacion__case" model="asset.subclass">
+            <field name="name">CASE</field>
+            <field name="class_id" ref="asset_class_suministros_de_computacion"/>
+        </record>
+        <record id="asset_subclass_suministros_de_computacion__celular" model="asset.subclass">
+            <field name="name">CELULAR</field>
+            <field name="class_id" ref="asset_class_suministros_de_computacion"/>
+        </record>
+        <record id="asset_subclass_suministros_de_computacion__colchonetas" model="asset.subclass">
+            <field name="name">COLCHONETAS</field>
+            <field name="class_id" ref="asset_class_suministros_de_computacion"/>
+        </record>
+        <record id="asset_subclass_suministros_de_computacion__cpu" model="asset.subclass">
+            <field name="name">CPU</field>
+            <field name="class_id" ref="asset_class_suministros_de_computacion"/>
+        </record>
+        <record id="asset_subclass_suministros_de_computacion__desactivador_de_tags" model="asset.subclass">
+            <field name="name">DESACTIVADOR DE TAGS</field>
+            <field name="class_id" ref="asset_class_suministros_de_computacion"/>
+        </record>
+        <record id="asset_subclass_suministros_de_computacion__destornillador_estrella" model="asset.subclass">
+            <field name="name">DESTORNILLADOR ESTRELLA</field>
+            <field name="class_id" ref="asset_class_suministros_de_computacion"/>
+        </record>
+        <record id="asset_subclass_suministros_de_computacion__disco_duro" model="asset.subclass">
+            <field name="name">DISCO DURO</field>
+            <field name="class_id" ref="asset_class_suministros_de_computacion"/>
+        </record>
+        <record id="asset_subclass_suministros_de_computacion__dispensador_de_agua" model="asset.subclass">
+            <field name="name">DISPENSADOR DE AGUA</field>
+            <field name="class_id" ref="asset_class_suministros_de_computacion"/>
+        </record>
+        <record id="asset_subclass_suministros_de_computacion__equipo_de_control_huella_digital" model="asset.subclass">
+            <field name="name">EQUIPO DE CONTROL HUELLA DIGITAL</field>
+            <field name="class_id" ref="asset_class_suministros_de_computacion"/>
+        </record>
+        <record id="asset_subclass_suministros_de_computacion__extension" model="asset.subclass">
+            <field name="name">EXTENSION</field>
+            <field name="class_id" ref="asset_class_suministros_de_computacion"/>
+        </record>
+        <record id="asset_subclass_suministros_de_computacion__extintores" model="asset.subclass">
+            <field name="name">EXTINTORES</field>
+            <field name="class_id" ref="asset_class_suministros_de_computacion"/>
+        </record>
+        <record id="asset_subclass_suministros_de_computacion__generador_de_luz" model="asset.subclass">
+            <field name="name">GENERADOR DE LUZ</field>
+            <field name="class_id" ref="asset_class_suministros_de_computacion"/>
+        </record>
+        <record id="asset_subclass_suministros_de_computacion__hub" model="asset.subclass">
+            <field name="name">HUB</field>
+            <field name="class_id" ref="asset_class_suministros_de_computacion"/>
+        </record>
+        <record id="asset_subclass_suministros_de_computacion__impresoras" model="asset.subclass">
+            <field name="name">IMPRESORAS</field>
+            <field name="class_id" ref="asset_class_suministros_de_computacion"/>
+        </record>
+        <record id="asset_subclass_suministros_de_computacion__lector_laser" model="asset.subclass">
+            <field name="name">LECTOR LASER</field>
+            <field name="class_id" ref="asset_class_suministros_de_computacion"/>
+        </record>
+        <record id="asset_subclass_suministros_de_computacion__mainboard" model="asset.subclass">
+            <field name="name">MAINBOARD</field>
+            <field name="class_id" ref="asset_class_suministros_de_computacion"/>
+        </record>
+        <record id="asset_subclass_suministros_de_computacion__mikrotik" model="asset.subclass">
+            <field name="name">MIKROTIK</field>
+            <field name="class_id" ref="asset_class_suministros_de_computacion"/>
+        </record>
+        <record id="asset_subclass_suministros_de_computacion__monitor" model="asset.subclass">
+            <field name="name">MONITOR</field>
+            <field name="class_id" ref="asset_class_suministros_de_computacion"/>
+        </record>
+        <record id="asset_subclass_suministros_de_computacion__mouse" model="asset.subclass">
+            <field name="name">MOUSE</field>
+            <field name="class_id" ref="asset_class_suministros_de_computacion"/>
+        </record>
+        <record id="asset_subclass_suministros_de_computacion__mouse_pad" model="asset.subclass">
+            <field name="name">MOUSE PAD</field>
+            <field name="class_id" ref="asset_class_suministros_de_computacion"/>
+        </record>
+        <record id="asset_subclass_suministros_de_computacion__multimetro" model="asset.subclass">
+            <field name="name">MULTIMETRO</field>
+            <field name="class_id" ref="asset_class_suministros_de_computacion"/>
+        </record>
+        <record id="asset_subclass_suministros_de_computacion__nvr" model="asset.subclass">
+            <field name="name">NVR</field>
+            <field name="class_id" ref="asset_class_suministros_de_computacion"/>
+        </record>
+        <record id="asset_subclass_suministros_de_computacion__pistola_para_precios" model="asset.subclass">
+            <field name="name">PISTOLA PARA PRECIOS</field>
+            <field name="class_id" ref="asset_class_suministros_de_computacion"/>
+        </record>
+        <record id="asset_subclass_suministros_de_computacion__pistola_scanner" model="asset.subclass">
+            <field name="name">PISTOLA SCANNER</field>
+            <field name="class_id" ref="asset_class_suministros_de_computacion"/>
+        </record>
+        <record id="asset_subclass_suministros_de_computacion__ponchadora" model="asset.subclass">
+            <field name="name">PONCHADORA</field>
+            <field name="class_id" ref="asset_class_suministros_de_computacion"/>
+        </record>
+        <record id="asset_subclass_suministros_de_computacion__portatil" model="asset.subclass">
+            <field name="name">PORTATIL</field>
+            <field name="class_id" ref="asset_class_suministros_de_computacion"/>
+        </record>
+        <record id="asset_subclass_suministros_de_computacion__procesador_intel_core_i5_10400" model="asset.subclass">
+            <field name="name">PROCESADOR INTEL CORE I5-10400</field>
+            <field name="class_id" ref="asset_class_suministros_de_computacion"/>
+        </record>
+        <record id="asset_subclass_suministros_de_computacion__pulsera" model="asset.subclass">
+            <field name="name">PULSERA</field>
+            <field name="class_id" ref="asset_class_suministros_de_computacion"/>
+        </record>
+        <record id="asset_subclass_suministros_de_computacion__punto_de_red" model="asset.subclass">
+            <field name="name">PUNTO DE RED</field>
+            <field name="class_id" ref="asset_class_suministros_de_computacion"/>
+        </record>
+        <record id="asset_subclass_suministros_de_computacion__regleta" model="asset.subclass">
+            <field name="name">REGLETA</field>
+            <field name="class_id" ref="asset_class_suministros_de_computacion"/>
+        </record>
+        <record id="asset_subclass_suministros_de_computacion__regulador_de_luz" model="asset.subclass">
+            <field name="name">REGULADOR DE LUZ</field>
+            <field name="class_id" ref="asset_class_suministros_de_computacion"/>
+        </record>
+        <record id="asset_subclass_suministros_de_computacion__regulador_de_voltaje" model="asset.subclass">
+            <field name="name">REGULADOR DE VOLTAJE</field>
+            <field name="class_id" ref="asset_class_suministros_de_computacion"/>
+        </record>
+        <record id="asset_subclass_suministros_de_computacion__scanner" model="asset.subclass">
+            <field name="name">SCANNER</field>
+            <field name="class_id" ref="asset_class_suministros_de_computacion"/>
+        </record>
+        <record id="asset_subclass_suministros_de_computacion__switch" model="asset.subclass">
+            <field name="name">SWITCH</field>
+            <field name="class_id" ref="asset_class_suministros_de_computacion"/>
+        </record>
+        <record id="asset_subclass_suministros_de_computacion__teclados" model="asset.subclass">
+            <field name="name">TECLADOS</field>
+            <field name="class_id" ref="asset_class_suministros_de_computacion"/>
+        </record>
+        <record id="asset_subclass_suministros_de_computacion__telefonos" model="asset.subclass">
+            <field name="name">TELEFONOS</field>
+            <field name="class_id" ref="asset_class_suministros_de_computacion"/>
+        </record>
+        <record id="asset_subclass_suministros_de_computacion__ups" model="asset.subclass">
+            <field name="name">UPS</field>
+            <field name="class_id" ref="asset_class_suministros_de_computacion"/>
+        </record>
+        <record id="asset_subclass_suministros_de_control__adaptador" model="asset.subclass">
+            <field name="name">ADAPTADOR</field>
+            <field name="class_id" ref="asset_class_suministros_de_control"/>
+        </record>
+        <record id="asset_subclass_suministros_de_control__alarma" model="asset.subclass">
+            <field name="name">ALARMA</field>
+            <field name="class_id" ref="asset_class_suministros_de_control"/>
+        </record>
+        <record id="asset_subclass_suministros_de_control__alfombras" model="asset.subclass">
+            <field name="name">ALFOMBRAS</field>
+            <field name="class_id" ref="asset_class_suministros_de_control"/>
+        </record>
+        <record id="asset_subclass_suministros_de_control__anfora" model="asset.subclass">
+            <field name="name">ANFORA</field>
+            <field name="class_id" ref="asset_class_suministros_de_control"/>
+        </record>
+        <record id="asset_subclass_suministros_de_control__antena" model="asset.subclass">
+            <field name="name">ANTENA</field>
+            <field name="class_id" ref="asset_class_suministros_de_control"/>
+        </record>
+        <record id="asset_subclass_suministros_de_control__arco_de_globos" model="asset.subclass">
+            <field name="name">ARCO DE GLOBOS</field>
+            <field name="class_id" ref="asset_class_suministros_de_control"/>
+        </record>
+        <record id="asset_subclass_suministros_de_control__bases_de_cemento" model="asset.subclass">
+            <field name="name">BASES DE CEMENTO</field>
+            <field name="class_id" ref="asset_class_suministros_de_control"/>
+        </record>
+        <record id="asset_subclass_suministros_de_control__caja_termica" model="asset.subclass">
+            <field name="name">CAJA TERMICA</field>
+            <field name="class_id" ref="asset_class_suministros_de_control"/>
+        </record>
+        <record id="asset_subclass_suministros_de_control__camara_de_seguridad" model="asset.subclass">
+            <field name="name">CAMARA DE SEGURIDAD</field>
+            <field name="class_id" ref="asset_class_suministros_de_control"/>
+        </record>
+        <record id="asset_subclass_suministros_de_control__cargador_dell" model="asset.subclass">
+            <field name="name">CARGADOR DELL</field>
+            <field name="class_id" ref="asset_class_suministros_de_control"/>
+        </record>
+        <record id="asset_subclass_suministros_de_control__celular" model="asset.subclass">
+            <field name="name">CELULAR</field>
+            <field name="class_id" ref="asset_class_suministros_de_control"/>
+        </record>
+        <record id="asset_subclass_suministros_de_control__colchonetas" model="asset.subclass">
+            <field name="name">COLCHONETAS</field>
+            <field name="class_id" ref="asset_class_suministros_de_control"/>
+        </record>
+        <record id="asset_subclass_suministros_de_control__congelador" model="asset.subclass">
+            <field name="name">CONGELADOR</field>
+            <field name="class_id" ref="asset_class_suministros_de_control"/>
+        </record>
+        <record id="asset_subclass_suministros_de_control__cooler" model="asset.subclass">
+            <field name="name">COOLER</field>
+            <field name="class_id" ref="asset_class_suministros_de_control"/>
+        </record>
+        <record id="asset_subclass_suministros_de_control__detector_de_humo" model="asset.subclass">
+            <field name="name">DETECTOR DE HUMO</field>
+            <field name="class_id" ref="asset_class_suministros_de_control"/>
+        </record>
+        <record id="asset_subclass_suministros_de_control__dispensador_de_agua" model="asset.subclass">
+            <field name="name">DISPENSADOR DE AGUA</field>
+            <field name="class_id" ref="asset_class_suministros_de_control"/>
+        </record>
+        <record id="asset_subclass_suministros_de_control__dispensador_de_jabon" model="asset.subclass">
+            <field name="name">DISPENSADOR DE JABON</field>
+            <field name="class_id" ref="asset_class_suministros_de_control"/>
+        </record>
+        <record id="asset_subclass_suministros_de_control__dispensador_de_papel_higienico" model="asset.subclass">
+            <field name="name">DISPENSADOR DE PAPEL HIGIENICO</field>
+            <field name="class_id" ref="asset_class_suministros_de_control"/>
+        </record>
+        <record id="asset_subclass_suministros_de_control__dispensador_toallas_de_mano" model="asset.subclass">
+            <field name="name">DISPENSADOR TOALLAS DE MANO</field>
+            <field name="class_id" ref="asset_class_suministros_de_control"/>
+        </record>
+        <record id="asset_subclass_suministros_de_control__equipo_de_control_huella_digital" model="asset.subclass">
+            <field name="name">EQUIPO DE CONTROL HUELLA DIGITAL</field>
+            <field name="class_id" ref="asset_class_suministros_de_control"/>
+        </record>
+        <record id="asset_subclass_suministros_de_control__equipo_recargador_situ" model="asset.subclass">
+            <field name="name">EQUIPO RECARGADOR SITU</field>
+            <field name="class_id" ref="asset_class_suministros_de_control"/>
+        </record>
+        <record id="asset_subclass_suministros_de_control__extintores" model="asset.subclass">
+            <field name="name">EXTINTORES</field>
+            <field name="class_id" ref="asset_class_suministros_de_control"/>
+        </record>
+        <record id="asset_subclass_suministros_de_control__generador_de_luz" model="asset.subclass">
+            <field name="name">GENERADOR DE LUZ</field>
+            <field name="class_id" ref="asset_class_suministros_de_control"/>
+        </record>
+        <record id="asset_subclass_suministros_de_control__kit_de_sirena" model="asset.subclass">
+            <field name="name">KIT DE SIRENA</field>
+            <field name="class_id" ref="asset_class_suministros_de_control"/>
+        </record>
+        <record id="asset_subclass_suministros_de_control__letreros" model="asset.subclass">
+            <field name="name">LETREROS</field>
+            <field name="class_id" ref="asset_class_suministros_de_control"/>
+        </record>
+        <record id="asset_subclass_suministros_de_control__persianas" model="asset.subclass">
+            <field name="name">PERSIANAS</field>
+            <field name="class_id" ref="asset_class_suministros_de_control"/>
+        </record>
+        <record id="asset_subclass_suministros_de_control__placa_policarbonato" model="asset.subclass">
+            <field name="name">PLACA POLICARBONATO</field>
+            <field name="class_id" ref="asset_class_suministros_de_control"/>
+        </record>
+        <record id="asset_subclass_suministros_de_control__regulador_de_luz" model="asset.subclass">
+            <field name="name">REGULADOR DE LUZ</field>
+            <field name="class_id" ref="asset_class_suministros_de_control"/>
+        </record>
+        <record id="asset_subclass_suministros_de_control__regulador_de_voltaje" model="asset.subclass">
+            <field name="name">REGULADOR DE VOLTAJE</field>
+            <field name="class_id" ref="asset_class_suministros_de_control"/>
+        </record>
+        <record id="asset_subclass_suministros_de_control__roda_pies_metalicos" model="asset.subclass">
+            <field name="name">RODA PIES METALICOS</field>
+            <field name="class_id" ref="asset_class_suministros_de_control"/>
+        </record>
+        <record id="asset_subclass_suministros_de_control__senaletica" model="asset.subclass">
+            <field name="name">SEÑALETICA</field>
+            <field name="class_id" ref="asset_class_suministros_de_control"/>
+        </record>
+        <record id="asset_subclass_suministros_de_control__supresor_de_picos" model="asset.subclass">
+            <field name="name">SUPRESOR DE PICOS</field>
+            <field name="class_id" ref="asset_class_suministros_de_control"/>
+        </record>
+        <record id="asset_subclass_suministros_de_control__telefonos" model="asset.subclass">
+            <field name="name">TELEFONOS</field>
+            <field name="class_id" ref="asset_class_suministros_de_control"/>
+        </record>
+        <record id="asset_subclass_suministros_de_control__termometros" model="asset.subclass">
+            <field name="name">TERMOMETROS</field>
+            <field name="class_id" ref="asset_class_suministros_de_control"/>
+        </record>
+        <record id="asset_subclass_suministros_de_control__ventiladores" model="asset.subclass">
+            <field name="name">VENTILADORES</field>
+            <field name="class_id" ref="asset_class_suministros_de_control"/>
+        </record>
+        <record id="asset_subclass_suministros_de_locales__alarma" model="asset.subclass">
+            <field name="name">ALARMA</field>
+            <field name="class_id" ref="asset_class_suministros_de_locales"/>
+        </record>
+        <record id="asset_subclass_suministros_de_locales__alarma_dsc" model="asset.subclass">
+            <field name="name">ALARMA DSC</field>
+            <field name="class_id" ref="asset_class_suministros_de_locales"/>
+        </record>
+        <record id="asset_subclass_suministros_de_locales__alfombras" model="asset.subclass">
+            <field name="name">ALFOMBRAS</field>
+            <field name="class_id" ref="asset_class_suministros_de_locales"/>
+        </record>
+        <record id="asset_subclass_suministros_de_locales__anfora" model="asset.subclass">
+            <field name="name">ANFORA</field>
+            <field name="class_id" ref="asset_class_suministros_de_locales"/>
+        </record>
+        <record id="asset_subclass_suministros_de_locales__arco_inflable_de_fcias_cuxibamba" model="asset.subclass">
+            <field name="name">ARCO INFLABLE DE FCIAS CUXIBAMBA</field>
+            <field name="class_id" ref="asset_class_suministros_de_locales"/>
+        </record>
+        <record id="asset_subclass_suministros_de_locales__aro_de_luz_led" model="asset.subclass">
+            <field name="name">ARO DE LUZ LED</field>
+            <field name="class_id" ref="asset_class_suministros_de_locales"/>
+        </record>
+        <record id="asset_subclass_suministros_de_locales__bandeja_de_gondola" model="asset.subclass">
+            <field name="name">BANDEJA DE GONDOLA</field>
+            <field name="class_id" ref="asset_class_suministros_de_locales"/>
+        </record>
+        <record id="asset_subclass_suministros_de_locales__base_de_televisor" model="asset.subclass">
+            <field name="name">BASE DE TELEVISOR</field>
+            <field name="class_id" ref="asset_class_suministros_de_locales"/>
+        </record>
+        <record id="asset_subclass_suministros_de_locales__basureros" model="asset.subclass">
+            <field name="name">BASUREROS</field>
+            <field name="class_id" ref="asset_class_suministros_de_locales"/>
+        </record>
+        <record id="asset_subclass_suministros_de_locales__cafetera" model="asset.subclass">
+            <field name="name">CAFETERA</field>
+            <field name="class_id" ref="asset_class_suministros_de_locales"/>
+        </record>
+        <record id="asset_subclass_suministros_de_locales__caja_de_dinero" model="asset.subclass">
+            <field name="name">CAJA DE DINERO</field>
+            <field name="class_id" ref="asset_class_suministros_de_locales"/>
+        </record>
+        <record id="asset_subclass_suministros_de_locales__caja_fuerte_con_candado" model="asset.subclass">
+            <field name="name">CAJA FUERTE CON CANDADO</field>
+            <field name="class_id" ref="asset_class_suministros_de_locales"/>
+        </record>
+        <record id="asset_subclass_suministros_de_locales__caja_fuerte_con_clave" model="asset.subclass">
+            <field name="name">CAJA FUERTE CON CLAVE</field>
+            <field name="class_id" ref="asset_class_suministros_de_locales"/>
+        </record>
+        <record id="asset_subclass_suministros_de_locales__caja_luminosa" model="asset.subclass">
+            <field name="name">CAJA LUMINOSA</field>
+            <field name="class_id" ref="asset_class_suministros_de_locales"/>
+        </record>
+        <record id="asset_subclass_suministros_de_locales__caja_termica" model="asset.subclass">
+            <field name="name">CAJA TERMICA</field>
+            <field name="class_id" ref="asset_class_suministros_de_locales"/>
+        </record>
+        <record id="asset_subclass_suministros_de_locales__camara_de_huella_digital" model="asset.subclass">
+            <field name="name">CAMARA DE HUELLA DIGITAL</field>
+            <field name="class_id" ref="asset_class_suministros_de_locales"/>
+        </record>
+        <record id="asset_subclass_suministros_de_locales__camara_de_seguridad" model="asset.subclass">
+            <field name="name">CAMARA DE SEGURIDAD</field>
+            <field name="class_id" ref="asset_class_suministros_de_locales"/>
+        </record>
+        <record id="asset_subclass_suministros_de_locales__camara_hikvision" model="asset.subclass">
+            <field name="name">CAMARA HIKVISION</field>
+            <field name="class_id" ref="asset_class_suministros_de_locales"/>
+        </record>
+        <record id="asset_subclass_suministros_de_locales__cargador_de_celular" model="asset.subclass">
+            <field name="name">CARGADOR DE CELULAR</field>
+            <field name="class_id" ref="asset_class_suministros_de_locales"/>
+        </record>
+        <record id="asset_subclass_suministros_de_locales__carpa" model="asset.subclass">
+            <field name="name">CARPA</field>
+            <field name="class_id" ref="asset_class_suministros_de_locales"/>
+        </record>
+        <record id="asset_subclass_suministros_de_locales__carpa_blanca_3m_50cm_de_ancho_x_2m_30cm_largo"
+                model="asset.subclass">
+            <field name="name">CARPA BLANCA 3M 50CM DE ANCHO X 2M 30CM LARGO</field>
+            <field name="class_id" ref="asset_class_suministros_de_locales"/>
+        </record>
+        <record id="asset_subclass_suministros_de_locales__celular" model="asset.subclass">
+            <field name="name">CELULAR</field>
+            <field name="class_id" ref="asset_class_suministros_de_locales"/>
+        </record>
+        <record id="asset_subclass_suministros_de_locales__cerramiento_metalico_reflector" model="asset.subclass">
+            <field name="name">CERRAMIENTO METALICO + REFLECTOR</field>
+            <field name="class_id" ref="asset_class_suministros_de_locales"/>
+        </record>
+        <record id="asset_subclass_suministros_de_locales__chismoso" model="asset.subclass">
+            <field name="name">CHISMOSO</field>
+            <field name="class_id" ref="asset_class_suministros_de_locales"/>
+        </record>
+        <record id="asset_subclass_suministros_de_locales__cojines" model="asset.subclass">
+            <field name="name">COJINES</field>
+            <field name="class_id" ref="asset_class_suministros_de_locales"/>
+        </record>
+        <record id="asset_subclass_suministros_de_locales__colchonetas" model="asset.subclass">
+            <field name="name">COLCHONETAS</field>
+            <field name="class_id" ref="asset_class_suministros_de_locales"/>
+        </record>
+        <record id="asset_subclass_suministros_de_locales__conos" model="asset.subclass">
+            <field name="name">CONOS</field>
+            <field name="class_id" ref="asset_class_suministros_de_locales"/>
+        </record>
+        <record id="asset_subclass_suministros_de_locales__contacto_magnetico" model="asset.subclass">
+            <field name="name">CONTACTO MAGNETICO</field>
+            <field name="class_id" ref="asset_class_suministros_de_locales"/>
+        </record>
+        <record id="asset_subclass_suministros_de_locales__cooler" model="asset.subclass">
+            <field name="name">COOLER</field>
+            <field name="class_id" ref="asset_class_suministros_de_locales"/>
+        </record>
+        <record id="asset_subclass_suministros_de_locales__cortinas" model="asset.subclass">
+            <field name="name">CORTINAS</field>
+            <field name="class_id" ref="asset_class_suministros_de_locales"/>
+        </record>
+        <record id="asset_subclass_suministros_de_locales__cuadro_personalizado" model="asset.subclass">
+            <field name="name">CUADRO PERSONALIZADO</field>
+            <field name="class_id" ref="asset_class_suministros_de_locales"/>
+        </record>
+        <record id="asset_subclass_suministros_de_locales__decoracion_interior" model="asset.subclass">
+            <field name="name">DECORACION INTERIOR</field>
+            <field name="class_id" ref="asset_class_suministros_de_locales"/>
+        </record>
+        <record id="asset_subclass_suministros_de_locales__detector_de_humo" model="asset.subclass">
+            <field name="name">DETECTOR DE HUMO</field>
+            <field name="class_id" ref="asset_class_suministros_de_locales"/>
+        </record>
+        <record id="asset_subclass_suministros_de_locales__detector_de_movimiento_anti_mascotas" model="asset.subclass">
+            <field name="name">DETECTOR DE MOVIMIENTO ANTI MASCOTAS</field>
+            <field name="class_id" ref="asset_class_suministros_de_locales"/>
+        </record>
+        <record id="asset_subclass_suministros_de_locales__discos_promocionales" model="asset.subclass">
+            <field name="name">DISCOS PROMOCIONALES</field>
+            <field name="class_id" ref="asset_class_suministros_de_locales"/>
+        </record>
+        <record id="asset_subclass_suministros_de_locales__dispensador_de_agua" model="asset.subclass">
+            <field name="name">DISPENSADOR DE AGUA</field>
+            <field name="class_id" ref="asset_class_suministros_de_locales"/>
+        </record>
+        <record id="asset_subclass_suministros_de_locales__dispensador_de_gel" model="asset.subclass">
+            <field name="name">DISPENSADOR DE GEL</field>
+            <field name="class_id" ref="asset_class_suministros_de_locales"/>
+        </record>
+        <record id="asset_subclass_suministros_de_locales__dispensador_de_jabon" model="asset.subclass">
+            <field name="name">DISPENSADOR DE JABON</field>
+            <field name="class_id" ref="asset_class_suministros_de_locales"/>
+        </record>
+        <record id="asset_subclass_suministros_de_locales__dispensador_de_papel_higienico" model="asset.subclass">
+            <field name="name">DISPENSADOR DE PAPEL HIGIENICO</field>
+            <field name="class_id" ref="asset_class_suministros_de_locales"/>
+        </record>
+        <record id="asset_subclass_suministros_de_locales__dispensador_toallas_de_mano" model="asset.subclass">
+            <field name="name">DISPENSADOR TOALLAS DE MANO</field>
+            <field name="class_id" ref="asset_class_suministros_de_locales"/>
+        </record>
+        <record id="asset_subclass_suministros_de_locales__equipo_de_control_huella_digital" model="asset.subclass">
+            <field name="name">EQUIPO DE CONTROL HUELLA DIGITAL</field>
+            <field name="class_id" ref="asset_class_suministros_de_locales"/>
+        </record>
+        <record id="asset_subclass_suministros_de_locales__equipo_recargador_situ" model="asset.subclass">
+            <field name="name">EQUIPO RECARGADOR SITU</field>
+            <field name="class_id" ref="asset_class_suministros_de_locales"/>
+        </record>
+        <record id="asset_subclass_suministros_de_locales__espejos" model="asset.subclass">
+            <field name="name">ESPEJOS</field>
+            <field name="class_id" ref="asset_class_suministros_de_locales"/>
+        </record>
+        <record id="asset_subclass_suministros_de_locales__estiletes" model="asset.subclass">
+            <field name="name">ESTILETES</field>
+            <field name="class_id" ref="asset_class_suministros_de_locales"/>
+        </record>
+        <record id="asset_subclass_suministros_de_locales__extension" model="asset.subclass">
+            <field name="name">EXTENSION</field>
+            <field name="class_id" ref="asset_class_suministros_de_locales"/>
+        </record>
+        <record id="asset_subclass_suministros_de_locales__extintores" model="asset.subclass">
+            <field name="name">EXTINTORES</field>
+            <field name="class_id" ref="asset_class_suministros_de_locales"/>
+        </record>
+        <record id="asset_subclass_suministros_de_locales__faro_reflector" model="asset.subclass">
+            <field name="name">FARO REFLECTOR</field>
+            <field name="class_id" ref="asset_class_suministros_de_locales"/>
+        </record>
+        <record id="asset_subclass_suministros_de_locales__flash_memory" model="asset.subclass">
+            <field name="name">FLASH MEMORY</field>
+            <field name="class_id" ref="asset_class_suministros_de_locales"/>
+        </record>
+        <record id="asset_subclass_suministros_de_locales__gavetas" model="asset.subclass">
+            <field name="name">GAVETAS</field>
+            <field name="class_id" ref="asset_class_suministros_de_locales"/>
+        </record>
+        <record id="asset_subclass_suministros_de_locales__gel_antibacterial" model="asset.subclass">
+            <field name="name">GEL ANTIBACTERIAL</field>
+            <field name="class_id" ref="asset_class_suministros_de_locales"/>
+        </record>
+        <record id="asset_subclass_suministros_de_locales__generador_de_luz" model="asset.subclass">
+            <field name="name">GENERADOR DE LUZ</field>
+            <field name="class_id" ref="asset_class_suministros_de_locales"/>
+        </record>
+        <record id="asset_subclass_suministros_de_locales__grampadora" model="asset.subclass">
+            <field name="name">GRAMPADORA</field>
+            <field name="class_id" ref="asset_class_suministros_de_locales"/>
+        </record>
+        <record id="asset_subclass_suministros_de_locales__impresoras" model="asset.subclass">
+            <field name="name">IMPRESORAS</field>
+            <field name="class_id" ref="asset_class_suministros_de_locales"/>
+        </record>
+        <record id="asset_subclass_suministros_de_locales__jardinera_de_madera" model="asset.subclass">
+            <field name="name">JARDINERA DE MADERA</field>
+            <field name="class_id" ref="asset_class_suministros_de_locales"/>
+        </record>
+        <record id="asset_subclass_suministros_de_locales__juego_de_senaletica" model="asset.subclass">
+            <field name="name">JUEGO DE SEÑALETICA</field>
+            <field name="class_id" ref="asset_class_suministros_de_locales"/>
+        </record>
+        <record id="asset_subclass_suministros_de_locales__kit_de_sirena" model="asset.subclass">
+            <field name="name">KIT DE SIRENA</field>
+            <field name="class_id" ref="asset_class_suministros_de_locales"/>
+        </record>
+        <record id="asset_subclass_suministros_de_locales__lamparas" model="asset.subclass">
+            <field name="name">LAMPARAS</field>
+            <field name="class_id" ref="asset_class_suministros_de_locales"/>
+        </record>
+        <record id="asset_subclass_suministros_de_locales__lector_de_huella" model="asset.subclass">
+            <field name="name">LECTOR DE HUELLA</field>
+            <field name="class_id" ref="asset_class_suministros_de_locales"/>
+        </record>
+        <record id="asset_subclass_suministros_de_locales__letreros" model="asset.subclass">
+            <field name="name">LETREROS</field>
+            <field name="class_id" ref="asset_class_suministros_de_locales"/>
+        </record>
+        <record id="asset_subclass_suministros_de_locales__luz_de_emergencia" model="asset.subclass">
+            <field name="name">LUZ DE EMERGENCIA</field>
+            <field name="class_id" ref="asset_class_suministros_de_locales"/>
+        </record>
+        <record id="asset_subclass_suministros_de_locales__macetas" model="asset.subclass">
+            <field name="name">MACETAS</field>
+            <field name="class_id" ref="asset_class_suministros_de_locales"/>
+        </record>
+        <record id="asset_subclass_suministros_de_locales__maleta_portatil_impresora" model="asset.subclass">
+            <field name="name">MALETA PORTATIL IMPRESORA</field>
+            <field name="class_id" ref="asset_class_suministros_de_locales"/>
+        </record>
+        <record id="asset_subclass_suministros_de_locales__maquina_cuenta_monedas" model="asset.subclass">
+            <field name="name">MAQUINA CUENTA MONEDAS</field>
+            <field name="class_id" ref="asset_class_suministros_de_locales"/>
+        </record>
+        <record id="asset_subclass_suministros_de_locales__maquina_de_limpieza_vaporizador" model="asset.subclass">
+            <field name="name">MAQUINA DE LIMPIEZA VAPORIZADOR</field>
+            <field name="class_id" ref="asset_class_suministros_de_locales"/>
+        </record>
+        <record id="asset_subclass_suministros_de_locales__maquina_de_microdermobracion" model="asset.subclass">
+            <field name="name">MAQUINA DE MICRODERMOBRACIÓN</field>
+            <field name="class_id" ref="asset_class_suministros_de_locales"/>
+        </record>
+        <record id="asset_subclass_suministros_de_locales__maquina_recargador_situ" model="asset.subclass">
+            <field name="name">MAQUINA RECARGADOR SITU</field>
+            <field name="class_id" ref="asset_class_suministros_de_locales"/>
+        </record>
+        <record id="asset_subclass_suministros_de_locales__minibar" model="asset.subclass">
+            <field name="name">MINIBAR</field>
+            <field name="class_id" ref="asset_class_suministros_de_locales"/>
+        </record>
+        <record id="asset_subclass_suministros_de_locales__mision_vision" model="asset.subclass">
+            <field name="name">MISION/VISION</field>
+            <field name="class_id" ref="asset_class_suministros_de_locales"/>
+        </record>
+        <record id="asset_subclass_suministros_de_locales__mouse" model="asset.subclass">
+            <field name="name">MOUSE</field>
+            <field name="class_id" ref="asset_class_suministros_de_locales"/>
+        </record>
+        <record id="asset_subclass_suministros_de_locales__nvr" model="asset.subclass">
+            <field name="name">NVR</field>
+            <field name="class_id" ref="asset_class_suministros_de_locales"/>
+        </record>
+        <record id="asset_subclass_suministros_de_locales__organizador" model="asset.subclass">
+            <field name="name">ORGANIZADOR</field>
+            <field name="class_id" ref="asset_class_suministros_de_locales"/>
+        </record>
+        <record id="asset_subclass_suministros_de_locales__palet" model="asset.subclass">
+            <field name="name">PALET</field>
+            <field name="class_id" ref="asset_class_suministros_de_locales"/>
+        </record>
+        <record id="asset_subclass_suministros_de_locales__pantallas_led" model="asset.subclass">
+            <field name="name">PANTALLAS LED</field>
+            <field name="class_id" ref="asset_class_suministros_de_locales"/>
+        </record>
+        <record id="asset_subclass_suministros_de_locales__pasamanos" model="asset.subclass">
+            <field name="name">PASAMANOS</field>
+            <field name="class_id" ref="asset_class_suministros_de_locales"/>
+        </record>
+        <record id="asset_subclass_suministros_de_locales__pediluvios" model="asset.subclass">
+            <field name="name">PEDILUVIOS</field>
+            <field name="class_id" ref="asset_class_suministros_de_locales"/>
+        </record>
+        <record id="asset_subclass_suministros_de_locales__perchas" model="asset.subclass">
+            <field name="name">PERCHAS</field>
+            <field name="class_id" ref="asset_class_suministros_de_locales"/>
+        </record>
+        <record id="asset_subclass_suministros_de_locales__perforadora" model="asset.subclass">
+            <field name="name">PERFORADORA</field>
+            <field name="class_id" ref="asset_class_suministros_de_locales"/>
+        </record>
+        <record id="asset_subclass_suministros_de_locales__persianas" model="asset.subclass">
+            <field name="name">PERSIANAS</field>
+            <field name="class_id" ref="asset_class_suministros_de_locales"/>
+        </record>
+        <record id="asset_subclass_suministros_de_locales__pizarra" model="asset.subclass">
+            <field name="name">PIZARRA</field>
+            <field name="class_id" ref="asset_class_suministros_de_locales"/>
+        </record>
+        <record id="asset_subclass_suministros_de_locales__portaretratos_madera" model="asset.subclass">
+            <field name="name">PORTARETRATOS MADERA</field>
+            <field name="class_id" ref="asset_class_suministros_de_locales"/>
+        </record>
+        <record id="asset_subclass_suministros_de_locales__portero_electrico_digital" model="asset.subclass">
+            <field name="name">PORTERO ELECTRICO DIGITAL</field>
+            <field name="class_id" ref="asset_class_suministros_de_locales"/>
+        </record>
+        <record id="asset_subclass_suministros_de_locales__poste_de_metal" model="asset.subclass">
+            <field name="name">POSTE DE METAL</field>
+            <field name="class_id" ref="asset_class_suministros_de_locales"/>
+        </record>
+        <record id="asset_subclass_suministros_de_locales__poste_de_metal_reflector" model="asset.subclass">
+            <field name="name">POSTE DE METAL (REFLECTOR)</field>
+            <field name="class_id" ref="asset_class_suministros_de_locales"/>
+        </record>
+        <record id="asset_subclass_suministros_de_locales__puertas" model="asset.subclass">
+            <field name="name">PUERTAS</field>
+            <field name="class_id" ref="asset_class_suministros_de_locales"/>
+        </record>
+        <record id="asset_subclass_suministros_de_locales__pulsador_de_emergencia" model="asset.subclass">
+            <field name="name">PULSADOR DE EMERGENCIA</field>
+            <field name="class_id" ref="asset_class_suministros_de_locales"/>
+        </record>
+        <record id="asset_subclass_suministros_de_locales__puntero" model="asset.subclass">
+            <field name="name">PUNTERO</field>
+            <field name="class_id" ref="asset_class_suministros_de_locales"/>
+        </record>
+        <record id="asset_subclass_suministros_de_locales__punto_de_red" model="asset.subclass">
+            <field name="name">PUNTO DE RED</field>
+            <field name="class_id" ref="asset_class_suministros_de_locales"/>
+        </record>
+        <record id="asset_subclass_suministros_de_locales__recogedores" model="asset.subclass">
+            <field name="name">RECOGEDORES</field>
+            <field name="class_id" ref="asset_class_suministros_de_locales"/>
+        </record>
+        <record id="asset_subclass_suministros_de_locales__reflectores" model="asset.subclass">
+            <field name="name">REFLECTORES</field>
+            <field name="class_id" ref="asset_class_suministros_de_locales"/>
+        </record>
+        <record id="asset_subclass_suministros_de_locales__regleta" model="asset.subclass">
+            <field name="name">REGLETA</field>
+            <field name="class_id" ref="asset_class_suministros_de_locales"/>
+        </record>
+        <record id="asset_subclass_suministros_de_locales__regulador_de_luz" model="asset.subclass">
+            <field name="name">REGULADOR DE LUZ</field>
+            <field name="class_id" ref="asset_class_suministros_de_locales"/>
+        </record>
+        <record id="asset_subclass_suministros_de_locales__regulador_de_voltaje" model="asset.subclass">
+            <field name="name">REGULADOR DE VOLTAJE</field>
+            <field name="class_id" ref="asset_class_suministros_de_locales"/>
+        </record>
+        <record id="asset_subclass_suministros_de_locales__reloj_de_pared" model="asset.subclass">
+            <field name="name">RELOJ DE PARED</field>
+            <field name="class_id" ref="asset_class_suministros_de_locales"/>
+        </record>
+        <record id="asset_subclass_suministros_de_locales__roda_pies_metalicos" model="asset.subclass">
+            <field name="name">RODA PIES METALICOS</field>
+            <field name="class_id" ref="asset_class_suministros_de_locales"/>
+        </record>
+        <record id="asset_subclass_suministros_de_locales__sacagrapas" model="asset.subclass">
+            <field name="name">SACAGRAPAS</field>
+            <field name="class_id" ref="asset_class_suministros_de_locales"/>
+        </record>
+        <record id="asset_subclass_suministros_de_locales__seguro_de_puerta" model="asset.subclass">
+            <field name="name">SEGURO DE PUERTA</field>
+            <field name="class_id" ref="asset_class_suministros_de_locales"/>
+        </record>
+        <record id="asset_subclass_suministros_de_locales__sensor_de_alarma" model="asset.subclass">
+            <field name="name">SENSOR DE ALARMA</field>
+            <field name="class_id" ref="asset_class_suministros_de_locales"/>
+        </record>
+        <record id="asset_subclass_suministros_de_locales__senaletica" model="asset.subclass">
+            <field name="name">SEÑALETICA</field>
+            <field name="class_id" ref="asset_class_suministros_de_locales"/>
+        </record>
+        <record id="asset_subclass_suministros_de_locales__sillas" model="asset.subclass">
+            <field name="name">SILLAS</field>
+            <field name="class_id" ref="asset_class_suministros_de_locales"/>
+        </record>
+        <record id="asset_subclass_suministros_de_locales__supresor_de_picos" model="asset.subclass">
+            <field name="name">SUPRESOR DE PICOS</field>
+            <field name="class_id" ref="asset_class_suministros_de_locales"/>
+        </record>
+        <record id="asset_subclass_suministros_de_locales__switch" model="asset.subclass">
+            <field name="name">SWITCH</field>
+            <field name="class_id" ref="asset_class_suministros_de_locales"/>
+        </record>
+        <record id="asset_subclass_suministros_de_locales__tablet_industrial" model="asset.subclass">
+            <field name="name">TABLET INDUSTRIAL</field>
+            <field name="class_id" ref="asset_class_suministros_de_locales"/>
+        </record>
+        <record id="asset_subclass_suministros_de_locales__tandem_doble_tapizada_forro_de_mica" model="asset.subclass">
+            <field name="name">TANDEM DOBLE TAPIZADA + FORRO DE MICA</field>
+            <field name="class_id" ref="asset_class_suministros_de_locales"/>
+        </record>
+        <record id="asset_subclass_suministros_de_locales__telefonos" model="asset.subclass">
+            <field name="name">TELEFONOS</field>
+            <field name="class_id" ref="asset_class_suministros_de_locales"/>
+        </record>
+        <record id="asset_subclass_suministros_de_locales__termometros" model="asset.subclass">
+            <field name="name">TERMOMETROS</field>
+            <field name="class_id" ref="asset_class_suministros_de_locales"/>
+        </record>
+        <record id="asset_subclass_suministros_de_locales__tulas" model="asset.subclass">
+            <field name="name">TULAS</field>
+            <field name="class_id" ref="asset_class_suministros_de_locales"/>
+        </record>
+        <record id="asset_subclass_suministros_de_locales__ups" model="asset.subclass">
+            <field name="name">UPS</field>
+            <field name="class_id" ref="asset_class_suministros_de_locales"/>
+        </record>
+        <record id="asset_subclass_suministros_de_locales__ventanas" model="asset.subclass">
+            <field name="name">VENTANAS</field>
+            <field name="class_id" ref="asset_class_suministros_de_locales"/>
+        </record>
+        <record id="asset_subclass_suministros_de_locales__ventiladores" model="asset.subclass">
+            <field name="name">VENTILADORES</field>
+            <field name="class_id" ref="asset_class_suministros_de_locales"/>
+        </record>
+        <record id="asset_subclass_suministros_de_oficina__celular" model="asset.subclass">
+            <field name="name">CELULAR</field>
+            <field name="class_id" ref="asset_class_suministros_de_oficina"/>
+        </record>
+        <record id="asset_subclass_suministros_de_oficina__telefonos" model="asset.subclass">
+            <field name="name">TELEFONOS</field>
+            <field name="class_id" ref="asset_class_suministros_de_oficina"/>
+        </record>
+        <record id="asset_subclass_utiles_de_aseo__basureros" model="asset.subclass">
+            <field name="name">BASUREROS</field>
+            <field name="class_id" ref="asset_class_utiles_de_aseo"/>
+        </record>
+        <record id="asset_subclass_utiles_de_limpieza__alcohol_gel" model="asset.subclass">
+            <field name="name">ALCOHOL GEL</field>
+            <field name="class_id" ref="asset_class_utiles_de_limpieza"/>
+        </record>
+        <record id="asset_subclass_utiles_de_limpieza__atomizador" model="asset.subclass">
+            <field name="name">ATOMIZADOR</field>
+            <field name="class_id" ref="asset_class_utiles_de_limpieza"/>
+        </record>
+        <record id="asset_subclass_utiles_de_limpieza__balde_de_limpieza" model="asset.subclass">
+            <field name="name">BALDE DE LIMPIEZA</field>
+            <field name="class_id" ref="asset_class_utiles_de_limpieza"/>
+        </record>
+        <record id="asset_subclass_utiles_de_limpieza__basureros" model="asset.subclass">
+            <field name="name">BASUREROS</field>
+            <field name="class_id" ref="asset_class_utiles_de_limpieza"/>
+        </record>
+        <record id="asset_subclass_utiles_de_limpieza__calculadoras" model="asset.subclass">
+            <field name="name">CALCULADORAS</field>
+            <field name="class_id" ref="asset_class_utiles_de_limpieza"/>
+        </record>
+        <record id="asset_subclass_utiles_de_limpieza__canastas_plasticas" model="asset.subclass">
+            <field name="name">CANASTAS PLASTICAS</field>
+            <field name="class_id" ref="asset_class_utiles_de_limpieza"/>
+        </record>
+        <record id="asset_subclass_utiles_de_limpieza__carro_industrial_de_limpieza" model="asset.subclass">
+            <field name="name">CARRO INDUSTRIAL DE LIMPIEZA</field>
+            <field name="class_id" ref="asset_class_utiles_de_limpieza"/>
+        </record>
+        <record id="asset_subclass_utiles_de_limpieza__cepillo_limpia_inodoro" model="asset.subclass">
+            <field name="name">CEPILLO LIMPIA INODORO</field>
+            <field name="class_id" ref="asset_class_utiles_de_limpieza"/>
+        </record>
+        <record id="asset_subclass_utiles_de_limpieza__dispensador_de_gel" model="asset.subclass">
+            <field name="name">DISPENSADOR DE GEL</field>
+            <field name="class_id" ref="asset_class_utiles_de_limpieza"/>
+        </record>
+        <record id="asset_subclass_utiles_de_limpieza__dispensador_de_jabon" model="asset.subclass">
+            <field name="name">DISPENSADOR DE JABON</field>
+            <field name="class_id" ref="asset_class_utiles_de_limpieza"/>
+        </record>
+        <record id="asset_subclass_utiles_de_limpieza__envase_para_jabon" model="asset.subclass">
+            <field name="name">ENVASE PARA JABON</field>
+            <field name="class_id" ref="asset_class_utiles_de_limpieza"/>
+        </record>
+        <record id="asset_subclass_utiles_de_limpieza__escobas" model="asset.subclass">
+            <field name="name">ESCOBAS</field>
+            <field name="class_id" ref="asset_class_utiles_de_limpieza"/>
+        </record>
+        <record id="asset_subclass_utiles_de_limpieza__escobillon" model="asset.subclass">
+            <field name="name">ESCOBILLON</field>
+            <field name="class_id" ref="asset_class_utiles_de_limpieza"/>
+        </record>
+        <record id="asset_subclass_utiles_de_limpieza__esponja_de_silicon" model="asset.subclass">
+            <field name="name">ESPONJA DE SILICON</field>
+            <field name="class_id" ref="asset_class_utiles_de_limpieza"/>
+        </record>
+        <record id="asset_subclass_utiles_de_limpieza__esponja_para_base" model="asset.subclass">
+            <field name="name">ESPONJA PARA BASE</field>
+            <field name="class_id" ref="asset_class_utiles_de_limpieza"/>
+        </record>
+        <record id="asset_subclass_utiles_de_limpieza__flash_memory" model="asset.subclass">
+            <field name="name">FLASH MEMORY</field>
+            <field name="class_id" ref="asset_class_utiles_de_limpieza"/>
+        </record>
+        <record id="asset_subclass_utiles_de_limpieza__franela" model="asset.subclass">
+            <field name="name">FRANELA</field>
+            <field name="class_id" ref="asset_class_utiles_de_limpieza"/>
+        </record>
+        <record id="asset_subclass_utiles_de_limpieza__gel_antibacterial" model="asset.subclass">
+            <field name="name">GEL ANTIBACTERIAL</field>
+            <field name="class_id" ref="asset_class_utiles_de_limpieza"/>
+        </record>
+        <record id="asset_subclass_utiles_de_limpieza__gel_para_couler" model="asset.subclass">
+            <field name="name">GEL PARA COULER</field>
+            <field name="class_id" ref="asset_class_utiles_de_limpieza"/>
+        </record>
+        <record id="asset_subclass_utiles_de_limpieza__grampadora" model="asset.subclass">
+            <field name="name">GRAMPADORA</field>
+            <field name="class_id" ref="asset_class_utiles_de_limpieza"/>
+        </record>
+        <record id="asset_subclass_utiles_de_limpieza__juego_de_punzones" model="asset.subclass">
+            <field name="name">JUEGO DE PUNZONES</field>
+            <field name="class_id" ref="asset_class_utiles_de_limpieza"/>
+        </record>
+        <record id="asset_subclass_utiles_de_limpieza__limpion" model="asset.subclass">
+            <field name="name">LIMPION</field>
+            <field name="class_id" ref="asset_class_utiles_de_limpieza"/>
+        </record>
+        <record id="asset_subclass_utiles_de_limpieza__mopa" model="asset.subclass">
+            <field name="name">MOPA</field>
+            <field name="class_id" ref="asset_class_utiles_de_limpieza"/>
+        </record>
+        <record id="asset_subclass_utiles_de_limpieza__perforadora" model="asset.subclass">
+            <field name="name">PERFORADORA</field>
+            <field name="class_id" ref="asset_class_utiles_de_limpieza"/>
+        </record>
+        <record id="asset_subclass_utiles_de_limpieza__pincel_de_delineado" model="asset.subclass">
+            <field name="name">PINCEL DE DELINEADO</field>
+            <field name="class_id" ref="asset_class_utiles_de_limpieza"/>
+        </record>
+        <record id="asset_subclass_utiles_de_limpieza__porta_papel" model="asset.subclass">
+            <field name="name">PORTA PAPEL</field>
+            <field name="class_id" ref="asset_class_utiles_de_limpieza"/>
+        </record>
+        <record id="asset_subclass_utiles_de_limpieza__portapapel" model="asset.subclass">
+            <field name="name">PORTAPAPEL</field>
+            <field name="class_id" ref="asset_class_utiles_de_limpieza"/>
+        </record>
+        <record id="asset_subclass_utiles_de_limpieza__recogedores" model="asset.subclass">
+            <field name="name">RECOGEDORES</field>
+            <field name="class_id" ref="asset_class_utiles_de_limpieza"/>
+        </record>
+        <record id="asset_subclass_utiles_de_limpieza__sacagrapas" model="asset.subclass">
+            <field name="name">SACAGRAPAS</field>
+            <field name="class_id" ref="asset_class_utiles_de_limpieza"/>
+        </record>
+        <record id="asset_subclass_utiles_de_limpieza__sellos" model="asset.subclass">
+            <field name="name">SELLOS</field>
+            <field name="class_id" ref="asset_class_utiles_de_limpieza"/>
+        </record>
+        <record id="asset_subclass_utiles_de_limpieza__set_de_brochas" model="asset.subclass">
+            <field name="name">SET DE BROCHAS</field>
+            <field name="class_id" ref="asset_class_utiles_de_limpieza"/>
+        </record>
+        <record id="asset_subclass_utiles_de_limpieza__toallas" model="asset.subclass">
+            <field name="name">TOALLAS</field>
+            <field name="class_id" ref="asset_class_utiles_de_limpieza"/>
+        </record>
+        <record id="asset_subclass_utiles_de_limpieza__trapeador" model="asset.subclass">
+            <field name="name">TRAPEADOR</field>
+            <field name="class_id" ref="asset_class_utiles_de_limpieza"/>
+        </record>
+        <record id="asset_subclass_utiles_de_oficina__armadores" model="asset.subclass">
+            <field name="name">ARMADORES</field>
+            <field name="class_id" ref="asset_class_utiles_de_oficina"/>
+        </record>
+        <record id="asset_subclass_utiles_de_oficina__atomizador" model="asset.subclass">
+            <field name="name">ATOMIZADOR</field>
+            <field name="class_id" ref="asset_class_utiles_de_oficina"/>
+        </record>
+        <record id="asset_subclass_utiles_de_oficina__basureros" model="asset.subclass">
+            <field name="name">BASUREROS</field>
+            <field name="class_id" ref="asset_class_utiles_de_oficina"/>
+        </record>
+        <record id="asset_subclass_utiles_de_oficina__calculadoras" model="asset.subclass">
+            <field name="name">CALCULADORAS</field>
+            <field name="class_id" ref="asset_class_utiles_de_oficina"/>
+        </record>
+        <record id="asset_subclass_utiles_de_oficina__camara_de_seguridad" model="asset.subclass">
+            <field name="name">CAMARA DE SEGURIDAD</field>
+            <field name="class_id" ref="asset_class_utiles_de_oficina"/>
+        </record>
+        <record id="asset_subclass_utiles_de_oficina__canastas_plasticas" model="asset.subclass">
+            <field name="name">CANASTAS PLASTICAS</field>
+            <field name="class_id" ref="asset_class_utiles_de_oficina"/>
+        </record>
+        <record id="asset_subclass_utiles_de_oficina__candados" model="asset.subclass">
+            <field name="name">CANDADOS</field>
+            <field name="class_id" ref="asset_class_utiles_de_oficina"/>
+        </record>
+        <record id="asset_subclass_utiles_de_oficina__cepillo_limpia_inodoro" model="asset.subclass">
+            <field name="name">CEPILLO LIMPIA INODORO</field>
+            <field name="class_id" ref="asset_class_utiles_de_oficina"/>
+        </record>
+        <record id="asset_subclass_utiles_de_oficina__detector_de_humo" model="asset.subclass">
+            <field name="name">DETECTOR DE HUMO</field>
+            <field name="class_id" ref="asset_class_utiles_de_oficina"/>
+        </record>
+        <record id="asset_subclass_utiles_de_oficina__estiletes" model="asset.subclass">
+            <field name="name">ESTILETES</field>
+            <field name="class_id" ref="asset_class_utiles_de_oficina"/>
+        </record>
+        <record id="asset_subclass_utiles_de_oficina__flash_memory" model="asset.subclass">
+            <field name="name">FLASH MEMORY</field>
+            <field name="class_id" ref="asset_class_utiles_de_oficina"/>
+        </record>
+        <record id="asset_subclass_utiles_de_oficina__grampadora" model="asset.subclass">
+            <field name="name">GRAMPADORA</field>
+            <field name="class_id" ref="asset_class_utiles_de_oficina"/>
+        </record>
+        <record id="asset_subclass_utiles_de_oficina__kit_de_utiles_de_oficina" model="asset.subclass">
+            <field name="name">KIT DE UTILES DE OFICINA</field>
+            <field name="class_id" ref="asset_class_utiles_de_oficina"/>
+        </record>
+        <record id="asset_subclass_utiles_de_oficina__mouse_pad" model="asset.subclass">
+            <field name="name">MOUSE PAD</field>
+            <field name="class_id" ref="asset_class_utiles_de_oficina"/>
+        </record>
+        <record id="asset_subclass_utiles_de_oficina__perforadora" model="asset.subclass">
+            <field name="name">PERFORADORA</field>
+            <field name="class_id" ref="asset_class_utiles_de_oficina"/>
+        </record>
+        <record id="asset_subclass_utiles_de_oficina__pincho_metalico" model="asset.subclass">
+            <field name="name">PINCHO METALICO</field>
+            <field name="class_id" ref="asset_class_utiles_de_oficina"/>
+        </record>
+        <record id="asset_subclass_utiles_de_oficina__pistola_manual_de_silicon" model="asset.subclass">
+            <field name="name">PISTOLA MANUAL DE SILICON</field>
+            <field name="class_id" ref="asset_class_utiles_de_oficina"/>
+        </record>
+        <record id="asset_subclass_utiles_de_oficina__porta_clips" model="asset.subclass">
+            <field name="name">PORTA CLIPS</field>
+            <field name="class_id" ref="asset_class_utiles_de_oficina"/>
+        </record>
+        <record id="asset_subclass_utiles_de_oficina__portacintas" model="asset.subclass">
+            <field name="name">PORTACINTAS</field>
+            <field name="class_id" ref="asset_class_utiles_de_oficina"/>
+        </record>
+        <record id="asset_subclass_utiles_de_oficina__sacagrapas" model="asset.subclass">
+            <field name="name">SACAGRAPAS</field>
+            <field name="class_id" ref="asset_class_utiles_de_oficina"/>
+        </record>
+        <record id="asset_subclass_utiles_de_oficina__sacapuntas_de_escritorio" model="asset.subclass">
+            <field name="name">SACAPUNTAS DE ESCRITORIO</field>
+            <field name="class_id" ref="asset_class_utiles_de_oficina"/>
+        </record>
+        <record id="asset_subclass_utiles_de_oficina__sellos" model="asset.subclass">
+            <field name="name">SELLOS</field>
+            <field name="class_id" ref="asset_class_utiles_de_oficina"/>
+        </record>
+        <record id="asset_subclass_utiles_de_oficina__senaletica" model="asset.subclass">
+            <field name="name">SEÑALETICA</field>
+            <field name="class_id" ref="asset_class_utiles_de_oficina"/>
+        </record>
+        <record id="asset_subclass_utiles_de_oficina__soporte_de_mouse" model="asset.subclass">
+            <field name="name">SOPORTE DE MOUSE</field>
+            <field name="class_id" ref="asset_class_utiles_de_oficina"/>
+        </record>
+        <record id="asset_subclass_utiles_de_oficina__supresor_de_picos" model="asset.subclass">
+            <field name="name">SUPRESOR DE PICOS</field>
+            <field name="class_id" ref="asset_class_utiles_de_oficina"/>
+        </record>
+        <record id="asset_subclass_utiles_de_oficina__tablero_apoya_manos" model="asset.subclass">
+            <field name="name">TABLERO APOYA MANOS</field>
+            <field name="class_id" ref="asset_class_utiles_de_oficina"/>
+        </record>
+        <record id="asset_subclass_utiles_de_oficina__telefonos" model="asset.subclass">
+            <field name="name">TELEFONOS</field>
+            <field name="class_id" ref="asset_class_utiles_de_oficina"/>
+        </record>
+        <record id="asset_subclass_utiles_de_oficina__tijeras" model="asset.subclass">
+            <field name="name">TIJERAS</field>
+            <field name="class_id" ref="asset_class_utiles_de_oficina"/>
+        </record>
+        <record id="asset_subclass_vehiculo__furgoneta" model="asset.subclass">
+            <field name="name">FURGONETA</field>
+            <field name="class_id" ref="asset_class_vehiculo"/>
+        </record>
+    </data>
+</odoo>

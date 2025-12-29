@@ -1,0 +1,22 @@
+<?xml version="1.0" encoding="utf-8"?>
+<odoo>
+    <!--    Accion para visualziar en el menu-->
+    <record id="action_product_laboratory_action" model="ir.actions.act_window">
+        <field name="name">Laboratorios</field>
+        <field name="res_model">product.laboratory</field>
+        <field name="view_mode">tree,form</field>
+    </record>
+
+    <!--    Banner tree view-->
+    <record id="view_api_store_banner_tree" model="ir.ui.view">
+        <field name="name">product.laboratory.tree</field>
+        <field name="model">product.laboratory</field>
+        <field name="arch" type="xml">
+            <tree string="Laboratorios">
+                <field name="name"/>
+                <field name="id_database_old"/>
+                <field name="description"/>
+            </tree>
+        </field>
+    </record>
+</odoo>

@@ -1,0 +1,5 @@
+id,name,model_id:id,group_id:id,perm_read,perm_write,perm_create,perm_unlink
+access_push_device_user,push.device.user,model_push_device,base.group_user,1,1,1,1
+access_push_message_user,push.message.user,model_push_message,base.group_user,1,1,1,1
+access_push_message_line_user,push.message.line.user,model_push_message_line,base.group_user,1,1,1,1
+access_notification_message,notification.message,model_notification_message,base.group_user,1,1,1,1

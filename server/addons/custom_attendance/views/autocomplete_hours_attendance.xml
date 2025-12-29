@@ -1,0 +1,58 @@
+<?xml version="1.0" encoding="utf-8"?>
+<odoo>
+     <record id="autocomplete_attendance_hours_form_view" model="ir.ui.view">
+        <field name="name">autocomplete.attendance.hours.bulk</field>
+        <field name="model">autocomplete.attendance.hours</field>
+        <field name="arch" type="xml">
+            <form>
+                <group string="Asistencias">
+                    <group>
+                        <field name="check_in_1"/>
+                        <field name="check_out_1"/>
+                    </group>
+                    <group>
+                        <field name="tolerance" required="1"/>
+                    </group>
+                </group>
+
+                <newline/>
+                <separator colspan="6"/>
+                <footer>
+                    <button name="make_autocomplete_attendances" string="Ajustar" type="object" class="oe_highlight"/>
+                    <button special="cancel" class="oe_highlight" string="Cancel"/>
+                </footer>
+            </form>
+        </field>
+    </record>
+
+    <record id="action_autocomplete_attendance_hours" model="ir.actions.act_window">
+        <field name="name">Ajuste en asistencias masivo</field>
+        <field name="type">ir.actions.act_window</field>
+        <field name="res_model">autocomplete.attendance.hours</field>
+        <field name="view_mode">form</field>
+        <field name="target">new</field>
+    </record>
+
+    <record id="hr_attendance_view_tree_inherit" model="ir.ui.view">
+        <field name="name">hr.attendance.view.tree.inherit</field>
+        <field name="model">hr.attendance</field>
+        <field name="inherit_id" ref="hr_attendance.view_attendance_tree"/>
+        <field name="arch" type="xml">
+            <xpath expr="//tree" position="inside">
+                <header>
+                    <button name="%(action_autocomplete_attendance_hours)d" type="action" string="Actualizar Asistencia"
+                        class="btn-primary" icon="fa-refresh" context="{'active_ids': context.get('active_ids', []), 'active_model': 'hr.attendance'}"/>
+<!--                    <button name="action_update_attendance" type="object" string="Actualizar Asistencia" class="btn-primary" icon="fa-refresh"/>-->
+                    <button name="unir_asistencias" 
+                        type="object" 
+                        string="Unir Asistencias"
+                        class="btn-secondary" 
+                        icon="fa-link"
+                        context="{'active_ids': context.get('active_ids', []), 'active_model': 'hr.attendance'}"/>
+                </header>
+            </xpath>
+        </field>
+    </record>
+
+
+</odoo>

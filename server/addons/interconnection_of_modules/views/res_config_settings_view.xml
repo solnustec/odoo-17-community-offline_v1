@@ -1,0 +1,23 @@
+<?xml version="1.0" encoding="utf-8"?>
+<odoo>
+    <data>
+        <record id="res_config_settings_view_form_stock_block" model="ir.ui.view">
+            <field name="name">res.config.settings.inherit.stock.block</field>
+            <field name="model">res.config.settings</field>
+            <field name="inherit_id" ref="stock.res_config_settings_view_form"/>
+            <field name="arch" type="xml">
+                <xpath expr="//block[@name='operations_setting_container']" position="inside">
+                    <setting id="block_transfer_without_stock_setting"
+                             string="Bloquear transferencias sin stock"
+                             help="Impide validar transferencias cuando no existen existencias físicas en la ubicación de origen.">
+                        <field name="block_transfer_without_stock"/>
+                        <div class="text-muted" modifiers="{'invisible': [('block_transfer_without_stock', '=', False)]}">
+                            Si no hay stock disponible el sistema bloqueará la edición de cantidades y la validación de la transferencia.
+                        </div>
+                    </setting>
+                </xpath>
+            </field>
+        </record>
+    </data>
+</odoo>
+

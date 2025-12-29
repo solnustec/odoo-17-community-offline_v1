@@ -1,0 +1,76 @@
+<odoo>
+    <!-- Form View for Digital Payment Configuration -->
+    <record id="view_digital_payment_config_form" model="ir.ui.view">
+        <field name="name">digital.payment.config.form</field>
+        <field name="model">digital.payment.config</field>
+        <field name="arch" type="xml">
+            <form string="Configuración Pagos Digitales">
+                <sheet>
+                    <group>
+                        <field name="bank_name" placeholder="Nombre del Banco"/>
+                        <field name="bank_id"/>
+                        <field name="is_production" invisible="bank_id != 464"/>
+                        <field name="enable_advanced_payments"/>
+                    </group>
+                    <notebook>
+                        <!-- ✅ Se muestra solo si bank_id == 464 -->
+                        <page string="Entorno de Pruebas" invisible="bank_id != 464">
+                            <group>
+                                <field name="test_request_payment_url" placeholder="URL Petición de Pago (Pruebas)"/>
+                                <field name="test_payment_status_url" placeholder="URL Estado de Pago (Pruebas)"/>
+                                <field name="test_api_key" placeholder="Clave API (Pruebas)"/>
+                                <field name="test_api_secret" placeholder="Secreto API (Pruebas)"/>
+                            </group>
+                        </page>
+
+                        <page string="Entorno de Producción" invisible="bank_id != 464">
+                            <group>
+                                <field name="prod_request_payment_url" placeholder="URL Petición de Pago (Producción)"/>
+                                <field name="prod_payment_status_url" placeholder="URL Estado de Pago (Producción)"/>
+                                <field name="prod_api_key" placeholder="Clave API (Producción)"/>
+                                <field name="prod_api_secret" placeholder="Secreto API (Producción)"/>
+                            </group>
+                        </page>
+
+                        <!-- ✅ Se muestra solo si bank_id == 463 -->
+                        <page string="Configuración Ahorita" invisible="bank_id != 463">
+                            <group>
+                                <field name="ahorita_deeplink_url"/>
+                                <field name="ahorita_generate_url"/>
+                                <field name="ahorita_query_url"/>
+                                <field name="ahorita_token_url"/>
+                                <field name="ahorita_webhook_secret"/>
+                            </group>
+                        </page>
+                    </notebook>
+                </sheet>
+            </form>
+        </field>
+    </record>
+
+    <!-- Tree View for Digital Payment Configuration -->
+    <record id="view_digital_payment_config_tree" model="ir.ui.view">
+        <field name="name">digital.payment.config.tree</field>
+        <field name="model">digital.payment.config</field>
+        <field name="arch" type="xml">
+            <tree string="Configuración Pagos Digitales">
+                <field name="bank_name"/>
+                <field name="enable_advanced_payments"/>
+            </tree>
+        </field>
+    </record>
+
+    <!-- Action for Digital Payment Configuration -->
+    <record id="action_digital_payment_config" model="ir.actions.act_window">
+        <field name="name">Configuración Pagos Digitales</field>
+        <field name="res_model">digital.payment.config</field>
+        <field name="view_mode">tree,form</field>
+    </record>
+
+    <!-- Menu Item under Point of Sale Configuration -->
+    <menuitem
+        id="menu_digital_payment_config"
+        name="Configuración Pagos Digitales"
+        parent="point_of_sale.menu_point_config_product"
+        action="action_digital_payment_config"/>
+</odoo>

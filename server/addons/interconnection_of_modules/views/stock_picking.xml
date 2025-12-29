@@ -1,0 +1,235 @@
+<?xml version="1.0" encoding="utf-8"?>
+<odoo>
+    <data>
+        <record id="stock_picking_form_inherit" model="ir.ui.view">
+            <field name="name">stock.picking.form.inherit</field>
+            <field name="model">stock.picking</field>
+            <field name="inherit_id" ref="stock.view_picking_form"/>
+            <field name="arch" type="xml">
+
+                <xpath expr="//field[@name='location_id']" position="after">
+                    <field name="picking_type_code"
+                           invisible="1"/>
+                    <field name="origin_warehouse_id"
+                           invisible="picking_type_code != 'internal'"/>
+                </xpath>
+
+                <!-- Reemplazar location_dest_id con condición de invisibilidad -->
+                <xpath expr="//field[@name='location_dest_id']" position="after">
+                    <field name="dest_warehouse_id"
+                           invisible="picking_type_code != 'internal'"/>
+                </xpath>
+
+                <!-- Opción 1: Usando el atributo groups para identificarlo -->
+                <xpath expr="//field[@name='location_id'][@groups='stock.group_stock_multi_locations']" position="attributes">
+                    <attribute name="invisible">picking_type_code == 'internal'</attribute>
+                </xpath>
+
+                <!-- Opción 2: Si la anterior no funciona, usa el contexto del group -->
+                <xpath expr="//field[@name='location_dest_id'][@groups='stock.group_stock_multi_locations']" position="attributes">
+                    <attribute name="invisible">picking_type_code == 'internal'</attribute>
+                </xpath>
+
+                <!--Ocultar Contacto (partner_id) en Traslados internos (internal)-->
+                <xpath expr="//group/group/div[@class='o_td_label']" position="attributes">
+                    <attribute name="invisible" replace="True">picking_type_code == 'internal'</attribute>
+                </xpath>
+
+                <xpath expr="//group/group/field[@name='partner_id']" position="attributes">
+                    <attribute name="invisible" replace="True">picking_type_code == 'internal'</attribute>
+                </xpath>
+
+                <!--Ocultar Tipo de operación (picking_type_id) en Traslados internos (internal)-->
+                <xpath expr="//field[@name='picking_type_id']" position="attributes">
+                    <attribute name="invisible" replace="True">picking_type_code == 'internal'</attribute>
+                </xpath>
+
+                <!--Ocultar Botón Validar (color gris) para los tres tipos de Traslados-->
+<!--                <xpath expr="//header/button[@name='button_validate' and contains(@class, 'o_btn_validate')]" position="attributes">-->
+<!--                    <attribute name="invisible" replace="True">1</attribute>-->
+<!--                </xpath>-->
+
+                <!-- Insertar el campo de Productos extras (extra_products) -->
+                <xpath expr="//field[@name='quantity']" position="after">
+                    <field name="extra_products"
+                           column_invisible="parent.picking_type_code != 'incoming'"
+                           modifiers="{'column_invisible': [('parent.picking_type_code', '!=', 'incoming')]}"
+                    />
+                </xpath>
+
+                <xpath expr="//field[@name='move_ids_without_package']//tree" position="inside">
+                    <field name="stock_restriction_enabled" column_invisible="True"/>
+                    <field name="stock_blocked" column_invisible="True"/>
+                    <field name="stock_restriction_message"
+                           string="Disponibilidad"
+                           readonly="1"
+                           optional="show"
+                           class="text-danger"
+                           modifiers="{'invisible': [('stock_restriction_message', '=', False)]}"/>
+                </xpath>
+
+                <xpath expr="//field[@name='move_ids_without_package']//tree//field[@name='product_uom_qty']" position="attributes">
+                    <attribute name="modifiers">
+                        {'readonly': ['|', ('stock_blocked', '=', True), ('is_initial_demand_editable', '=', False)]}
+                    </attribute>
+                </xpath>
+
+                <xpath expr="//field[@name='move_ids_without_package']//tree//field[@name='quantity']" position="attributes">
+                    <attribute name="modifiers">
+                        {'readonly': ['|', ('stock_blocked', '=', True), ('is_quantity_done_editable', '=', False)]}
+                    </attribute>
+                </xpath>
+
+                <xpath expr="//field[@name='move_ids_without_package']//tree//field[@name='product_uom'][1]" position="attributes">
+                    <attribute name="modifiers">
+                        {'readonly': ['|', ('stock_blocked', '=', True), '&amp;', ('state', '!=', 'draft'), ('additional', '=', False)]}
+                    </attribute>
+                </xpath>
+
+            </field>
+        </record>
+
+        <!--
+            Vista Tree heredada de stock.vpicktree
+            =====================================
+            Esta vista modifica la lista de operaciones de inventario para mostrar
+            almacenes en lugar de ubicaciones cuando se trata de operaciones internas.
+
+            Comportamiento:
+            - Recepciones (incoming) y Entregas (outgoing): muestran location_id y location_dest_id
+            - Operaciones Internas (internal): muestran origin_warehouse_id y dest_warehouse_id
+
+            IMPORTANTE - Evaluación de column_invisible en Odoo 17:
+            =========================================================
+            En vistas tree, column_invisible se evalúa a nivel de VISTA (no por registro),
+            antes de cargar los datos. Por esto NO puede usar campos del modelo directamente.
+
+            La solución es usar el contexto de la acción:
+            - action_picking_tree_internal pasa: {'restricted_picking_type_code': 'internal'}
+            - action_picking_tree_incoming pasa: {'restricted_picking_type_code': 'incoming'}
+            - action_picking_tree_outgoing pasa: {'restricted_picking_type_code': 'outgoing'}
+
+            Por lo tanto usamos: context.get('restricted_picking_type_code')
+        -->
+        <record id="stock_picking_tree_inherit_internal_ops" model="ir.ui.view">
+            <field name="name">stock.picking.tree.inherit.internal.ops</field>
+            <field name="model">stock.picking</field>
+            <field name="inherit_id" ref="stock.vpicktree"/>
+            <field name="priority">20</field>
+            <field name="arch" type="xml">
+
+                <!--
+                    Ocultar location_id para operaciones internas
+                    Usa context.get('restricted_picking_type_code') que viene de la acción
+                -->
+                <xpath expr="//field[@name='location_id']" position="attributes">
+                    <attribute name="column_invisible">context.get('restricted_picking_type_code') == 'internal'</attribute>
+                </xpath>
+
+                <!--
+                    Ocultar location_dest_id para operaciones internas
+                -->
+                <xpath expr="//field[@name='location_dest_id']" position="attributes">
+                    <attribute name="column_invisible">context.get('restricted_picking_type_code') == 'internal'</attribute>
+                </xpath>
+
+                <!--
+                    Añadir origin_warehouse_id después de location_id
+                    Solo visible cuando restricted_picking_type_code == 'internal'
+                -->
+                <xpath expr="//field[@name='location_id']" position="after">
+                    <field name="origin_warehouse_id"
+                           string="Almacén Origen"
+                           column_invisible="context.get('restricted_picking_type_code') != 'internal'"
+                           optional="show"
+                           options="{'no_create': True, 'no_open': True}"/>
+                </xpath>
+
+                <!--
+                    Añadir dest_warehouse_id después de location_dest_id
+                    Solo visible cuando restricted_picking_type_code == 'internal'
+                -->
+                <xpath expr="//field[@name='location_dest_id']" position="after">
+                    <field name="dest_warehouse_id"
+                           string="Almacén Destino"
+                           column_invisible="context.get('restricted_picking_type_code') != 'internal'"
+                           optional="show"
+                           options="{'no_create': True, 'no_open': True}"/>
+                </xpath>
+
+            </field>
+        </record>
+
+        <!--
+            Vista Search heredada para stock.picking
+            ==========================================
+            Añade filtros de fecha mejorados para facilitar búsquedas por período
+        -->
+        <record id="stock_picking_search_inherit_date_filters" model="ir.ui.view">
+            <field name="name">stock.picking.search.inherit.date.filters</field>
+            <field name="model">stock.picking</field>
+            <field name="inherit_id" ref="stock.view_picking_internal_search"/>
+            <field name="priority">20</field>
+            <field name="arch" type="xml">
+                <!-- Añadir filtros de fecha después del filtro 'backorder' -->
+                <xpath expr="//filter[@name='backorder']" position="after">
+                    <separator/>
+                    <!-- Filtros por fecha programada -->
+                    <filter string="Hoy" name="filter_today"
+                            domain="[('scheduled_date', '&gt;=', (context_today()).strftime('%Y-%m-%d 00:00:00')),
+                                     ('scheduled_date', '&lt;=', (context_today()).strftime('%Y-%m-%d 23:59:59'))]"/>
+                    <filter string="Ayer" name="filter_yesterday"
+                            domain="[('scheduled_date', '&gt;=', (context_today() - datetime.timedelta(days=1)).strftime('%Y-%m-%d 00:00:00')),
+                                     ('scheduled_date', '&lt;=', (context_today() - datetime.timedelta(days=1)).strftime('%Y-%m-%d 23:59:59'))]"/>
+                    <filter string="Últimos 7 días" name="filter_last_7_days"
+                            domain="[('scheduled_date', '&gt;=', (context_today() - datetime.timedelta(days=7)).strftime('%Y-%m-%d 00:00:00'))]"/>
+                    <filter string="Últimos 30 días" name="filter_last_30_days"
+                            domain="[('scheduled_date', '&gt;=', (context_today() - datetime.timedelta(days=30)).strftime('%Y-%m-%d 00:00:00'))]"/>
+                    <filter string="Este mes" name="filter_this_month"
+                            domain="[('scheduled_date', '&gt;=', time.strftime('%Y-%m-01 00:00:00'))]"/>
+                </xpath>
+                <!-- Añadir agrupación por fecha en el grupo existente -->
+                <xpath expr="//filter[@name='picking_type']" position="after">
+                    <filter string="Fecha (Día)" name="group_scheduled_day" context="{'group_by': 'scheduled_date:day'}"/>
+                    <filter string="Fecha (Mes)" name="group_scheduled_month" context="{'group_by': 'scheduled_date:month'}"/>
+                </xpath>
+            </field>
+        </record>
+
+        <!--
+            Acción y Menú para Transferencias Internas
+            ===========================================
+            Crea un acceso directo para ver solo transferencias internas
+            con filtros de fecha mejorados y orden descendente por fecha.
+        -->
+        <record id="action_picking_tree_transferencias" model="ir.actions.act_window">
+            <field name="name">Transferencias</field>
+            <field name="res_model">stock.picking</field>
+            <field name="view_mode">tree,kanban,form,calendar</field>
+            <field name="domain">[('picking_type_code', '=', 'internal')]</field>
+            <field name="context">{
+                'restricted_picking_type_code': 'internal',
+                'search_default_filter_last_7_days': 1,
+                'default_picking_type_id': False,
+            }</field>
+            <field name="search_view_id" ref="stock.view_picking_internal_search"/>
+            <field name="help" type="html">
+                <p class="o_view_nocontent_smiling_face">
+                    No hay transferencias internas
+                </p>
+                <p>
+                    Las transferencias internas permiten mover productos entre almacenes.
+                </p>
+            </field>
+        </record>
+
+        <!-- Menú Transferencias bajo Operaciones -->
+        <menuitem id="menu_transferencias_internas"
+                  name="Transferencias"
+                  parent="stock.menu_stock_transfers"
+                  action="action_picking_tree_transferencias"
+                  sequence="25"
+                  groups="stock.group_stock_multi_locations"/>
+
+    </data>
+</odoo>

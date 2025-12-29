@@ -1,0 +1,24 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<odoo>
+	<data>
+		<record model="ir.ui.view" id="hr_payslip_tree_view">
+			<field name="name">hr.payslip.tree</field>
+			<field name="model">hr.payslip</field>
+			<field name="inherit_id" ref="hr_payroll.view_hr_payslip_tree" />
+			<field name="arch" type="xml">
+				<!-- <field name="name" position="after">
+					<field name="analytic_account_id"/>
+				</field> -->
+				<field name="date_to" position="after">
+					<field name="inputs" sum="Ingresos"/>
+					<field name="other_inputs" sum="Otros Ingresos"/>
+					<field name="other_inputsn" sum="Ingresos no Descontables"/>
+					<field name="outputs" sum="Egresos"/>
+					<field name="payslip_net" sum="Pago Neto"/>
+					<field name="payslip_undiscount" sum="Valores no Descontados"/>
+					<field name="company_contributions" sum="Contribuciones Adicionales"/>
+				</field>
+			</field>
+		</record>
+	</data>
+</odoo>

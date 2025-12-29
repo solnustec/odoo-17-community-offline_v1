@@ -1,0 +1,101 @@
+<odoo>
+    <data>
+
+        <record id="stock_rule_replenishment_search" model="ir.ui.view">
+            <field name="name">stock.rule.replenishment.search</field>
+            <field name="model">stock.rule.replenishment</field>
+            <field name="arch" type="xml">
+                <search>
+                    <field name="name" string="Nombre"/>
+                </search>
+            </field>
+        </record>
+
+        <record id="stock_rule_replenishment_form" model="ir.ui.view">
+            <field name="name">form.stock.rule.replenishment</field>
+            <field name="model">stock.rule.replenishment</field>
+            <field name="arch" type="xml">
+                <form string="Reglas de Reabastecimiento (max. y min.)">
+                    <sheet>
+                        <widget name="web_ribbon" title="Archivado" bg_color="text-bg-danger" invisible="active"/>
+                        <label for="name" string="Nombre de la Regla"/>
+                        <h1><field name="name" placeholder="ej. Stock de Seguridad"/></h1>
+
+                        <group name="main_details" col="4">
+                            <field name="code"/>
+                            <field name="sequence" string="Orden de ejecución"/>
+                            <field name="active" widget="boolean_toggle"/>
+                        </group>
+                        <notebook colspan="6">
+                            <page name="general" string="General">
+                                <group name="general_conditions">
+                                    <group string="Condiciones">
+                                        <field name="condition_select" string="Condición Basada en"/>
+                                        <field name="condition_range" invisible="condition_select != 'range'" required="condition_select == 'range'"/>
+                                        <field name="condition_range_min" invisible="condition_select != 'range'" required="condition_select == 'range'"/>
+                                        <field name="condition_range_max" invisible="condition_select != 'range'" required="condition_select == 'range'"/>
+                                    </group>
+                                    <group colspan="4">
+                                        <field name="condition_python" invisible="condition_select != 'python'" required="condition_select == 'python'"/>
+                                    </group>
+                                    <group string="Cálculo">
+                                        <field name="amount_select"/>
+                                        <field name="amount_percentage_base" invisible="amount_select != 'percentage'" required="amount_select == 'percentage'"/>
+                                        <field name="quantity" invisible="amount_select == 'code'" required="amount_select != 'code'"/>
+                                        <field name="amount_fix"  invisible="amount_select != 'fix'"  required="amount_select == 'fix'"/>
+                                        <field name="amount_percentage" invisible="amount_select != 'percentage'" required="amount_select == 'percentage'"/>
+                                    </group>
+                                    <group colspan="4">
+                                        <field name="amount_python_compute" invisible="amount_select != 'code'" required="amount_select == 'code'"/>
+                                    </group>
+                                </group>
+                            </page>
+                            <page name="description" string="Descripción">
+                                <field name="note"/>
+                            </page>
+                            <page name="status" string="Estado de Ejecución">
+                                <field name="state"/>
+                            </page>
+                        </notebook>
+                    </sheet>
+                </form>
+            </field>
+        </record>
+
+        <record id="stock_rule_replenishment_tree" model="ir.ui.view">
+            <field name="name">tree.stock.rule.replenishment</field>
+            <field name="model">stock.rule.replenishment</field>
+            <field name="arch" type="xml">
+                <tree>
+                    <field name="sequence" widget="handle"/>
+                    <field name="name"/>
+                    <field name="code"/>
+                </tree>
+            </field>
+        </record>
+
+
+        <record id="action_stock_rule_replenishment" model="ir.actions.act_window">
+            <field name="name">Reglas de máximos y mínimos</field>
+            <field name="type">ir.actions.act_window</field>
+            <field name="res_model">stock.rule.replenishment</field>
+            <field name="view_mode">search,tree,form</field>
+            <field name="view_ids" eval="[(5, 0, 0),
+        (0, 0, {'view_mode': 'tree', 'view_id': ref('stock_rule_replenishment_tree')}),
+        (0, 0, {'view_mode': 'form', 'view_id': ref('stock_rule_replenishment_form')}),
+    ]"/>
+            <field name="search_view_id" ref="stock_rule_replenishment_search"/>
+        </record>
+
+
+        <menuitem
+            id="menu_stock_rule_replenishment"
+            name="Reglas de máximos y mínimos"
+            parent="stock.menu_warehouse_config"
+            action="action_stock_rule_replenishment"
+            sequence="10"
+            groups="replenishment_inventory.group_stock_rule_replenishment_admin"/>
+
+    </data>
+</odoo>
+

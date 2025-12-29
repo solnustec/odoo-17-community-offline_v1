@@ -1,0 +1,156 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<odoo>
+	<data>
+
+		<record model="ir.ui.view" id="hr_family_burden_tree_view_employee">
+			<field name="name">hr.family.burden.tree</field>
+			<field name="model">hr.family.burden</field>
+			<field name="type">tree</field>
+			<field name="priority">10</field>
+			<field name="arch" type="xml">
+				<tree string="Family Burden">
+					<field name="name" />
+					<field name="last_name" />
+					<field name="identification_number" optional="hide" />
+					<field name="is_disability" />
+					<field name="percentage_disability" optional="hide" />
+					<field name="birth_date" optional="hide" />
+					<field name="relationship" />
+					<field name="age" />
+				</tree>
+			</field>
+		</record>
+
+		<record model="ir.ui.view" id="hr_family_burden_form_view_employee">
+			<field name="name">hr.family.burden.form</field>
+			<field name="model">hr.family.burden</field>
+			<field name="type">form</field>
+			<field name="priority">10</field>
+			<field name="arch" type="xml">
+				<form string="form_string">
+					<sheet>
+						<group>
+							<group>
+								<field name="name" required="1" />
+								<field name="last_name" required="1" />
+								<field name="relationship" required="1" placeholder="Seleccione Parentesco" class="oe_inline"/>
+								<field name="identification_number" required="1" />
+							</group>
+							<group>
+								<field name="birth_date" required="relationship == 'child'"/>
+								<field name="age" />
+								<field name="is_disability" class="oe_inline"/>
+								<field name="percentage_disability" invisible="not is_disability" class="oe_inline"/>
+							</group>
+						</group>
+					</sheet>
+				</form>
+			</field>
+		</record>
+
+
+		<record model="ir.ui.view" id="hr_family_burden_export_search_view">
+			<field name="name">hr.family.burden.form</field>
+			<field name="model">hr.family.burden</field>
+			<field name="type">search</field>
+			<field name="arch" type="xml">
+				<search string="form_string">
+					<filter string="Empleado" name="employee_id" icon="terp-partner" context="{'group_by':'employee_id'}" />
+					<filter string="Relación" name="relationship" icon="terp-folder-yellow" context="{'group_by':'relationship'}" />
+					<separator orientation="vertical" />
+					<field name="employee_id" />
+					<field name="name" />
+					<field name="last_name" />
+					<newline />
+					<field name="relationship" />
+					<field name="is_disability" />
+					<newline />
+					<field name="birth_date" />
+				</search>
+			</field>
+		</record>
+
+
+
+		<record model="ir.ui.view" id="hr_family_burden_export_tree_view">
+			<field name="name">hr.family.burden.tree</field>
+			<field name="model">hr.family.burden</field>
+			<field name="type">tree</field>
+			<field name="arch" type="xml">
+				<tree string="tree_string">
+					<field name="employee_id" />
+					<field name="name" />
+					<field name="last_name" />
+					<field name="identification_number" optional="hide" />
+					<field name="is_disability" />
+					<field name="percentage_disability" optional="hide" />
+					<field name="birth_date" optional="hide" />
+					<field name="relationship" />
+					<field name="age" />
+				</tree>
+			</field>
+		</record>
+
+		<record model="ir.ui.view" id="hr_family_burden_export_form_view">
+			<field name="name">hr.family.burden.form</field>
+			<field name="model">hr.family.burden</field>
+			<field name="type">form</field>
+			<field name="arch" type="xml">
+				<form string="form_string">
+					<sheet>
+						<div class="oe_title">
+                            <h1>Empleado: <field name="employee_id" required="1"/></h1><br/>
+                        </div>
+						<group>
+							<group>
+								<field name="relationship" required="1" placeholder="Seleccione Parentesco" class="oe_inline"/>
+								<field name="identification_number" required="1" />
+								<field name="name" required="1" />
+								<field name="last_name" required="1" />
+							</group>
+							<group>
+								<field name="birth_date" required="relationship == 'child'"/>
+								<field name="age" />
+								<field name="is_disability" class="oe_inline"/>
+								<field name="percentage_disability" invisible="not is_disability" class="oe_inline"/>
+							</group>
+						</group>
+					</sheet>
+				</form>
+			</field>
+		</record>
+
+
+
+		<record model="ir.actions.act_window" id="action_hr_family_burden_export_tree_view">
+			<field name="name">Cargas Familiares</field>
+			<field name="type">ir.actions.act_window</field>
+			<field name="res_model">hr.family.burden</field>
+			<field name="view_mode">tree,form</field>
+			<field name="search_view_id" ref="hr_family_burden_export_search_view" />
+			<field name="view_ids" eval="[(5, 0, 0),
+        (0, 0, {'view_mode': 'tree', 'view_id': ref('hr_family_burden_export_tree_view')}),
+        (0, 0, {'view_mode': 'form', 'view_id': ref('hr_family_burden_export_form_view')}),
+    ]"/>
+		</record>
+
+<!--		<record id="action_hr_family_burden_export_tree_view1" model="ir.actions.act_window.view">-->
+<!--			<field eval="1" name="sequence" />-->
+<!--			<field name="view_mode">tree</field>-->
+<!--			<field name="view_id" ref="hr_family_burden_export_tree_view"></field>-->
+<!--			<field name="act_window_id" ref="action_hr_family_burden_export_tree_view" />-->
+<!--		</record>-->
+
+<!--		<record id="action_hr_family_burden_export_tree_view2" model="ir.actions.act_window.view">-->
+<!--			<field eval="2" name="sequence" />-->
+<!--			<field name="view_mode">form</field>-->
+<!--			<field name="view_id" ref="hr_family_burden_export_form_view" />-->
+<!--			<field name="act_window_id" ref="action_hr_family_burden_export_tree_view" />-->
+<!--		</record>-->
+
+		<menuitem id="hr_family_burden_export_menu" name="Cargas Familiares" groups="hr.group_hr_user,hr.group_hr_manager"
+			parent="hr.menu_hr_root" action="action_hr_family_burden_export_tree_view" />
+
+
+	</data>
+</odoo>

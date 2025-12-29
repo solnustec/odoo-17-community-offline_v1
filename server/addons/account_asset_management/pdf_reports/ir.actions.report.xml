@@ -1,0 +1,17 @@
+<?xml version="1.0" encoding="utf-8"?>
+<odoo>
+    <data>
+        <record id="action_report_asset_qr_labels" model="ir.actions.report">
+            <field name="name">Etiquetas de Activos 50x30</field>
+            <field name="model">account.asset</field>
+            <field name="report_type">qweb-pdf</field>
+            <field name="report_name">account_asset_management.report_asset_qr_labels</field>
+            <field name="report_file">account_asset_management.report_asset_qr_labels</field>
+            <field name="print_report_name">'Etiqueta_Activo_%s' % (object.name)</field>
+            <field name="binding_model_id" ref="account_asset_management.model_account_asset"/>
+            <field name="binding_type">report</field>
+            <field name="paperformat_id" ref="account_asset_management.paperformat_a4_landscape"/>
+        </record>
+
+    </data>
+</odoo>

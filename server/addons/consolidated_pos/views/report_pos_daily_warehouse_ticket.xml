@@ -1,0 +1,291 @@
+<?xml version="1.0" encoding="utf-8"?>
+<odoo>
+
+    <!-- Paperformat 80mm -->
+    <record id="paperformat_pos_daily_warehouse_ticket" model="report.paperformat">
+        <field name="name">POS Daily Ticket 80mm</field>
+        <field name="default" eval="False"/>
+        <field name="format">custom</field>
+        <field name="page_width">80</field>
+        <field name="page_height">297</field>
+        <field name="orientation">Portrait</field>
+        <field name="margin_top">4</field>
+        <field name="margin_bottom">4</field>
+        <field name="margin_left">4</field>
+        <field name="margin_right">4</field>
+        <field name="header_line" eval="False"/>
+        <field name="disable_shrinking" eval="True"/>
+    </record>
+
+    <!-- Acción de reporte -->
+    <record id="action_report_pos_daily_warehouse_ticket" model="ir.actions.report">
+        <field name="name">Ticket consolidado POS</field>
+        <field name="model">pos.daily.warehouse.report</field>
+        <field name="report_type">qweb-pdf</field>
+        <field name="report_name">consolidated_pos.pos_daily_warehouse_ticket</field>
+        <field name="paperformat_id" ref="consolidated_pos.paperformat_pos_daily_warehouse_ticket"/>
+        <field name="print_report_name">'Ticket consolidado POS'</field>
+    </record>
+
+    <!-- Plantilla QWeb con estilos inline -->
+    <template id="pos_daily_warehouse_ticket">
+        <t t-call="web.html_container">
+
+            <t t-foreach="lines" t-as="l">
+                <!-- ancho seguro dentro de 80mm -->
+                <div style="max-width:72mm; margin:0 auto;">
+
+                    <!-- Encabezado -->
+                    <div style="text-align:center; font-weight:700;">
+                        <t t-esc="l['company'].name"/>
+                    </div>
+                    <div style="text-align:center; font-size:12px;">
+                        <t t-esc="l['company'].partner_id.contact_address or ''"/>
+                        <br/>
+                        RUC:
+                        <t t-esc="l['company'].vat or ''"/>
+                    </div>
+
+                    <!-- separador -->
+                    <div style="border-top:1px dashed #666; margin:6px 0;"></div>
+
+                    <div style="text-align:center; font-weight:700;margin-top:10px">CIERRE DE CAJA CONSOLIDADO</div>
+
+                    <div style="margin-top:6px; font-size:12px;">
+                        <div>Fecha:
+                            <t t-esc="l['date_local']"/>
+                        </div>
+                        <div>Sucursal:
+                            <t t-esc="l['warehouse'].name"/>
+                        </div>
+                    </div>
+
+                    <!-- Billetes / Monedas -->
+                    <t t-if="l['bills']">
+                        <t t-set="bills" t-value="l.get('bills') or {}"/>
+
+                        <div style="border-top:1px dashed #666; margin:6px 0;"></div>
+                        <div style="text-align:center; font-weight:700;margin:10px 0">**-- BILLETES --**</div>
+
+                        <!-- Conteo total de billetes -->
+                        <t t-set="tb_count"
+                           t-value="int(bills.get('b100',0)) + int(bills.get('b50',0)) + int(bills.get('b20',0)) +
+                                    int(bills.get('b10',0)) + int(bills.get('b5',0))  + int(bills.get('b1',0))"/>
+
+                        <table style="width:100%; border-collapse:collapse; font-family:ui-monospace, SFMono-Regular, Menlo, Monaco, Consolas, 'Liberation Mono', 'Courier New', monospace; font-size:12px;">
+                            <thead>
+                                <tr>
+                                    <th style="text-align:left; padding:2px 0;">Denominacion</th>
+                                    <th style="text-align:right; padding:2px 0;">Cant.</th>
+                                    <th style="text-align:right; padding:2px 0;">Importe</th>
+                                </tr>
+                            </thead>
+                            <tbody>
+                                <tr>
+                                    <td style="padding:2px 0;">Billete 100</td>
+                                    <td style="text-align:right; padding:2px 0;">
+                                        <t t-esc="int(bills.get('b100', 0))"/>
+                                    </td>
+                                    <td style="text-align:right; padding:2px 0;">
+                                        <t t-esc="'{:,.2f}'.format(float(bills.get('b100',0))*100)"/>
+                                    </td>
+                                </tr>
+                                <tr>
+                                    <td style="padding:2px 0;">Billete 50</td>
+                                    <td style="text-align:right; padding:2px 0;">
+                                        <t t-esc="int(bills.get('b50', 0))"/>
+                                    </td>
+                                    <td style="text-align:right; padding:2px 0;">
+                                        <t t-esc="'{:,.2f}'.format(float(bills.get('b50',0))*50)"/>
+                                    </td>
+                                </tr>
+                                <tr>
+                                    <td style="padding:2px 0;">Billete 20</td>
+                                    <td style="text-align:right; padding:2px 0;">
+                                        <t t-esc="int(bills.get('b20', 0))"/>
+                                    </td>
+                                    <td style="text-align:right; padding:2px 0;">
+                                        <t t-esc="'{:,.2f}'.format(float(bills.get('b20',0))*20)"/>
+                                    </td>
+                                </tr>
+                                <tr>
+                                    <td style="padding:2px 0;">Billete 10</td>
+                                    <td style="text-align:right; padding:2px 0;">
+                                        <t t-esc="int(bills.get('b10', 0))"/>
+                                    </td>
+                                    <td style="text-align:right; padding:2px 0;">
+                                        <t t-esc="'{:,.2f}'.format(float(bills.get('b10',0))*10)"/>
+                                    </td>
+                                </tr>
+                                <tr>
+                                    <td style="padding:2px 0;">Billete 5</td>
+                                    <td style="text-align:right; padding:2px 0;">
+                                        <t t-esc="int(bills.get('b5', 0))"/>
+                                    </td>
+                                    <td style="text-align:right; padding:2px 0;">
+                                        <t t-esc="'{:,.2f}'.format(float(bills.get('b5',0))*5)"/>
+                                    </td>
+                                </tr>
+                                <tr>
+                                    <td style="padding:2px 0;">Billete 1</td>
+                                    <td style="text-align:right; padding:2px 0;">
+                                        <t t-esc="int(bills.get('b1', 0))"/>
+                                    </td>
+                                    <td style="text-align:right; padding:2px 0;">
+                                        <t t-esc="'{:,.2f}'.format(float(bills.get('b1',0))*1)"/>
+                                    </td>
+                                </tr>
+                            </tbody>
+                        </table>
+                        <!-- separador -->
+                        <div style="border-top:1px dashed #666; margin:6px 0;"></div>
+                        <div style="margin:10px 0px;font-size:12px">
+                            <p>TOTAL BILLETES: $
+                                <t t-esc="'{:,.2f}'.format(float(bills.get('total_bills', 0)))"/>
+                            </p>
+                        </div>
+                        <div style="text-align:center; font-weight:700; margin-top:6px;margin:10px 0px">**-- MONEDAS --**</div>
+
+                        <!-- Conteo total de monedas -->
+                        <t t-set="tm_count"
+                           t-value="int(bills.get('m100',0)) + int(bills.get('m50',0)) + int(bills.get('m25',0)) +
+                                    int(bills.get('m10',0)) + int(bills.get('m5',0))  + int(bills.get('m1',0))"/>
+                        <t t-set="tp_count" t-value="tb_count + tm_count"/>
+
+                        <table style="width:100%; border-collapse:collapse; font-family:ui-monospace, SFMono-Regular, Menlo, Monaco, Consolas, 'Liberation Mono', 'Courier New', monospace; font-size:12px;">
+                            <thead>
+                                <tr>
+                                    <th style="text-align:left; padding:2px 0;">Denominacion</th>
+                                    <th style="text-align:right; padding:2px 0;">Cant.</th>
+                                    <th style="text-align:right; padding:2px 0;">Importe</th>
+                                </tr>
+                            </thead>
+                            <tbody>
+                                <tr>
+                                    <td style="padding:2px 0;">1 dolar</td>
+                                    <td style="text-align:right; padding:2px 0;">
+                                        <t t-esc="int(bills.get('m100', 0))"/>
+                                    </td>
+                                    <td style="text-align:right; padding:2px 0;">
+                                        <t t-esc="'{:,.2f}'.format(float(bills.get('m100',0))*1)"/>
+                                    </td>
+                                </tr>
+                                <tr>
+                                    <td style="padding:2px 0;">50 centavos</td>
+                                    <td style="text-align:right; padding:2px 0;">
+                                        <t t-esc="int(bills.get('m50', 0))"/>
+                                    </td>
+                                    <td style="text-align:right; padding:2px 0;">
+                                        <t t-esc="'{:,.2f}'.format(float(bills.get('m50',0))*0.50)"/>
+                                    </td>
+                                </tr>
+                                <tr>
+                                    <td style="padding:2px 0;">25 centavos</td>
+                                    <td style="text-align:right; padding:2px 0;">
+                                        <t t-esc="int(bills.get('m25', 0))"/>
+                                    </td>
+                                    <td style="text-align:right; padding:2px 0;">
+                                        <t t-esc="'{:,.2f}'.format(float(bills.get('m25',0))*0.25)"/>
+                                    </td>
+                                </tr>
+                                <tr>
+                                    <td style="padding:2px 0;">10 centavos</td>
+                                    <td style="text-align:right; padding:2px 0;">
+                                        <t t-esc="int(bills.get('m10', 0))"/>
+                                    </td>
+                                    <td style="text-align:right; padding:2px 0;">
+                                        <t t-esc="'{:,.2f}'.format(float(bills.get('m10',0))*0.10)"/>
+                                    </td>
+                                </tr>
+                                <tr>
+                                    <td style="padding:2px 0;">5 centavos</td>
+                                    <td style="text-align:right; padding:2px 0;">
+                                        <t t-esc="int(bills.get('m5', 0))"/>
+                                    </td>
+                                    <td style="text-align:right; padding:2px 0;">
+                                        <t t-esc="'{:,.2f}'.format(float(bills.get('m5',0))*0.05)"/>
+                                    </td>
+                                </tr>
+                                <tr>
+                                    <td style="padding:2px 0;">1 centavo</td>
+                                    <td style="text-align:right; padding:2px 0;">
+                                        <t t-esc="int(bills.get('m1', 0))"/>
+                                    </td>
+                                    <td style="text-align:right; padding:2px 0;">
+                                        <t t-esc="'{:,.2f}'.format(float(bills.get('m1',0))*0.01)"/>
+                                    </td>
+                                </tr>
+                            </tbody>
+                        </table>
+                        <div style="border-top:1px dashed #666; margin:6px 0;"></div>
+                        <div style="margin:10px 0px;font-size:12px">
+                            <p>TOTAL MONEDAS: $ <t t-esc="'{:,.2f}'.format(float(bills.get('total_coins', 0)))"/></p>
+                        </div>
+                    </t>
+
+                    <div style="border-top:1px dashed #666; margin:6px 0;"></div>
+
+                    <!-- Totales -->
+                    <div style="font-size:12px">
+                        <span>TOTAL EFECTIVO ---> </span>
+                        <span>$
+                            <t t-esc="'{:,.2f}'.format(float(l['sums']['cash']))"/>
+                        </span>
+                    </div>
+                    <div style="font-size:12px">
+                        <span>TOTAL TARJETAS ---></span>
+                        <span>$
+                            <t t-esc="'{:,.2f}'.format(float(l['sums']['card']))"/>
+                        </span>
+                    </div>
+                    <div style="font-size:12px">
+                        <span>TOTAL CHEQUE/TRANSF ---></span>
+                        <span>$
+                            <t t-esc="'{:,.2f}'.format(float(l['sums']['chk_trans']))"/>
+                        </span>
+                    </div>
+                    <div style="font-size:12px">
+                        <span>TOTAL CREDITO ---></span>
+                        <span>$
+                            <t t-esc="'{:,.2f}'.format(float(l['sums']['credit']))"/>
+                        </span>
+                    </div>
+
+                    <div style="font-size:12px">
+                        <span>TOTAL A DEPOSITAR ---></span>
+                        <span>$
+                            <t t-esc="'{:,.2f}'.format(float(l['total_deposit']))"/>
+                        </span>
+                    </div>
+                    <div style="border-top:1px dashed #666; margin:6px 0;"></div>
+                    <div style="font-size:12px">
+                        <span>TOTAL VENTAS</span>
+                        <span>$
+                            <t t-esc="'{:,.2f}'.format(float(l['sums']['total']))"/>
+                        </span>
+                    </div>
+                    <div style="font-size:12px">
+                        <span>TOTAL FALTANTE</span>
+                        <span>$
+                            <t t-esc="'{:,.2f}'.format(float(l.get('faltante', 0.0)))"/>
+                        </span>
+                    </div>
+                    <div style="font-size:12px">
+                        <span>TOTAL SOBRANTE</span>
+                        <span>$
+                            <t t-esc="'{:,.2f}'.format(float(l.get('sobrante', 0.0)))"/>
+                        </span>
+                    </div>
+
+                    <div style="border-top:1px dashed #666; margin:6px 0;"></div>
+                    <div style="text-align:center; font-size:12px;">
+                        Impreso:
+                        <t t-esc="l['printed_at'].strftime('%Y-%m-%d %H:%M:%S')"/>
+                    </div>
+
+                    <div style="page-break-after: always;"></div>
+                </div>
+            </t>
+        </t>
+    </template>
+</odoo>

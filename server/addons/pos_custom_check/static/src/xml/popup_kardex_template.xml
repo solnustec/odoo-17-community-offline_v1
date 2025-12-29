@@ -1,0 +1,102 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<templates id="template" xml:space="preserve">
+    <t t-name="point_of_sale.ProductInfoPopup" t-inherit="point_of_sale.ProductInfoPopup" t-inherit-mode="extension">
+        <xpath expr="//div[@class='modal-header']" position="after">
+            <div class="text-start p-2">
+                <button class="control-button btn btn-primary rounded-0 fw-bolder w-100"
+                        t-on-click="() => this.btnKardex(props.product)">
+                    <i class="fa fa-user"></i>
+                    <span style="padding-left:5px">Kardex</span>
+                </button>
+            </div>
+        </xpath>
+    </t>
+
+    <t t-name="pos_custom_check.ProductInfoPopup" owl="1">
+        <div class="popup popup-CheckInfoPopup"
+             style="max-width: 1200px; padding: 20px; border-radius: 8px; background-color: white; box-shadow: 0 0 15px rgba(0, 0, 0, 0.5);">
+            <div class="modal-header"
+                 style="color: black; display: flex; flex-direction: column; align-items: flex-start; gap: 10px;">
+                <h3><t t-esc="props.product.display_name"/></h3>
+            </div>
+            <div class="row mx-auto my-md-3" style="align-items: flex-end;">
+                <div class="col-md-4 text-start">
+                    <label class="text-muted">Fecha de inicio</label>
+                    <input
+                            type="date"
+                            id="startDate"
+                            class="form-control"
+                            placeholder="Fecha inicio"
+                            data-field="startDate"
+                            t-on-input="onInputChangeSelect"
+                    />
+                </div>
+                <div class="col-md-4 text-start">
+                    <label for="filter_type" class="text-muted">Tipo:</label>
+                    <select
+                            id="filter_type"
+                            class="form-control"
+                            data-field="filterType"
+                            t-on-change="onInputChangeSelect"
+                    >
+                        <option value="all">Todos</option>
+                        <option value="sales">Ventas</option>
+                        <option value="transfers">Transferencias</option>
+                        <option value="regulation">Regulación</option>
+                        <option value="refunds">Notas de crédito</option>
+
+                    </select>
+                </div>
+                <div class="col-md-4">
+                    <button class="btn btn-primary w-100" t-on-click="applyFilter">Filtrar</button>
+                </div>
+            </div>
+
+            <!-- Detalle de Ventas con Scroll -->
+            <div class="section mt-4" style="max-height: 300px; overflow-y: auto;">
+                <h4>Detalle de Ventas</h4>
+                <table class="table table-bordered">
+                    <thead>
+                        <tr>
+                            <th>TIPO</th>
+                            <th>DOC</th>
+                            <th>FECHA</th>
+                            <th>ENTRADA</th>
+                            <th>SALIDA</th>
+                            <th>SALDO</th>
+                            <th>CLIENTE</th>
+                            <th>ORIGEN</th>
+                            <th>DESTINO</th>
+                            <th>USUARIO</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        <t t-foreach="getDataWithBalance()" t-as="data" t-key="data_index">
+                            <tr>
+                                <td t-att-class="data.type === 'VENTA' ? 'text-success' : 'text-primary'">
+                                    <t t-esc="data.type"/>
+                                </td>
+                                <td t-esc="data.order_name || data.picking_name "/>
+                                <td t-esc="data.date_order || data.date || data.date_done"/>
+                                <td t-esc="data.quantity_in"/>
+                                <td t-esc="data.quantity_out || data.quantity"/>
+                                <td t-esc="data.balance"/>
+                                <td t-esc="data.customer ? data.customer : ''"/>
+                                <td t-esc="data.from_location || ''"/>
+                                <td t-esc="data.to_location || ''"/>
+                                <td t-esc="data.seller || data.user"/>
+                            </tr>
+                        </t>
+                    </tbody>
+                </table>
+            </div>
+
+            <footer class="footer modal-footer"
+                    style="margin-top: 15px; display: flex; justify-content: space-between;">
+                <button class="button cancel btn btn-lg btn-secondary" t-on-click="cancel">
+                    Cerrar
+                </button>
+            </footer>
+        </div>
+    </t>
+</templates>

@@ -1,0 +1,51 @@
+# -*- coding: utf-8 -*-
+# Part of BrowseInfo. See LICENSE file for full copyright and licensing details.
+
+{
+    'name': 'POS Custom Check',
+    'version': '17.0.0.2',
+    'category': 'Point of Sale',
+    'summary': 'Pos check information on pos cheque info on point of sale cheque details point of sales check information on receipt in pos cheque number on pos receipt check info pos order receipt cheque info pos payment cheque info point of sales cheque',
+    'description': """The Point of Sale Check Info odoo app helps users to manage crucial information related to checks like the bank, customer name, account number, and check number within point of sale operations for businesses that accept check payments. It ensures efficient check management from point of sale.""",
+    'author': 'BrowseInfo',
+    'website': 'https://www.browseinfo.com/demo-request?app=bi_pos_check_info&version=17&edition=Community',
+    "price": 20,
+    "currency": 'EUR',
+    'depends': ['base', 'web', 'sale', 'point_of_sale', 'product', 'stock',
+                'barcodes', 'web_editor', 'digest', 'stock_account',
+                'pos_loyalty', "pos_connect_flask","pos_restrict_product_stock"],
+    'data': [
+        'security/ir.model.access.csv',
+        'views/digital_payment_config_views.xml',
+        'views/pos_config_view.xml',
+        'views/pos_payment_method_view.xml',
+        'views/pos_order_view.xml',
+        'views/account_journal_view.xml',
+        'views/loyalty_program_views.xml',
+        'views/key_order_view.xml',
+        'views/loyalty_card_views.xml',
+        'views/loyalty_reward_view.xml',
+        'views/id_pointsale_pagosdigitales_view.xml',
+        'views/res_bank_views.xml',
+        'views/ahorita_payment_views.xml',
+        'views/deuna_payment_views.xml',
+        'views/id_digital_payment.xml',
+    ],
+    'demo': [],
+    'test': [],
+    'license': 'OPL-1',
+    'assets': {
+        'point_of_sale._assets_pos': [
+            'pos_custom_check/static/src/js/*.js',
+            'pos_custom_check/static/src/css/*.css',
+            'pos_custom_check/static/src/xml/*.xml',
+            'pos_custom_check/static/src/popups/*.xml',
+            'pos_custom_check/static/src/popups/*.js',
+        ],
+
+    },
+    'installable': True,
+    'auto_install': False,
+    'live_test_url': 'https://www.browseinfo.com/demo-request?app=bi_pos_check_info&version=17&edition=Community',
+    "images": ['static/description/POS-Check-Info.gif'],
+}

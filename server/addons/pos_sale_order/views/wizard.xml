@@ -1,0 +1,26 @@
+<odoo>
+    <record id="view_pos_invoice_wizard_form" model="ir.ui.view">
+        <field name="name">pos.invoice.wizard.form</field>
+        <field name="model">pos.invoice.wizard</field>
+        <field name="arch" type="xml">
+            <form string="Crear Factura">
+                <group>
+                    <field name="order_ids" readonly="1"/>
+                    <field name="order_count" readonly="1"/>
+                    <field name="consolidated"/>
+                </group>
+                <footer>
+                    <button string="Confirmar" type="object" name="action_confirm" class="btn-primary"/>
+                    <button string="Cancelar" class="btn-secondary" special="cancel"/>
+                </footer>
+            </form>
+        </field>
+    </record>
+
+    <record id="action_pos_invoice_wizard" model="ir.actions.act_window">
+        <field name="name">Crear Factura</field>
+        <field name="res_model">pos.invoice.wizard</field>
+        <field name="view_mode">form</field>
+        <field name="target">new</field>
+    </record>
+</odoo>

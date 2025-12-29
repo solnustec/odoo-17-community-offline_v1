@@ -1,0 +1,12 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<templates id="template" xml:space="preserve">
+    <t t-name="point_of_sale.MoneyDetailsPopupCustom" t-inherit="point_of_sale.MoneyDetailsPopup"
+       t-inherit-mode="extension"
+    >
+        <xpath expr="//label[contains(@class, 'oe_link_icon')]" position="replace"><!---->
+            <span class="p-0 m-0" t-esc="`${_parseFloat(moneyValue) > 0.99 ? 'Billete' : 'Moneda' }
+            ${env.utils.formatCurrency(_parseFloat(moneyValue) === 0.99 ? 1 : _parseFloat(moneyValue))}`"/>
+        </xpath>
+
+    </t>
+</templates>

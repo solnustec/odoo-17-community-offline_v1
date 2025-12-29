@@ -1,0 +1,78 @@
+<odoo>
+  <!--
+  COMENTADO TEMPORALMENTE: Estas vistas heredan de gamification module
+  que puede no existir en bases de datos restauradas.
+
+  <record id="view_goal_tree_inherit_user_groups" model="ir.ui.view">
+    <field name="name">gamification.goal.tree.inherit.user.groups</field>
+    <field name="model">gamification.goal</field>
+    <field name="inherit_id" ref="gamification.goal_list_view"/>
+    <field name="arch" type="xml">
+      <xpath expr="//tree/field[1]" position="before">
+        <field name="user_id" string="Usuario" widget="many2one_avatar_user"/>
+      </xpath>
+      <xpath expr="//tree/field[@name='user_id']" position="after">
+        <field name="x_user_department_id" string="Departamento"/>
+        <field name="x_user_department_parent_id" string="Zona"/>
+      </xpath>
+      <xpath expr="//tree/field[@name='end_date']" position="after">
+        <field name="x_reached_date" string="F. cumplimiento"/>
+      </xpath>
+      <xpath expr="//tree" position="inside">
+        <field name="x_bonification" string="Bonificacion" readonly="1"/>
+        <field name="x_bonification_amount" string="Bonificacion $" readonly="1"/>
+        <field name="x_bonification_status" string="B. entregada" widget="boolean_toggle" groups="gamification_custom.group_gamification_manager"/>
+      </xpath>
+      <xpath expr="//tree/field[@name='current']" position="attributes">
+        <attribute name="groups">gamification_custom.group_gamification_manager</attribute>
+      </xpath>
+      <xpath expr="//tree/field[@name='target_goal']" position="attributes">
+        <attribute name="groups">gamification_custom.group_gamification_manager</attribute>
+      </xpath>
+    </field>
+  </record>
+
+  <record id="view_gamification_goal_search_inherit" model="ir.ui.view">
+    <field name="name">gamification.goal.search.inherit.department</field>
+    <field name="model">gamification.goal</field>
+    <field name="inherit_id" ref="gamification.goal_search_view"/>
+    <field name="arch" type="xml">
+        <xpath expr="//search" position="inside">
+            <field name="x_user_department_id"/>
+            <field name="x_user_department_parent_id"/>
+            <filter name="filter_by_pharmacy"
+                    string="Farmacias"
+                    domain="[('x_user_department_id','not in',[1,566,362,486,379,539,530])]"/>
+        </xpath>
+        <xpath expr="//group[@expand='0']" position="inside">
+            <filter name="group_by_department" string="Departamento" context="{'group_by':'x_user_department_id'}"/>
+            <filter name="group_by_zone" string="Zona" context="{'group_by':'x_user_department_parent_id'}"/>
+        </xpath>
+    </field>
+  </record>
+
+  <record id="goal_kanban_pct_block" model="ir.ui.view">
+    <field name="name">goal.kanban.pct.block</field>
+    <field name="model">gamification.goal</field>
+    <field name="inherit_id" ref="gamification.goal_kanban_view"/>
+    <field name="arch" type="xml">
+      <xpath expr="//div[contains(@class,'o_goal_state_block')]" position="replace">
+        <div class="o_goal_state_block pt-3 fs-1 fw-bolder">
+          <t t-if="record.definition_display.raw_value == 'boolean'">
+            <div class="o_goal_state">
+              <t t-if="record.state.raw_value=='reached'"><i role="img" class="text-success fa fa-check fa-3x" title="Goal Reached" aria-label="Goal Reached"/></t>
+              <t t-if="record.state.raw_value=='inprogress'"><i role="img" class="text-700 fa fa-clock-o fa-3x" title="Goal in Progress" aria-label="Goal in Progress"/></t>
+              <t t-if="record.state.raw_value=='failed'"><i role="img" class="text-danger fa fa-times fa-3x" title="Goal Failed" aria-label="Goal Failed"/></t>
+            </div>
+          </t>
+          <t t-if="record.definition_display.raw_value == 'progress'">
+            <field name="x_completion_pct"
+                   widget="gauge"
+                   options="{'max_field': 'x_gauge_max_pct', 'label_field': 'x_gauge_suffix', 'style': 'width:160px; height: 120px;'}"/>
+          </t>
+        </div>
+      </xpath>
+    </field>
+  </record>
+  -->
+</odoo>

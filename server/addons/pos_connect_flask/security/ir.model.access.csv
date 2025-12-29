@@ -1,0 +1,9 @@
+id,name,model_id:id,group_id:id,perm_read,perm_write,perm_create,perm_unlink
+access_json_storage_user,json.storage.user,model_json_storage,base.group_user,1,1,1,1
+access_json_storage_manager,json.storage.manager,model_json_storage,base.group_system,1,1,1,1
+access_json_note_credit_user,json.note.credit.user,model_json_note_credit,base.group_user,1,1,1,1
+access_json_note_credit_manager,json.note.credit.manager,model_json_note_credit,base.group_system,1,1,1,1
+access_json_stock_regulation_manager,json.stock.regulation.manager,model_json_stock_regulation,base.group_system,1,1,1,1
+access_json_pos_close_session_manager,json.pos.close.session.manager,model_json_pos_close_session,base.group_system,1,1,1,1
+access_json_pos_transfers,json.pos.transfers,model_json_pos_transfers,base.group_system,1,1,1,1
+access_json_pos_transfers_edits,json.pos.transfers.edits,model_json_pos_transfers_edits,base.group_system,1,1,1,1

@@ -1,0 +1,202 @@
+<?xml version="1.0" encoding="utf-8"?>
+<odoo noupdate="1">
+
+    <!-- Groups -->
+    <record id="group_gamification_user" model="res.groups">
+        <field name="name">Usuario Gamificación</field>
+        <field name="category_id" ref="base.module_category_gamification"/>
+        <field name="comment">El usuario puede ver sus propias metas y progreso</field>
+    </record>
+
+    <record id="group_gamification_manager" model="res.groups">
+        <field name="name">Administrador Gamificación</field>
+        <field name="category_id" ref="base.module_category_gamification"/>
+        <field name="comment">El administrador puede gestionar todas las metas, desafíos e insignias</field>
+        <field name="implied_ids" eval="[(4, ref('group_gamification_user'))]"/>
+    </record>
+
+    <!-- Security Rules for Goals -->
+    <record id="goal_user_visibility" model="ir.rule">
+        <field name="name">Usuario solo puede ver sus propias metas</field>
+        <field name="model_id" ref="gamification.model_gamification_goal"/>
+        <field name="groups" eval="[(4, ref('group_gamification_user'))]"/>
+        <field name="perm_read" eval="True"/>
+        <field name="perm_write" eval="False"/>
+        <field name="perm_create" eval="False"/>
+        <field name="perm_unlink" eval="False"/>
+        <field name="domain_force">[('user_id','=',user.id)]</field>
+    </record>
+
+    <record id="goal_manager_visibility" model="ir.rule">
+        <field name="name">Administrador puede ver todas las metas</field>
+        <field name="model_id" ref="gamification.model_gamification_goal"/>
+        <field name="groups" eval="[(4, ref('group_gamification_manager'))]"/>
+        <field name="perm_read" eval="True"/>
+        <field name="perm_write" eval="True"/>
+        <field name="perm_create" eval="True"/>
+        <field name="perm_unlink" eval="True"/>
+        <field name="domain_force">[(1, '=', 1)]</field>
+    </record>
+
+    <!-- Security Rules for Goal Definitions -->
+    <record id="goal_definition_user_visibility" model="ir.rule">
+        <field name="name">Usuario solo puede leer definiciones de metas</field>
+        <field name="model_id" ref="gamification.model_gamification_goal_definition"/>
+        <field name="groups" eval="[(4, ref('group_gamification_user'))]"/>
+        <field name="perm_read" eval="True"/>
+        <field name="perm_write" eval="False"/>
+        <field name="perm_create" eval="False"/>
+        <field name="perm_unlink" eval="False"/>
+        <field name="domain_force">[(1, '=', 1)]</field>
+    </record>
+
+    <record id="goal_definition_manager_visibility" model="ir.rule">
+        <field name="name">Administrador puede gestionar definiciones de metas</field>
+        <field name="model_id" ref="gamification.model_gamification_goal_definition"/>
+        <field name="groups" eval="[(4, ref('group_gamification_manager'))]"/>
+        <field name="perm_read" eval="True"/>
+        <field name="perm_write" eval="True"/>
+        <field name="perm_create" eval="True"/>
+        <field name="perm_unlink" eval="True"/>
+        <field name="domain_force">[(1, '=', 1)]</field>
+    </record>
+
+    <!-- Security Rules for Challenges -->
+    <record id="challenge_user_visibility" model="ir.rule">
+        <field name="name">Usuario solo puede leer desafíos</field>
+        <field name="model_id" ref="gamification.model_gamification_challenge"/>
+        <field name="groups" eval="[(4, ref('group_gamification_user'))]"/>
+        <field name="perm_read" eval="True"/>
+        <field name="perm_write" eval="False"/>
+        <field name="perm_create" eval="False"/>
+        <field name="perm_unlink" eval="False"/>
+        <field name="domain_force">[(1, '=', 1)]</field>
+    </record>
+
+    <record id="challenge_manager_visibility" model="ir.rule">
+        <field name="name">Administrador puede gestionar desafíos</field>
+        <field name="model_id" ref="gamification.model_gamification_challenge"/>
+        <field name="groups" eval="[(4, ref('group_gamification_manager'))]"/>
+        <field name="perm_read" eval="True"/>
+        <field name="perm_write" eval="True"/>
+        <field name="perm_create" eval="True"/>
+        <field name="perm_unlink" eval="True"/>
+        <field name="domain_force">[(1, '=', 1)]</field>
+    </record>
+
+    <!-- Security Rules for Badges -->
+    <record id="badge_user_visibility" model="ir.rule">
+        <field name="name">Usuario solo puede leer insignias</field>
+        <field name="model_id" ref="gamification.model_gamification_badge"/>
+        <field name="groups" eval="[(4, ref('group_gamification_user'))]"/>
+        <field name="perm_read" eval="True"/>
+        <field name="perm_write" eval="False"/>
+        <field name="perm_create" eval="False"/>
+        <field name="perm_unlink" eval="False"/>
+        <field name="domain_force">[(1, '=', 1)]</field>
+    </record>
+
+    <record id="badge_manager_visibility" model="ir.rule">
+        <field name="name">Administrador puede gestionar insignias</field>
+        <field name="model_id" ref="gamification.model_gamification_badge"/>
+        <field name="groups" eval="[(4, ref('group_gamification_manager'))]"/>
+        <field name="perm_read" eval="True"/>
+        <field name="perm_write" eval="True"/>
+        <field name="perm_create" eval="True"/>
+        <field name="perm_unlink" eval="True"/>
+        <field name="domain_force">[(1, '=', 1)]</field>
+    </record>
+
+    <!-- Security Rules for Badge Users -->
+    <record id="badge_user_user_visibility" model="ir.rule">
+        <field name="name">Usuario solo puede ver sus propias insignias otorgadas</field>
+        <field name="model_id" ref="gamification.model_gamification_badge_user"/>
+        <field name="groups" eval="[(4, ref('group_gamification_user'))]"/>
+        <field name="perm_read" eval="True"/>
+        <field name="perm_write" eval="False"/>
+        <field name="perm_create" eval="False"/>
+        <field name="perm_unlink" eval="False"/>
+        <field name="domain_force">[('user_id','=',user.id)]</field>
+    </record>
+
+    <record id="badge_user_manager_visibility" model="ir.rule">
+        <field name="name">Administrador puede gestionar todas las insignias otorgadas</field>
+        <field name="model_id" ref="gamification.model_gamification_badge_user"/>
+        <field name="groups" eval="[(4, ref('group_gamification_manager'))]"/>
+        <field name="perm_read" eval="True"/>
+        <field name="perm_write" eval="True"/>
+        <field name="perm_create" eval="True"/>
+        <field name="perm_unlink" eval="True"/>
+        <field name="domain_force">[(1, '=', 1)]</field>
+    </record>
+
+    <!-- Security Rules for Dashboard -->
+    <record id="dashboard_user_visibility" model="ir.rule">
+        <field name="name">Usuario solo puede ver su propio dashboard</field>
+        <field name="model_id" ref="model_gamification_dashboard"/>
+        <field name="groups" eval="[(4, ref('group_gamification_user'))]"/>
+        <field name="perm_read" eval="True"/>
+        <field name="perm_write" eval="False"/>
+        <field name="perm_create" eval="False"/>
+        <field name="perm_unlink" eval="False"/>
+        <field name="domain_force">[('user_id','=',user.id)]</field>
+    </record>
+
+    <record id="dashboard_manager_visibility" model="ir.rule">
+        <field name="name">Administrador puede gestionar todos los dashboards</field>
+        <field name="model_id" ref="model_gamification_dashboard"/>
+        <field name="groups" eval="[(4, ref('group_gamification_manager'))]"/>
+        <field name="perm_read" eval="True"/>
+        <field name="perm_write" eval="True"/>
+        <field name="perm_create" eval="True"/>
+        <field name="perm_unlink" eval="True"/>
+        <field name="domain_force">[(1, '=', 1)]</field>
+    </record>
+
+    <!-- Security Rules for Goal History -->
+    <record id="goal_history_user_visibility" model="ir.rule">
+        <field name="name">Usuario solo puede ver su propio historial de metas</field>
+        <field name="model_id" ref="model_gamification_goal_history"/>
+        <field name="groups" eval="[(4, ref('group_gamification_user'))]"/>
+        <field name="perm_read" eval="True"/>
+        <field name="perm_write" eval="False"/>
+        <field name="perm_create" eval="False"/>
+        <field name="perm_unlink" eval="False"/>
+        <field name="domain_force">[('user_id','=',user.id)]</field>
+    </record>
+
+    <record id="goal_history_manager_visibility" model="ir.rule">
+        <field name="name">Administrador puede gestionar todo el historial de metas</field>
+        <field name="model_id" ref="model_gamification_goal_history"/>
+        <field name="groups" eval="[(4, ref('group_gamification_manager'))]"/>
+        <field name="perm_read" eval="True"/>
+        <field name="perm_write" eval="True"/>
+        <field name="perm_create" eval="True"/>
+        <field name="perm_unlink" eval="True"/>
+        <field name="domain_force">[(1, '=', 1)]</field>
+    </record>
+
+    <!-- Security Rules for Challenge History -->
+    <record id="challenge_history_user_visibility" model="ir.rule">
+        <field name="name">Usuario puede ver historial de desafíos (solo lectura)</field>
+        <field name="model_id" ref="model_gamification_challenge_history"/>
+        <field name="groups" eval="[(4, ref('group_gamification_user'))]"/>
+        <field name="perm_read" eval="True"/>
+        <field name="perm_write" eval="False"/>
+        <field name="perm_create" eval="False"/>
+        <field name="perm_unlink" eval="False"/>
+        <field name="domain_force">[(1, '=', 1)]</field>
+    </record>
+
+    <record id="challenge_history_manager_visibility" model="ir.rule">
+        <field name="name">Administrador puede gestionar todo el historial de desafíos</field>
+        <field name="model_id" ref="model_gamification_challenge_history"/>
+        <field name="groups" eval="[(4, ref('group_gamification_manager'))]"/>
+        <field name="perm_read" eval="True"/>
+        <field name="perm_write" eval="True"/>
+        <field name="perm_create" eval="True"/>
+        <field name="perm_unlink" eval="True"/>
+        <field name="domain_force">[(1, '=', 1)]</field>
+    </record>
+
+</odoo>

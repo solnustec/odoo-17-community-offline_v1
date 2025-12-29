@@ -1,0 +1,53 @@
+<odoo>
+    <data>
+
+        <record id="view_tree_attendance_inconsistencies" model="ir.ui.view">
+            <field name="name">hr.attendance.inconsistencies.tree</field>
+            <field name="model">hr.attendance.inconsistencies</field>
+            <field name="arch" type="xml">
+                <tree>
+                    <field name="employee_id" string="Empleado"/>
+                    <field name="date" string="Fecha"/>
+                    <field name="count_inconsistencies" string="Veces Ocurridas"/>
+                </tree>
+            </field>
+        </record>
+
+        <record id="view_form_attendance_inconsistencies" model="ir.ui.view">
+            <field name="name">hr.attendance.inconsistencies.view</field>
+            <field name="model">hr.attendance.inconsistencies</field>
+            <field name="arch" type="xml">
+                <form string="Incosistencias en Marcaciones">
+                    <!-- Campo de archivo para importar -->
+                    <group>
+                        <field name="employee_id" string="Empleado"/>
+                        <field name="date" string="Fecha de la Inconsistencia"/>
+                    </group>
+                    <group>
+                        <field name="count_inconsistencies" string="Numero de veces que ocurrio"/>
+                    </group>
+                </form>
+            </field>
+        </record>
+
+
+        <record id="action_attendance_inconsistencies" model="ir.actions.act_window">
+            <field name="name">Registro de Inconsistencias</field>
+            <field name="type">ir.actions.act_window</field>
+            <field name="res_model">hr.attendance.inconsistencies</field>
+            <field name="context">{'create': 1, 'edit': 1}</field>
+            <field name="view_mode">tree,search,form</field>
+            <field name="view_ids" eval="[(5, 0, 0),
+        (0, 0, {'view_mode': 'tree', 'view_id': ref('view_tree_attendance_inconsistencies')}),
+        (0, 0, {'view_mode': 'form', 'view_id': ref('view_form_attendance_inconsistencies')}),
+    ]"/>
+        </record>
+
+        <menuitem id="menu_attendance_inconsistencies"
+                  name="Inconsistencias"
+                  parent="hr_attendance.menu_hr_attendance_root"
+                  action="action_attendance_inconsistencies"
+                  sequence="7"/>
+
+    </data>
+</odoo>

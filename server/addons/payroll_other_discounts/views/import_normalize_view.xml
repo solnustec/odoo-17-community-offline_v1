@@ -1,0 +1,99 @@
+<?xml version="1.0" encoding="utf-8"?>
+<odoo>
+    <!-- Vista Form del Wizard de Importación -->
+    <record id="view_hr_payroll_discounts_import_form" model="ir.ui.view">
+        <field name="name">hr.payroll.discounts.import.form</field>
+        <field name="model">hr.payroll.discounts.import</field>
+        <field name="arch" type="xml">
+            <form string="Importar Descuentos de Nómina">
+                <sheet>
+                    <div class="oe_title">
+                        <h1>Importación de Descuentos de Nómina</h1>
+                        <p class="text-muted">
+                            Importe descuentos desde Excel con columnas que empiecen con "D-"
+                        </p>
+                    </div>
+
+                    <group>
+                        <group string="Configuración del Archivo">
+                            <field name="file_to_import"
+                                   filename="file_name"
+                                   required="not preview_data"/>
+                            <field name="file_name" invisible="1"/>
+                            <field name="header_row"
+                                   help="Fila donde están los encabezados (0 = primera fila, 1 = segunda fila)"/>
+                            <field name="date_import"
+                                   help="Fecha que se asignará a todos los registros importados"/>
+                        </group>
+                    </group>
+
+                    <!-- Instrucciones -->
+                    <div class="alert alert-info" role="alert">
+                        <h4>📋 Instrucciones:</h4>
+                        <ul>
+                            <li><strong>Formato del Excel:</strong> Debe tener una columna de cédula y columnas que empiecen con "D-"</li>
+                            <li><strong>Columnas D-:</strong> Ejemplo: "D-Salario", "D-Bonos", "D-Prestamos"</li>
+                            <li><strong>Cédula:</strong> Puede estar en columnas llamadas: "cedula", "cédula", "CI", "identificacion", etc.</li>
+                            <li><strong>Validación:</strong> Se filtrarán automáticamente cédulas inválidas como "no tiene", "N/A", etc.</li>
+                        </ul>
+                    </div>
+
+                    <!-- Resumen de Importación -->
+                    <group string="Resumen" invisible="not import_summary">
+                        <field name="import_summary" readonly="1" nolabel="1"/>
+                    </group>
+
+                    <!-- Vista Previa -->
+                    <div invisible="not preview_data">
+                        <div class="alert alert-success" role="alert">
+                            <h4>✅ Vista Previa Lista</h4>
+                            <p>Revise los datos y haga clic en "Importar Datos" para continuar.</p>
+                        </div>
+
+                        <group string="Vista Previa de Datos">
+                            <field name="preview_data" nolabel="1" readonly="1"/>
+                        </group>
+
+                        <div class="alert alert-warning" role="alert">
+                            <h4>⚠️ Antes de Importar:</h4>
+                            <ul>
+                                <li>Verifique que los empleados estén correctamente identificados</li>
+                                <li>Los empleados marcados como "❌ No encontrado" no se importarán</li>
+                                <li>Las categorías se crearán automáticamente si no existen</li>
+                            </ul>
+                        </div>
+                    </div>
+                </sheet>
+                <footer>
+                    <button name="action_preview"
+                            string="Vista Previa"
+                            type="object"
+                            class="btn-primary"
+                    />
+                    <button name="action_import"
+                            string="Importar Datos"
+                            type="object"
+                            invisible="not import_summary"
+                            class="btn-success"
+                            confirm="¿Está seguro de que desea importar los datos? Esta acción creará registros en el sistema."/>
+                </footer>
+            </form>
+        </field>
+    </record>
+
+    <record id="action_hr_payroll_discounts_import" model="ir.actions.act_window">
+        <field name="name">Importar Descuentos</field>
+        <field name="res_model">hr.payroll.discounts.import</field>
+        <field name="view_mode">form</field>
+        <field name="target">new</field>
+        <field name="view_id" ref="view_hr_payroll_discounts_import_form"/>
+    </record>
+
+
+    <menuitem id="menu_hr_payroll_discounts_import"
+              name="Importar Descuentos Normalizado"
+              parent="payroll_other_discounts.hr_payroll_discount_report_menu"
+              action="action_hr_payroll_discounts_import"
+              sequence="20"/>
+
+</odoo>

@@ -1,0 +1,26 @@
+{
+  "messageId": "73689659-nsdwbnmf-38E55EFB179A1103E0 example",
+  "transactionId": "638168004507495231",
+  "channelId": "AEX",
+  "deviceId": "ip nuestra",
+  "sourceIP": "127.0.0.1",
+  "messageCreationDate": "2025-07-04T09:00:50.7495231",
+  "userId": 415472,
+  "fingerPrint":"",
+  "sessionId": "0",
+  "userLanguage": "ES",
+  "originTransaction": "GENERAR LINK COBRO",
+  "information": {
+    "userBankId": null,
+    "deepLinksInformation": [
+      {
+        "identifier": "Link_1",
+        "hash": "eyJUWVAiOiIzIiwiQ0giOiIxIiwiSUQiOiJ0NVJlbjdrdCtNL3pqUUFxNlA5NkZ3N0R2cmEvNWhDY0FWS0JIRFhtRW5VPSJ9",
+        "amount": 0.1,
+        "allowEdit": false,
+        "maximumUses": 1,
+        "dateTimeExpired": "2025-07-05T16:15:13.362Z"
+      }
+    ]
+  }
+}

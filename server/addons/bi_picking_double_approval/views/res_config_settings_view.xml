@@ -1,0 +1,52 @@
+<?xml version="1.0" encoding="utf-8"?>
+<odoo>
+	<data>
+		<record id="res_config_settings_view_form_inherit_picking_approver" model="ir.ui.view">
+			<field name="name">res.config.settings.view.form.inherit.picking.approver</field>
+			<field name="model">res.config.settings</field>
+			<field name="inherit_id" ref="stock.res_config_settings_view_form"/>
+			<field name="arch" type="xml">
+				<block id="production_lot_info" position="after">
+					<div id="picking_double_approver" groups="bi_picking_double_approval.group_stock_picking_approver">
+						<h2>Stock Picking Double Approver</h2>
+						<div class="row mt16 o_settings_container" id="picking_double_approver">
+							<div class="col-12 col-lg-6 o_setting_box" id="delivery_approval">
+								<div class="o_setting_left_pane">
+									<field name="delivery_approval"/>
+								</div>
+								<div class="o_setting_right_pane">
+									<label for="delivery_approval"/>
+									<div class="text-muted">
+										Approver can approve delivery orders
+									</div>
+								</div>
+							</div>
+							<div class="col-12 col-lg-6 o_setting_box" id="receipt_approval">
+								<div class="o_setting_left_pane">
+									<field name="receipt_approval"/>
+								</div>
+								<div class="o_setting_right_pane">
+									<label for="receipt_approval"/>
+									<div class="text-muted">
+										Approver can approve inward receipts
+									</div>
+								</div>
+							</div>
+							<div class="col-12 col-lg-6 o_setting_box" id="internal_transfer_approval">
+								<div class="o_setting_left_pane">
+									<field name="internal_transfer_approval"/>
+								</div>
+								<div class="o_setting_right_pane">
+									<label for="internal_transfer_approval"/>
+									<div class="text-muted">
+										Approver can approve internal transfers
+									</div>
+								</div>
+							</div>
+						</div>
+					</div>
+				</block>
+			</field>
+		</record>
+	</data>
+</odoo>

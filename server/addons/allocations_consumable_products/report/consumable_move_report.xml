@@ -1,0 +1,112 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<odoo>
+    <data>
+        <record id="paperformat_consumable_move_receipt" model="report.paperformat">
+            <field name="name">Consumable Move Receipt 80mm</field>
+            <field name="default" eval="False"/>
+            <field name="format">custom</field>
+            <field name="page_width">80</field>
+            <field name="page_height">297</field>
+            <field name="orientation">Portrait</field>
+            <field name="margin_top">3</field>
+            <field name="margin_bottom">3</field>
+            <field name="margin_left">3</field>
+            <field name="margin_right">3</field>
+            <field name="header_line" eval="False"/>
+            <field name="disable_shrinking" eval="True"/>
+        </record>
+
+        <record id="report_consumable_move_receipt" model="ir.actions.report">
+            <field name="name">Recibo Movimiento</field>
+            <field name="model">allocations.consumable.move</field>
+            <field name="report_type">qweb-pdf</field>
+
+            <field name="report_name">allocations_consumable_products.report_consumable_move_receipt_document</field>
+            <field name="report_file">allocations_consumable_products.report_consumable_move_receipt_document</field>
+            <field name="print_report_name">'Recibo_Movimiento'</field>
+            <field name="paperformat_id" ref="allocations_consumable_products.paperformat_consumable_move_receipt"/>
+        </record>
+
+        <template id="report_consumable_move_receipt_document">
+            <t t-call="web.basic_layout">
+                <main style="padding:0; margin:0;">
+                    <div style="max-width:72mm; margin:0 auto; font-size:11px; font-family: monospace;">
+                        <div style="text-align:center; margin-bottom:5px;">
+                            <h3 style="margin:0; padding:0; font-size:14px;">
+                                RECIBO DE MOVIMIENTO
+                            </h3>
+                            <div style="border-top:1px dashed #000; margin-top:4px;"></div>
+                        </div>
+                        <t t-if="len(docs) > 1">
+                            <p style="margin:0 0 5px 0;">
+                                <strong>Total de movimientos:</strong>
+                                <t t-esc="len(docs)"/>
+                            </p>
+                        </t>
+                        <!-- LISTA DE MOVIMIENTOS -->
+                        <t t-foreach="docs" t-as="move">
+
+                            <!-- Información del movimiento -->
+                            <div style="margin-bottom:4px;">
+                                <div>
+                                    <strong>Ref:</strong>
+                                    <t t-esc="move.name"/>
+                                </div>
+                                <div>
+                                    <strong>Fecha:</strong>
+                                    <t t-esc="move.date.strftime('%Y-%m-%d %H:%M')"/>
+                                </div>
+                                <div>
+                                    <strong>Bodega:</strong>
+                                    <t t-esc="move.warehouse_id.name"/>
+                                </div>
+                            </div>
+
+                            <div style="border-top:1px dashed #000; margin:5px 0;"></div>
+
+                            <!-- Encabezado de tabla SOLO UNA VEZ por movimiento -->
+                            <table style="width:100%; font-size:10px; border-collapse:separate; border-spacing:0 3px;">
+                                <thead>
+                                    <tr>
+                                        <th style="text-align:left; padding:2px 0;">Producto</th>
+                                        <th style="text-align:right; padding:2px 0;">Cant</th>
+                                    </tr>
+                                </thead>
+
+                                <!-- LÍNEAS DEL MOVIMIENTO -->
+                                <tbody>
+                                    <t t-foreach="move.line_ids" t-as="line">
+                                        <tr>
+                                            <td style="padding:3px 0;">
+                                                <t t-esc="line.product_id.display_name"/>
+                                            </td>
+                                            <td style="text-align:right; padding:3px 0;">
+                                                <t t-esc="line.qty_required"/>
+                                            </td>
+                                        </tr>
+                                    </t>
+                                </tbody>
+                            </table>
+
+                            <div style="border-top:1px dashed #000; margin:6px 0;"></div>
+
+                        </t>
+
+                    </div>
+                </main>
+            </t>
+        </template>
+
+        <record id="action_print_consumable_move_receipt_server" model="ir.actions.server">
+            <field name="name">Imprimir Recibo</field>
+            <field name="model_id" ref="model_allocations_consumable_move"/>
+            <field name="binding_model_id" ref="model_allocations_consumable_move"/>
+            <field name="state">code</field>
+            <field name="code">
+                action = env.ref(
+                'allocations_consumable_products.report_consumable_move_receipt'
+                ).report_action(records)
+            </field>
+        </record>
+    </data>
+</odoo>

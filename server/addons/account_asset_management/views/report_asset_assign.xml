@@ -1,0 +1,64 @@
+<?xml version="1.0" encoding="utf-8"?>
+<odoo>
+    <data>
+
+        <!-- Vista tree de asignaciones pendientes -->
+        <record id="view_asset_assignment_tree_pending" model="ir.ui.view">
+            <field name="name">asset.assignment.tree.pending</field>
+            <field name="model">asset.assignment</field>
+            <field name="arch" type="xml">
+                <tree string="Asignaciones Pendientes de Firma" create="false" edit="false">
+                    <field name="asset_id" string="Activo"
+                           options="{'no_open': False}"
+                           context="{'form_view_ref':'account_asset_management.account_asset_view_form'}"/>
+                    <field name="custodian_id" string="Custodio"/>
+                    <field name="assign_date" string="Fecha"/>
+                    <field name="signed_by_custodian"
+                           string="Firmado"
+                           widget="boolean_button"
+                           options="{'terminology': 'Firma'}"/>
+                    <field name="state"/>
+                </tree>
+            </field>
+        </record>
+
+        <!-- Vista de búsqueda con filtros -->
+        <record id="view_asset_assignment_search_pending" model="ir.ui.view">
+            <field name="name">asset.assignment.search.pending</field>
+            <field name="model">asset.assignment</field>
+            <field name="arch" type="xml">
+                <search string="Buscar Asignaciones Pendientes">
+                    <field name="asset_id"/>
+                    <field name="custodian_id"/>
+                    <field name="assign_date"/>
+                    <field name="state"/>
+
+                    <filter name="filter_pending"
+                            string="Pendientes"
+                            domain="[('signed_by_custodian','=',False)]"/>
+                    <filter name="filter_confirmed"
+                            string="Confirmadas"
+                            domain="[('signed_by_custodian','=',True)]"/>
+                </search>
+            </field>
+        </record>
+
+        <!-- Acción que abre la lista de asignaciones pendientes -->
+        <record id="action_asset_assignment_pending" model="ir.actions.act_window">
+            <field name="name">Asignaciones Pendientes (Activos)</field>
+            <field name="res_model">asset.assignment</field>
+            <field name="view_mode">tree,form</field>
+            <field name="view_id" ref="view_asset_assignment_tree_pending"/>
+            <field name="search_view_id" ref="view_asset_assignment_search_pending"/>
+            <field name="domain">[('signed_by_custodian','=',False)]</field>
+        </record>
+
+        <!-- Menú hermano del de Transferencias Pendientes -->
+        <menuitem id="menu_asset_assignment_pending"
+                  name="Asignaciones Pendientes"
+                  parent="account.menu_finance_reports"
+                  action="action_asset_assignment_pending"
+                  sequence="52"/>
+
+    </data>
+</odoo>

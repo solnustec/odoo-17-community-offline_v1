@@ -1,0 +1,72 @@
+<?xml version="1.0" encoding="utf-8"?>
+<odoo>
+    <!-- Menú de Soporte Técnico -->
+    <menuitem id="menu_helpdesk" name="Soporte Técnico"
+              web_icon="odoo_website_helpdesk,static/description/icon.png"
+              sequence="1"/>
+
+    <!-- Submenú de Tickets -->
+    <menuitem id="helpdesk_management" parent="menu_helpdesk" name="Tickets"
+              action="ticket_helpdesk_action" sequence="2"/>
+
+    <!-- Mis Tickets -->
+    <menuitem id="helpdesk_tickets_my" parent="helpdesk_management"
+              name="Mis Tickets"
+              action="ticket_helpdesk_action_my" sequence="1"/>
+
+    <!-- Todos los Tickets -->
+    <menuitem id="helpdesk_tickets" parent="helpdesk_management"
+              name="Todos los Tickets"
+              action="ticket_helpdesk_action" sequence="2"/>
+
+    <!-- Menú de Configuración -->
+    <menuitem id="menu_helpdesk_configuration" name="Configuración"
+              sequence="50" parent="menu_helpdesk"/>
+
+    <!-- Configuración de Áreas -->
+    <menuitem id="menu_helpdesk_areas" name="Áreas"
+              action="action_helpdesk_area"
+              parent="menu_helpdesk_configuration" sequence="7"
+              groups="odoo_website_helpdesk.helpdesk_manager"/>
+
+    <!-- Configuración de Subáreas -->
+    <menuitem id="menu_helpdesk_subareas" name="Subáreas"
+              action="action_helpdesk_subarea"
+              parent="menu_helpdesk_configuration" sequence="8"
+              groups="odoo_website_helpdesk.helpdesk_manager"/>
+
+    <!-- Configuración de Categorías -->
+<!--    <menuitem id="menu_helpdesk_categories" name="Categorías"-->
+<!--              action="action_helpdesk_category"-->
+<!--              parent="menu_helpdesk_configuration" sequence="10"-->
+<!--              groups="odoo_website_helpdesk.helpdesk_manager"/>-->
+
+    <!-- Configuración General -->
+    <menuitem id="menu_helpdesk_settings" name="Configuraciones Generales"
+              action="action_helpdesk_general_settings"
+              parent="menu_helpdesk_configuration" sequence="1"
+              groups="odoo_website_helpdesk.helpdesk_manager"/>
+
+    <!-- Configuración de Etiquetas -->
+<!--    <menuitem id="menu_helpdesk_tag" name="Etiquetas"-->
+<!--              action="action_helpdesk_tag"-->
+<!--              parent="menu_helpdesk_configuration" sequence="4"-->
+<!--              groups="odoo_website_helpdesk.helpdesk_manager"/>-->
+
+    <!-- Configuración de Etapas -->
+    <menuitem id="menu_helpdesk_stage" name="Etapas"
+              action="action_helpdesk_stage"
+              parent="menu_helpdesk_configuration" sequence="5"
+              groups="odoo_website_helpdesk.helpdesk_manager"/>
+
+    <!-- Configuración de Tipos -->
+    <menuitem id="menu_helpdesk_types" name="Tipos"
+              action="action_helpdesk_type"
+              parent="menu_helpdesk_configuration" sequence="6"
+              groups="odoo_website_helpdesk.helpdesk_manager"/>
+
+    <!-- Reporte de Soporte Técnico -->
+<!--    <menuitem id="report_helpdesk" name="Reporte" parent="menu_helpdesk"-->
+<!--              sequence="3"-->
+<!--              action="ticket_helpdesk_action_report"/>-->
+</odoo>

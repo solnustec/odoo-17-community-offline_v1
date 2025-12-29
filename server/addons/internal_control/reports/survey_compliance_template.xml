@@ -1,0 +1,67 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<odoo>
+    <!-- Reporte de cumplimiento: usa plantilla base -->
+    <template id="report_survey_compliance">
+        <t t-call="internal_control.survey_base_template">
+            <t t-set="report_title" t-value="'Reporte de Cumplimiento'"/>
+            <t t-set="content_title" t-value="'Resultados de Cumplimiento:'"/>
+            <t t-set="report_type" t-value="'compliance'"/>
+        </t>
+    </template>
+
+    <!-- Template específico para el contenido de cumplimiento -->
+    <template id="survey_compliance_content">
+        <div style="padding: 20px; margin-top: 15px; font-size: 11px;">
+            <!-- Tabla de cumplimiento (Componente reutilizable) -->
+            <t t-call="internal_control.survey_compliance_table"/>
+
+                            <!-- Resumen -->
+                            <div style="background-color: #ecf0f1; padding: 15px; border-radius: 5px; margin-top: 20px;">
+                <h4 style="margin-bottom: 15px; font-weight: bold; color: #333;">Resumen:</h4>
+                                <t t-set="secciones" t-value="docs.filtered(lambda x: not x.page_name.startswith('Participante:'))"/>
+                                <t t-set="total_items" t-value="len(secciones)"/>
+                                <t t-set="cumple_count" t-value="len(secciones.filtered(lambda x: x.compliance_status == 'cumple'))"/>
+                                <t t-set="no_cumple_count" t-value="len(secciones.filtered(lambda x: x.compliance_status == 'no_cumple'))"/>
+                                <t t-set="na_count" t-value="len(secciones.filtered(lambda x: x.compliance_status == 'na'))"/>
+                                <t t-set="promedio_cumplimiento" t-value="sum(secciones.mapped('porcentaje_cumplimiento')) / len(secciones) if secciones else 0"/>
+                                
+                <table style="width: 100%; border-collapse: collapse; margin-bottom: 20px;">
+                    <thead>
+                        <tr style="background-color: #f8f9fa; border: 1px solid #ddd;">
+                            <th style="border: 1px solid #ddd; padding: 8px; text-align: left; font-weight: bold; width: 50%; background-color: #fff; vertical-align: middle;">Métrica</th>
+                            <th style="border: 1px solid #ddd; padding: 8px; text-align: left; font-weight: bold; width: 50%; background-color: #fff; vertical-align: middle;">Valor</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        <tr style="border: 1px solid #ddd; background-color: #fff;">
+                            <td style="border: 1px solid #ddd; padding: 8px; font-weight: 600; color: #555; background-color: #fff;">Total Secciones</td>
+                            <td style="border: 1px solid #ddd; padding: 8px; color: #000; background-color: #fff;"><t t-out="total_items"/></td>
+                        </tr>
+                        <tr style="border: 1px solid #ddd; background-color: #fff;">
+                            <td style="border: 1px solid #ddd; padding: 8px; font-weight: 600; color: #555; background-color: #fff;">Cumple</td>
+                            <td style="border: 1px solid #ddd; padding: 8px; color: #000; background-color: #fff;"><t t-out="cumple_count"/></td>
+                        </tr>
+                        <tr style="border: 1px solid #ddd; background-color: #fff;">
+                            <td style="border: 1px solid #ddd; padding: 8px; font-weight: 600; color: #555; background-color: #fff;">No Cumple</td>
+                            <td style="border: 1px solid #ddd; padding: 8px; color: #000; background-color: #fff;"><t t-out="no_cumple_count"/></td>
+                        </tr>
+                        <tr style="border: 1px solid #ddd; background-color: #fff;">
+                            <td style="border: 1px solid #ddd; padding: 8px; font-weight: 600; color: #555; background-color: #fff;">N/A</td>
+                            <td style="border: 1px solid #ddd; padding: 8px; color: #000; background-color: #fff;"><t t-out="na_count"/></td>
+                        </tr>
+                        <tr style="border: 1px solid #ddd; background-color: #fff;">
+                            <td style="border: 1px solid #ddd; padding: 8px; font-weight: 600; color: #555; background-color: #fff;">Promedio de Cumplimiento</td>
+                            <td style="border: 1px solid #ddd; padding: 8px; color: #000; background-color: #fff;"><t t-out="'%.1f' % promedio_cumplimiento"/>%</td>
+                        </tr>
+                    </tbody>
+                </table>
+                    </div>
+
+            <!-- Matriz de Riesgo (Componente reutilizable) -->
+            <t t-call="internal_control.survey_risk_matrix"/>
+            
+            <!-- Footer (Componente reutilizable) -->
+            <t t-call="internal_control.survey_footer"/>
+                </div>
+    </template>
+</odoo> 

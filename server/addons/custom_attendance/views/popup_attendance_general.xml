@@ -1,0 +1,17 @@
+<odoo>
+    <data>
+        <record id="view_hr_attendance_popup_form" model="ir.ui.view">
+            <field name="name">hr.attendance.popup.form</field>
+            <field name="model">hr.attendance.popup</field>
+            <field name="arch" type="xml">
+                <form>
+                    <h3>Se detectaron valores previamente calculados. ¿Desea recalcular las asistencias?</h3>
+                    <footer>
+                        <button name="action_confirm" string="Aceptar" type="object" class="btn-primary"/>
+                        <button string="Cancelar" class="btn-secondary" special="cancel"/>
+                    </footer>
+                </form>
+            </field>
+        </record>
+    </data>
+</odoo>

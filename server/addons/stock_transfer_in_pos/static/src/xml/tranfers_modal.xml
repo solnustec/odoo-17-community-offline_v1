@@ -1,0 +1,725 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<templates id="template" xml:space="preserve">
+
+    <!-- Modal Principal de Transferencias -->
+    <t t-name="TransferModal" owl="1">
+        <div class="modal-dialog modal-xl">
+            <div class="modal-content">
+                <!-- Header -->
+                <div class="modal-header">
+                    <h4 class="modal-title">Gestión de Transferencias</h4>
+                    <button type="button" class="btn-close" t-on-click="close"></button>
+                </div>
+
+                <!-- Body con Pestañas -->
+                <div class="modal-body">
+                    <!-- Tabs Navigation -->
+                    <ul class="nav nav-tabs mb-3">
+                        <li class="nav-item">
+                            <a class="nav-link"
+                               t-att-class="state.activeTab === 'sent' ? 'active' : ''"
+                               t-on-click="() => this.switchTab('sent')"
+                               href="#">
+                                Transferencias Propias
+                            </a>
+                        </li>
+                        <li class="nav-item">
+                            <a class="nav-link"
+                               t-att-class="state.activeTab === 'received' ? 'active' : ''"
+                               t-on-click="() => this.switchTab('received')"
+                               href="#">
+                                Transferencias Externas
+                            </a>
+                        </li>
+                        <li class="nav-item">
+                            <a class="nav-link"
+                               t-att-class="state.activeTab === 'pendingProducts' ? 'active' : ''"
+                               t-on-click="() => this.switchTab('pendingProducts')"
+                               href="#">
+                                Productos por recibir
+                            </a>
+                        </li>
+                    </ul>
+
+                    <!-- Tab Content -->
+                    <div class="tab-content">
+                        <!-- Transferencias Enviadas -->
+                        <div t-if="state.activeTab === 'sent'" class="tab-pane fade show active">
+                            <!-- Sección de Filtros -->
+                            <div class="card mb-3">
+                                <div class="card-body">
+                                    <div class="row g-3">
+                                        <!-- Filtro por Destino (Almacén) -->
+                                        <div class="col-md-3">
+                                            <label class="form-label">Destino</label>
+                                            <RecordSelectorReadonly
+                                                resModel="'stock.warehouse'"
+                                                resId="state.filterDestinationId"
+                                                domain="[['company_id', '=', 1 ]]"
+                                                update="(resId) => this.onUpdateFilterDestination(resId)"
+                                                placeholder="'Seleccionar almacén...'"
+                                            />
+                                        </div>
+
+                                        <!-- Filtro por Estado -->
+                                        <div class="col-md-2">
+                                            <label class="form-label">Estado</label>
+                                            <select
+                                                class="form-select"
+                                                t-model="state.filterSentState"
+                                                t-on-change="onFilterChangeSentState"
+                                            >
+                                                <option value="">Todos</option>
+                                                <option value="draft">Borrador</option>
+                                                <option value="waiting">En espera</option>
+                                                <option value="confirmed">Confirmado</option>
+                                                <option value="assigned">Listo</option>
+                                                <option value="done">Hecho</option>
+                                                <option value="cancel">Cancelado</option>
+                                            </select>
+                                        </div>
+
+                                        <!-- Filtro Fecha Desde -->
+                                        <div class="col-md-2">
+                                            <label class="form-label">Desde</label>
+                                            <input
+                                                type="date"
+                                                class="form-control"
+                                                t-model="state.filterSentDateFrom"
+                                                t-on-change="onFilterChangeSentDateFrom"
+                                            />
+                                        </div>
+
+                                        <!-- Filtro Fecha Hasta -->
+                                        <div class="col-md-2">
+                                            <label class="form-label">Hasta</label>
+                                            <input
+                                                type="date"
+                                                class="form-control"
+                                                t-model="state.filterSentDateTo"
+                                                t-on-change="onFilterChangeSentDateTo"
+                                            />
+                                        </div>
+
+                                        <!-- Botones de Acción -->
+                                        <div class="col-md-3 d-flex align-items-end gap-2">
+                                            <button
+                                                class="btn btn-primary flex-fill"
+                                                t-on-click="applySentFiltersAndReload"
+                                                title="Buscar con filtros"
+                                            >
+                                                <i class="fa fa-search me-1"/>
+                                                Buscar
+                                            </button>
+
+                                            <button
+                                                class="btn btn-outline-secondary"
+                                                t-on-click="clearSentFilters"
+                                                t-att-disabled="!hasSentActiveFilters"
+                                                title="Limpiar filtros"
+                                            >
+                                                <i class="fa fa-times"/>
+                                            </button>
+                                        </div>
+                                    </div>
+
+                                    <!-- Badge de filtros activos -->
+                                    <div class="mt-2" t-if="hasSentActiveFilters">
+                                        <span class="badge bg-primary">
+                                            <i class="fa fa-filter me-1"/>
+                                            Filtros activos
+                                            <t t-if="state.filterDestinationId"> - Destino: <t t-esc="state.filterDestinationName"/></t>
+                                            <t t-if="state.filterSentState"> - Estado: <t t-esc="getStatusText(state.filterSentState)"/></t>
+                                            <t t-if="state.filterSentDateFrom"> - Desde: <t t-esc="state.filterSentDateFrom"/></t>
+                                            <t t-if="state.filterSentDateTo"> - Hasta: <t t-esc="state.filterSentDateTo"/></t>
+                                        </span>
+                                    </div>
+                                </div>
+                            </div>
+
+                            <!-- Contador de resultados -->
+                            <div class="d-flex justify-content-between align-items-center mb-2" t-if="state.sentTransfers.length > 0 or state.isLoadingSent">
+                                <small class="text-muted">
+                                    <t t-if="state.sentTransfers.length > 0">
+                                        Mostrando <strong><t t-esc="state.sentTransfers.length"/></strong> transferencias
+                                        <t t-if="state.sentHasMore"> (scroll para cargar más)</t>
+                                    </t>
+                                </small>
+                            </div>
+
+                            <!-- Tu tabla existente -->
+                            <div class="table-responsive" style="max-height: 350px; overflow-y: auto;"
+                                 t-ref="sentScrollRef"
+                                 t-att-ref="(el) => setScrollRef('sentScrollRef', el)">
+                                <table class="table table-hover">
+                                    <thead class="sticky-top bg-white" style="z-index: auto;">
+                                        <tr>
+                                            <th>Nº</th>
+                                            <th>Fecha</th>
+                                            <th>Origen</th>
+                                            <th>Destino</th>
+                                            <th>Responsable</th>
+                                            <th>Estado</th>
+                                            <th>Acciones</th>
+                                        </tr>
+                                    </thead>
+                                    <tbody>
+                                        <t t-foreach="state.sentTransfers" t-as="transfer" t-key="transfer.id">
+                                            <tr>
+                                                <td><t t-esc="transfer.name"/></td>
+                                                <td><t t-esc="formatDate(transfer.date)"/></td>
+                                                <td><t t-esc="transfer.origin"/></td>
+                                                <td><t t-esc="transfer.destination"/></td>
+                                                <td><t t-esc="transfer.responsible"/></td>
+                                                <td>
+                                                    <span class="badge"
+                                                          t-att-class="getStatusBadge(transfer.state)">
+                                                        <t t-esc="getStatusText(transfer.state)"/>
+                                                    </span>
+                                                </td>
+                                                <td>
+                                                    <button class="btn btn-sm btn-primary me-1"
+                                                            t-on-click="() => this.viewTransfer(transfer)">
+                                                        <i class="fa fa-eye"></i> Ver
+                                                    </button>
+                                                </td>
+                                            </tr>
+                                        </t>
+
+                                        <!-- Mensaje cuando no hay resultados -->
+                                        <t t-if="!state.sentTransfers.length and !state.isLoadingSent">
+                                            <tr>
+                                                <td colspan="7" class="text-center text-muted py-4">
+                                                    <t t-if="hasSentActiveFilters">
+                                                        <i class="fa fa-filter me-2"/>
+                                                        No se encontraron transferencias con los filtros aplicados
+                                                    </t>
+                                                    <t t-else="">
+                                                        No hay transferencias propias
+                                                    </t>
+                                                </td>
+                                            </tr>
+                                        </t>
+
+                                        <!-- Indicador de carga -->
+                                        <t t-if="state.isLoadingSent">
+                                            <tr>
+                                                <td colspan="7" class="text-center py-3">
+                                                    <div class="spinner-border spinner-border-sm text-primary" role="status">
+                                                        <span class="visually-hidden">Cargando...</span>
+                                                    </div>
+                                                    <span class="ms-2">Cargando más transferencias...</span>
+                                                </td>
+                                            </tr>
+                                        </t>
+
+                                        <!-- Fin de resultados -->
+                                        <t t-if="!state.sentHasMore and state.sentTransfers.length > 0">
+                                            <tr>
+                                                <td colspan="7" class="text-center text-muted py-2">
+                                                    <small>No hay más transferencias para mostrar</small>
+                                                </td>
+                                            </tr>
+                                        </t>
+                                    </tbody>
+                                </table>
+                            </div>
+                        </div>
+
+                        <div t-if="state.activeTab === 'received'" class="tab-pane fade show active">
+                            <!-- Sección de Filtros -->
+                            <div class="card mb-3">
+                                <div class="card-body">
+                                    <div class="row g-3">
+                                        <!-- Filtro por Origen (de dónde viene) -->
+                                        <div class="col-md-3">
+                                            <label class="form-label">Origen</label>
+                                            <RecordSelectorReadonly
+                                                resModel="'stock.warehouse'"
+                                                resId="state.filterReceivedOriginId"
+                                                domain="[['company_id', '=', 1]]"
+                                                update="(resId) => this.onUpdateFilterReceivedOrigin(resId)"
+                                                placeholder="'Seleccionar almacén...'"
+                                            />
+                                        </div>
+
+                                        <!-- Filtro por Estado -->
+                                        <div class="col-md-2">
+                                            <label class="form-label">Estado</label>
+                                            <select
+                                                class="form-select"
+                                                t-model="state.filterReceivedState"
+                                                t-on-change="onFilterChangeReceivedState"
+                                            >
+                                                <option value="">Todos</option>
+                                                <option value="draft">Borrador</option>
+                                                <option value="waiting">En espera</option>
+                                                <option value="confirmed">Confirmado</option>
+                                                <option value="assigned">Listo para validar</option>
+                                                <option value="done">Validado</option>
+                                                <option value="cancel">Cancelado</option>
+                                            </select>
+                                        </div>
+
+                                        <!-- Filtro Fecha Desde -->
+                                        <div class="col-md-2">
+                                            <label class="form-label">Desde</label>
+                                            <input
+                                                type="date"
+                                                class="form-control"
+                                                t-model="state.filterReceivedDateFrom"
+                                                t-on-change="onFilterChangeReceivedDateFrom"
+                                            />
+                                        </div>
+
+                                        <!-- Filtro Fecha Hasta -->
+                                        <div class="col-md-2">
+                                            <label class="form-label">Hasta</label>
+                                            <input
+                                                type="date"
+                                                class="form-control"
+                                                t-model="state.filterReceivedDateTo"
+                                                t-on-change="onFilterChangeReceivedDateTo"
+                                            />
+                                        </div>
+
+                                        <!-- Botones de Acción -->
+                                        <div class="col-md-3 d-flex align-items-end gap-2">
+                                            <button
+                                                class="btn btn-primary flex-fill"
+                                                t-on-click="applyReceivedFiltersAndReload"
+                                                title="Buscar"
+                                            >
+                                                <i class="fa fa-search me-1"/>
+                                                Buscar
+                                            </button>
+
+                                            <button
+                                                class="btn btn-outline-secondary"
+                                                t-on-click="clearReceivedFilters"
+                                                t-att-disabled="!hasReceivedActiveFilters"
+                                                title="Limpiar"
+                                            >
+                                                <i class="fa fa-times"/>
+                                            </button>
+                                        </div>
+                                    </div>
+
+                                    <!-- Badge de filtros activos -->
+                                    <div class="mt-2" t-if="hasReceivedActiveFilters">
+                                        <span class="badge bg-primary">
+                                            <i class="fa fa-filter me-1"/>
+                                            Filtros activos
+                                            <t t-if="state.filterReceivedOriginId"> - Origen: <t t-esc="state.filterReceivedOriginName"/></t>
+                                            <t t-if="state.filterReceivedState"> - Estado: <t t-esc="getStatusText(state.filterReceivedState)"/></t>
+                                            <t t-if="state.filterReceivedDateFrom"> - Desde: <t t-esc="state.filterReceivedDateFrom"/></t>
+                                            <t t-if="state.filterReceivedDateTo"> - Hasta: <t t-esc="state.filterReceivedDateTo"/></t>
+                                        </span>
+                                    </div>
+                                </div>
+                            </div>
+
+                            <!-- Contador de resultados -->
+                            <div class="d-flex justify-content-between align-items-center mb-2" t-if="state.receivedTransfers.length > 0 or state.isLoadingReceived">
+                                <small class="text-muted">
+                                    Mostrando <strong><t t-esc="state.receivedTransfers.length"/></strong> transferencias
+                                    <t t-if="state.receivedHasMore"> (scroll para más)</t>
+                                </small>
+                            </div>
+
+                            <!-- Tabla existente -->
+                            <div class="table-responsive" style="max-height: 350px; overflow-y: auto;"
+                                 t-ref="receivedScrollRef">
+                                <table class="table table-hover">
+                                    <thead class="sticky-top bg-white" style="z-index: auto;">
+                                        <tr>
+                                            <th>Nº</th>
+                                            <th>Fecha</th>
+                                            <th>Origen</th>
+                                            <th>Destino</th>
+                                            <th>Responsable</th>
+                                            <th>Estado</th>
+                                            <th>Acciones</th>
+                                        </tr>
+                                    </thead>
+                                    <tbody>
+                                        <t t-foreach="state.receivedTransfers" t-as="transfer" t-key="transfer.id">
+                                            <tr>
+                                                <td><t t-esc="transfer.name"/></td>
+                                                <td><t t-esc="formatDate(transfer.date)"/></td>
+                                                <td><t t-esc="transfer.origin"/></td>
+                                                <td><t t-esc="transfer.destination"/></td>
+                                                <td><t t-esc="transfer.responsible"/></td>
+                                                <td>
+                                                    <span class="badge"
+                                                          t-att-class="getStatusBadge(transfer.state)">
+                                                        <t t-esc="getStatusText(transfer.state)"/>
+                                                    </span>
+                                                </td>
+                                                <td>
+                                                    <button class="btn btn-sm btn-primary me-1"
+                                                            t-on-click="() => this.viewTransfer(transfer)">
+                                                        <i class="fa fa-eye"></i> Ver
+                                                    </button>
+                                                    <button t-if="['draft', 'assigned'].includes(transfer.state)"
+                                                            class="btn btn-sm btn-success me-1"
+                                                            t-on-click="() => this.validateTransfer(transfer)">
+                                                        <i class="fa fa-check"></i> Validar
+                                                    </button>
+<!--                                                    <button t-if="transfer.state == 'draft'"-->
+<!--                                                            class="btn btn-sm btn-danger"-->
+<!--                                                            t-on-click="() => this.rejectTransfer(transfer)">-->
+<!--                                                        <i class="fa fa-times"></i> Rechazar-->
+<!--                                                    </button>-->
+                                                </td>
+                                            </tr>
+                                        </t>
+
+                                        <!-- Mensaje cuando no hay resultados -->
+                                        <t t-if="!state.receivedTransfers.length and !state.isLoadingReceived">
+                                            <tr>
+                                                <td colspan="7" class="text-center text-muted py-4">
+                                                    <t t-if="hasReceivedActiveFilters">
+                                                        <i class="fa fa-filter me-2"/>
+                                                        No se encontraron transferencias con los filtros aplicados
+                                                    </t>
+                                                    <t t-else="">
+                                                        No hay transferencias externas
+                                                    </t>
+                                                </td>
+                                            </tr>
+                                        </t>
+
+                                        <!-- Indicador de carga -->
+                                        <t t-if="state.isLoadingReceived">
+                                            <tr>
+                                                <td colspan="7" class="text-center py-3">
+                                                    <div class="spinner-border spinner-border-sm text-primary" role="status">
+                                                        <span class="visually-hidden">Cargando...</span>
+                                                    </div>
+                                                    <span class="ms-2">Cargando más transferencias...</span>
+                                                </td>
+                                            </tr>
+                                        </t>
+
+                                        <!-- Fin de resultados -->
+                                        <t t-if="!state.receivedHasMore and state.receivedTransfers.length > 0">
+                                            <tr>
+                                                <td colspan="7" class="text-center text-muted py-2">
+                                                    <small>No hay más transferencias para mostrar</small>
+                                                </td>
+                                            </tr>
+                                        </t>
+                                    </tbody>
+                                </table>
+                            </div>
+                        </div>
+
+
+                        <!-- Lista de productos a recibir -->
+                        <div t-if="state.activeTab === 'pendingProducts'" class="tab-pane fade show active">
+                            <!-- Sección de Filtros -->
+                            <div class="card mb-3">
+                                <div class="card-body">
+                                    <div class="row g-3">
+                                        <!-- Filtro por Producto -->
+                                        <div class="col-md-4">
+                                            <label class="form-label">Producto</label>
+                                           <RecordSelectorReadonly
+                                                resModel="'product.product'"
+                                                resId="state.product_id"
+                                                domain="[['type', '!=', 'service']]"
+                                                update="(resId, record) => this.onUpdateFilterProduct(resId, record)"
+                                                placeholder="'Buscar producto...'"
+                                            />
+                                        </div>
+
+                                        <!-- Filtro Fecha Desde -->
+                                        <div class="col-md-3">
+                                            <label class="form-label">Desde</label>
+                                            <input
+                                                type="date"
+                                                class="form-control"
+                                                t-model="state.filterDateFrom"
+                                                t-on-change="onFilterChangeDateFrom"
+                                            />
+                                        </div>
+
+                                        <!-- Filtro Fecha Hasta -->
+                                        <div class="col-md-3">
+                                            <label class="form-label">Hasta</label>
+                                            <input
+                                                type="date"
+                                                class="form-control"
+                                                t-model="state.filterDateTo"
+                                                t-on-change="onFilterChangeDateTo"
+                                            />
+                                        </div>
+
+                                        <!-- Botón Limpiar Filtros -->
+                                        <div class="col-md-2 d-flex align-items-end">
+                                            <button
+                                                class="btn btn-outline-secondary w-100"
+                                                t-on-click="clearFilters"
+                                            >
+                                                <i class="fa fa-eraser me-1"/>
+                                                Limpiar
+                                            </button>
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+
+                            <div class="table-responsive" style="max-height: 350px; overflow-y: auto;"
+                                 t-ref="pendingProductsScrollRef">
+                                <table class="table table-hover">
+                                    <thead class="sticky-top bg-white" style="z-index: auto;">
+                                        <tr>
+                                            <th>Fecha</th>
+                                            <th>Producto</th>
+                                            <th>Cantidad</th>
+                                            <th>Origen</th>
+                                            <th>Destino</th>
+                                        </tr>
+                                    </thead>
+                                    <tbody>
+                                        <t t-foreach="state.pendingProducts" t-as="product" t-key="product.id">
+                                            <tr>
+                                                <td><t t-esc="formatDate(product.transfer_date)"/></td>
+                                                <td><t t-esc="product.product_name"/></td>
+                                                <td><t t-esc="product.quantity_done"/></td>
+                                                <td><t t-esc="product.location_origin"/></td>
+                                                <td><t t-esc="product.location_dest"/></td>
+                                                <td>
+                                                    <button t-if="['draft', 'assigned'].includes(product.state)"
+                                                            class="btn btn-sm btn-success me-1"
+                                                            t-on-click="() => this.validateTransfer(product.transfer_obj)">
+                                                        <i class="fa fa-check"></i> Validar
+                                                    </button>
+                                                </td>
+                                            </tr>
+                                        </t>
+                                        <t t-if="!state.sentTransfers.length and !state.isLoadingSent">
+                                            <tr>
+                                                <td colspan="7" class="text-center text-muted py-4">
+                                                    No hay productos por recibir
+                                                </td>
+                                            </tr>
+                                        </t>
+                                        <!-- Indicador de carga -->
+                                        <t t-if="state.isLoadingSent">
+                                            <tr>
+                                                <td colspan="7" class="text-center py-3">
+                                                    <div class="spinner-border spinner-border-sm text-primary" role="status">
+                                                        <span class="visually-hidden">Cargando...</span>
+                                                    </div>
+                                                    <span class="ms-2">Cargando más transferencias...</span>
+                                                </td>
+                                            </tr>
+                                        </t>
+                                        <!-- Fin de resultados -->
+                                        <t t-if="!state.sentHasMore and state.sentTransfers.length > 0">
+                                            <tr>
+                                                <td colspan="7" class="text-center text-muted py-2">
+                                                    <small>No hay más transferencias para mostrar</small>
+                                                </td>
+                                            </tr>
+                                        </t>
+                                    </tbody>
+                                </table>
+                            </div>
+                        </div>
+
+                    </div>
+                </div>
+
+                <!-- Footer -->
+                <div class="modal-footer">
+                    <button type="button" class="btn btn-secondary" t-on-click="close">
+                        Cerrar
+                    </button>
+                </div>
+            </div>
+        </div>
+    </t>
+
+    <!-- Modal de Detalle de Transferencia Enviada -->
+    <t t-name="TransferDetailModal" owl="1">
+        <div class="modal-dialog modal-lg">
+            <div class="modal-content">
+                <div class="modal-header">
+                    <h4 class="modal-title">
+                        Detalle de Transferencia - <t t-esc="props.transfer.name"/>
+                    </h4>
+                    <button type="button" class="btn-close" t-on-click="close"></button>
+                </div>
+
+                <div class="modal-body">
+                    <!-- Información General -->
+                    <div class="row mb-4">
+                        <div class="col-md-6">
+                            <p><strong>Fecha:</strong> <t t-esc="formatDate(props.transfer.date)"/></p>
+                            <p><strong>Origen:</strong> <t t-esc="props.transfer.origin"/></p>
+                            <p><strong>Destino:</strong> <t t-esc="props.transfer.destination"/></p>
+                        </div>
+                        <div class="col-md-6">
+                            <p><strong>Responsable:</strong> <t t-esc="props.transfer.responsible"/></p>
+                            <p><strong>Estado:</strong>
+                                <span class="badge" t-att-class="getStatusBadge(props.transfer.state)">
+                                    <t t-esc="getStatusText(props.transfer.state)"/>
+                                </span>
+                            </p>
+                            <p><strong>Tipo:</strong> <t t-esc="props.transfer.type_transfer"/></p>
+                        </div>
+                    </div>
+
+                    <!-- Lista de Productos -->
+                    <h5>Productos</h5>
+                    <div class="table-responsive">
+                        <table class="table table-sm table-bordered">
+                            <thead class="table-light">
+                                <tr>
+                                    <th>Producto</th>
+                                    <th>Cantidad</th>
+<!--                                    <th>Demanda </th>-->
+                                    <th t-if="props.editable">Acciones</th>
+                                </tr>
+                            </thead>
+                            <tbody>
+                                <t t-foreach="props.transfer.products" t-as="product" t-key="product.id">
+                                    <tr>
+                                        <td><t t-esc="product.product_id[1]"/></td>
+                                        <td>
+<!--                                            <t t-if="props.editable">-->
+<!--                                                <input type="number"-->
+<!--                                                       class="form-control form-control-sm"-->
+<!--                                                       t-att-value="product.quantity"-->
+<!--                                                       t-on-change="(e) => this.updateQuantity(product.id, e.target.value)"-->
+<!--                                                       min="0"/>-->
+<!--                                            </t>-->
+<!--                                            <t t-else="">-->
+                                            <t t-esc="product.product_qty"/>
+<!--                                            </t>-->
+                                        </td>
+<!--                                        <td>-->
+<!--                                            <t t-esc="product.quantity"/>-->
+<!--                                        </td>-->
+                                        <td t-if="props.editable">
+                                            <button class="btn btn-sm btn-danger"
+                                                    t-on-click="() => this.removeProduct(product.id)">
+                                                <i class="fa fa-trash"></i>
+                                            </button>
+                                        </td>
+                                    </tr>
+                                </t>
+                            </tbody>
+                        </table>
+                    </div>
+                </div>
+
+                <div class="modal-footer">
+                    <button type="button" class="btn btn-secondary" t-on-click="close">
+                        Cerrar
+                    </button>
+                    <button t-if="props.editable"
+                            type="button"
+                            class="btn btn-primary"
+                            t-on-click="save">
+                        Guardar Cambios
+                    </button>
+                </div>
+            </div>
+        </div>
+    </t>
+
+    <!-- Modal de Validación de Transferencia Recibida -->
+    <t t-name="TransferValidationModal" owl="1">
+        <div class="modal-dialog modal-lg">
+            <div class="modal-content">
+                <div class="modal-header">
+                    <h4 class="modal-title">
+                        Validar Transferencia - <t t-esc="props.transfer.name"/>
+                    </h4>
+                    <button type="button" class="btn-close" t-on-click="close"></button>
+                </div>
+
+                <div class="modal-body">
+                    <!-- Información General -->
+                    <div class="row mb-4">
+                        <div class="col-md-6">
+                            <p><strong>Fecha:</strong> <t t-esc="formatDate(props.transfer.date)"/></p>
+                            <p><strong>Origen:</strong> <t t-esc="props.transfer.origin"/></p>
+                            <p><strong>Destino:</strong> <t t-esc="props.transfer.destination"/></p>
+                        </div>
+                        <div class="col-md-6">
+                            <p><strong>Responsable:</strong> <t t-esc="props.transfer.responsible"/></p>
+                        </div>
+                    </div>
+
+                    <!-- Lista de Productos con Validación -->
+                    <h5>Productos - Validar Cantidades</h5>
+                    <div class="table-responsive">
+                        <table class="table table-sm table-bordered">
+                            <thead class="table-light">
+                                <tr>
+                                    <th>Producto</th>
+                                    <th>Cantidad Enviada</th>
+                                    <th>Cantidad Recibida</th>
+<!--                                    <th>Diferencia</th>-->
+                                </tr>
+                            </thead>
+                            <tbody>
+                                <t t-foreach="state.validationProducts" t-as="product" t-key="product.id">
+                                    <tr t-att-class="getDifferenceClass(product)">
+                                        <td><t t-esc="product.product_id[1]"/></td>
+                                        <td><t t-esc="product.quantity_sent"/></td>
+                                        <td><t t-esc="product.quantity_received"/></td>
+<!--                                        <td>-->
+<!--                                            <input type="number"-->
+<!--                                                   class="form-control form-control-sm"-->
+<!--                                                   t-att-value="product.quantity_received"-->
+<!--                                                   t-on-change="(e) => this.updateReceivedQuantity(product.id, e.target.value)"-->
+<!--                                                   min="0"/>-->
+<!--                                        </td>-->
+<!--                                        <td>-->
+<!--                                            <t t-set="diff" t-value="product.quantity_received - product.quantity_sent"/>-->
+<!--                                            <span t-att-class="diff !== 0 ? 'text-danger fw-bold' : 'text-success'">-->
+<!--                                                <t t-esc="diff"/>-->
+<!--                                            </span>-->
+<!--                                        </td>-->
+                                    </tr>
+                                </t>
+                            </tbody>
+                        </table>
+                    </div>
+
+                    <!-- Notas -->
+                    <div class="mb-3">
+                        <label class="form-label">Notas / Observaciones</label>
+                        <textarea class="form-control"
+                                  rows="3"
+                                  t-model="state.notes"
+                                  placeholder="Ingrese cualquier observación sobre la transferencia..."></textarea>
+                    </div>
+                </div>
+
+                <div class="modal-footer">
+                    <button type="button" class="btn btn-secondary" t-on-click="close">
+                        Cancelar
+                    </button>
+<!--                    <button type="button"-->
+<!--                            class="btn btn-danger me-2"-->
+<!--                            t-on-click="reject">-->
+<!--                        <i class="fa fa-times"></i> Rechazar-->
+<!--                    </button>-->
+                    <button type="button"
+                            class="btn btn-success"
+                            t-on-click="validate">
+                        <i class="fa fa-check"></i> Validar Transferencia
+                    </button>
+                </div>
+            </div>
+        </div>
+    </t>
+
+</templates>

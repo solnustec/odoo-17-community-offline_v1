@@ -1,0 +1,53 @@
+/* Icono de ampliar en la tarjeta del producto */
+.product-image-expand-tag {
+    position: absolute;
+    top: 8px;
+    left: 8px;
+    background: rgba(0, 0, 0, 0.7);
+    color: white;
+    border-radius: 50%;
+    width: 28px;
+    height: 28px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    z-index: 5;
+    cursor: pointer;
+    transition: all 0.3s ease;
+    box-shadow: 0 2px 8px rgba(0, 0, 0, 0.3);
+}
+
+.product-image-expand-tag:hover {
+    background: rgba(0, 0, 0, 0.9);
+    transform: scale(1.1);
+}
+
+.product-image-expand-tag i {
+    font-size: 13px;
+}
+
+/* Imagen en el popup - MÁS GRANDE */
+.product-popup-image {
+    width: 100%;
+    max-height: 85vh;
+    object-fit: contain;
+    border-radius: 0;
+}
+
+/* Ajustes para el modal */
+.modal-xl {
+    max-width: 1200px;
+}
+
+/* Responsive: en pantallas más pequeñas */
+@media (max-width: 1200px) {
+    .modal-xl {
+        max-width: 95vw;
+    }
+}
+
+@media (max-width: 768px) {
+    .product-popup-image {
+        max-height: 70vh;
+    }
+}

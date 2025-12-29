@@ -1,0 +1,30 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<templates xml:space="preserve">
+    <t t-name="pos_custom_check.PaymentStatusPopup" owl="1">
+        <div class="popup popup-payment-status">
+            <div class="modal-header">
+                <h3 class="modal-title">Resultado del Pago</h3>
+            </div>
+            <div class="modal-body" style="font-size: 16px;">
+                <p>
+                    <strong t-att-style="'font-size: 18px; color: ' + props.statusColor">
+                        Estado: <t t-esc="props.status"/>
+                    </strong>
+                </p>
+                <p><strong>Transaction ID:</strong> <t t-esc="props.transactionId"/></p>
+                <p><strong>Nro. Transferencia:</strong> <t t-esc="props.transferNumber"/></p>
+                <p><strong>Identificación:</strong> <t t-esc="props.ordererIdentification"/></p>
+                <p><strong>Nombre del Ordenante:</strong> <t t-esc="props.ordererName"/></p>
+                <p><strong>Referencia Interna:</strong> <t t-esc="props.internalReference"/></p>
+                <p><strong>Fecha:</strong> <t t-esc="props.date"/></p>
+                <p><strong>Monto:</strong> <t t-esc="props.amount"/> <t t-esc="props.currency"/></p>
+                <t t-if="props.description">
+                    <p><strong>Descripción:</strong> <t t-esc="props.description"/></p>
+                </t>
+            </div>
+            <div class="modal-footer">
+                <button class="btn btn-primary" t-on-click="() => props.close({confirmed: true})">Aceptar</button>
+            </div>
+        </div>
+    </t>
+</templates>

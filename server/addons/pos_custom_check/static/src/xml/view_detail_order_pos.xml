@@ -1,0 +1,47 @@
+<templates id="template" xml:space="preserve">
+    <t t-name="point_of_sale.PaymentScreenStatus" t-inherit="point_of_sale.PaymentScreenStatus"
+       t-inherit-mode="extension"
+       owl="1">
+
+        <xpath expr="//section[contains(@class, 'paymentlines-containe')]" position="replace">
+            <section class="paymentlines-container bg-view p-3 mb-1 border-bottom rounded shadow-sm">
+                <div t-if="props.order.get_paymentlines().length === 0" class="paymentlines-empty">
+                    <div class="total text-center py-2 text-success">
+                        <t t-esc="totalDueText"/>
+                    </div>
+                    <div class="message text-center text-muted">
+                        Seleccione un método de pago.
+                    </div>
+                </div>
+
+                <t t-else="">
+                    <div class="d-flex flex-column flex-md-row justify-content-between align-items-center text-center fs-4 px-3">
+                        <div class="col-md-6 mb-2 mb-md-0 text-start">
+                            <span class="fw-semibold">Restantes: </span>
+                            <span class="fw-bold"
+                                  t-att-class="{ 'text-danger': props.order.get_due() > 0 }">
+                                <t t-esc="remainingText"/>
+                            </span>
+                        </div>
+                        <div class="col-md-6 text-end">
+                            <span class="fw-semibold">Total a pagar: </span>
+                            <span class="fw-bold">
+                                <t t-esc="totalDueText"/>
+                            </span>
+                        </div>
+                    </div>
+
+                    <hr class="my-3"/>
+
+                    <div class="fs-1 fw-semibold text-center text-muted">
+                        <span class="pe-2">Cambio</span>
+                        <span class="text-primary fw-bold"
+                              t-att-class="{ 'text-success': props.order.get_change() > 0 }">
+                            <t t-esc="changeText"/>
+                        </span>
+                    </div>
+                </t>
+            </section>
+        </xpath>
+    </t>
+</templates>

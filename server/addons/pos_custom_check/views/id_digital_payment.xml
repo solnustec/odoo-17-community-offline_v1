@@ -1,0 +1,18 @@
+<odoo>
+  <record id="view_pos_config_form_inherit_digital_payment" model="ir.ui.view">
+    <field name="name">pos.config.form.inherit.digital.payment</field>
+    <field name="model">pos.config</field>
+    <field name="inherit_id" ref="point_of_sale.pos_config_view_form"/>
+    <field name="arch" type="xml">
+      <!-- Opción A: justo después del bloque 'other_devices' -->
+      <xpath expr="//setting[@id='other_devices']" position="after">
+        <setting id="digital_payment_code_setting"
+                 string="Código PDV (DeUna)"
+                 help="Código Punto de Venta usado para pagos con DeUna.">
+          <field name="id_digital_payment"/>
+        </setting>
+      </xpath>
+
+    </field>
+  </record>
+</odoo>

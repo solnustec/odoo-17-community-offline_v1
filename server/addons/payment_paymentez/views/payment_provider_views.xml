@@ -1,0 +1,18 @@
+<?xml version="1.0" encoding="utf-8"?>
+<odoo>
+
+    <record id="payment_provider_form" model="ir.ui.view">
+        <field name="name">Paymentez Provider Form</field>
+        <field name="model">payment.provider</field>
+        <field name="inherit_id" ref="payment.payment_provider_form"/>
+        <field name="arch" type="xml">
+            <group name="provider_credentials" position="inside">
+                <group invisible="code != 'paymentez'">
+                    <field name="paymentez_application_code" required="code == 'paymentez' and state != 'disabled'"/>
+                    <field name="paymentez_application_key" required="code == 'paymentez' and state != 'disabled'" password="True"/>
+                </group>
+            </group>
+        </field>
+    </record>
+
+</odoo>

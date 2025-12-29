@@ -1,0 +1,27 @@
+<odoo>
+    <record id="view_credit_note_tree" model="ir.ui.view">
+        <field name="name">credit.note.tree</field>
+        <field name="model">account.move</field>
+        <field name="arch" type="xml">
+            <tree string="Notas de Crédito" create="false" edit="false" delete="false">
+                <field name="name" string="Detalle"/>
+                <field name="partner_id" string="Cliente"/>
+                <field name="invoice_user_id" string="Vendedor"/>
+                <field name="note_credit" string="Precio Total" sum="Total"/>
+            </tree>
+        </field>
+    </record>
+
+    <record id="action_credit_note" model="ir.actions.act_window">
+        <field name="name">Notas de Crédito</field>
+        <field name="res_model">account.move</field>
+        <field name="view_mode">tree</field>
+        <field name="view_id" ref="view_credit_note_tree"/>
+        <field name="domain">[('move_type', '=', 'out_refund')]</field>
+    </record>
+
+    <menuitem id="menu_credit_note"
+              name="Notas de Crédito"
+              parent="point_of_sale.menu_point_config_product"
+              action="action_credit_note"/>
+</odoo>

@@ -1,0 +1,61 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<odoo>
+    <!-- Reporte de satisfacción: usa plantilla base -->
+    <template id="report_survey_satisfaction">
+        <t t-call="internal_control.survey_base_template">
+            <t t-set="report_title" t-value="'Reporte de Satisfacción'"/>
+            <t t-set="content_title" t-value="'Resultados de Satisfacción:'"/>
+            <t t-set="report_type" t-value="'satisfaction'"/>
+        </t>
+    </template>
+
+    <!-- Template específico para el contenido de satisfacción -->
+    <template id="survey_satisfaction_content">
+        <div style="padding: 20px; margin-top: 15px; font-size: 11px;">
+            <!-- Tabla de satisfacción (Componente reutilizable) -->
+            <t t-call="internal_control.survey_satisfaction_table"/>
+
+                            <!-- Resumen -->
+                            <div style="background-color: #ecf0f1; padding: 15px; border-radius: 5px; margin-top: 20px;">
+                <h4 style="margin-bottom: 15px; font-weight: bold; color: #333;">Resumen:</h4>
+                                <t t-set="total_encuestas" t-value="sum(docs.mapped('total_encuestas'))"/>
+                                <t t-set="total_positivas" t-value="sum(docs.mapped('encuestas_positivas'))"/>
+                                <t t-set="promedio_satisfaccion" t-value="sum(docs.mapped('satisfaccion')) / len(docs) if docs else 0"/>
+                                <t t-set="promedio_porcentaje" t-value="sum(docs.mapped('porcentaje_satisfaccion')) / len(docs) if docs else 0"/>
+                                
+                <table style="width: 100%; border-collapse: collapse; margin-bottom: 20px;">
+                    <thead>
+                        <tr style="background-color: #f8f9fa; border: 1px solid #ddd;">
+                            <th style="border: 1px solid #ddd; padding: 8px; text-align: left; font-weight: bold; width: 50%; background-color: #fff; vertical-align: middle;">Métrica</th>
+                            <th style="border: 1px solid #ddd; padding: 8px; text-align: left; font-weight: bold; width: 50%; background-color: #fff; vertical-align: middle;">Valor</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        <tr style="border: 1px solid #ddd; background-color: #fff;">
+                            <td style="border: 1px solid #ddd; padding: 8px; font-weight: 600; color: #555; background-color: #fff;">Total Encuestas</td>
+                            <td style="border: 1px solid #ddd; padding: 8px; color: #000; background-color: #fff;"><t t-out="total_encuestas"/></td>
+                        </tr>
+                        <tr style="border: 1px solid #ddd; background-color: #fff;">
+                            <td style="border: 1px solid #ddd; padding: 8px; font-weight: 600; color: #555; background-color: #fff;">Total Positivas</td>
+                            <td style="border: 1px solid #ddd; padding: 8px; color: #000; background-color: #fff;"><t t-out="total_positivas"/></td>
+                        </tr>
+                        <tr style="border: 1px solid #ddd; background-color: #fff;">
+                            <td style="border: 1px solid #ddd; padding: 8px; font-weight: 600; color: #555; background-color: #fff;">Promedio Satisfacción</td>
+                            <td style="border: 1px solid #ddd; padding: 8px; color: #000; background-color: #fff;"><t t-out="'%.2f' % promedio_satisfaccion"/></td>
+                        </tr>
+                        <tr style="border: 1px solid #ddd; background-color: #fff;">
+                            <td style="border: 1px solid #ddd; padding: 8px; font-weight: 600; color: #555; background-color: #fff;">Promedio % Satisfacción</td>
+                            <td style="border: 1px solid #ddd; padding: 8px; color: #000; background-color: #fff;"><t t-out="'%.1f' % promedio_porcentaje"/>%</td>
+                        </tr>
+                    </tbody>
+                </table>
+                    </div>
+
+            <!-- Matriz de Riesgo -->
+            <t t-call="internal_control.survey_risk_matrix"/>
+
+            <!-- Footer (Componente reutilizable) -->
+            <t t-call="internal_control.survey_footer"/>
+                </div>
+    </template>
+</odoo> 

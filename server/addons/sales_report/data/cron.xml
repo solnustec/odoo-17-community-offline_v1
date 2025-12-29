@@ -1,0 +1,40 @@
+<?xml version="1.0" encoding="utf-8"?>
+<odoo>
+    <!--    <record id="cron_update_sale_summaries" model="ir.cron">-->
+    <!--        <field name="name">Actualizar Resumen de Ventas</field>-->
+    <!--        <field name="model_id" ref="model_product_warehouse_sale_summary"/>-->
+    <!--        <field name="state">code</field>-->
+    <!--        <field name="code">model.update_daily_summaries()</field>-->
+    <!--        <field name="interval_number">1</field>-->
+    <!--        <field name="interval_type">days</field>-->
+    <!--        <field name="numbercall">-1</field>-->
+    <!--    </record>-->
+    <record id="cron_sync_promotions" model="ir.cron">
+        <field name="name">Sincronizar Promociones a VisualFact</field>
+        <field name="model_id" ref="model_loyalty_sync"/>
+        <field name="state">code</field>
+        <field name="code">model.cron_sync_loyalty_programs()</field>
+        <field name="interval_number">1</field>
+        <field name="interval_type">minutes</field>
+        <field name="numbercall">-1</field>
+    </record>
+    <record id="cron_update_new_products_to_vf" model="ir.cron">
+        <field name="name">Sincronizar/Dar de baja Productos Odoo -> VisualFact</field>
+        <field name="model_id" ref="sales_report.model_product_sync"/>
+        <field name="state">code</field>
+        <field name="code">model.active_inactive_products_to_visual_fact()</field>
+        <field name="interval_number">1</field>
+        <field name="interval_type">days</field>
+        <field name="numbercall">-1</field>
+    </record>
+    <record id="ir_cron_check_apis" model="ir.cron">
+        <field name="name">Verificar Estado de APIs</field>
+        <field name="model_id" ref="model_api_monitor"/>
+        <field name="state">code</field>
+        <field name="code">model.cron_check_all_apis()</field>
+        <field name="interval_number">5</field>
+        <field name="interval_type">minutes</field>
+        <field name="numbercall">-1</field>
+        <field name="active" eval="True"/>
+    </record>
+</odoo>

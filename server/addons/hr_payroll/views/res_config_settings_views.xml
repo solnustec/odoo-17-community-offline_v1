@@ -1,0 +1,120 @@
+<?xml version="1.0" encoding="utf-8"?>
+<odoo>
+        <record id="open_payroll_modules" model="ir.actions.act_window">
+            <field name="name">Payroll</field>
+            <field name="res_model">ir.module.module</field>
+            <field name="view_mode">kanban,tree,form</field>
+            <field name="context">{}</field>
+            <field name="domain">[('name', '=like', 'l10n_%_hr_payroll')]</field>
+            <field name="search_view_id" ref="base.view_module_filter"/>
+        </record>
+
+        <record id="res_config_settings_view_form" model="ir.ui.view">
+            <field name="name">res.config.settings.view.form.inherit.hr.payroll</field>
+            <field name="model">res.config.settings</field>
+            <field name="priority" eval="45"/>
+            <field name="inherit_id" ref="hr_contract.res_config_settings_view_form"/>
+            <field name="arch" type="xml">
+                <xpath expr="//form" position="inside">
+                    <app data-string="Payroll" string="Payroll" name="hr_payroll" groups="hr_payroll.group_hr_payroll_manager">
+                        <field name="module_l10n_fr_hr_payroll" invisible="1"/>
+                        <field name="module_l10n_be_hr_payroll" invisible="1"/>
+                        <field name="module_l10n_in_hr_payroll" invisible="1"/>
+                        <block title="Payroll" id="hr_payroll_localization" invisible="module_l10n_fr_hr_payroll or module_l10n_be_hr_payroll or module_l10n_in_hr_payroll">
+                            <setting string="Payroll Rules" help="Payroll rules that apply to your country">
+                                <div class="mt8" id="localization_text">
+                                    <button name="%(open_payroll_modules)d" icon="oi-arrow-right" type="action" string="Choose a Payroll Localization" class="btn-link"/>
+                                </div>
+                            </setting>
+                        </block>
+                        <block title="Accounting" id="hr_payroll_accountant">
+                            <setting name="module_hr_payroll_account" string="Payroll Entries" help="Post payroll slips in accounting">
+                                <field name="module_hr_payroll_account"/>
+                            </setting>
+                            <setting name="module_hr_payroll_account_sepa" invisible="not module_hr_payroll_account" string="Payroll SEPA" help="Create SEPA payment">
+                                <field name="module_hr_payroll_account_sepa"/>
+                            </setting>
+                        </block>
+                        <block title="Payroll" id="hr_payroll_settings">
+                            <setting string="Contract Expiration Notice Period" id="contract_notice_period"
+                                title="Number of days prior to the contract end date that a contract expiration warning is triggered.">
+                                <field name="contract_expiration_notice_period" class="w-25"/><span>Days</span>
+                            </setting>
+                            <setting string="Payslip PDF Display" help="Display Payslip PDF File on a payslip form" id="display_payslip">
+                                <field name="group_payslip_display"/>
+                            </setting>
+                            <setting string="Work Permit Expiration Notice Period" id="work_permit_notice_period"
+                                title="Number of days prior to the work permit expiration date that a warning is triggered.">
+                                <field name="work_permit_expiration_notice_period" class="w-25"/><span>Days</span>
+                            </setting>
+                            <setting string="Permitir importación en calculos de nómina" id="enable_import_settings"
+                                title="Permitir importación en calculos de nómina">
+                                <field name="enable_import" class="w-25"/>
+                            </setting>
+                            <setting string="Prioridad de Horarios" id="mode_of_attendance_settings"
+                                     title="Prioridad de Horarios">
+                                <field name="mode_of_attendance" class="w-25"/>
+                            </setting>
+                        </block>
+                        <block title="Configuración de Página de reporte de asistencias" id="page_setup_settings">
+                            <setting string="Orientación de Página" id="page_orientation_setting"
+                                     title="Configurar la orientación de página para reportes">
+                                <field name="page_orientation" class="w-25"/>
+                            </setting>
+
+                            <setting string="Tamaño de papel" id="page_orientation_setting_paper"
+                                     title="Selecciona el tamaño de papel para los reportes de asistencia">
+                                <field name="page_paper_size" class="w-25"/>
+                            </setting>
+
+                            <setting string="Centrar Contenido Horizontalmente" id="page_center_setting"
+                                     title="Centrar el contenido horizontalmente en la página">
+                                <field name="page_center_horizontally"/>
+                            </setting>
+                            <setting string="Ajustar al Ancho" id="page_fit_width_setting"
+                                     title="Número de páginas de ancho para ajustar el contenido (0 = sin ajuste)">
+                                <field name="page_fit_to_width" class="w-25"/><span> páginas</span>
+                            </setting>
+
+                            <setting string="Ajustar a la Altura" id="page_fit_height_setting"
+                                     title="Número de páginas de alto para ajustar el contenido (0 = sin ajuste)">
+                                <field name="page_fit_to_height" class="w-25"/><span> páginas</span>
+                            </setting>
+
+                            <setting string="Margen Izquierdo" id="page_margin_left_setting"
+                                     title="Margen izquierdo en pulgadas">
+                                <field name="page_margin_left" class="w-25"/><span> pulgadas</span>
+                            </setting>
+
+                            <setting string="Margen Derecho" id="page_margin_right_setting"
+                                     title="Margen derecho en pulgadas">
+                                <field name="page_margin_right" class="w-25"/><span> pulgadas</span>
+                            </setting>
+
+                            <setting string="Margen Superior" id="page_margin_top_setting"
+                                     title="Margen superior en pulgadas">
+                                <field name="page_margin_top" class="w-25"/><span> pulgadas</span>
+                            </setting>
+
+                            <setting string="Margen Inferior" id="page_margin_bottom_setting"
+                                     title="Margen inferior en pulgadas">
+                                <field name="page_margin_bottom" class="w-25"/><span> pulgadas</span>
+                            </setting>
+                        </block>
+                    </app>
+                </xpath>
+                <xpath expr="//block[@id='hr_contract']" position="attributes">
+                    <attribute name="invisible">1</attribute>
+                </xpath>
+            </field>
+        </record>
+
+        <record id="action_hr_payroll_configuration" model="ir.actions.act_window">
+            <field name="name">Settings</field>
+            <field name="res_model">res.config.settings</field>
+            <field name="view_mode">form</field>
+            <field name="target">inline</field>
+            <field name="context">{'module' : 'hr_payroll', 'bin_size': False}</field>
+        </record>
+
+</odoo>

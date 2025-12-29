@@ -1,0 +1,43 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<odoo>
+
+    <!-- ENTRADAS VS SALIDAS -->
+    <record id="view_kardex_graph_entries_outputs" model="ir.ui.view">
+        <field name="name">kardex.graph.entries.outputs</field>
+        <field name="model">consumibles.product.kardex</field>
+        <field name="arch" type="xml">
+            <graph string="Entradas vs Salidas" type="line">
+                <field name="date" interval="month"/>
+                <field name="qty_in" type="measure"/>
+                <field name="qty_out" type="measure"/>
+            </graph>
+        </field>
+    </record>
+
+    <record id="action_kardex_graph_entries_outputs" model="ir.actions.act_window">
+        <field name="name">Entradas vs Salidas</field>
+        <field name="res_model">consumibles.product.kardex</field>
+        <field name="view_mode">graph</field>
+        <field name="view_id" ref="view_kardex_graph_entries_outputs"/>
+    </record>
+
+    <!-- STOCK POR PRODUCTO -->
+    <record id="view_kardex_graph_stock_by_product" model="ir.ui.view">
+        <field name="name">kardex.graph.stock.product</field>
+        <field name="model">consumibles.product.kardex</field>
+        <field name="arch" type="xml">
+            <graph string="Stock por Producto" type="bar">
+                <field name="product_id"/>
+                <field name="balance_qty" type="measure"/>
+            </graph>
+        </field>
+    </record>
+
+    <record id="action_kardex_graph_stock_by_product" model="ir.actions.act_window">
+        <field name="name">Stock por Producto</field>
+        <field name="res_model">consumibles.product.kardex</field>
+        <field name="view_mode">graph</field>
+        <field name="view_id" ref="view_kardex_graph_stock_by_product"/>
+    </record>
+
+</odoo>

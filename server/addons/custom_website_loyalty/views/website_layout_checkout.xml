@@ -1,0 +1,73 @@
+<odoo>
+    <!--    ocultar los porducto que son de desicuento el carrito-->
+    <template id="checkout_layout_inherit_hide_rewards" inherit_id="website_sale.checkout_layout"
+              name="Hide Reward Lines in Cart">
+        <xpath expr="//tbody" position="replace">
+           <tbody>
+                <tr t-foreach="website_sale_order.website_order_line" t-as="line" t-att-class="line_last and 'border-transparent'">
+
+                    <t t-if="line.reward_id.reward_type != 'discount'">
+                        <t t-set="o_cart_sum_padding_top"
+                        t-value="'pt-3' if line_size &gt; 1 and not line_first else 'pt-0'"/>
+                        <td t-if="not line.product_id" colspan="2"/>
+                        <t t-else="">
+                            <td t-attf-class="td-img ps-0 #{o_cart_sum_padding_top}" style="text-align: center;">
+                                <span t-if="line._is_not_sellable_line() and line.product_id.image_128">
+                                    <img t-att-src="image_data_uri(line.product_id.image_128)" class="o_image_64_max img rounded" t-att-alt="line.name_short"/>
+                                </span>
+                                <span t-else=""
+                                    t-field="line.product_id.image_128"
+                                    t-options="{'widget': 'image', 'qweb_img_responsive': False, 'class': 'o_image_64_max rounded'}"
+                                />
+                            </td>
+                            <td t-attf-class="#{o_cart_sum_padding_top} td-product_name td-qty w-100"
+                                name='website_sale_cart_summary_product_name'>
+                                <h6>
+                                    <t t-out="int(line.product_uom_qty)" />
+                                    <t t-if="line._get_shop_warning(clear=False)">
+                                        <i class="fa fa-warning text-warning"
+                                        role="img"
+                                        t-att-title="line._get_shop_warning()"
+                                        aria-label="Warning"/>
+                                    </t>
+                                    x
+                                    <t t-esc="line.clean_line_name()"/>
+                                </h6>
+                            </td>
+                        </t>
+                        <td t-attf-class="#{o_cart_sum_padding_top} td-price pe-0 text-end"
+                            name="website_sale_cart_summary_line_price">
+                            <t t-if="line.price_subtotal != 0">
+                                <span t-if="website.show_line_subtotals_tax_selection == 'tax_excluded'"
+                                    t-field="line.price_subtotal" style="white-space: nowrap;"
+                                    t-options="{'widget': 'monetary', 'display_currency': website_sale_order.currency_id}"/>
+
+                                <span t-else=""
+                                    t-esc="request.env['product.template']._get_discounted_price_with_tax(line.product_id, line.product_uom_qty)" style="white-space: nowrap;"
+                                    t-options="{'widget': 'monetary', 'display_currency': website_sale_order.currency_id}"/>
+                            </t>
+                            <t t-else="">
+                                <span t-if="website.show_line_subtotals_tax_selection == 'tax_excluded'"
+                                    t-field="line.price_subtotal" style="white-space: nowrap;"
+                                    t-options="{'widget': 'monetary', 'display_currency': website_sale_order.currency_id}"/>
+
+                                <span t-else=""
+                                    t-field="line.price_subtotal" style="white-space: nowrap;"
+                                    t-options="{'widget': 'monetary', 'display_currency': website_sale_order.currency_id}"/>
+                            </t>
+
+                        </td>
+                    </t>
+                </tr>
+            </tbody>
+        </xpath>
+    </template>
+
+<!--    oculta el aplicar cupon en sitio web-->
+
+    <template id="coupon_form_hide" inherit_id="website_sale.coupon_form"
+              name="Hide Reward Lines in Cart">
+        <xpath expr="//form" position="replace">
+        </xpath>
+    </template>
+</odoo>

@@ -1,0 +1,26 @@
+<odoo>
+    <data>
+        <record id="view_hr_leave_accrual_plan_search" model="ir.ui.view">
+            <field name="name">hr.leave.accrual.plan.search</field>
+            <field name="model">hr.leave.accrual.plan</field>
+            <field name="inherit_id" ref="hr_holidays.hr_accrual_plan_view_search"/>
+            <field name="arch" type="xml">
+                <xpath expr="//search" position="replace">
+                    <search>
+                        <field name="name" string="Nombre"/>
+                        <filter name="filter_by_month"
+                                string="Este mes"
+                                domain="[('create_date', '&gt;=', context_today().strftime('%Y-%m-01')),
+                                         ('create_date', '&lt;', (context_today() + relativedelta(months=1)).strftime('%Y-%m-01'))]"
+                                help="Mostrar registros del mes actual"/>
+                        <filter name="filter_today"
+                                string="Hoy"
+                                domain="[('create_date', '&gt;=', context_today().strftime('%Y-%m-%d 00:00:00')),
+                                    ('create_date', '&lt;', (context_today() + relativedelta(days=1)).strftime('%Y-%m-%d 00:00:00'))]"
+                                help="Mostrar registros de hoy"/>
+                    </search>
+                </xpath>
+            </field>
+        </record>
+    </data>
+</odoo>

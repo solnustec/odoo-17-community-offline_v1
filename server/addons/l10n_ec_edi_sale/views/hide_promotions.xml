@@ -1,0 +1,24 @@
+<?xml version="1.0" encoding="utf-8"?>
+<odoo>
+    <!--
+        Oculta las tarjetas verdes de promociones (y cualquier bloque relacionado)
+        desde una vista base estable: website.layout
+    -->
+    <template id="hide_promotions_global" inherit_id="website.layout">
+        <xpath expr="//head" position="inside">
+            <style>
+                /* Aplica a todo el sitio */
+                .o_cart_promotion,
+                .o_cart_discount_promotion,
+                .o_cart_promotion_info,
+                .o_wsale_cart_summary_promotion,
+                .card.bg-success-subtle,
+                .alert.alert-success,
+                [data-id*='promotion'],
+                [class*='promotion'] {
+                display: none !important;
+                }
+            </style>
+        </xpath>
+    </template>
+</odoo>

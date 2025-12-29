@@ -1,0 +1,143 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<templates id="template" xml:space="preserve">
+
+    <t t-name="adevx_pos_sales_order.SaleOrderPopup">
+        <div class="popup popup-sale-order">
+            <div class="modal-header">
+                <h4 class="modal-title"><t t-esc="props.title" /></h4>
+            </div>
+            <main class="modal-body">
+                <div class="client-details-left">
+                    <p>Nota del Pedido</p>
+                    <div class="opening-cash-section mb-3">
+                        <div class="cash-input-sub-section input-group">
+                            <input class="pos-input form-control text-input"
+                                   name="note"
+                                   type="text"
+                                   t-on-change="OnChange"
+                                   t-att-value="changes.note"/>
+                        </div>
+                    </div>
+                    <p>Celular del Cliente</p>
+                    <div class="opening-cash-section mb-3">
+                        <div class="cash-input-sub-section input-group">
+                            <span class="input-group-text">+593</span>
+                            <input class="pos-input form-control"
+                                   name="cellphone"
+                                   type="text"
+                                   maxlength="9"
+                                   t-on-change="OnChange"
+                                   t-att-value="changes.cellphone"/>
+                        </div>
+                        <small class="text-danger" t-if="cellphoneInvalid">
+                            El número debe tener 12 dígitos incluyendo el +593 (ej. 593XXXXXXXXX)
+                        </small>
+                    </div>
+                </div>
+
+                <div class="client-details-right d-none">
+                    <p t-if="changes.sale_order_auto_confirm and changes.sale_order_auto_invoice">Partial Payment</p>
+                    <div class="opening-cash-section mb-3"
+                         t-if="changes.sale_order_auto_confirm and changes.sale_order_auto_invoice">
+                        <span class="info-title d-flex flex-grow-1 align-items-start">Partial Amount</span>
+                        <div class="cash-input-sub-section input-group">
+                            <input class="pos-input form-control"
+                                   t-on-change="OnChange"
+                                   t-ref="payment_partial_amount"
+                                   name="payment_partial_amount"
+                                   t-att-value="changes.payment_partial_amount"
+                                   type="number"/>
+                        </div>
+                    </div>
+                    <div class="opening-cash-section mb-3"
+                         t-if="pos.payment_methods and changes.sale_order_auto_confirm and changes.sale_order_auto_invoice">
+                        <span class="info-title d-flex flex-grow-1 align-items-start">Partial Payment Method</span>
+                        <div class="cash-input-sub-section input-group">
+                            <select class="form-control" name="payment_partial_method_id" t-on-change="OnChange">
+                                <t t-foreach="pos.payment_methods" t-as="method" t-key="method.id">
+                                    <option t-att-value="method.id"
+                                            t-att-selected="method['id'] ? ((changes.payment_partial_method_id and method.id === changes.payment_partial_method_id) ? true : undefined) : undefined">
+                                        <t t-esc="method.name"/>
+                                    </option>
+                                </t>
+                            </select>
+                        </div>
+                    </div>
+                    <div class="opening-cash-section mb-3" t-if="pos.pricelists">
+                        <span class="info-title d-flex flex-grow-1 align-items-start">Pricelist</span>
+                        <div class="cash-input-sub-section input-group">
+                            <select class="form-control" name="pricelist_id" t-on-change="OnChange">
+                                <t t-foreach="pos.pricelists" t-as="pricelist" t-key="pricelist.id">
+                                    <option t-att-value="pricelist.id"
+                                            t-att-selected="pricelist['id'] ? ((changes.pricelist_id and pricelist.id === changes.pricelist_id) ? true : undefined) : undefined">
+                                        <t t-esc="pricelist.name"/>
+                                    </option>
+                                </t>
+                            </select>
+                        </div>
+                    </div>
+                    <div class="opening-cash-section mb-3" t-if="pos.config.sale_order_required_signature">
+                        <span class="info-title d-flex flex-grow-1 align-items-start">Signature</span>
+                        <div class="cash-input-sub-section text-input" t-ref="signature-div" name="signature"
+                             t-on-change="OnChange"/>
+                    </div>
+                    <p>Automatic Actions</p>
+                    <div class="opening-cash-section mb-3">
+                        <div class="cash-input-sub-section input-group">
+                            <span class="info-title d-flex flex-grow-1 align-items-start"
+                                  style="width: 50%">Auto Confirm</span>
+                            <input type="checkbox"
+                                   name="sale_order_auto_confirm"
+                                   t-on-change="OnChange"
+                                   t-att-checked="changes.sale_order_auto_confirm"
+                                   class="checkbox">
+                                <span class="checkbox-material"><span class="check"></span></span>
+                            </input>
+                        </div>
+                    </div>
+                    <div class="opening-cash-section mb-3">
+                        <div class="cash-input-sub-section input-group">
+                            <span class="info-title d-flex flex-grow-1 align-items-start"
+                                  style="width: 50%">Auto Delivery</span>
+                            <input type="checkbox"
+                                   name="sale_order_auto_delivery"
+                                   t-on-change="OnChange"
+                                   t-att-checked="changes.sale_order_auto_delivery"
+                                   class="checkbox">
+                                <span class="checkbox-material"><span class="check"></span></span>
+                            </input>
+                        </div>
+                    </div>
+                    <div class="opening-cash-section mb-3">
+                        <div class="cash-input-sub-section input-group">
+                            <span class="info-title d-flex flex-grow-1 align-items-start"
+                                  style="width: 50%">Auto Invoice</span>
+                            <input type="checkbox"
+                                   name="sale_order_auto_invoice"
+                                   t-on-change="OnChange"
+                                   t-att-checked="changes.sale_order_auto_invoice"
+                                   class="checkbox">
+                                <span class="checkbox-material"><span class="check"></span></span>
+                            </input>
+                        </div>
+                    </div>
+                </div>
+            </main>
+            <t t-if="orderUiState.isSuccessful !== null">
+                <div class="notice mt-2"
+                     t-attf-class="{{ orderUiState.isSuccessful ? 'successful text-success' : 'failed text-danger' }}">
+                    <t t-esc="orderUiState.hasNotice"></t>
+                </div>
+            </t>
+            <footer class="footer cash-move modal-footer">
+                <div class="button confirm highlight btn btn-lg btn-primary" t-on-click="action_confirm">
+                    <t t-esc="props.confirmText"/>
+                </div>
+                <div class="button cancel btn btn-lg btn-secondary" t-on-click="cancel">
+                    <t t-esc="props.cancelText"/>
+                </div>
+            </footer>
+        </div>
+    </t>
+
+</templates>

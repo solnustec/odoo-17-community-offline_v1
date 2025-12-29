@@ -1,0 +1,8 @@
+<odoo>
+  <data noupdate="1">
+    <record id="discount_cat_gam_bonus" model="hr.payroll.discounts.category">
+      <field name="name">Bonificación por Metas</field>
+      <field name="status">True</field>
+    </record>
+  </data>
+</odoo>

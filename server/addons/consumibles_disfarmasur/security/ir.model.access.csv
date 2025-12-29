@@ -1,0 +1,15 @@
+id,name,model_id:id,group_id:id,perm_read,perm_write,perm_create,perm_unlink
+access_consumibles_product_type_user,access.consumibles.product.type.user,model_consumibles_product_type,base.group_user,1,1,1,1
+access_consumibles_product_laboratory_user,access.consumibles.product.laboratory.user,model_consumibles_product_laboratory,base.group_user,1,1,1,1
+access_consumibles_product_template_user,access.consumibles.product.template.user,model_consumibles_product_template,base.group_user,1,1,1,1
+access_consumibles_product_type_line_user,access.consumibles.product.type.line.user,model_consumibles_product_type_line,base.group_user,1,1,1,1
+access_consumibles_intake_user,access.consumibles.intake.user,model_consumibles_intake,base.group_user,1,1,1,1
+access_consumibles_intake_line_user,access.consumibles.intake.line.user,model_consumibles_intake_line,base.group_user,1,1,1,1
+access_consumibles_product_cost_history,consumibles.product.cost.history,model_consumibles_product_cost_history,base.group_user,1,1,1,1
+access_consumibles_stock_transfer,consumibles.stock.transfer,model_consumibles_stock_transfer,,1,1,1,1
+access_consumibles_stock_transfer_line,consumibles.stock.transfer.line,model_consumibles_stock_transfer_line,,1,1,1,1
+access_consumibles_product_kardex_user,access.consumibles.product.kardex.user,model_consumibles_product_kardex,base.group_user,1,1,1,1
+access_consumibles_product_kardex_manager,access.consumibles.product.kardex.manager,model_consumibles_product_kardex,base.group_system,1,1,1,1
+access_consumibles_kardex_dashboard_user,access.consumibles.kardex.dashboard.user,model_consumibles_kardex_dashboard,base.group_user,1,0,1,0
+access_consumibles_kardex_dashboard_system,access.consumibles.kardex.dashboard.system,model_consumibles_kardex_dashboard,base.group_system,1,1,1,1
+access_consumibles_product_kardex_export,access.kardex.export,model_consumibles_product_kardex,base.group_user,1,1,1,1

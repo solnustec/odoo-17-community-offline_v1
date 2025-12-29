@@ -1,0 +1,60 @@
+<?xml version="1.0" encoding="utf-8"?>
+<odoo>
+    <data>
+        <record id="email_template_survey_response" model="mail.template">
+            <field name="name">Survey Response Template</field>
+            <field name="model_id" ref="model_survey_user_input"/>
+            <field name="subject">Survey Response: {{ object.survey_id.title }}</field>
+            <field name="email_from">{{ user.email_formatted }}</field>
+            <field name="partner_to">{{ object.partner_id.id }}</field>
+            <field name="body_html" type="html">
+                <div style="width: 600px; margin: auto; font-family: Arial, sans-serif; color: #333; background-color: #ffffff; border: 1px solid #ddd;">
+                    <div style="text-align: center; padding: 20px;">
+                        <img src="https://farmaciascuxibamba.com.ec///web/image/res.company/1/logo" alt="Logo" style="height: 80px;" />
+                    </div>
+                    <hr style="border: none; border-top: 2px solid #004aad; width: 90%; margin: auto;" />
+                    <div style="text-align: center; padding: 10px 20px; font-size: 22px;">
+                        <h2 style="margin: 0; font-size: 18px; font-weight: normal">Reporte de Encuesta:</h2>
+                        <h1 style="margin: 5px 0 0 0; font-size: 20px; font-weight: bold;">{{ object.survey_id.title }}</h1>
+                    </div>
+                    <div style="padding: 20px 30px; line-height: 1.6;">
+                        <p>Estimado/a <strong>{{ object.partner_id.name or 'Participante' }}</strong>,</p>
+                        <p>Adjunto encontrará el documento PDF con sus respuestas a la encuesta <strong>{{ object.survey_id.title }}</strong>.</p>
+                        <p>Agradecemos sinceramente su participación. Sus respuestas son valiosas y contribuyen a nuestro proceso de mejora continua.</p>
+                    </div>
+                    <div style="padding: 0 30px 20px;">
+                        <table cellpadding="8" cellspacing="0" width="100%" style="background-color: rgba(244, 220, 49, 0.35);">
+                            <tr>
+                                <td><strong>Encuesta:</strong></td>
+                                <td>{{ object.survey_id.title }}</td>
+                            </tr>
+                            <tr>
+                                <td><strong>Participante:</strong></td>
+                                <td>{{ object.partner_id.name or object.email or object.nickname or 'Anónimo' }}</td>
+                            </tr>
+                            <tr>
+                                <td><strong>Estatus:</strong></td>
+                                <td>{{ object.state }}</td>
+                            </tr>
+                            <tr>
+                                <td><strong>Enviado:</strong></td>
+                                <td>{{ object.end_datetime }}</td>
+                            </tr>
+                        </table>
+                    </div>
+                    <div style="padding: 20px 30px; font-size: 14px;">
+                        <p>Si tiene alguna pregunta, no dude en responder a este correo.</p>
+                        <p style="margin-top: 30px;">Saludos cordiales,<br/>
+                        <strong>Farmacias Cuxibamba</strong><br/>
+                        <a href="https://www.farmaciascuxibamba.com.ec" style="color: #004aad;">www.farmaciascuxibamba.com.ec</a><br/>
+                        Loja, Ecuador</p>
+                    </div>
+                    <div style="padding: 20px 30px; font-size: 11px; color: #999; text-align: center; border-top: 1px solid #eee;">
+                        Este correo fue generado automáticamente por el sistema de Control Interno de Farmacias Cuxibamba.
+                    </div>
+                </div>
+            </field>
+            <field name="auto_delete" eval="True"/>
+        </record>
+    </data>
+</odoo> 

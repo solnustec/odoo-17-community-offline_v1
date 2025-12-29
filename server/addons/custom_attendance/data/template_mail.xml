@@ -1,0 +1,27 @@
+<?xml version="1.0" encoding="utf-8"?>
+<odoo>
+    <record id="change_schedule_employee_template" model="mail.template">
+        <field name="name">Cambio de Horario</field>
+        <field name="model_id" ref="custom_attendance.model_employee_schedule_history"/>
+        <field name="email_from">{{object.sudo().email_that_sender}}</field>
+		<field name="email_to">{{object.sudo().employee_id.work_email}}</field>
+        <field name="subject">Notificación de Cambio de Horario</field>
+            <field name="body_html" type="html">
+                <div style="margin: 0px; padding: 0px;">
+                    Estimado/a <b><t t-out="object.employee_id.name"/></b>
+                	<br/>
+                	Espero que este mensaje te encuentre bien,
+                	<br/>
+                    Te escribimos para informarte que ha habido un ajuste en tu horario de trabajo. A partir del <b><t t-out="object.start_datetime"/></b>, <t t-if="object.end_datetime">al <b><t t-out="object.end_datetime"/></b></t> tu nuevo horario será:
+                	<br/>
+                    Nuevo horario: <b><t t-out="object.calendar_id.name"/></b>,
+                    <br/>
+                    Te pedimos que por favor confirmes la recepción de este correo y nos indiques si tienes alguna duda o inconveniente con la actualización.
+                    <br/>
+                    Agradecemos tu compromiso y colaboración. No dudes en comunicarte con [nombre del contacto o área responsable] si necesitas más información.
+                    <br/>
+                    Saludos cordiales,
+            	</div>
+            </field>
+    </record>
+</odoo>

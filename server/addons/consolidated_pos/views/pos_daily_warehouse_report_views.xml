@@ -1,0 +1,72 @@
+<odoo>
+    <record id="view_pos_daily_warehouse_report_tree" model="ir.ui.view">
+        <field name="name">pos.daily.warehouse.report.tree</field>
+        <field name="model">pos.daily.warehouse.report</field>
+        <field name="arch" type="xml">
+            <tree string="Ventas del día por Bodega">
+                <field name="report_date"/>
+                <field name="warehouse_name"/>
+                <field name="orders_count" sum="Total Órdenes"/>
+                <field name="sale_cash" sum="Total Efectivo"/>
+                <field name="sale_card" sum="Total Tarjeta"/>
+                <field name="sale_check_transfer" sum="Total Cheque/Transf"/>
+                <field name="sale_credit" sum="Total Crédito"/>
+                <field name="total_amount" sum="Total Ventas"/>
+            </tree>
+        </field>
+    </record>
+
+
+    <record id="view_pos_daily_warehouse_report_form" model="ir.ui.view">
+        <field name="name">pos.daily.warehouse.report.form</field>
+        <field name="model">pos.daily.warehouse.report</field>
+        <field name="arch" type="xml">
+            <form string="Ventas del día por Bodega">
+                <header>
+                    <button name="action_rebuild" type="object" string="Recalcular" class="oe_highlight"/>
+                    <button name="action_print_ticket" type="object" string="Imprimir ticket" class="btn-primary"/>
+                </header>
+                <sheet>
+                    <group>
+                        <field name="report_date" string="Fecha"/>
+                        <field name="warehouse_selector" options="{'no_open': True}" string="Punto de venta"/>
+                        <field name="warehouse_id" groups="point_of_sale.group_pos_manager" invisible="1"/>
+                    </group>
+                    <group string="Totales">
+                        <field name="orders_count" string="Total de ordenes"/>
+                        <field name="sale_cash" string="Efectivo"/>
+                        <field name="sale_card" string="Tarjeta"/>
+                        <field name="sale_check_transfer" string="Cheque/Transf"/>
+                        <field name="sale_credit" string="Credito"/>
+                        <field name="total_amount" string="Total"/>
+                    </group>
+                </sheet>
+            </form>
+        </field>
+    </record>
+
+
+    <record id="action_pos_daily_warehouse_report" model="ir.actions.act_window">
+        <field name="name">Ventas del día por Bodega</field>
+        <field name="res_model">pos.daily.warehouse.report</field>
+        <field name="view_mode">tree,form</field>
+        <field name="context">{}</field>
+    </record>
+
+    <!-- Botón “Generar hoy” que crea/actualiza todos los warehouses y abre la lista -->
+    <record id="ir_actions_server_build_today_all_wh" model="ir.actions.server">
+        <field name="name">Generar hoy</field>
+        <field name="model_id" ref="model_pos_daily_warehouse_report"/>
+        <field name="state">code</field>
+        <field name="code">action = env['pos.daily.warehouse.report'].action_build_today_all_warehouses()</field>
+    </record>
+
+    <menuitem
+            id="menu_pos_daily_warehouse_report"
+            name="Consolidado punto de venta"
+            parent="point_of_sale.menu_point_rep"
+            action="action_pos_daily_warehouse_report"
+            sequence="7"/>
+
+
+</odoo>

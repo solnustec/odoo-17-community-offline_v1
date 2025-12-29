@@ -1,0 +1,13 @@
+id,name,model_id:id,group_id:id,perm_read,perm_write,perm_create,perm_unlink
+access_employee_week_off,employee.week.off,model_employee_week_off,,1,1,1,1
+access_shift_type,shift.type,model_shift_type,,1,1,1,1
+access_employee_week_day,employee.week.day,model_employee_week_day,,1,1,1,1
+access_employee_shift,employee.shift,model_employee_shift,,1,1,1,1
+access_employee_shift_allocation,employee.shift.allocation,model_employee_shift_allocation,,1,1,1,1
+access_employee_work_day,employee.work.day,model_employee_work_day,,1,1,1,1
+access_employee_week_end,employee.week.end,model_employee_week_end,,1,1,1,1
+access_bulk_allocation_wizard,bulk.allocation.wizard,model_bulk_allocation_wizard,,1,1,1,1
+access_bulk_week_end,bulk.week.end,model_bulk_week_end,,1,1,1,1
+access_employee_shift_changes,employee.shift.changes,model_employee_shift_changes,,1,1,1,1
+access_employee_shift_roster_report_wizard,employee.shift.roster.report.wizard,model_employee_shift_roster_report_wizard,,1,1,1,1
+access_employee_shift_changes_periode,employee.shift.changes.periode,model_employee_shift_changes_periode,,1,1,1,1

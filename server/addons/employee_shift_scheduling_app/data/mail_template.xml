@@ -1,0 +1,22 @@
+<?xml version="1.0" encoding="utf-8"?>
+<odoo>
+    <record id="employee_shift_changes_mail_template" model="mail.template">
+        <field name="name">Excepción Registrada</field>
+        <field name="model_id" ref="employee_shift_scheduling_app.model_employee_shift_changes"/>
+        <field name="email_from">{{object.sudo().email_that_sender}}</field>
+		<field name="email_to">{{ ','.join(object.sudo().get_email_to()) }}</field>
+        <field name="subject">Excepción Registrada: {{object.name}}-{{object.employee_id.name}}</field>
+            <field name="body_html" type="html">
+                <div style="margin: 0px; padding: 0px;">
+                	<br/>
+                	Se registró una Excepción a nombre del empleado(a) <t t-out="object.employee_id.name"/>,
+                	<br/>
+                    en la fechas: <b> <t t-out="object.date_from"/></b> al <b><t t-out="object.date_to"/></b> en la zona: <b><t t-out="object.employee_id.department_id.parent_id.name"/></b>
+                	<br/>
+                	La Excepción: <b><t t-out="object.name"/></b>, se encuentra a espera de valicación.
+                    <br/>
+                	Responsable: <t t-out="object.user_id.name"/> (<t t-out="object.user_id.company_id.name"/>)
+            	</div>
+            </field>
+    </record>
+</odoo>

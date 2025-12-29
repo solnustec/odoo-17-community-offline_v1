@@ -1,0 +1,68 @@
+<?xml version="1.0" encoding="UTF-8"?>
+    <templates id="template" xml:space="preserve">
+        <!-- Custom Message Alert Popup -->
+        <t t-name="pos_custom_message.CustomMessageAlertPopup" owl="1">
+            <div class="popup popup-textarea">
+                <div class="modal-header" style="background-color:pink;display: flex; align-items: center; justify-content: center;">
+                    <b style="padding-right: 10px;"><i class='fa fa-bell'/></b>
+                    <h4 class="modal-title">
+                      <t t-esc="props.title" style="padding-left:10px"/>
+                    </h4>
+                </div>
+                <div class="modal-body">
+                    <main class="body">
+                        <t t-esc=" props.body" />
+                    </main>
+                </div>
+                <footer class="footer footer-flex modal-footer">
+                    <div class="button confirm highlight btn btn-lg btn-primary" t-on-click="cancel">
+                        <t t-esc="props.confirmText" />
+                    </div>
+                </footer>
+            </div>
+        </t>
+
+        <!-- Custom Message Info Popup -->
+        <t t-name="pos_custom_message.CustomMessageInfoPopup" owl="1">
+            <div class="popup popup-textarea">
+                <div class="modal-header" style="background-color:bisque;display: flex; align-items: center; justify-content: center;">
+                    <b style="padding-right: 10px;"><i class='fa fa-exclamation-circle'/></b>
+                    <h4 class="modal-title">
+                      <t t-esc="props.title" style="padding-left:10px"/>
+                    </h4>
+                </div>
+                <div class="modal-body">
+                    <main class="body">
+                        <t t-esc=" props.body" />
+                    </main>
+                </div>
+                <footer class="footer footer-flex modal-footer">
+                    <div class="button confirm highlight btn btn-lg btn-primary" t-on-click="cancel">
+                        <t t-esc="props.confirmText" />
+                    </div>
+                </footer>
+            </div>
+        </t>
+
+        <!-- Custom Message Warning Popup -->
+        <t t-name="pos_custom_message.CustomMessageWarnPopup" owl="1">
+            <div class="popup popup-textarea">
+                <div class="modal-header" style="background-color:darksalmon;display: flex; align-items: center; justify-content: center;">
+                    <b style="padding-right: 10px;"><i class='fa fa-exclamation-triangle'/></b>
+                    <h4 class="modal-title">
+                      <t t-esc="props.title" style="padding-left:10px"/>
+                    </h4>
+                </div>
+                <div class="modal-body">
+                    <main class="body">
+                        <t t-esc=" props.body" />
+                    </main>
+                </div>
+                <footer class="footer footer-flex modal-footer">
+                    <div class="button confirm highlight btn btn-lg btn-primary" t-on-click="cancel">
+                        <t t-esc="props.confirmText" />
+                    </div>
+                </footer>
+            </div>
+        </t>
+    </templates>

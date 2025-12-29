@@ -1,0 +1,12 @@
+<?xml version="1.0" encoding="utf-8"?>
+<odoo>
+  <report
+    id="action_report_cash_summary"
+    model="pos.order.dashboard"
+    string="Reporte de Cierre de Caja"
+    report_type="qweb-pdf"
+    name="pos_close_session.report_cash_summary"
+    file="pos_close_session.report_cash_summary"
+    print_report_name="'CierreCaja_%s' % (object.cashier_employee)"
+  />
+</odoo>

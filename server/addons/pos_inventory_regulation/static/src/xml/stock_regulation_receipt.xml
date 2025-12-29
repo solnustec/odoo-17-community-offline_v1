@@ -1,0 +1,10 @@
+<odoo>
+    <template id="custom_order_receipt" inherit_id="point_of_sale.OrderReceipt">
+        <xpath expr="//div[@class='pos-receipt']" position="inside">
+            <div class="custom-section">
+                <p><strong><t t-esc="receipt.custom_message"/></strong></p>
+                <p><t t-esc="receipt.custom_info"/></p>
+            </div>
+        </xpath>
+    </template>
+</odoo>

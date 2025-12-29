@@ -1,0 +1,180 @@
+<odoo>
+    <data>
+
+        <record id="hr_payroll_utilities_search" model="ir.ui.view">
+            <field name="name">hr.payroll.utilities.search</field>
+            <field name="model">hr.payroll.utilities</field>
+            <field name="arch" type="xml">
+                <search>
+                    <field name="fiscal_year" string="Año Fiscal"/>
+                    <filter name="group_by_state" string="Estado" context="{'group_by': 'state'}"/>
+                </search>
+            </field>
+        </record>
+
+
+        <record id="search_hr_payroll_utilities_lines" model="ir.ui.view">
+        <field name="name">search.hr.payroll.utilities.lines</field>
+        <field name="model">hr.payroll.utilities.lines</field>
+        <field name="arch" type="xml">
+            <search>
+                <field name="employee_id" string="Empleado"/>
+
+                <!-- Filtros predefinidos -->
+                <filter string="Borrador" name="draft" domain="[('state', '=', 'draft')]"/>
+                <filter string="Aprobado" name="approve" domain="[('state', '=', 'approve')]"/>
+                <filter string="Cancelado" name="cancel" domain="[('state', '=', 'cancel')]"/>
+                <filter string="Utilidades Pendientes" name="pending" domain="[('to_receive', '>', 0)]"/>
+
+                <separator/>
+
+                <!-- Opciones de agrupación -->
+                <group expand="1" string="Agrupar por">
+                    <filter string="Empleado" name="group_by_employee" context="{'group_by': 'employee_id'}"/>
+                    <filter string="Estado" name="group_by_state" context="{'group_by': 'state'}"/>
+                </group>
+            </search>
+        </field>
+    </record>
+
+
+
+
+
+        <record id="tree_form_hr_payroll_utilities_lines" model="ir.ui.view">
+            <field name="name">tree.hr.payroll.utilities.lines</field>
+            <field name="model">hr.payroll.utilities.lines</field>
+            <field name="arch" type="xml">
+                <tree>
+                    <field name="employee_id"/>
+                    <field name="family_burdens" sum="Total"/>
+                    <field name="days_calendar" sum="Total"/>
+                    <field name="days_compute" sum="Total"/>
+                    <field name="calculate_10_porcent" sum="Total"/>
+                    <field name="calculate_5_porcent" sum="Total"/>
+                    <field name="total_days_family_burdens" optional="hide" sum="Total"/>
+                    <field name="total_utilities" sum="Total"/>
+                    <field name="advance_received" optional="hide" sum="Total"/>
+                    <field name="to_receive" sum="Total"/>
+                    <field name="accounting_entry"/>
+                    <field name="state" optional="hide"/>
+                </tree>
+            </field>
+        </record>
+
+        <record id="tree_form_hr_payroll_utilities" model="ir.ui.view">
+            <field name="name">tree.hr.payroll.utilities</field>
+            <field name="model">hr.payroll.utilities</field>
+            <field name="arch" type="xml">
+                <tree>
+                    <field name="fiscal_year" />
+                    <field name="utility_to_be_distributed" />
+                    <field name="total_days_worked" />
+                    <field name="total_days_family_burdens" />
+                    <field name="state" />
+                    <field name="total_benefits_iees" optional="hide"/>
+                    <field name="company_id" optional="hide"/>
+                    <field name="utilities_contractors" optional="hide"/>
+                    <field name="utilities_company" optional="hide"/>
+                    <field name="date_contable" optional="hide"/>
+                </tree>
+            </field>
+        </record>
+
+        <record id="action_hr_payroll_utilities_lines" model="ir.actions.act_window">
+            <field name="name">Proceso Utilidades Lineas</field>
+            <field name="res_model">hr.payroll.utilities.lines</field>
+            <field name="view_mode">tree</field>
+            <field name="view_id" ref="tree_form_hr_payroll_utilities_lines"/>
+            <field name="target">current</field>
+            <field name="domain">[('utilities_id', '=', context.get('default_id'))]</field>
+        </record>
+
+
+        <record id="view_form_hr_payroll_utilities" model="ir.ui.view">
+            <field name="name">form.hr.payroll.utilities</field>
+            <field name="model">hr.payroll.utilities</field>
+            <field name="arch" type="xml">
+                <form>
+                    <header>
+                        <button name="calculate_utilities"
+                                type="object" string="Calcular" class="btn-primary"/>
+                        <button name="validate"
+                                type="object" string="Validar"
+                                invisible="state == 'approve'"
+                                class="btn-secondary"/>
+                        <button name="cancelate"
+                                type="object" string="Cancelar" invisible="state in ['draft','cancel']"/>
+                        <field name="state" widget="statusbar" readonly="1"/>
+                    </header>
+                    <sheet>
+                        <group>
+                            <group>
+                                <field name="state" invisible="1"/>
+                                <field name="fiscal_year"/>
+                                <field name="date_contable" />
+                                <field name="utilities_company" />
+                                <field name="utilities_contractors" />
+                                <field name="utility_to_be_distributed" readonly="1"/>
+                            </group>
+                            <group>
+                                <field name="total_days_worked" readonly="1"/>
+                                <field name="total_days_family_burdens" readonly="1"/>
+                                <field name="company_id" />
+                                <field name="total_benefits_iees" />
+                            </group>
+                        </group>
+                        <notebook>
+                            <page string="Empleados">
+                                <button class="oe_stat_button" type="action"
+                                        name="%(action_hr_payroll_utilities_lines)d"
+                                        icon="fa-list-ul" context="{'default_id': active_id}">
+                                    Lineas de Utilidades
+                                </button>
+                                <field name="utilities_lines_ids" options="{'no_create': True}" nolabel="1">
+                                    <tree editable="bottom">
+                                        <field name="employee_id"/>
+                                        <field name="family_burdens" sum="Total"/>
+                                        <field name="days_calendar" sum="Total"/>
+                                        <field name="days_compute" sum="Total"/>
+                                        <field name="calculate_10_porcent" sum="Total"/>
+                                        <field name="calculate_5_porcent" sum="Total"/>
+                                        <field name="total_days_family_burdens" optional="hide" sum="Total"/>
+                                        <field name="total_utilities" sum="Total"/>
+                                        <field name="advance_received" optional="hide" sum="Total"/>
+                                        <field name="to_receive" sum="Total"/>
+                                        <field name="accounting_entry"/>
+                                        <field name="state" optional="hide"/>
+                                    </tree>
+                                </field>
+                            </page>
+                        </notebook>
+                    </sheet>
+                </form>
+            </field>
+        </record>
+
+
+        <record id="action_hr_payroll_utilities" model="ir.actions.act_window">
+            <field name="name">Proceso Utilidades</field>
+            <field name="type">ir.actions.act_window</field>
+            <field name="res_model">hr.payroll.utilities</field>
+            <field name="view_mode">search,tree,form</field>
+            <field name="view_ids" eval="[(5, 0, 0),
+        (0, 0, {'view_mode': 'tree', 'view_id': ref('tree_form_hr_payroll_utilities')}),
+        (0, 0, {'view_mode': 'form', 'view_id': ref('view_form_hr_payroll_utilities')}),
+    ]"/>
+            <field name="search_view_id" ref="hr_payroll_utilities_search"/>
+        </record>
+
+        <menuitem
+            id="menu_general_attendances_root"
+            name="Proceso Utilidades"
+            parent="hr_work_entry_contract_enterprise.menu_hr_payroll_root"
+            action="action_hr_payroll_utilities"
+            sequence="80"
+            groups="utilities.group_hr_utilities_admin"/>
+
+    </data>
+</odoo>
+

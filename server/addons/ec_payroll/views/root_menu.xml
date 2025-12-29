@@ -1,0 +1,20 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<odoo>
+	<data>
+<!--		<menuitem id="transactions_root_menu"-->
+<!--			name="Transacciones Programadas"-->
+<!--			parent="hr_payroll.menu_hr_payroll_root"-->
+<!--			groups="hr_payroll.group_hr_payroll_manager,hr_payroll.group_hr_payroll_user" -->
+<!--			sequence='50'/>-->
+
+		<menuitem id="hr_account_menu" name="Talento Humano"
+			parent="account_accountant.menu_accounting" sequence='110'/>
+
+<!--		<menuitem id="request_hr_menu" name="Solicitudes"-->
+<!--			parent="hr_payroll.menu_hr_payroll_root" sequence='60' />-->
+
+
+      
+
+	</data>
+</odoo>

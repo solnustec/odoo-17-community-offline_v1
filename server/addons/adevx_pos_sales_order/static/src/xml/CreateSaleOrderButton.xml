@@ -1,0 +1,14 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<templates id="template" xml:space="preserve">
+
+    <t t-name="adevx_pos_sales_order.CreateSaleOrderButton">
+        <button class="control-button o_pricelist_button btn btn-success rounded-0 fw-bolder"
+                t-on-click="() => this.click()" t-att-class="{highlight: isHighlighted}">
+            <i class="fa fa-whatsapp me-2" role="img"
+               aria-label="Create Sale/Reservation Order"
+               title="Create Sale/Reservation Order" />
+            <span>Enviar al whatsapp</span>
+        </button>
+    </t>
+
+</templates>

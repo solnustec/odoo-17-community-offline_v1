@@ -1,0 +1,109 @@
+<?xml version="1.0" encoding="utf-8"?>
+<odoo>
+    <!-- Formulario de Prueba de Búsqueda -->
+    <record id="view_product_ai_search_test_form" model="ir.ui.view">
+        <field name="name">product.ai.search.test.form</field>
+        <field name="model">product.ai.search.test</field>
+        <field name="arch" type="xml">
+            <form>
+                <header>
+                    <button string="🔍 Buscar" name="action_search" type="object" class="btn-primary"/>
+                    <button string="🧹 Limpiar" name="action_clear_results" type="object" class="btn-warning" 
+                            invisible="not search_executed"/>
+                    <button string="📊 Verificar Estado" name="action_check_status" type="object" class="btn-info"/>
+                    <button string="⚡ Indexar Productos (Prueba)" name="action_index_products" type="object" class="btn-secondary"/>
+                </header>
+                <sheet>
+                    <div class="oe_title">
+                        <h1>🔍 Prueba de Búsqueda IA para Productos</h1>
+                    </div>
+                    
+                    <group>
+                        <group string="🔧 Parámetros de Búsqueda">
+                            <field name="search_type" widget="radio" string="Tipo de Búsqueda"/>
+                            <field name="search_query" placeholder="Escriba su búsqueda en español..." invisible="search_type == 'prescription'" string="🔍 Consulta de Búsqueda"/>
+                            <field name="max_results" invisible="search_type == 'answer' or search_type == 'prescription'" string="📊 Máximo de Resultados"/>
+                        </group>
+                        
+                        <group string="📊 Estatísticas" invisible="not search_executed">
+                            <field name="search_executed" invisible="1"/>
+                            <field name="total_results" readonly="1" string="🎯 Total de Resultados"/>
+                            <field name="search_time" readonly="1" string="⏱️ Tempo de Busca (seg)"/>
+                        </group>
+                    </group>
+
+                    <!-- Seção de Análise de Receita Médica -->
+                    <group string="🏥 Análisis de Receta Médica" invisible="search_type != 'prescription'">
+                        <div class="alert alert-info" role="alert" style="margin: 10px 0;">
+                            <h4 style="margin-top: 0;"><i class="fa fa-info-circle"></i> Instrucciones</h4>
+                            <ul style="margin: 8px 0; padding-left: 20px;">
+                                <li style="margin: 4px 0;">Suba una imagen clara de la receta médica</li>
+                                <li style="margin: 4px 0;">Formatos aceptados: JPEG, PNG, WEBP (máximo 20MB)</li>
+                                <li style="margin: 4px 0;">La IA analizará y buscará productos correspondientes</li>
+                            </ul>
+                        </div>
+                        
+                        <group string="📁 Subir Imagen">
+                            <field name="prescription_image" widget="binary" filename="prescription_filename" 
+                                   string="Imagen de la Receta" 
+                                   options="{'accepted_file_extensions': '.jpg,.jpeg,.png,.webp'}"/>
+                            <field name="prescription_filename" invisible="1"/>
+                            <field name="prescription_top_k" string="Máximo de productos por medicamento"/>
+                            <field name="prescription_analysis_only" invisible="1"/>
+                        </group>
+                    </group>
+                    
+                    <!-- Respuesta IA -->
+                    <group string="💬 Respuesta IA" invisible="search_type != 'answer' or not ai_answer">
+                        <field name="ai_answer" nolabel="1" readonly="1" widget="text"/>
+                    </group>
+                    
+                    <!-- Resultados de la Búsqueda -->
+                    <notebook invisible="search_type == 'answer' or (total_results == 0 and search_type != 'prescription')">
+                        <page string="📋 Resultados de la Búsqueda" name="results">
+                            <div class="alert alert-success" role="alert" style="margin: 10px 0;">
+                                <h4 style="margin-top: 0;"><i class="fa fa-list"></i> Productos Encontrados</h4>
+                                <p style="margin-bottom: 0;">Total de productos encontrados: <strong><field name="total_results" readonly="1"/></strong></p>
+                            </div>
+                            
+                            <field name="result_ids" nolabel="1" readonly="1" 
+                                   context="{'reload_on_save': True}"
+                                   options="{'reload_on_save': True}">
+                                <tree create="false" edit="false" delete="false" decoration-info="ai_score &gt; 0.8" decoration-warning="ai_score &lt; 0.5">
+                                    <field name="rank" width="60px" string="#"/>
+                                    <field name="product_name" string="Producto"/>
+                                    <field name="default_code" string="Código" width="100px"/>
+                                    <field name="category_name" string="Categoría"/>
+                                    <field name="list_price" string="Precio" widget="monetary"/>
+                                    <field name="ai_score" string="Score IA" widget="progressbar" digits="[16,3]"/>
+                                    <button name="action_open_product" type="object" icon="fa-external-link" 
+                                            title="Abrir Producto" class="btn-primary btn-sm"/>
+                                </tree>
+                            </field>
+                        </page>
+                    </notebook>
+                    
+                    <!-- Instrucciones de Uso -->
+                    <div class="mt16" invisible="search_executed">
+                        <h3>💡 Cómo usar:</h3>
+                        <ul>
+                            <li><strong>Buscar Productos:</strong> Escriba una descripción en español</li>
+                            <li><strong>Pregunta con Respuesta IA:</strong> Realice una pregunta</li>
+                            <li><strong>Indexar Productos:</strong> Ejecute primero si es la primera vez</li>
+                            <li><strong>Verificar Estado:</strong> Confirme si el índice está funcionando</li>
+                        </ul>
+                    </div>
+                </sheet>
+            </form>
+        </field>
+    </record>
+
+    <!-- Acción para abrir prueba de búsqueda -->
+    <record id="action_product_ai_search_test" model="ir.actions.act_window">
+        <field name="name">Prueba de Búsqueda IA</field>
+        <field name="res_model">product.ai.search.test</field>
+        <field name="view_mode">form</field>
+        <field name="target">new</field>
+        <field name="context">{}</field>
+    </record>
+</odoo>

@@ -1,0 +1,5 @@
+id,name,model_id:id,group_id:id,perm_read,perm_write,perm_create,perm_unlink
+
+access_pos_invoice_wizard,access_pos_invoice_wizard,model_pos_invoice_wizard,base.group_user,1,1,1,1
+access_pos_invoice_wizard_portal,access_pos_invoice_wizard_portal,model_pos_invoice_wizard,base.group_portal,1,1,1,1
+

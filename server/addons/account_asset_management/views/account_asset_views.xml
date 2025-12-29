@@ -1,0 +1,133 @@
+<?xml version="1.0" encoding="utf-8"?>
+<odoo>
+    <data>
+
+        <!-- ===== ACTIVOS ===== -->
+        <record id="view_account_asset_form_inherit_product_related" model="ir.ui.view">
+            <field name="name">account.asset.form.inherit.product.related</field>
+            <field name="model">account.asset</field>
+            <field name="inherit_id" ref="account_asset_management.account_asset_view_form"/>
+            <field name="arch" type="xml">
+
+                <!-- Insertar antes del notebook -->
+                <xpath expr="//sheet/notebook" position="before">
+
+                    <!-- Información Básica -->
+                    <group string="Información Básica" col="2">
+                        <group>
+                            <field name="asset_code" readonly="1"/>
+                            <field name="class_id" readonly="1"/>
+                            <field name="subclass_id" readonly="1"/>
+                            <field name="asset_brand_id" readonly="1"/>
+                            <field name="asset_model" readonly="1"/>
+                            <field name="asset_serial" readonly="1"/>
+                        </group>
+                        <group>
+                            <field name="asset_material" readonly="1"/>
+                            <field name="asset_color" readonly="1"/>
+                            <field name="asset_specification" readonly="1"/>
+                            <field name="asset_status"/>
+                        </group>
+                    </group>
+
+                    <!-- Custodio y Ubicación -->
+                    <group string="Custodio y Ubicación" col="2">
+                        <group>
+                            <field name="asset_custodian_id" readonly="1" style="width: 250px; "/>
+                            <field name="asset_custodian_identification" readonly="1"/>
+                            <field name="asset_department_custodian_id" readonly="1"/>
+                            <field name="asset_sucursal_custodian_id" readonly="1"/>
+                        </group>
+                    </group>
+
+                </xpath>
+            </field>
+        </record>
+
+        <!-- ===== SEGUNDO: Pestaña "Transferencias" ===== -->
+        <record id="view_account_asset_form_inherit_product_transfer_tab" model="ir.ui.view">
+            <field name="name">account.asset.form.inherit.product.transfer.tab</field>
+            <field name="model">account.asset</field>
+            <field name="inherit_id" ref="account_asset_management.account_asset_view_form"/>
+            <field name="priority" eval="30"/>
+            <field name="arch" type="xml">
+                <!-- Pestaña de Transferencias -->
+                <xpath expr="//notebook" position="inside">
+                    <page string="Transferencias">
+                        <field name="transfer_ids" nolabel="1">
+                            <tree editable="bottom">
+                                <field name="custodian_from_id" readonly="1"/>
+                                <field name="custodian_to_id"/>
+                                <field name="transfer_date"/>
+                                <field name="note"/>
+                                <field name="signed_by_from"/>
+                                <field name="signed_by_to"/>
+                                <!-- Botón imprimir -->
+                                <button name="%(action_imprimir_reporte)d"
+                                        string="📄 Imprimir"
+                                        type="action"
+                                        title="Imprimir Acta de Transferencia"
+                                        class="btn btn-sm btn-primary"/>
+                            </tree>
+                            <form>
+                                <group>
+                                    <field name="custodian_from_id" readonly="1"/>
+                                    <field name="custodian_to_id"/>
+                                    <field name="transfer_date"/>
+                                    <field name="note"/>
+                                    <field name="signed_by_from"/>
+                                    <field name="signed_by_to"/>
+                                </group>
+                            </form>
+                        </field>
+                    </page>
+                </xpath>
+
+            </field>
+        </record>
+
+        <!-- ===== TERCERO: Reordenar columnas y agregar depreciación ===== -->
+        <record id="view_account_asset_tree_inherit_progress" model="ir.ui.view">
+            <field name="name">account.asset.tree.inherit.progress</field>
+            <field name="model">account.asset</field>
+            <field name="inherit_id" ref="account_asset_management.account_asset_view_tree"/>
+            <field name="priority" eval="50"/>
+            <field name="arch" type="xml">
+                <!-- Reemplazar la definición del árbol -->
+                <xpath expr="//tree" position="replace">
+                    <tree string="Activos Fijos">
+                        <field name="name" string="Nombre del Activo"/>
+                        <field name="code" string="Código"/>
+                        <field name="date_start" string="Fecha de Inicio"/>
+                        <field name="purchase_value" string="Valor de Compra"/>
+                        <field name="value_depreciated" string="Valor Depreciado Acumulado"/>
+                        <field name="value_residual" string="Valor Actual"/>
+                        <field name="last_depreciation_date" string="Última Fecha Depreciada"/>
+                        <field name="depreciation_count" string="N° Depreciaciones Realizadas"/>
+                        <field name="method" string="Método"/>
+                        <field name="state"
+                               widget="badge"
+                               string="Estado"
+                               decoration-success="state == 'open'"
+                               decoration-warning="state == 'removed'"
+                               decoration-info="state == 'draft'"
+                               decoration-muted="state == 'close'"/>
+                        <field name="company_id" groups="base.group_multi_company" string="Compañía"/>
+
+                        <!-- Campos adicionales -->
+                        <field name="asset_custodian_id" string="Custodio"/>
+                        <field name="asset_department_custodian_id" string="Departamento"/>
+                        <field name="class_id" string="Categoría de Activo"/>
+
+                        <!-- ============================
+                        COLUMNAS NUEVAS 3 MESES
+                        ============================ -->
+                        <field name="dep_prev2" string="Antepenúltima Depreciación"/>
+                        <field name="dep_prev1" string="Penúltima Depreciación"/>
+                        <field name="dep_curr" string="Ultima Depreciación"/>
+                    </tree>
+                </xpath>
+            </field>
+        </record>
+    </data>
+</odoo>

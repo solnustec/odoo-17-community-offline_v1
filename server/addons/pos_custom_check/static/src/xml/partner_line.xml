@@ -1,0 +1,10 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<template id="template" xml:space="preserve">
+    <!-- Extiende la pantalla de la lista de clientes -->
+    <t t-name="partner_list_inherit" t-inherit="point_of_sale.PartnerListScreen"
+       t-inherit-mode="extension" owl="1">
+        <xpath expr="//thead/tr/th[1]" position="after">
+            <th class="partner-line-institutions py-2">RUC/CI</th>
+        </xpath>
+    </t>
+</template>

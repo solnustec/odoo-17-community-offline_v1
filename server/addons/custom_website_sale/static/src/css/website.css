@@ -1,0 +1,179 @@
+
+.o_cc1 .btn-outline-secondary, #wrapwrap.o_header_overlay > header:not(.o_header_affixed):not(.o_header_sidebar):not(.o_top_menu_collapse_shown) > .navbar .btn-outline-secondary, .o_footer .btn-outline-secondary, .navbar-light .btn-outline-secondary, .o_colored_level .o_cc1 .btn-outline-secondary {
+    color: #003d8b;
+    background-color: #ffffff;
+    text-decoration: none;
+    font-weight:400 !important;
+    border: .5px solid #003d8b !important;
+}
+.o_cc2 .btn-outline-secondary:hover, .navbar-light .btn-outline-secondary:hover, .o_colored_level .o_cc2 .btn-outline-secondary:hover{
+  color: white !important;
+  background-color: #003d8b !important;
+}
+
+.text-o-color-3 {
+    color: #FFFFFF !important;
+    font-size: 23px;
+}
+.fa.rounded-circle, .fa.rounded-empty-circle, .fa.rounded, .fa.rounded-0, .fa.rounded-leaf, .fa.img-thumbnail, .fa.shadow {
+    display: inline-block;
+    vertical-align: middle;
+    text-align: center;
+    width: 2rem;
+    height: 2rem;
+    line-height: 2rem;
+    background-color: #F8F9FA;
+}
+
+.text-start {
+    text-align: left;
+    font-size: 20px;
+}
+
+
+
+
+.whatsapp-btn {
+  position: fixed;
+  bottom: 20px;
+  right: 20px;
+  z-index: 9999;
+  width: 60px;
+  height: 60px;
+  border-radius: 50%;
+  background-color: #25D366;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  box-shadow: 0 2px 5px rgba(0, 0, 0, 0.3);
+  animation: breathe 2s ease-in-out infinite;
+}
+
+.whatsapp-btn i {
+  color: #fff;
+  font-size: 24px;
+  animation: beat 2s ease-in-out infinite;
+  text-decoration: none;
+}
+
+.button-show-more{
+  width:100%;
+  text-align: center;
+  border-radius: 10px !important;
+
+}
+/* estilos de tarjetas de "todo lo que ncesitas" */
+.card-home{
+  border: 1px solid var(--primary);
+  border-radius: 4px;
+  box-shadow: 0px 5px 5px #888888;
+}
+
+@keyframes breathe {
+  0% {
+    box-shadow: 0 0 0 0 rgba(37, 211, 102, 0.5);
+  }
+  70% {
+    box-shadow: 0 0 0 15px rgba(37, 211, 102, 0);
+  }
+  100% {
+    box-shadow: 0 0 0 0 rgba(0, 0, 0, 0);
+  }
+}
+
+@keyframes beat {
+  0% {
+    transform: scale(1);
+  }
+  50% {
+    transform: scale(1.2);
+  }
+  100% {
+    transform: scale(1);
+  }
+}
+
+.button-show-more .btn {
+    display: inline-flex;
+    justify-content: center;
+    position: relative;
+    border-radius: 0;
+    border-radius: 8px;
+    text-align: center;
+    margin-top: -18px;
+    padding: 15px 45px;
+    font-size: 14px;
+    align-items: center;
+    font-weight: normal;
+}
+
+.ButtonVerMas .no-underline {
+    text-decoration: underline !important;
+    text-underline-offset: 8px !important;
+    margin-right: 10px;
+}
+
+.button-show-more-desc {
+    position: relative;
+    width: 100%;
+    height: 300px;
+}
+
+.button-show-more-desc .btn {
+    position: absolute;
+    top: 180%;
+    right: 10%;
+    border-radius: 8px;
+    font-weight: normal;
+    padding: 15px 45px;
+    text-align: center;
+    justify-content: center;
+    align-items: center;
+    font-size: 14px;
+    font-weight: normal;
+    transform: translateY(-50%);
+}
+
+
+
+/* cards de home  */
+.card-home-1{
+width: 92px;
+height: 78px;
+object-fit: contain;
+margin:auto;
+}
+.card-home-2{
+  padding: 10px 10px 10px 10px;
+  height:100%;
+}
+.text-section-1{
+  margin: auto;
+}
+.border-card-home{
+  border: .6px solid var(--primary);
+  box-shadow: rgba(0, 0, 0, 0.15) 2.4px 2.4px 3.2px;
+  height: 115px;
+}
+.card-home-text{
+  font-size: 16px;
+  font-weight: 900;
+}
+.carousel-control-next-icon:before{
+  font-size: 35px !important;
+}
+.carousel-control-prev-icon:before{
+  font-size: 35px !important;
+}
+.carousel-control-next-icon{
+  margin: auto -70px;
+}
+.carousel-control-prev-icon{
+  margin: auto -70px;
+}
+
+.o_cc2 .btn-fill-primary, .navbar-light .btn-fill-primary, .o_cc2 .btn-primary, .navbar-light .btn-primary, .o_colored_level .o_cc2 .btn-fill-primary {
+    color: #003D8B;
+    background-color: #F8E032;
+    border-color: #F8E032;
+}

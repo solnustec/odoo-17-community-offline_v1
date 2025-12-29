@@ -1,0 +1,48 @@
+<?xml version="1.0" encoding="utf-8"?>
+<odoo>
+  <template id="report_purchasequotation_document_inherit_extra_cols"
+            inherit_id="purchase.report_purchasequotation_document">
+
+    <!-- Forzar Descripción al 35% -->
+    <xpath expr="//th[@name='th_description']" position="attributes">
+      <attribute name="style">width:35%</attribute>
+    </xpath>
+    <xpath expr="//td[@id='product']" position="attributes">
+      <attribute name="style">width:35%</attribute>
+    </xpath>
+
+    <!-- Quitar columna Expected Date del encabezado -->
+    <xpath expr="//th[@name='th_expected_date']" position="replace"/>
+
+    <!-- Quitar columna Expected Date del cuerpo -->
+    <xpath expr="//td[span[@t-field='order_line.date_planned']]" position="replace"/>
+
+    <!-- Encabezado: nuevas columnas -->
+    <xpath expr="//th[@name='th_quantity']" position="before">
+      <th class="text-end"><strong>Cant. Pagada</strong></th>
+      <th class="text-end"><strong>Promoción</strong></th>
+      <th class="text-end"><strong>Descuento</strong></th>
+    </xpath>
+
+    <!-- Cuerpo: nuevas columnas -->
+    <xpath expr="//td[span[@t-field='order_line.product_qty']]" position="before">
+      <td class="text-end">
+        <t t-esc="order_line.paid_quantity or 0.0"
+           t-options='{"widget":"float","precision": 2}'/>
+      </td>
+      <td class="text-end">
+        <t t-esc="order_line.free_product_qty or 0.0"
+           t-options='{"widget":"float","precision": 2}'/>
+      </td>
+      <td class="text-end">
+        <t t-if="(order_line.free_product_qty or 0.0) &gt; 0.0">
+          <t t-esc="0.0" t-options='{"widget":"float","precision": 2}'/><span> %</span>
+        </t>
+        <t t-else="">
+          <t t-esc="order_line.discount or 0.0" t-options='{"widget":"float","precision": 2}'/><span> %</span>
+        </t>
+      </td>
+    </xpath>
+
+  </template>
+</odoo>

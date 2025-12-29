@@ -1,0 +1,62 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<templates id="template" xml:space="preserve">
+    <t t-name="point_of_sale.ProductInfoPopup" t-inherit="point_of_sale.ProductInfoPopup" t-inherit-mode="extension">
+        <xpath expr="//div[@class='section-inventory mt-3 mb-4 pb-4 border-bottom text-start']" position="after">
+            <div class="section-new mt-3 mb-4 pb-4 border-bottom text-start vademecum-modal">
+                <h3 class="section-title">Vademecum</h3>
+                <div class="accordion" id="accordionExample">
+                    <div class="accordion-item">
+                        <h2 class="accordion-header" id="headingOne">
+                            <button class="accordion-button collapsed" type="button" data-bs-toggle="collapse" data-bs-target="#collapseOne" aria-expanded="false" aria-controls="collapseOne" t-on-click="searchMedicine">
+                                Buscar Medicamentos Alternativos
+                            </button>
+                        </h2>
+                        <div id="collapseOne" class="accordion-collapse collapse" aria-labelledby="headingOne" data-bs-parent="#accordionExample">
+                            <div class="accordion-body">
+                                <t t-if="state.medicines.length">
+                                    <t t-call="vademecum.OrderLineDisplay">
+                                        <t t-set="medicines" t-value="state.medicines"/>
+                                    </t>
+                                </t>
+                                <t t-else="">
+                                    <p>No se encuentran productos Alternativos para el Medicamento seleccionado.</p>
+                                </t>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </xpath>
+    </t>
+
+    <t t-name="vademecum.OrderLineDisplay">
+        <t t-set="medicines" t-value="medicines || []"/>
+        <div style="display: flex; flex-wrap: wrap; gap: 20px; justify-content: space-around;">
+            <t t-foreach="medicines" t-as="medicine" t-key="medicine.id">
+                <div class="card" style="width: 30%; max-height: 200px; overflow-y: auto; border: 1px solid #ddd; border-radius: 8px; padding: 15px; background-color: #ffffff; cursor: pointer;"
+                    t-on-click="() => selectMedicineInPopup(medicine.name)">
+
+                    <!-- Nombre Comercial -->
+                    <h5 style="font-size: 13px; font-weight: bold; color: #333; margin: 0;"><t t-esc="medicine.name"/></h5>
+                    <p style="font-size: 12px; font-weight: bold; color: #ccc; margin: 0;">Nombre Comercial</p>
+                    <hr style="border-top: 1px solid #555; margin: 5px 0 10px 0;" />
+
+                    <!-- Principio Activo -->
+                    <ul style="margin-top: 0;">
+                        <t t-foreach="medicine.active_principles" t-as="active_principle" t-key="active_principle">
+                            <li style="font-size: 13px; font-weight: semibold; color: #333; margin: 0;"><t t-esc="active_principle"/></li>
+                        </t>
+                    </ul>
+                    <p style="font-size: 12px; font-weight: bold; color: #ccc; margin: 0;">Principio Activo</p>
+                    <hr style="border-top: 1px solid #555; margin: 5px 0 10px 0;" />
+
+                    <!-- Concentración -->
+                    <t t-if="medicine.concentration">
+                        <h5 style="font-size: 13px; font-weight: semibold; color: #333; margin: 0;"><t t-esc="medicine.concentration"/></h5>
+                        <p style="font-size: 12px; font-weight: bold; color: #ccc; margin: 0;">Concentración</p>
+                    </t>
+                </div>
+            </t>
+        </div>
+    </t>
+</templates>

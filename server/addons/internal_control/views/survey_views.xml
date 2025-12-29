@@ -1,0 +1,619 @@
+<?xml version="1.0" encoding="utf-8"?>
+<odoo>
+
+    <record id="view_survey_user_input_assign_form" model="ir.ui.view">
+        <field name="name">survey.user.input.assign.form</field>
+        <field name="model">survey.user_input.assign</field>
+        <field name="arch" type="xml">
+            <form string="Asignar Encuesta">
+                <group>
+                    <field name="survey_id" readonly="1" string="Encuesta"/>
+                    <field name="user_input_id" readonly="1" string="Respuesta de Encuesta"/>
+                </group>
+                <field name="job_ids" widget="many2many_tags" string="Asignar por Cargo"/>
+                <footer>
+                    <button string="Asignar" name="action_assign" type="object" class="btn-primary"/>
+                    <button string="Cancelar" class="btn-secondary" special="cancel"/>
+                </footer>
+            </form>
+        </field>
+    </record>
+
+    <record id="view_survey_user_input_form_inherit" model="ir.ui.view">
+        <field name="name">survey.user.input.form.inherit</field>
+        <field name="model">survey.user_input</field>
+        <field name="inherit_id" ref="survey.survey_user_input_view_form"/>
+        <field name="arch" type="xml">
+            <xpath expr="//header" position="inside">
+                <button name="action_assign_survey"
+                        string="Asignar Encuesta"
+                        type="object"
+                        class="oe_highlight"
+                        invisible="is_admin_assigned"/>
+            </xpath>
+            <xpath expr="//field[@name='partner_id']" position="after">
+                <field name="created_by_id" readonly="1" string="Creado por"/>
+                <field name="is_admin_assigned" readonly="1" string="Asignado por Admin"/>
+                <field name="assigned_by_id" readonly="1" invisible="not is_admin_assigned" string="Asignado por"/>
+                <field name="assigned_to_ids" readonly="1" invisible="not is_admin_assigned" string="Asignado a"/>
+            </xpath>
+            <!-- Campos de puntuación habilitados -->
+            <!-- <xpath expr="//field[@name='user_input_line_ids']/tree/field[@name='answer_is_correct']"
+                   position="replace"/>
+            <xpath expr="//field[@name='user_input_line_ids']/tree/field[@name='answer_score']" position="replace"/> -->
+            <xpath expr="//page[@name='page_answers']/field[@name='user_input_line_ids']/tree" position="inside">
+                <field name="page_id" string="Sección"/>
+            </xpath>
+        </field>
+    </record>
+
+    <data>
+
+        <!-- Vista para ocultar questions_layout eliminada porque el campo no está en la vista base y causa errores. -->
+
+        <record id="view_survey_revised_items_tree" model="ir.ui.view">
+            <field name="name">survey.revised.items.tree</field>
+            <field name="model">survey.revised.items</field>
+            <field name="arch" type="xml">
+                <tree string="Items Revisados">
+                    <field name="survey_id"/>
+                    <field name="partner_id"/>
+                    <field name="page_name"/>
+
+                    <field name="total_items_revisados" type="measure" operator="sum"/>
+                    <field name="total_items_sin_novedad" type="measure" operator="sum"/>
+                    <field name="porcentaje_cumplimiento" type="measure"/>
+                    <field name="campaign_id"/>
+                </tree>
+            </field>
+        </record>
+
+        <record id="view_survey_revised_items_graph" model="ir.ui.view">
+            <field name="name">survey.revised.items.graph</field>
+            <field name="model">survey.revised.items</field>
+            <field name="arch" type="xml">
+                <graph string="Items Revisados por Sección" type="bar">
+                    <field name="survey_id" type="row"/>
+                    <field name="partner_id" type="row"/>
+                    <field name="page_name" type="row"/>
+
+                    <field name="total_items_revisados" type="measure" operator="sum"/>
+                    <field name="total_items_sin_novedad" type="measure" operator="sum"/>
+                    <field name="porcentaje_cumplimiento" type="measure" operator="avg"/>
+                    <field name="campaign_id"/>
+                </graph>
+            </field>
+        </record>
+
+        <record id="view_survey_revised_items_pivot" model="ir.ui.view">
+            <field name="name">survey.revised.items.pivot</field>
+            <field name="model">survey.revised.items</field>
+            <field name="arch" type="xml">
+                <pivot string="Items Revisados Pivot">
+                    <field name="survey_id" type="row"/>
+                    <field name="partner_id" type="row"/>
+                    <field name="page_name" type="row"/>
+                    <field name="calculate_report_id" type="col"/>
+
+                    <field name="total_items_revisados" type="measure" operator="sum"/>
+                    <field name="total_items_sin_novedad" type="measure" operator="sum"/>
+                    <field name="porcentaje_cumplimiento" type="measure" operator="avg"/>
+                    <field name="campaign_id"/>
+                </pivot>
+            </field>
+        </record>
+
+        <record id="view_survey_revised_items_search" model="ir.ui.view">
+            <field name="name">survey.revised.items.search</field>
+            <field name="model">survey.revised.items</field>
+            <field name="arch" type="xml">
+                <search string="Buscar Items Revisados">
+                    <field name="survey_id"/>
+                    <field name="partner_id"/>
+                    <field name="page_name"/>
+                    <field name="total_items_revisados"/>
+                    <field name="total_items_sin_novedad"/>
+                    <field name="porcentaje_cumplimiento"/>
+                    <field name="create_date"/>
+                    <field name="department_id"/>
+                    <field name="campaign_id"/>
+                    <filter string="Hoy" name="today"
+                            domain="[('create_date','&gt;=', context_today().strftime('%Y-%m-%d'))]"/>
+                    <filter string="Esta Semana" name="this_week"
+                            domain="[('create_date','&gt;=', (context_today() + relativedelta(weeks=-1)).strftime('%Y-%m-%d'))]"/>
+                    <filter string="Este Mes" name="this_month"
+                            domain="[('create_date','&gt;=', (context_today() + relativedelta(months=-1)).strftime('%Y-%m-%d'))]"/>
+                    <group expand="0" string="Agrupar Por">
+                        <filter string="Sección" name="group_by_page" context="{'group_by':'page_name'}"/>
+                        <filter string="Encuesta" name="group_by_survey" context="{'group_by':'survey_id'}"/>
+                        <filter string="Participación" name="participation"
+                                context="{'group_by':'calculate_report_id'}"/>
+                        <filter string="Participante" name="group_by_partner" context="{'group_by':'partner_id'}"/>
+                        <filter string="Departamento" name="group_by_department"
+                                context="{'group_by':'department_id'}"/>
+                        <filter string="Campaña" name="group_by_campaign" context="{'group_by':'campaign_id'}"/>
+                    </group>
+                </search>
+            </field>
+        </record>
+
+        <record id="action_survey_revised_items_dashboard" model="ir.actions.act_window">
+            <field name="name">Items Revisados</field>
+            <field name="res_model">survey.revised.items</field>
+            <field name="view_mode">graph,pivot,tree</field>
+            <field name="view_id" ref="view_survey_revised_items_graph"/>
+            <field name="search_view_id" ref="view_survey_revised_items_search"/>
+            <field name="context">{'group_by': ['survey_id', 'calculate_report_id']}</field>
+        </record>
+
+
+        <!-- VISTAS PARA CUMPLIMIENTO -->
+        <record id="view_survey_compliance_tree" model="ir.ui.view">
+            <field name="name">survey.compliance.tree</field>
+            <field name="model">survey.compliance</field>
+            <field name="arch" type="xml">
+                <tree string="Cumplimiento">
+                    <field name="survey_id"/>
+                    <field name="partner_id"/>
+                    <field name="page_name"/>
+                    <field name="compliance_status"/>
+                    <field name="porcentaje_cumplimiento"/>
+                    <field name="campaign_id"/>
+                </tree>
+            </field>
+        </record>
+
+        <record id="view_survey_compliance_graph" model="ir.ui.view">
+            <field name="name">survey.compliance.graph</field>
+            <field name="model">survey.compliance</field>
+            <field name="arch" type="xml">
+                <graph string="Cumplimiento por Sección" type="bar">
+                    <field name="survey_id" type="row"/>
+                    <field name="partner_id" type="row"/>
+                    <field name="page_name" type="row"/>
+                    <field name="porcentaje_cumplimiento" type="measure"/>
+                    <field name="campaign_id"/>
+                </graph>
+            </field>
+        </record>
+
+        <record id="view_survey_compliance_pivot" model="ir.ui.view">
+            <field name="name">survey.compliance.pivot</field>
+            <field name="model">survey.compliance</field>
+            <field name="arch" type="xml">
+                <pivot string="Cumplimiento Pivot">
+                    <field name="survey_id" type="row"/>
+                    <field name="partner_id" type="row"/>
+                    <field name="page_name" type="row"/>
+                    <field name="calculate_report_id" type="col"/>
+                    <field name="porcentaje_cumplimiento" type="measure"/>
+                    <field name="campaign_id"/>
+                </pivot>
+            </field>
+        </record>
+
+        <record id="view_survey_compliance_search" model="ir.ui.view">
+            <field name="name">survey.compliance.search</field>
+            <field name="model">survey.compliance</field>
+            <field name="arch" type="xml">
+                <search string="Buscar Cumplimiento">
+                    <field name="survey_id"/>
+                    <field name="partner_id"/>
+                    <field name="page_name"/>
+                    <field name="compliance_status"/>
+                    <field name="create_date"/>
+                    <field name="department_id"/>
+                    <field name="campaign_id"/>
+                    <filter string="Cumple" name="cumple" domain="[('compliance_status','=','cumple')]"/>
+                    <filter string="No Cumple" name="no_cumple" domain="[('compliance_status','=','no_cumple')]"/>
+                    <filter string="Hoy" name="today"
+                            domain="[('create_date','&gt;=', context_today().strftime('%Y-%m-%d'))]"/>
+                    <filter string="Esta Semana" name="this_week"
+                            domain="[('create_date','&gt;=', (context_today() + relativedelta(weeks=-1)).strftime('%Y-%m-%d'))]"/>
+                    <filter string="Este Mes" name="this_month"
+                            domain="[('create_date','&gt;=', (context_today() + relativedelta(months=-1)).strftime('%Y-%m-%d'))]"/>
+                    <group expand="0" string="Agrupar Por">
+                        <filter string="Sección" name="group_by_page" context="{'group_by':'page_name'}"/>
+                        <filter string="Encuesta" name="group_by_survey" context="{'group_by':'survey_id'}"/>
+                        <filter string="Participación" name="participation"
+                                context="{'group_by':'calculate_report_id'}"/>
+                        <filter string="Participante" name="group_by_partner" context="{'group_by':'partner_id'}"/>
+                        <filter string="Departamento" name="group_by_department"
+                                context="{'group_by':'department_id'}"/>
+                        <filter string="Campaña" name="group_by_campaign" context="{'group_by':'campaign_id'}"/>
+                        <filter string="Estado" name="group_by_status" context="{'group_by':'compliance_status'}"/>
+                    </group>
+                </search>
+            </field>
+        </record>
+
+        <record id="action_survey_compliance_dashboard" model="ir.actions.act_window">
+            <field name="name">Cumplimiento</field>
+            <field name="res_model">survey.compliance</field>
+            <field name="view_mode">graph,pivot,tree</field>
+            <field name="view_id" ref="view_survey_compliance_graph"/>
+            <field name="search_view_id" ref="view_survey_compliance_search"/>
+            <field name="context">{'group_by': ['survey_id', 'calculate_report_id']}</field>
+        </record>
+
+        <!-- VISTAS PARA RESUMEN DE CUMPLIMIENTO -->
+        <record id="view_survey_compliance_summary_tree" model="ir.ui.view">
+            <field name="name">survey.compliance.summary.tree</field>
+            <field name="model">survey.compliance.summary</field>
+            <field name="arch" type="xml">
+                <tree string="Resumen de Cumplimiento">
+                    <field name="survey_id"/>
+                    <field name="page_name"/>
+                    <field name="compliance_status"/>
+                    <field name="total_responses"/>
+                    <field name="cumple_count"/>
+                    <field name="no_cumple_count"/>
+                    <field name="na_count"/>
+                    <field name="porcentaje_cumplimiento"/>
+                    <field name="department_id"/>
+                    <field name="campaign_id"/>
+                </tree>
+            </field>
+        </record>
+
+        <record id="view_survey_compliance_summary_graph" model="ir.ui.view">
+            <field name="name">survey.compliance.summary.graph</field>
+            <field name="model">survey.compliance.summary</field>
+            <field name="arch" type="xml">
+                <graph string="Resumen de Cumplimiento por Sección" type="bar">
+                    <field name="survey_id" type="row"/>
+                    <field name="page_name" type="row"/>
+                    <field name="porcentaje_cumplimiento" type="measure"/>
+                    <field name="total_responses" type="measure"/>
+                </graph>
+            </field>
+        </record>
+
+        <record id="view_survey_compliance_summary_search" model="ir.ui.view">
+            <field name="name">survey.compliance.summary.search</field>
+            <field name="model">survey.compliance.summary</field>
+            <field name="arch" type="xml">
+                <search string="Buscar Resumen de Cumplimiento">
+                    <field name="survey_id"/>
+                    <field name="page_name"/>
+                    <field name="compliance_status"/>
+                    <field name="department_id"/>
+                    <field name="campaign_id"/>
+                    <filter string="Cumple" name="cumple" domain="[('compliance_status','=','cumple')]"/>
+                    <filter string="No Cumple" name="no_cumple" domain="[('compliance_status','=','no_cumple')]"/>
+                    <filter string="N/A" name="na" domain="[('compliance_status','=','na')]"/>
+                    <group expand="0" string="Agrupar Por">
+                        <filter string="Encuesta" name="group_by_survey" context="{'group_by':'survey_id'}"/>
+                        <filter string="Sección" name="group_by_page" context="{'group_by':'page_name'}"/>
+                        <filter string="Departamento" name="group_by_department" context="{'group_by':'department_id'}"/>
+                        <filter string="Campaña" name="group_by_campaign" context="{'group_by':'campaign_id'}"/>
+                        <filter string="Estado" name="group_by_status" context="{'group_by':'compliance_status'}"/>
+                    </group>
+                </search>
+            </field>
+        </record>
+
+        <record id="action_survey_compliance_summary_dashboard" model="ir.actions.act_window">
+            <field name="name">Resumen de Cumplimiento</field>
+            <field name="res_model">survey.compliance.summary</field>
+            <field name="view_mode">graph,tree</field>
+            <field name="view_id" ref="view_survey_compliance_summary_graph"/>
+            <field name="search_view_id" ref="view_survey_compliance_summary_search"/>
+            <field name="context">{'group_by': ['survey_id', 'page_name']}</field>
+        </record>
+
+
+
+        <!-- SUBMENÚ Y VISTAS PARA SATISFACCIÓN -->
+        <record id="view_survey_satisfaction_tree" model="ir.ui.view">
+            <field name="name">survey.satisfaction.tree</field>
+            <field name="model">survey.satisfaction</field>
+            <field name="arch" type="xml">
+                <tree string="Satisfacción">
+                    <field name="survey_id"/>
+                    <field name="partner_id"/>
+                    <field name="page_name"/>
+                    <field name="total_encuestas"/>
+                    <field name="encuestas_positivas"/>
+                    <field name="satisfaccion"/>
+                    <field name="porcentaje_satisfaccion"/>
+                    <field name="campaign_id"/>
+                </tree>
+            </field>
+        </record>
+
+        <record id="view_survey_satisfaction_graph" model="ir.ui.view">
+            <field name="name">survey.satisfaction.graph</field>
+            <field name="model">survey.satisfaction</field>
+            <field name="arch" type="xml">
+                <graph string="Satisfacción por Sección" type="bar">
+                    <field name="survey_id" type="row"/>
+                    <field name="partner_id" type="row"/>
+                    <field name="page_name" type="row"/>
+                    <field name="satisfaccion" type="measure"/>
+                    <field name="porcentaje_satisfaccion" type="measure"/>
+                    <field name="campaign_id"/>
+                </graph>
+            </field>
+        </record>
+
+        <record id="view_survey_satisfaction_pivot" model="ir.ui.view">
+            <field name="name">survey.satisfaction.pivot</field>
+            <field name="model">survey.satisfaction</field>
+            <field name="arch" type="xml">
+                <pivot string="Satisfacción Pivot">
+                    <field name="survey_id" type="row"/>
+                    <field name="partner_id" type="row"/>
+                    <field name="page_name" type="row"/>
+                    <field name="calculate_report_id" type="col"/>
+                    <field name="satisfaccion" type="measure"/>
+                    <field name="porcentaje_satisfaccion" type="measure"/>
+                    <field name="campaign_id"/>
+                </pivot>
+            </field>
+        </record>
+
+        <record id="view_survey_satisfaction_search" model="ir.ui.view">
+            <field name="name">survey.satisfaction.search</field>
+            <field name="model">survey.satisfaction</field>
+            <field name="arch" type="xml">
+                <search string="Buscar Satisfacción">
+                    <field name="survey_id"/>
+                    <field name="partner_id"/>
+                    <field name="page_name"/>
+                    <field name="total_encuestas"/>
+                    <field name="encuestas_positivas"/>
+                    <field name="satisfaccion"/>
+                    <field name="porcentaje_satisfaccion"/>
+                    <field name="create_date"/>
+                    <field name="department_id"/>
+                    <field name="campaign_id"/>
+                    <filter string="Alta Satisfacción" name="alta_satisfaccion"
+                            domain="[('porcentaje_satisfaccion','&gt;=',80)]"/>
+                    <filter string="Media Satisfacción" name="media_satisfaccion"
+                            domain="[('porcentaje_satisfaccion','&gt;=',60),('porcentaje_satisfaccion','&lt;',80)]"/>
+                    <filter string="Baja Satisfacción" name="baja_satisfaccion"
+                            domain="[('porcentaje_satisfaccion','&lt;',60)]"/>
+                    <filter string="Solo Anónimas" name="only_anonymous" domain="[('anonymous_token','!=',False)]"/>
+                    <filter string="Solo No Anónimas" name="only_not_anonymous"
+                            domain="[('anonymous_token','=',False)]"/>
+                    <filter string="Hoy" name="today"
+                            domain="[('create_date','&gt;=', context_today().strftime('%Y-%m-%d'))]"/>
+                    <filter string="Esta Semana" name="this_week"
+                            domain="[('create_date','&gt;=', (context_today() + relativedelta(weeks=-1)).strftime('%Y-%m-%d'))]"/>
+                    <filter string="Este Mes" name="this_month"
+                            domain="[('create_date','&gt;=', (context_today() + relativedelta(months=-1)).strftime('%Y-%m-%d'))]"/>
+                    <group expand="0" string="Agrupar Por">
+                        <filter string="Sección" name="group_by_page" context="{'group_by':'page_name'}"/>
+                        <filter string="Encuesta" name="group_by_survey" context="{'group_by':'survey_id'}"/>
+                        <filter string="Participación" name="participation"
+                                context="{'group_by':'calculate_report_id'}"/>
+                        <filter string="Participante" name="group_by_partner" context="{'group_by':'partner_id'}"/>
+                        <filter string="Departamento" name="group_by_department"
+                                context="{'group_by':'department_id'}"/>
+                        <filter string="Campaña" name="group_by_campaign" context="{'group_by':'campaign_id'}"/>
+                    </group>
+                </search>
+            </field>
+        </record>
+
+        <record id="action_survey_satisfaction_dashboard" model="ir.actions.act_window">
+            <field name="name">Satisfacción</field>
+            <field name="res_model">survey.satisfaction</field>
+            <field name="view_mode">graph,pivot,tree</field>
+            <field name="view_id" ref="view_survey_satisfaction_graph"/>
+            <field name="search_view_id" ref="view_survey_satisfaction_search"/>
+            <field name="context">{'group_by': ['survey_id']}</field>
+        </record>
+
+
+
+        <!-- SUBMENÚ Y VISTAS PARA PARTICIPACIÓN -->
+        <record id="view_survey_participation_tree" model="ir.ui.view">
+            <field name="name">survey.participation.tree</field>
+            <field name="model">survey.participation</field>
+            <field name="arch" type="xml">
+                <tree string="Participación">
+                    <field name="survey_id"/>
+                    <field name="partner_id"/>
+                    <field name="page_name"/>
+                    <field name="respuestas_si"/>
+                    <field name="respuestas_no"/>
+                    <field name="no_respondieron"/>
+                    <field name="total_respuestas"/>
+                    <field name="porcentaje_participacion"/>
+                    <field name="campaign_id"/>
+                </tree>
+            </field>
+        </record>
+
+        <record id="view_survey_participation_graph" model="ir.ui.view">
+            <field name="name">survey.participation.graph</field>
+            <field name="model">survey.participation</field>
+            <field name="arch" type="xml">
+                <graph string="Participación por Sección" type="bar">
+                    <field name="survey_id" type="row"/>
+                    <field name="partner_id" type="row"/>
+                    <field name="page_name" type="row"/>
+                    <field name="respuestas_si" type="measure"/>
+                    <field name="respuestas_no" type="measure"/>
+                    <field name="no_respondieron" type="measure"/>
+                    <field name="porcentaje_participacion" type="measure"/>
+                    <field name="campaign_id"/>
+                </graph>
+            </field>
+        </record>
+
+        <record id="view_survey_participation_pivot" model="ir.ui.view">
+            <field name="name">survey.participation.pivot</field>
+            <field name="model">survey.participation</field>
+            <field name="arch" type="xml">
+                <pivot string="Participación Pivot">
+                    <field name="survey_id" type="row"/>
+                    <field name="partner_id" type="row"/>
+                    <field name="page_name" type="row"/>
+                    <field name="calculate_report_id" type="col"/>
+                    <field name="respuestas_si" type="measure"/>
+                    <field name="respuestas_no" type="measure"/>
+                    <field name="no_respondieron" type="measure"/>
+                    <field name="porcentaje_participacion" type="measure"/>
+                    <field name="campaign_id"/>
+                </pivot>
+            </field>
+        </record>
+
+        <record id="view_survey_participation_search" model="ir.ui.view">
+            <field name="name">survey.participation.search</field>
+            <field name="model">survey.participation</field>
+            <field name="arch" type="xml">
+                <search string="Buscar Participación">
+                    <field name="survey_id"/>
+                    <field name="partner_id"/>
+                    <field name="page_name"/>
+                    <field name="respuestas_si"/>
+                    <field name="respuestas_no"/>
+                    <field name="no_respondieron"/>
+                    <field name="total_respuestas"/>
+                    <field name="porcentaje_participacion"/>
+                    <field name="create_date"/>
+                    <field name="department_id"/>
+                    <field name="campaign_id"/>
+                    <filter string="Alta Participación" name="alta_participacion"
+                            domain="[('porcentaje_participacion','&gt;=',80)]"/>
+                    <filter string="Media Participación" name="media_participacion"
+                            domain="[('porcentaje_participacion','&gt;=',60),('porcentaje_participacion','&lt;',80)]"/>
+                    <filter string="Baja Participación" name="baja_participacion"
+                            domain="[('porcentaje_participacion','&lt;',60)]"/>
+                    <filter string="Solo Anónimas" name="only_anonymous" domain="[('anonymous_token','!=',False)]"/>
+                    <filter string="Solo No Anónimas" name="only_not_anonymous"
+                            domain="[('anonymous_token','=',False)]"/>
+                    <filter string="Hoy" name="today"
+                            domain="[('create_date','&gt;=', context_today().strftime('%Y-%m-%d'))]"/>
+                    <filter string="Esta Semana" name="this_week"
+                            domain="[('create_date','&gt;=', (context_today() + relativedelta(weeks=-1)).strftime('%Y-%m-%d'))]"/>
+                    <filter string="Este Mes" name="this_month"
+                            domain="[('create_date','&gt;=', (context_today() + relativedelta(months=-1)).strftime('%Y-%m-%d'))]"/>
+                    <group expand="0" string="Agrupar Por">
+                        <filter string="Sección" name="group_by_page" context="{'group_by':'page_name'}"/>
+                        <filter string="Encuesta" name="group_by_survey" context="{'group_by':'survey_id'}"/>
+                        <filter string="Participación" name="participation"
+                                context="{'group_by':'calculate_report_id'}"/>
+                        <filter string="Participante" name="group_by_partner" context="{'group_by':'partner_id'}"/>
+                        <filter string="Departamento" name="group_by_department"
+                                context="{'group_by':'department_id'}"/>
+                        <filter string="Campaña" name="group_by_campaign" context="{'group_by':'campaign_id'}"/>
+                    </group>
+                </search>
+            </field>
+        </record>
+
+        <record id="action_survey_participation_dashboard" model="ir.actions.act_window">
+            <field name="name">Participación</field>
+            <field name="res_model">survey.participation</field>
+            <field name="view_mode">graph,pivot,tree</field>
+            <field name="view_id" ref="view_survey_participation_graph"/>
+            <field name="search_view_id" ref="view_survey_participation_search"/>
+            <field name="context">{'group_by': ['survey_id']}</field>
+        </record>
+
+
+
+        <!-- Wizard de Exportación de Reportes -->
+        <record id="view_survey_export_report_form" model="ir.ui.view">
+            <field name="name">survey.export.report.form</field>
+            <field name="model">survey.export.report</field>
+            <field name="arch" type="xml">
+                <form string="Exportar Reporte">
+                    <group>
+                        <field name="survey_id" readonly="1"/>
+                    </group>
+                    <group>
+                        <field name="report_type" widget="radio" options="{'horizontal': true}"/>
+                        <field name="campaign_id" 
+                               invisible="report_type != 'campaign'"
+                               required="report_type == 'campaign'"
+                               placeholder="Seleccione una campaña específica (opcional)"/>
+                    </group>
+                    <group>
+                        <!-- <field name="observations" placeholder="Ingrese observaciones adicionales para el reporte..."/> -->
+                    </group>
+                    <footer>
+                        <button name="action_export_pdf" string="Generar PDF" type="object" class="btn-primary"/>
+                        <button string="Cancelar" class="btn-secondary" special="cancel"/>
+                    </footer>
+                </form>
+            </field>
+        </record>
+
+        <record id="action_survey_export_report" model="ir.actions.act_window">
+            <field name="name">Exportar Reporte</field>
+            <field name="res_model">survey.export.report</field>
+            <field name="view_mode">form</field>
+            <field name="target">new</field>
+        </record>
+
+        <record id="survey_survey_form_inherit_assign_activity" model="ir.ui.view">
+            <field name="name">survey.survey.form.inherit.assign.activity</field>
+            <field name="model">survey.survey</field>
+            <field name="inherit_id" ref="survey.survey_survey_view_form"/>
+            <field name="arch" type="xml">
+                <xpath expr="//header" position="inside">
+
+                </xpath>
+            </field>
+        </record>
+
+        <record id="internal_control_survey_form_hide_action_send_survey" model="ir.ui.view">
+            <field name="name">survey.survey.form.hide.action_send_survey</field>
+            <field name="model">survey.survey</field>
+            <field name="inherit_id" ref="survey.survey_survey_view_form"/>
+            <field name="arch" type="xml">
+                <xpath expr="//button[@name='action_send_survey']" position="attributes">
+                    <attribute name="invisible">1</attribute>
+                </xpath>
+                 <xpath expr="//button[@name='action_test_survey']" position="attributes">
+                    <attribute name="invisible">1</attribute>
+                </xpath>
+            </field>
+        </record>
+
+
+        <record id="internal_control_survey_form_hide_action_result_survey_by_category" model="ir.ui.view">
+            <field name="name">survey.survey.form.hide.action_result_survey.by.category</field>
+            <field name="model">survey.survey</field>
+            <field name="inherit_id" ref="survey.survey_survey_view_form"/>
+            <field name="arch" type="xml">
+                <xpath expr="//button[@name='action_result_survey']" position="attributes">
+                    <attribute name="invisible">category_id</attribute>
+                </xpath>
+            </field>
+        </record>
+
+        <record id="internal_control_survey_kanban_conditional_see_results" model="ir.ui.view">
+            <field name="name">survey.survey.kanban.conditional.see.results</field>
+            <field name="model">survey.survey</field>
+            <field name="inherit_id" ref="survey.survey_survey_view_kanban"/>
+            <field name="arch" type="xml">
+
+                <!-- Aseguramos que category_id está disponible -->
+                <xpath expr="//kanban" position="inside">
+                    <field name="category_id"/>
+                </xpath>
+
+                <!-- Botón solo si NO hay categoría -->
+                <xpath expr="//button[@name='action_result_survey']" position="replace">
+                    <t t-if="!record.category_id or !record.category_id.raw_value">
+                        <button name="action_result_survey" string="See results"
+                                type="object" class="btn btn-secondary">
+                            Ver Resultados
+                        </button>
+                    </t>
+                </xpath>
+
+            </field>
+        </record>
+
+
+
+    </data>
+</odoo> 

@@ -1,0 +1,50 @@
+<?xml version="1.0" encoding="utf-8"?>
+<odoo>
+    <template id="custom_report_saleorder_document" inherit_id="sale.report_saleorder_document">
+
+        <xpath expr="//thead/tr" position="inside">
+            <th name="th_tax_amount" class="text-end">Valor Imp.</th>
+        </xpath>
+
+        <xpath expr="//td[@name='td_subtotal']" position="after">
+            <td class="text-end">
+                <span t-field="line.tax_amount_total"
+                      t-options='{"widget": "monetary", "display_currency": doc.currency_id}'/>
+            </td>
+        </xpath>
+
+        <xpath expr="//th[@name='th_tax_amount']" position="after">
+            <th name="th_tax_price_total" class="text-end">Total</th>
+        </xpath>
+
+        <xpath expr="//td[span[@t-field='line.tax_amount_total']]" position="after">
+            <td class="text-end">
+                <span t-field="line.price_total"
+                      t-options='{"widget": "monetary", "display_currency": doc.currency_id}'/>
+            </td>
+        </xpath>
+
+
+        <xpath expr="//span[@t-field='doc.note']" position="before">
+            <div class="mt-4">
+                <p>
+                    <strong>GARANTÍA:</strong>
+                    <span t-field="doc.warranty_period"/> 
+                    <span t-field="doc.warranty_unit"/>
+                </p>
+                <p>
+                    <strong>TIEMPO DE ENTREGA:</strong>
+                    <span t-field="doc.delivery_time"/> 
+                    <span t-field="doc.delivery_unit"/> HÁBILES
+                </p>
+                <p>
+                    <strong>VALIDEZ DE LA OFERTA:</strong>
+                    <span t-field="doc.validity_period"/> 
+                    <span t-field="doc.validity_unit"/> HÁBILES
+                </p>
+            </div>
+        </xpath>
+
+
+    </template>
+</odoo>

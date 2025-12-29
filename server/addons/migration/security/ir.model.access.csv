@@ -1,0 +1,10 @@
+id,name,model_id:id,group_id:id,perm_read,perm_write,perm_create,perm_unlink
+access_credit_card_user,access_credit_card_user,model_credit_card,base.group_user,1,1,1,1
+access_credit_card_manager,access_credit_card_manager,model_credit_card,base.group_system,1,1,1,1
+access_institution,access_institution,model_institution,base.group_user,1,1,1,1
+access_institution,access_institution,model_institution,base.group_system,1,1,1,1
+access_institution_user,institution user,model_institution,base.group_user,1,1,1,1
+access_institution_client_user,institution.client,model_institution_client,base.group_user,1,1,1,1
+
+
+

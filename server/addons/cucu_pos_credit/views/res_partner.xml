@@ -1,0 +1,20 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<odoo>
+    <record id="cucu_pos_credit_payments" model="ir.ui.view">
+        <field name="name">cucu.pos.credit.payments</field>
+        <field name="model">res.partner</field>
+        <field name="inherit_id" ref="base.view_partner_form"/>
+        <field name="arch" type="xml">
+            <xpath expr="//notebook/page[@name='internal_notes']" position="after">
+                <page string="Account Payments">
+                    <field name="account_payments_ids" options="{'no_create':True}"/>
+                </page>
+            </xpath>
+            <xpath expr="//notebook/page[@name='internal_notes']" position="after">
+                <page string="Account Moves">
+                    <field name="account_move_ids" options="{'no_open': True, 'no_quick_create': True}"  domain="[('payment_state', '=', 'not_paid')]"/>
+                </page>
+            </xpath>
+        </field>
+    </record>
+</odoo>

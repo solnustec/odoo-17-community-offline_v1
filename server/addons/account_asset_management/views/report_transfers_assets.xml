@@ -1,0 +1,67 @@
+<?xml version="1.0" encoding="utf-8"?>
+<odoo>
+    <data>
+
+        <!-- Vista tree personalizada con link directo al activo -->
+        <record id="view_asset_transfer_tree_pending" model="ir.ui.view">
+            <field name="name">asset.transfer.tree.pending</field>
+            <field name="model">asset.transfer</field>
+            <field name="arch" type="xml">
+                <tree string="Transferencias Pendientes de Firma" create="false" edit="false">
+                    <field name="asset_id" string="Activo"
+                           options="{'no_open': False}"
+                           context="{'form_view_ref':'account_asset_management.account_asset_view_form'}"/>
+                    <field name="custodian_from_id" string="Custodio Anterior"/>
+                    <field name="custodian_to_id" string="Nuevo Custodio"/>
+                    <field name="transfer_date" string="Fecha"/>
+                    <field name="signed_by_from" string="Firma Custodio Anterior"
+                           widget="boolean_button" options="{'terminology': 'Firma'}"/>
+                    <field name="signed_by_to" string="Firma Nuevo Custodio"
+                           widget="boolean_button" options="{'terminology': 'Firma'}"/>
+                </tree>
+            </field>
+        </record>
+
+        <!-- Vista de búsqueda con filtros inteligentes -->
+        <record id="view_asset_transfer_search_pending" model="ir.ui.view">
+            <field name="name">asset.transfer.search.pending</field>
+            <field name="model">asset.transfer</field>
+            <field name="arch" type="xml">
+                <search string="Buscar Transferencias Pendientes">
+                    <field name="asset_id"/>
+                    <field name="custodian_from_id"/>
+                    <field name="custodian_to_id"/>
+                    <field name="transfer_date"/>
+
+                    <filter name="filter_from_pending"
+                            string="Pendiente Custodio Anterior"
+                            domain="[('signed_by_from','=',False)]"/>
+                    <filter name="filter_to_pending"
+                            string="Pendiente Nuevo Custodio"
+                            domain="[('signed_by_to','=',False)]"/>
+                    <filter name="filter_both_pending"
+                            string="Ambos Pendientes"
+                            domain="[('signed_by_from','=',False),('signed_by_to','=',False)]"/>
+                </search>
+            </field>
+        </record>
+
+        <!-- Acción: lista de transferencias pendientes -->
+        <record id="action_asset_transfer_pending" model="ir.actions.act_window">
+            <field name="name">Transferencias Pendientes (Activos)</field>
+            <field name="res_model">asset.transfer</field>
+            <field name="view_mode">tree,form</field>
+            <field name="view_id" ref="view_asset_transfer_tree_pending"/>
+            <field name="search_view_id" ref="view_asset_transfer_search_pending"/>
+            <field name="domain">['|',('signed_by_from','=',False),('signed_by_to','=',False)]</field>
+        </record>
+
+        <!-- Menú dentro de Contabilidad > Reportes -->
+        <menuitem id="menu_asset_transfer_pending"
+                  name="Transferencias Pendientes"
+                  parent="account.menu_finance_reports"
+                  action="action_asset_transfer_pending"
+                  sequence="50"/>
+
+    </data>
+</odoo>

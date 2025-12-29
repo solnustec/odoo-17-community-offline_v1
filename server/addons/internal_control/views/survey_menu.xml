@@ -1,0 +1,200 @@
+<?xml version="1.0" encoding="utf-8"?>
+<odoo>
+    <!-- ======================================== -->
+    <!-- ACCIONES PARA MENÚS -->
+    <!-- ======================================== -->
+    
+
+    
+    <!-- Action para campañas de encuestas -->
+    <record id="action_survey_campaign" model="ir.actions.act_window">
+        <field name="name">Programar actividad</field>
+        <field name="res_model">in.survey.campaign</field>
+        <field name="view_mode">tree,form</field>
+    </record>
+
+    <!-- Action para participaciones nativas de Odoo -->
+    <record id="action_survey_participations_native" model="ir.actions.act_window">
+        <field name="name">Participaciones</field>
+        <field name="res_model">survey.user_input</field>
+        <field name="view_mode">tree,form</field>
+        <field name="context">{}</field>
+    </record>
+
+    <!-- Action para preguntas y respuestas -->
+    <record id="action_survey_questions_answers" model="ir.actions.act_window">
+        <field name="name">Preguntas y respuestas</field>
+        <field name="res_model">survey.user_input</field>
+        <field name="view_mode">tree,form</field>
+    </record>
+
+    <!-- Action para crear encuestas base -->
+    <record id="action_survey_surveys_base" model="ir.actions.act_window">
+        <field name="name">Crear Encuesta Base</field>
+        <field name="res_model">survey.survey</field>
+        <field name="view_mode">form</field>
+        <field name="context">{}</field>
+    </record>
+
+    <!-- Action para crear encuestas por categoría -->
+    <record id="action_survey_surveys_by_category" model="ir.actions.act_window">
+        <field name="name">Crear Encuesta por Categoría</field>
+        <field name="res_model">survey.create.by.category.wizard</field>
+        <field name="view_mode">form</field>
+        <field name="target">new</field>
+        <field name="context">{}</field>
+    </record>
+
+    <!-- Action para ver todas las encuestas -->
+    <record id="action_survey_view_all" model="ir.actions.act_window">
+        <field name="name">Ver Encuestas</field>
+        <field name="res_model">survey.survey</field>
+        <field name="view_mode">kanban,tree,form</field>
+        <field name="context">{}</field>
+    </record>
+
+    <!-- Action para mis asignaciones -->
+    <record id="action_my_survey_assignments" model="ir.actions.act_window">
+        <field name="name">Mis Encuestas Asignadas</field>
+        <field name="res_model">in.survey.campaign.assignment</field>
+        <field name="view_mode">tree,form</field>
+        <field name="domain">[('employee_id.user_id', '=', uid)]</field>
+        <field name="context">{}</field>
+    </record>
+
+    <!-- ======================================== -->
+    <!-- MENÚS PRINCIPALES -->
+    <!-- ======================================== -->
+    
+    <!-- Menú padre para reportes -->
+    <menuitem id="menu_survey_reports"
+              name="Gráfica"
+              parent="survey.menu_surveys"
+              sequence="10"/>
+
+    <!-- ======================================== -->
+    <!-- SUBMENÚS DENTRO DEL MENÚ NATIVO DE ENCUESTAS -->
+    <!-- ======================================== -->
+    
+    <!-- Menú padre para Crear Encuesta -->
+    <menuitem id="menu_create_survey_parent"
+              name="Crear Encuesta"
+              parent="survey.menu_survey_form"
+              sequence="1"/>
+
+    <!-- Submenús para Crear Encuesta -->
+    <menuitem id="menu_survey_surveys_base"
+              name="Crear Encuesta Base"
+              action="action_survey_surveys_base"
+              parent="menu_create_survey_parent"
+              sequence="1"/>
+
+    <menuitem id="menu_survey_surveys_by_category"
+              name="Crear Encuesta por Categoría"
+              action="action_survey_surveys_by_category"
+              parent="menu_create_survey_parent"
+              sequence="2"/>
+
+    <!-- Menú para ver todas las encuestas -->
+    <menuitem id="menu_survey_view_all"
+              name="Ver Encuestas"
+              action="action_survey_view_all"
+              parent="survey.menu_survey_form"
+              sequence="2"/>
+
+    <menuitem name="Participaciones"
+        id="survey.menu_survey_type_form1"
+        action="survey.action_survey_user_input"
+        parent="survey.menu_surveys"
+        sequence="1"/>
+
+<!--    <menuitem id="survey.menu_survey_type_form1"-->
+<!--              name="Psas"-->
+<!--              action="action_survey_participations_native"-->
+<!--              parent="survey.menu_survey_form"-->
+<!--              sequence="2"/>-->
+
+    <menuitem id="menu_survey_campaign"
+              name="Programar actividad"
+              parent="survey.menu_survey_form"
+              action="action_survey_campaign"
+              sequence="3"/>
+
+    <!-- Menú para empleados ver sus asignaciones -->
+    <menuitem id="menu_my_survey_assignments"
+              name="Mis Encuestas Asignadas"
+              parent="survey.menu_survey_form"
+              action="action_my_survey_assignments"
+              sequence="6"/>
+
+    <!-- ======================================== -->
+    <!-- SUBMENÚS DE REPORTES -->
+    <!-- ======================================== -->
+    
+    <menuitem id="menu_survey_revised_items_dashboard"
+              name="Items Revisados"
+              parent="menu_survey_reports"
+              action="action_survey_revised_items_dashboard"
+              sequence="1"/>
+
+    <menuitem id="menu_survey_compliance_dashboard"
+              name="Cumplimiento"
+              parent="menu_survey_reports"
+              action="action_survey_compliance_dashboard"
+              sequence="2"/>
+
+    <menuitem id="menu_survey_satisfaction_dashboard"
+              name="Satisfacción"
+              parent="menu_survey_reports"
+              action="action_survey_satisfaction_dashboard"
+              sequence="3"/>
+
+<!--    <menuitem id="menu_survey_participation_dashboard"-->
+<!--              name="otrss"-->
+<!--              parent="menu_survey_reports"-->
+<!--              action="action_survey_participation_dashboard"-->
+<!--              sequence="4"/>-->
+
+    <!-- ======================================== -->
+    <!-- MENÚS OCULTOS (Solo para administradores) -->
+    <!-- ======================================== -->
+    
+    <!-- Ocultar menú nativo de preguntas y respuestas de Odoo -->
+    <menuitem id="survey_menu_questions" groups="base.group_no_one"/>
+    <menuitem id="survey.menu_survey_user_input" groups="base.group_no_one"/>
+    <menuitem id="menu_survey_user_input" groups="base.group_no_one"/>
+    <menuitem id="survey.menu_survey_user_input_form" groups="base.group_no_one"/>
+
+
+
+ <!-- Menú padre para reportes gráficos -->
+    <menuitem id="menu_survey_dashboard_graphs"
+              name="Reportes Gráficos"
+              parent="menu_survey_reports"
+              sequence="1"/>
+
+    <menuitem id="menu_survey_revised_items_dashboard"
+              name="Items Revisados"
+              parent="menu_survey_dashboard_graphs"
+              action="action_survey_revised_items_dashboard"
+              sequence="10"/>
+
+
+    <menuitem id="menu_survey_compliance_dashboard"
+                  name="Cumplimiento"
+                  parent="menu_survey_dashboard_graphs"
+                  action="action_survey_compliance_dashboard"
+                  sequence="20"/>
+
+    <menuitem id="menu_survey_satisfaction_dashboard"
+                  name="Satisfacción"
+                  parent="menu_survey_dashboard_graphs"
+                  action="action_survey_satisfaction_dashboard"
+                  sequence="30"/>
+
+    <menuitem id="menu_survey_participation_dashboard"
+                  name="Participación"
+                  parent="menu_survey_dashboard_graphs"
+                  action="action_survey_participation_dashboard"
+                  sequence="40"/>
+</odoo>

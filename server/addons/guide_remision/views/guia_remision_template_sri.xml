@@ -1,0 +1,58 @@
+<odoo>
+    <data>
+        <template id="guia_remision_template">
+            <guiaRemision id="comprobante" version="1.1.0">
+                <infoTributaria>
+                    <ambiente t-esc="ambiente"/>
+                    <tipoEmision>1</tipoEmision>
+                    <razonSocial t-esc="company.establecimiento"/>
+                    <ruc t-esc="company.vat"/>
+                    <claveAcceso t-esc="clave_acceso"/>
+                    <codDoc>06</codDoc>
+                    <estab t-esc="company.l10n_ec_establishment_code"/>
+                    <ptoEmi t-esc="company.punto_emision"/>
+                    <secuencial t-esc="secuencial"/>
+                    <dirMatriz t-esc="company.street"/>
+                </infoTributaria>
+
+                <infoGuiaRemision>
+                    <dirEstablecimiento t-esc="company.street or 'Sin Dirección de Establecimiento'"/>
+                    <dirPartida t-esc="direccion_partida or 'Sin Dirección de Partida'"/>
+                    <razonSocialTransportista t-esc="transportista_id.name or 'Sin Transportista'"/>
+
+                    <t t-if="transportista_id.l10n_latam_identification_type_id.name == 'RUC'">
+                        <tipoIdentificacionTransportista>04</tipoIdentificacionTransportista>
+                    </t>
+                    <t t-elif="transportista_id.l10n_latam_identification_type_id.name == 'Cédula'">
+                        <tipoIdentificacionTransportista>05</tipoIdentificacionTransportista>
+                    </t>
+                    <t t-elif="transportista_id.l10n_latam_identification_type_id.name == 'Pasaporte'">
+                        <tipoIdentificacionTransportista>06</tipoIdentificacionTransportista>
+                    </t>
+
+                    <rucTransportista t-esc="transportista_id.vat"/>
+                    <fechaIniTransporte t-esc="fecha_ini_transporte"/>
+                    <fechaFinTransporte t-esc="fecha_fin_transporte"/>
+                    <placa t-esc="vehiculo_transportista['license_plate'] or 'Sin Placa'"/>
+                </infoGuiaRemision>
+
+                <destinatarios>
+                    <destinatario>
+                        <identificacionDestinatario t-esc="destinatario_id.vat or 'Sin Identificación'"/>
+                        <razonSocialDestinatario t-esc="destinatario_id.name or 'Sin Razón Social'"/>
+                        <dirDestinatario t-esc="direccion_llegada or 'Sin Dirección de Llegada'"/>
+                        <motivoTraslado t-esc="motivo_traslado or 'Sin Motivo de Traslado'"/>
+                        <detalles>
+                            <detalle t-foreach="productos" t-as="producto">
+                                <codigoInterno t-esc="producto.get('default_code', 'Sin Código')"/>
+                                <descripcion t-esc="producto.get('name', 'Sin Descripción')"/>
+                                <cantidad t-esc="producto.get('cantidad', 0)"/>
+                            </detalle>
+                        </detalles>
+                    </destinatario>
+                </destinatarios>
+            </guiaRemision>
+        </template>
+    </data>
+</odoo>
+

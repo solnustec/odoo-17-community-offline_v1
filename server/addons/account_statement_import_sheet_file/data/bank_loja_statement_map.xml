@@ -1,0 +1,31 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!--
+    Copyright 2025
+    Basado en estructura OCA
+    Banco de Loja - Mapeo personalizado
+    Licencia AGPL-3.0 o posterior
+-->
+<odoo noupdate="1">
+    <record id="bank_loja_statement_map" model="account.statement.import.sheet.mapping">
+        <field name="name">Banco de Loja</field>
+        <field name="footer_lines_skip_count">0</field>
+        <field name="header_lines_skip_count">1</field>
+
+        <field name="float_thousands_sep">comma</field>
+        <field name="float_decimal_sep">dot</field>
+        <field name="delimiter">semicolon</field>
+        <field name="quotechar">"</field>
+
+        <field name="timestamp_format">%m/%d/%y %H:%M</field>
+        <field name="timestamp_column">Fecha</field>
+
+        <field name="amount_type">distinct_credit_debit</field>
+        <field name="amount_debit_column">Debitos</field>
+        <field name="amount_credit_column">Creditos</field>
+        <field name="amount_inverse_sign">True</field>
+
+        <field name="balance_column">Saldo</field>
+        <field name="description_column">Referencia</field>
+        <field name="reference_column">Rubro,Concepto</field>
+    </record>
+</odoo>

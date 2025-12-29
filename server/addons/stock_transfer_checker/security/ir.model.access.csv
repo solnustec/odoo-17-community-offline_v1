@@ -1,0 +1,4 @@
+id,name,model_id:id,group_id:id,perm_read,perm_write,perm_create,perm_unlink
+access_transfer_verifier,access_transfer_verifier,model_stock_transfer_verifier,base.group_user,1,1,1,1
+access_transfer_verifier_line,access_transfer_verifier_line,model_stock_transfer_verifier_line,base.group_user,1,1,1,1
+access_transfer_verifier_log,access_transfer_verifier_log,model_stock_transfer_verifier_log,base.group_user,1,1,1,1

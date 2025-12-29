@@ -1,0 +1,406 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<odoo>
+    <!-- Action for survey metrics export without group by -->
+    <record id="action_export_survey_metrics" model="ir.actions.report">
+        <field name="name">Exportar Métricas de Encuestas</field>
+        <field name="model">ir.exports</field>
+        <field name="report_type">qweb-pdf</field>
+        <field name="report_name">internal_control.export_survey_metrics</field>
+        <field name="binding_type">report</field>
+    </record>
+
+    <!-- Action for survey metrics export with group by -->
+    <record id="action_export_survey_metrics_group_by" model="ir.actions.report">
+        <field name="name">Exportar Métricas de Encuestas Agrupadas</field>
+        <field name="model">ir.exports</field>
+        <field name="report_type">qweb-pdf</field>
+        <field name="report_name">internal_control.export_survey_metrics_group_by</field>
+    </record>
+
+    <!-- Template for survey metrics export without group by -->
+    <template id="export_survey_metrics">
+        <t t-call="web.html_container">
+            <t t-call="web.internal_layout">
+                <div class="page" style="font-family: 'Segoe UI', Arial, sans-serif; background-color: #f5f5f5; margin: 0; padding: 20px; font-size: 11px;">
+                    <div style="max-width: 800px; background-color: #fff; border-radius: 8px; box-shadow: 0 2px 10px rgba(0,0,0,0.08); padding: 20px; margin: 0 auto;">
+                        <!-- Header -->
+                        <div style="display: flex; justify-content: space-between; align-items: center; background-color: #F5F5F5; padding: 10px 20px; border-radius: 6px; margin-bottom: 15px;">
+                            <div style="display: flex; align-items: center;">
+                                <img src="https://farmaciascuxibamba.com.ec/web/image/website/1/logo/Farmacias%20Cuxibamba?unique=ec0f7ca"
+                                     alt="Logo Farmacias Cuxibamba"
+                                     style="height: 40px; max-width: 150px; object-fit: contain;" />
+                            </div>
+                            <div style="font-size: 14px; font-weight: bold; color: #333; white-space: nowrap;">
+                                Reporte de Métricas de Encuestas
+                            </div>
+                        </div>
+
+                        <!-- Divisor -->
+                        <div style="height:6px;background:linear-gradient(to right,#ffd700 15%,#004aad 15%);margin:0 0 20px 0;"></div>
+
+                        <!-- Información del reporte -->
+                        <div style="margin-bottom: 15px;">
+                            <h2 style="margin-bottom: 10px; color: #333; font-size: 16px;">Información del reporte:</h2>
+                            <p style="margin: 0; color: #555;">
+                                Generado el: <t t-esc="context_timestamp(datetime.datetime.now()).strftime('%d/%m/%Y %H:%M')"/>
+                            </p>
+                        </div>
+
+                        <!-- Contenido Organizado por Campaña -->
+                        <t t-if="record.get('participants_summary')">
+                            <!-- Mostrar cada campaña como una sección completa -->
+                            <t t-foreach="record['participants_summary']" t-as="participant">
+                                <t t-set="campaign_key" t-value="participant.get('campaign', 'Sin Campaña')"/>
+                                
+                                <!-- Solo mostrar si es el primer participante de esta campaña -->
+                                <t t-if="not any(p.get('campaign', 'Sin Campaña') == campaign_key for p in record['participants_summary'][:record['participants_summary'].index(participant)])">
+                                    
+                                    <!-- Obtener todos los participantes de esta campaña -->
+                                    <t t-set="campaign_participants" t-value="[p for p in record['participants_summary'] if p.get('campaign', 'Sin Campaña') == campaign_key]"/>
+                                    
+                                    <div style="margin-bottom: 40px; border: 2px solid #004aad; border-radius: 8px; padding: 20px; background-color: #f8f9fa;">
+                                        
+                                        <!-- Header de Campaña -->
+                                        <div style="background-color: #004aad; color: white; padding: 15px; margin: -20px -20px 20px -20px; border-radius: 6px 6px 0 0;">
+                                            <h3 style="margin: 0; font-size: 18px; font-weight: bold;">
+                                                🎯 Campaña: <t t-out="campaign_key"/>
+                                            </h3>
+                                        </div>
+                                        
+                                        <!-- Resumen de Participantes de esta Campaña -->
+                                        <div style="margin-bottom: 25px;">
+                                            <h4 style="margin-bottom: 15px; font-weight: bold; color: #333; border-bottom: 2px solid #004aad; padding-bottom: 5px;">
+                                                👥 Participantes Asignados
+                                            </h4>
+                                            
+                                            <!-- Calcular estadísticas de la campaña -->
+                                            <t t-set="total_participants" t-value="len(campaign_participants)"/>
+                                            <t t-set="responded_count" t-value="len([p for p in campaign_participants if p['responded']])"/>
+                                            <t t-set="not_responded_count" t-value="total_participants - responded_count"/>
+                                            <t t-set="participation_rate" t-value="(responded_count / total_participants * 100) if total_participants > 0 else 0"/>
+                                            
+                                            <!-- Resumen estadístico -->
+                                            <div style="background-color: #ecf0f1; border: 1px solid #ddd; padding: 15px; border-radius: 5px; margin-bottom: 20px;">
+                                                <div style="display: flex; justify-content: space-between; flex-wrap: wrap;">
+                                                    <div style="text-align: center; flex: 1; min-width: 120px;">
+                                                        <div style="font-size: 24px; font-weight: bold; color: #004aad;"><t t-out="total_participants"/></div>
+                                                        <div style="font-size: 12px; color: #666;">Total Asignados</div>
+                                                    </div>
+                                                    <div style="text-align: center; flex: 1; min-width: 120px;">
+                                                        <div style="font-size: 24px; font-weight: bold; color: #28a745;"><t t-out="responded_count"/></div>
+                                                        <div style="font-size: 12px; color: #666;">Respondieron</div>
+                                                    </div>
+                                                    <div style="text-align: center; flex: 1; min-width: 120px;">
+                                                        <div style="font-size: 24px; font-weight: bold; color: #dc3545;"><t t-out="not_responded_count"/></div>
+                                                        <div style="font-size: 12px; color: #666;">No Respondieron</div>
+                                                    </div>
+                                                    <div style="text-align: center; flex: 1; min-width: 120px;">
+                                                        <div style="font-size: 24px; font-weight: bold; color: #004aad;"><t t-out="'%.1f' % participation_rate"/>%</div>
+                                                        <div style="font-size: 12px; color: #666;">Tasa de Participación</div>
+                                                    </div>
+                                                </div>
+                                            </div>
+                                            
+                                            <!-- Tabla de Participantes -->
+                                            <table style="width: 100%; border-collapse: collapse;">
+                                                <thead>
+                                                    <tr style="background-color: #f8f9fa; border: 1px solid #ddd;">
+                                                        <th style="border: 1px solid #ddd; padding: 8px; text-align: center; font-weight: bold; width: 30%; vertical-align: middle;">Participante</th>
+                                                        <th style="border: 1px solid #ddd; padding: 8px; text-align: center; font-weight: bold; width: 25%; vertical-align: middle;">Departamento</th>
+                                                        <th style="border: 1px solid #ddd; padding: 8px; text-align: center; font-weight: bold; width: 25%; vertical-align: middle;">Cargo</th>
+                                                        <th style="border: 1px solid #ddd; padding: 8px; text-align: center; font-weight: bold; width: 20%; vertical-align: middle;">Estado</th>
+                                                    </tr>
+                                                </thead>
+                                                <tbody>
+                                                    <t t-foreach="campaign_participants" t-as="participant">
+                                                        <tr>
+                                                            <td style="border: 1px solid #ddd; padding: 8px; text-align: center;"><span t-out="participant['name']"/></td>
+                                                            <td style="border: 1px solid #ddd; padding: 8px; text-align: center;"><span t-out="participant['department'] or '-'"/></td>
+                                                            <td style="border: 1px solid #ddd; padding: 8px; text-align: center;"><span t-out="participant['job'] or '-'"/></td>
+                                                            <td style="border: 1px solid #ddd; padding: 8px; text-align: center;">
+                                                                <span t-if="participant['responded']" style="background-color: #28a745; color: white; padding: 2px 6px; font-size: 11px;">Respondió</span>
+                                                                <span t-else="" style="background-color: #dc3545; color: white; padding: 2px 6px; font-size: 11px;">No Respondió</span>
+                                                            </td>
+                                                        </tr>
+                                                    </t>
+                                                </tbody>
+                                            </table>
+                                        </div>
+                                        
+                                        <!-- Métricas Específicas de la Campaña (si existen) -->
+                                        <t t-if="record.get('data')">
+                                            <div style="margin-bottom: 25px;">
+                                                <h4 style="margin-bottom: 15px; font-weight: bold; color: #333; border-bottom: 2px solid #004aad; padding-bottom: 5px;">
+                                                    📊 Métricas de la Campaña: <t t-out="campaign_key"/>
+                                                </h4>
+                                                
+                                                <table style="width: 100%; border-collapse: collapse;">
+                                                    <thead>
+                                                        <tr style="background-color: #f8f9fa; border: 1px solid #ddd;">
+                                            <t t-foreach="length" t-as="length">
+                                                                <th style="border: 1px solid #ddd; padding: 8px; text-align: center; font-weight: bold; vertical-align: middle;">
+                                                    <span t-out="record['header'][length]"/>
+                                                </th>
+                                            </t>
+                                        </tr>
+                                    </thead>
+                                    <tbody>
+                                        <t t-foreach="record['data']" t-as="rec">
+                                                            <!-- Solo mostrar filas que contengan el nombre de la campaña -->
+                                                            <t t-if="str(rec).find(campaign_key) != -1">
+                                            <tr>
+                                                <t t-foreach="length" t-as="ln">
+                                                                        <td style="border: 1px solid #ddd; padding: 8px; text-align: center;">
+                                                        <span t-out="rec[ln]"/>
+                                                    </td>
+                                                </t>
+                                            </tr>
+                                                            </t>
+                                        </t>
+                                    </tbody>
+                                </table>
+                            </div>
+                                        </t>
+                                        
+                        </div>
+                                </t>
+                            </t>
+                        </t>
+
+                        <!-- Observations Section -->
+                        <t t-if="record.get('observations')">
+                            <div style="margin-top: 20px;">
+                                <h4 style="margin-bottom: 15px; font-weight: bold; color: #333;">Observaciones:</h4>
+                                <div style="background-color: #f8f9fa; border: 1px solid #ddd; padding: 15px; border-radius: 5px;">
+                                    <p style="margin: 0; color: #555;" t-out="record['observations']"/>
+                                </div>
+                            </div>
+                        </t>
+
+                        <!-- Footer -->
+                        <div style="border-top: 1px solid #ddd; margin-top: 40px; padding-top: 15px; text-align: center; font-size: 12px; color: #555;">
+                            <p style="margin: 0 0 5px 0;">Reporte generado por Control Interno - Farmacias Cuxibamba</p>
+                            <p style="margin: 0;">Tel: +593 96 066 2194 | www.farmaciascuxibamba.com.ec</p>
+                        </div>
+                    </div>
+                </div>
+            </t>
+        </t>
+    </template>
+
+    <!-- Template for survey metrics export with group by -->
+    <template id="export_survey_metrics_group_by">
+        <t t-call="web.html_container">
+            <t t-call="web.internal_layout">
+                <div class="page" style="font-family: 'Segoe UI', Arial, sans-serif; background-color: #f5f5f5; margin: 0; padding: 20px; font-size: 11px;">
+                    <div style="max-width: 800px; background-color: #fff; border-radius: 8px; box-shadow: 0 2px 10px rgba(0,0,0,0.08); padding: 20px; margin: 0 auto;">
+                        <!-- Header -->
+                        <div style="display: flex; justify-content: space-between; align-items: center; background-color: #F5F5F5; padding: 10px 20px; border-radius: 6px; margin-bottom: 15px;">
+                            <div style="display: flex; align-items: center;">
+                                <img src="https://farmaciascuxibamba.com.ec/web/image/website/1/logo/Farmacias%20Cuxibamba?unique=ec0f7ca"
+                                     alt="Logo Farmacias Cuxibamba"
+                                     style="height: 40px; max-width: 150px; object-fit: contain;" />
+                            </div>
+                            <div style="font-size: 14px; font-weight: bold; color: #333; white-space: nowrap;">
+                                Reporte de Métricas de Encuestas (Agrupado)
+                            </div>
+                        </div>
+
+                        <!-- Divisor -->
+                        <div style="height:6px;background:linear-gradient(to right,#ffd700 15%,#004aad 15%);margin:0 0 20px 0;"></div>
+
+                        <!-- Información del reporte -->
+                        <div style="margin-bottom: 15px;">
+                            <h2 style="margin-bottom: 10px; color: #333; font-size: 16px;">Información del reporte:</h2>
+                            <p style="margin: 0; color: #555;">
+                                Generado el: <t t-esc="context_timestamp(datetime.datetime.now()).strftime('%d/%m/%Y %H:%M')"/>
+                            </p>
+                        </div>
+
+                        <!-- Contenido Organizado por Campaña (Agrupado) -->
+                        <t t-if="record.get('participants_summary')">
+                            <!-- Mostrar cada campaña como una sección completa -->
+                            <t t-foreach="record['participants_summary']" t-as="participant">
+                                <t t-set="campaign_key" t-value="participant.get('campaign', 'Sin Campaña')"/>
+                                
+                                <!-- Solo mostrar si es el primer participante de esta campaña -->
+                                <t t-if="not any(p.get('campaign', 'Sin Campaña') == campaign_key for p in record['participants_summary'][:record['participants_summary'].index(participant)])">
+                                    
+                                    <!-- Obtener todos los participantes de esta campaña -->
+                                    <t t-set="campaign_participants" t-value="[p for p in record['participants_summary'] if p.get('campaign', 'Sin Campaña') == campaign_key]"/>
+                                    
+                                    <div style="margin-bottom: 40px; border: 2px solid #004aad; border-radius: 8px; padding: 20px; background-color: #f8f9fa;">
+                                        
+                                        <!-- Header de Campaña -->
+                                        <div style="background-color: #004aad; color: white; padding: 15px; margin: -20px -20px 20px -20px; border-radius: 6px 6px 0 0;">
+                                            <h3 style="margin: 0; font-size: 18px; font-weight: bold;">
+                                                🎯 Campaña: <t t-out="campaign_key"/>
+                                            </h3>
+                                        </div>
+                                        
+                                        <!-- Resumen de Participantes de esta Campaña -->
+                                        <div style="margin-bottom: 25px;">
+                                            <h4 style="margin-bottom: 15px; font-weight: bold; color: #333; border-bottom: 2px solid #004aad; padding-bottom: 5px;">
+                                                👥 Participantes Asignados
+                                            </h4>
+                                            
+                                            <!-- Calcular estadísticas de la campaña -->
+                                            <t t-set="total_participants" t-value="len(campaign_participants)"/>
+                                            <t t-set="responded_count" t-value="len([p for p in campaign_participants if p['responded']])"/>
+                                            <t t-set="not_responded_count" t-value="total_participants - responded_count"/>
+                                            <t t-set="participation_rate" t-value="(responded_count / total_participants * 100) if total_participants > 0 else 0"/>
+                                            
+                                            <!-- Resumen estadístico -->
+                                            <div style="background-color: #ecf0f1; border: 1px solid #ddd; padding: 15px; border-radius: 5px; margin-bottom: 20px;">
+                                                <div style="display: flex; justify-content: space-between; flex-wrap: wrap;">
+                                                    <div style="text-align: center; flex: 1; min-width: 120px;">
+                                                        <div style="font-size: 24px; font-weight: bold; color: #004aad;"><t t-out="total_participants"/></div>
+                                                        <div style="font-size: 12px; color: #666;">Total Asignados</div>
+                                                    </div>
+                                                    <div style="text-align: center; flex: 1; min-width: 120px;">
+                                                        <div style="font-size: 24px; font-weight: bold; color: #28a745;"><t t-out="responded_count"/></div>
+                                                        <div style="font-size: 12px; color: #666;">Respondieron</div>
+                                                    </div>
+                                                    <div style="text-align: center; flex: 1; min-width: 120px;">
+                                                        <div style="font-size: 24px; font-weight: bold; color: #dc3545;"><t t-out="not_responded_count"/></div>
+                                                        <div style="font-size: 12px; color: #666;">No Respondieron</div>
+                                                    </div>
+                                                    <div style="text-align: center; flex: 1; min-width: 120px;">
+                                                        <div style="font-size: 24px; font-weight: bold; color: #004aad;"><t t-out="'%.1f' % participation_rate"/>%</div>
+                                                        <div style="font-size: 12px; color: #666;">Tasa de Participación</div>
+                                                    </div>
+                                                </div>
+                                            </div>
+                                            
+                                            <!-- Tabla de Participantes -->
+                                            <table style="width: 100%; border-collapse: collapse;">
+                                                <thead>
+                                                    <tr style="background-color: #f8f9fa; border: 1px solid #ddd;">
+                                                        <th style="border: 1px solid #ddd; padding: 8px; text-align: center; font-weight: bold; width: 30%; vertical-align: middle;">Participante</th>
+                                                        <th style="border: 1px solid #ddd; padding: 8px; text-align: center; font-weight: bold; width: 25%; vertical-align: middle;">Departamento</th>
+                                                        <th style="border: 1px solid #ddd; padding: 8px; text-align: center; font-weight: bold; width: 25%; vertical-align: middle;">Cargo</th>
+                                                        <th style="border: 1px solid #ddd; padding: 8px; text-align: center; font-weight: bold; width: 20%; vertical-align: middle;">Estado</th>
+                                                    </tr>
+                                                </thead>
+                                                <tbody>
+                                                    <t t-foreach="campaign_participants" t-as="participant">
+                                                        <tr>
+                                                            <td style="border: 1px solid #ddd; padding: 8px; text-align: center;"><span t-out="participant['name']"/></td>
+                                                            <td style="border: 1px solid #ddd; padding: 8px; text-align: center;"><span t-out="participant['department'] or '-'"/></td>
+                                                            <td style="border: 1px solid #ddd; padding: 8px; text-align: center;"><span t-out="participant['job'] or '-'"/></td>
+                                                            <td style="border: 1px solid #ddd; padding: 8px; text-align: center;">
+                                                                <span t-if="participant['responded']" style="background-color: #28a745; color: white; padding: 2px 6px; font-size: 11px;">Respondió</span>
+                                                                <span t-else="" style="background-color: #dc3545; color: white; padding: 2px 6px; font-size: 11px;">No Respondió</span>
+                                                            </td>
+                                                        </tr>
+                                                    </t>
+                                                </tbody>
+                                            </table>
+                                        </div>
+                                        
+                                        <!-- Métricas Agrupadas de la Campaña -->
+                                        <t t-if="record.get('other')">
+                                            <div style="margin-bottom: 25px;">
+                                                <h4 style="margin-bottom: 15px; font-weight: bold; color: #333; border-bottom: 2px solid #004aad; padding-bottom: 5px;">
+                                                    📊 Métricas de la Campaña: <t t-out="campaign_key"/>
+                                                </h4>
+                                                
+                                                <t t-foreach="record['other']" t-as="object">
+                                                    <!-- Verificar si esta métrica contiene datos de la campaña específica -->
+                                                    <t t-set="has_campaign_data" t-value="False"/>
+                                                    <t t-if="object[2] and object[2][0]">
+                                                        <t t-set="has_campaign_data" t-value="any(str(row).find(campaign_key) != -1 for row in object[2][0])"/>
+                                                    </t>
+                                                    
+                                                    <t t-if="has_campaign_data">
+                                                        <div style="margin-bottom: 20px; border: 1px solid #ddd; border-radius: 5px; overflow: hidden;">
+                                                            <!-- Subgrupo Header -->
+                                                            <div style="background-color: #f8f9fa; border-bottom: 1px solid #ddd; padding: 12px;">
+                                                                <h5 style="margin: 0; font-weight: bold; color: #333; font-size: 14px;">
+                                                <t t-if="object[1]">
+                                                    <t t-if="record['type'][0]=='many2one'">
+                                                        <span t-out="object[1][1]"/>
+                                                    </t>
+                                                    <t t-else="">
+                                                        <span t-out="object[1]"/>
+                                                    </t>
+                                                </t>
+                                                <t t-else="">
+                                                    <span>Sin Definir</span>
+                                                </t>
+                                                                    <span style="background-color: #004aad; color: white; padding: 2px 6px; font-size: 11px; margin-left: 10px;">
+                                                    <t t-out="object[0]['count']"/> registros
+                                                </span>
+                                            </h5>
+                                        </div>
+                                        
+                                                            <!-- Subgrupo Summary -->
+                                        <t t-if="object[3]">
+                                                                <div style="background-color: #ecf0f1; padding: 10px; border-bottom: 1px solid #ddd;">
+                                                <t t-foreach="object[3]" t-as="obj">
+                                                                        <span style="background-color: #004aad; color: white; padding: 2px 6px; font-size: 11px; margin-right: 10px;">
+                                                        <span t-out="record['header'][obj[1]]"/>: 
+                                                        <span t-out="obj[0]"/>
+                                                    </span>
+                                                </t>
+                                            </div>
+                                        </t>
+
+                                                            <!-- Subgrupo Data Table -->
+                                                            <table style="width: 100%; border-collapse: collapse;">
+                                                                <thead>
+                                                                    <tr style="background-color: #f8f9fa; border: 1px solid #ddd;">
+                                                <t t-foreach="length" t-as="le">
+                                                                            <th style="border: 1px solid #ddd; padding: 8px; text-align: center; font-weight: bold; vertical-align: middle;">
+                                                        <span t-out="record['header'][le]"/>
+                                                    </th>
+                                                </t>
+                                            </tr>
+                                        </thead>
+                                        <tbody>
+                                            <t t-foreach="object[2][0]" t-as="info">
+                                                                        <!-- Solo mostrar filas que contengan el nombre de la campaña -->
+                                                                        <t t-if="str(info).find(campaign_key) != -1">
+                                                <tr>
+                                                    <t t-foreach="length" t-as="leng">
+                                                                                    <td style="border: 1px solid #ddd; padding: 8px; text-align: center;">
+                                                            <span t-out="info[leng]"/>
+                                                        </td>
+                                                    </t>
+                                                </tr>
+                                                                        </t>
+                                            </t>
+                                        </tbody>
+                                    </table>
+                                </div>
+                                                    </t>
+                                                </t>
+                                            </div>
+                                        </t>
+                                        
+                            </div>
+                                </t>
+                            </t>
+                        </t>
+
+                        <!-- Observations Section -->
+                        <t t-if="record.get('observations')">
+                            <div style="margin-top: 20px;">
+                                <h4 style="margin-bottom: 15px; font-weight: bold; color: #333;">Observaciones:</h4>
+                                <div style="background-color: #f8f9fa; border: 1px solid #ddd; padding: 15px; border-radius: 5px;">
+                                    <p style="margin: 0; color: #555;" t-out="record['observations']"/>
+                                </div>
+                            </div>
+                        </t>
+
+                        <!-- Footer -->
+                        <div style="border-top: 1px solid #ddd; margin-top: 40px; padding-top: 15px; text-align: center; font-size: 12px; color: #555;">
+                            <p style="margin: 0 0 5px 0;">Reporte generado por Control Interno - Farmacias Cuxibamba</p>
+                            <p style="margin: 0;">Tel: +593 96 066 2194 | www.farmaciascuxibamba.com.ec</p>
+                        </div>
+                    </div>
+                </div>
+            </t>
+        </t>
+    </template>
+</odoo> 

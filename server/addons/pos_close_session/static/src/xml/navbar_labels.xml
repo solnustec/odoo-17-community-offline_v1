@@ -1,0 +1,17 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<templates id="template" xml:space="preserve">
+  <!-- Extiende el menú hamburguesa del POS -->
+  <t t-name="pos_close_session.NavbarLabels"
+     t-inherit="point_of_sale.Navbar"
+     t-inherit-mode="extension">
+
+    <xpath expr="//li[contains(@class,'backend-button')]/a" position="replace">
+      <a class="dropdown-item py-2">Panel Administrativo</a>
+    </xpath>
+
+    <xpath expr="//li[contains(@class,'close-button')]/a" position="replace">
+      <a class="dropdown-item py-2">Cierre de caja</a>
+    </xpath>
+
+  </t>
+</templates>

@@ -1,0 +1,428 @@
+<odoo>
+    <!-- Plantilla de correo para despacho -->
+    <record id="email_template_despacho" model="mail.template">
+        <field name="name">Notificación de Despacho</field>
+        <field name="model_id" ref="sale.model_sale_order"/>
+        <field name="subject">Despacho de su pedido ${object.name}</field>
+        <field name="email_from">${object.company_id.email or object.user_id.email_formatted}</field>
+        <field name="email_to">${object.partner_id.email_formatted}</field>
+        <field name="lang">${object.partner_id.lang}</field>
+        <field name="body_html" type="html">
+            <div style="margin: 0px; padding: 20px;">
+                <div style="font-size: 13px; margin: 0px; padding: 0px;">
+                    <div style="position: relative; height: 230px; overflow: hidden;">
+                        <div class="card-content"
+                             style="position: relative; z-index: 1; color: white; display: flex; height: 100%;">
+                            <div style="width: 50%; height: 100%; align-content: center;padding: 10% 0 0 5%;z-index: 1;">
+                                <img src="https://lh3.googleusercontent.com/pw/AP1GczM0QjRhDG8IxEXwk8YrbF18yQFbpD5NXRIEAZTM61kxv7zMv_dMkhKj5fHaN-ZD0TL9WyDHKwjTlYw7MdQ8oZDfQESjFnu7kkl9IxXL5_WicWM5maH54p82vkAf5Hdg9qanxkj8QzcHZ_NoFlNamTQ=w244-h60-s-no-gm?authuser=0"
+                                     class="img img-fluid o_we_custom_image"
+                                     style="transition-property:none;transition-delay:0s;transition-timing-function:ease;transition-duration:0s;transition-behavior:normal;box-sizing: border-box; display: inline-block; height: auto; max-width: 70%; vertical-align: middle; margin: auto; transform: translateX(-8.4%) translateY(-8%) scaleX(0.68) scaleY(0.65); animation-play-state: paused; transition: none 0s ease 0s; width: 405px; mso-hide: all; mso-hide: all; mso-hide: all; mso-hide: all; mso-hide: all; mso-hide: all; mso-hide: all; mso-hide: all; mso-hide: all; mso-hide: all; mso-hide: all; mso-hide: all; mso-hide: all; mso-hide: all; mso-hide: all; mso-hide: all; mso-hide: all; mso-hide: all; mso-hide: all; mso-hide: all; mso-hide: all; mso-hide: all; mso-hide: all; mso-hide: all; mso-hide: all; mso-hide: all; mso-hide: all; mso-hide: all; mso-hide: all; mso-hide: all; mso-hide: all; mso-hide: all; mso-hide: all; mso-hide: all; mso-hide: all; mso-hide: all; mso-hide: all; mso-hide: all; mso-hide: all; mso-hide: all; mso-hide: all; mso-hide: all; mso-hide: all; mso-hide: all; mso-hide: all; mso-hide: all; mso-hide: all; mso-hide: all; mso-hide: all; mso-hide: all; mso-hide: all; mso-hide: all; mso-hide: all; mso-hide: all; mso-hide: all; mso-hide: all; mso-hide: all; mso-hide: all;"
+                                     width="405"/>
+                            </div>
+                            <div style="width: 50%; height: 100%; align-content: center; text-align: end;padding: 10% 5% 0 0; z-index: 1;">
+                                <h2 style="box-sizing:border-box;font-size:21px;line-height:1.2;font-family:'SF Pro Display', -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, 'Helvetica Neue', Ubuntu, 'Noto Sans', Arial, sans-serif, 'Apple Color Emoji', 'Segoe UI Emoji', 'Segoe UI Symbol', 'Noto Color Emoji';color: #003d8b;margin: auto 2% 1%; font-weight: 500;">
+                                    Orden de Compra
+                                </h2>
+                                <div style="padding: 3px 6px 3px 6px; display: block;">
+                                    <h4 style="display: inline-block;box-sizing:border-box;font-size:16.8px;line-height:1.2;font-family:'SF Pro Display', -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, 'Helvetica Neue', Ubuntu, 'Noto Sans', Arial, sans-serif, 'Apple Color Emoji', 'Segoe UI Emoji', 'Segoe UI Symbol', 'Noto Color Emoji';color: #003d8b; background-color: #f8e032; border-radius: 15px; padding: 5px 10px 5px 10px; margin: 0 -10px; font-weight: 600;">
+                                        Confirmada
+                                    </h4>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+                <div style="padding: 20px 30px 20px 30px; border-radius: 8px; box-shadow: 0 4px 8px #e5e5e5; overflow: hidden; border: 1px solid #cdcdcdb5;">
+                    Hola,
+                    <span style="font-weight: 400; box-sizing: border-box; line-height: inherit; font-size: 12px;"
+                          t-out="(object.partner_id.name or 'no hay').upper()">
+                    </span>
+                    <br/>
+                    <br/>
+                    <p style="line-height: inherit; font-weight: 400; font-size: 13px; margin: 0px 0px 16px; box-sizing: border-box; color: #818181;">
+                        ¡Compra validada con éxito!
+                    </p>
+                    <p style="line-height: inherit; font-weight: 400; font-size: 13px; margin: 0px 0px 16px; box-sizing: border-box; color: #818181;">
+                        📦 Número de pedido: #
+                        <span style="box-sizing: border-box; line-height: inherit; font-size: 12px; font-weight: bold;"
+                              t-out="object.name or ''">S00049
+                        </span>
+                    </p>
+                    <p style="line-height: inherit; font-weight: 400; font-size: 13px; margin: 0px 0px 16px; box-sizing: border-box; color: #818181;">
+                        🏠 Dirección de
+                        envío:
+                        <t t-out="object.partner_invoice_id.street or ''">
+                        </t>
+                        <t t-out="object.partner_invoice_id.city or ''">
+                        </t>
+                        <t t-out="object.partner_invoice_id.state_id.name or ''">
+                        </t>
+                        <t t-out="object.partner_invoice_id.zip or ''">
+                        </t>
+                        <t t-out="object.partner_invoice_id.country_id.name or ''">
+                        </t>
+                    </p>
+
+                    <p style="line-height: inherit; font-weight: 400; font-size: 13px; margin: 0px 0px 16px; box-sizing: border-box; color: #818181;">
+                        🕒 Tiempo de envío: Dentro de las próximas 48 horas
+
+                    </p>
+
+                    <div style="margin: 0px; padding: 0px;">
+                        <table width="100%"
+                               style="box-sizing:border-box;caption-side:bottom;color: #454748; font-size: 12px; border-collapse: collapse;">
+                            <tbody style="border-style:none;box-sizing:border-box;border-left-width:0px;border-bottom-width:0px;border-right-width:0px;border-top-width:0px;border-left-color:inherit;border-bottom-color:inherit;border-right-color:inherit;border-top-color:inherit;">
+                                <tr style="border-style:solid;box-sizing:border-box;border-left-width:0px;border-bottom-width:2px;border-right-width:0px;border-top-width:0px;border-left-color:inherit;border-bottom-color:#dee2e6;border-right-color:inherit;border-top-color:inherit;border-bottom: 2px solid #dee2e6;">
+                                    <td style="border-style:none;box-sizing:border-box;border-left-width:0px;border-bottom-width:0px;border-right-width:0px;border-top-width:0px;border-left-color:inherit;border-bottom-color:inherit;border-right-color:inherit;border-top-color:inherit;width: 150px;"
+                                        width="150">
+                                        <span style="box-sizing: border-box; line-height: inherit; font-size: 12px; font-weight: bold;">
+                                            <strong style="box-sizing:border-box;font-weight:bolder;color:#003d8b;">
+                                                Productos
+                                            </strong>
+                                        </span>
+                                    </td>
+                                    <td style="border-style:none;box-sizing:border-box;border-left-width:0px;border-bottom-width:0px;border-right-width:0px;border-top-width:0px;border-left-color:inherit;border-bottom-color:inherit;border-right-color:inherit;border-top-color:inherit;">
+
+                                    </td>
+                                    <td width="15%" align="center"
+                                        style="border-style:none;box-sizing:border-box;border-left-width:0px;border-bottom-width:0px;border-right-width:0px;border-top-width:0px;border-left-color:inherit;border-bottom-color:inherit;border-right-color:inherit;border-top-color:inherit;">
+                                        <span style="box-sizing: border-box; line-height: inherit; font-size: 12px; font-weight: bold;">
+                                            <strong style="box-sizing:border-box;font-weight:bolder;color:#003d8b;">
+                                                Cantidad
+                                            </strong>
+                                        </span>
+                                    </td>
+                                    <td width="20%" align="right"
+                                        style="border-style:none;box-sizing:border-box;border-left-width:0px;border-bottom-width:0px;border-right-width:0px;border-top-width:0px;border-left-color:inherit;border-bottom-color:inherit;border-right-color:inherit;border-top-color:inherit;">
+                                        <span style="box-sizing: border-box; line-height: inherit; font-size: 12px; font-weight: bold;">
+                                            <t t-if="object.website_id.show_line_subtotals_tax_selection == 'tax_excluded'">
+                                                <strong style="box-sizing:border-box;font-weight:bolder;color:#003d8b;">
+                                                    Precio
+                                                    sin IVA
+                                                </strong>
+                                            </t>
+                                            <t t-else="">
+                                                <strong style="box-sizing:border-box;font-weight:bolder;color:#003d8b;">
+                                                    Precio
+                                                    con IVA
+                                                </strong>
+                                            </t>
+                                        </span>
+                                    </td>
+                                </tr>
+                            </tbody>
+                        </table>
+                        <t t-foreach="object.order_line" t-as="line">
+                            <t t-if="not '%' in line.product_id.name">
+                                <t t-if="(not hasattr(line, 'is_delivery') or not line.is_delivery) and line.display_type in ['line_section', 'line_note']">
+                                    <t t-set="loop_cycle_number" t-value="loop_cycle_number or 0"></t>
+                                    <t t-set="loop_cycle_number" t-value="loop_cycle_number + 1"></t>
+                                    <table width="100%"
+                                           style="box-sizing:border-box;caption-side:bottom;color: #454748; font-size: 12px; border-collapse: collapse;">
+                                        <tbody style="border-style:none;box-sizing:border-box;">
+                                            <tr t-att-style="'background-color: #f2f2f2' if loop_cycle_number % 2 == 0 else 'background-color: #ffffff'">
+                                                <td colspan="4" style="border-style:none;">
+                                                    <t t-if="line.display_type == 'line_section'">
+                                                        <span style="font-size: 12px; font-weight: bold;"
+                                                              t-out="line.name or ''">Curso sobre el cuidado de los
+                                                            árboles
+                                                        </span>
+                                                    </t>
+                                                    <t t-elif="line.display_type == 'line_note'">
+                                                        <i t-out="line.name or ''">Curso sobre el cuidado de los
+                                                            árboles
+                                                        </i>
+                                                    </t>
+                                                </td>
+                                            </tr>
+                                        </tbody>
+                                    </table>
+                                </t>
+                                <t t-elif="(not hasattr(line, 'is_delivery') or not line.is_delivery)">
+                                    <t t-set="loop_cycle_number" t-value="loop_cycle_number or 0"></t>
+                                    <t t-set="loop_cycle_number" t-value="loop_cycle_number + 1"></t>
+                                    <table width="100%"
+                                           style="box-sizing:border-box;caption-side:bottom;color: #454748; font-size: 12px; border-collapse: collapse;">
+                                        <tbody style="border-style:none;box-sizing:border-box;">
+                                            <tr t-att-style="'background-color: #f2f2f2' if loop_cycle_number % 2 == 0 else 'background-color: #ffffff'">
+                                                <td align="left" style="border-style:none;"
+                                                    t-out="line.product_id.name or ''"/>
+                                                <td width="15%" align="center" t-out="line.product_uom_qty or ''"
+                                                    style="border-style:none;box-sizing:border-box;">
+                                                    1
+                                                </td>
+                                                <td width="20%" align="right"
+                                                    style="border-style:none;box-sizing:border-box;">
+                                                    <span style="font-size: 12px; font-weight: bold;">
+                                                        <t t-if="object.website_id.show_line_subtotals_tax_selection == 'tax_excluded'">
+                                                            <t t-out="format_amount(line.price_reduce_taxexcl, object.currency_id) or ''">
+                                                                $ 10.00
+                                                            </t>
+                                                        </t>
+                                                        <t t-else="">
+                                                            <t t-out="format_amount(line.price_reduce_taxinc, object.currency_id) or ''">
+                                                                $ 10.00
+                                                            </t>
+                                                        </t>
+                                                    </span>
+                                                </td>
+                                            </tr>
+                                        </tbody>
+                                    </table>
+                                </t>
+                            </t>
+                        </t>
+                        <table width="100%"
+                               style="box-sizing:border-box;caption-side:bottom;color: #454748; font-size: 12px; border-collapse: collapse;">
+                            <tbody style="border-style:none;box-sizing:border-box;border-left-width:0px;border-bottom-width:0px;border-right-width:0px;border-top-width:0px;border-left-color:inherit;border-bottom-color:inherit;border-right-color:inherit;border-top-color:inherit;">
+                                <tr style="border-style:none;box-sizing:border-box;">
+                                    <td align="left" style="border-style:none;box-sizing:border-box;">
+                                        <span style="font-size: 12px; font-weight: bold;">
+                                            Descuento:
+                                        </span>
+                                    </td>
+                                    <td width="15%" align="center" style="border-style:none;box-sizing:border-box;">
+                                        &#160;
+                                    </td>
+                                    <td width="25%" align="right" style="border-style:none;box-sizing:border-box;">
+                                        <span style="font-size: 12px; font-weight: bold;">
+                                            $
+                                            <t t-esc="object.discount_promotions_mail or '0.00'"/>
+                                        </span>
+                                    </td>
+                                </tr>
+                            </tbody>
+                        </table>
+
+                    </div>
+                    <div style="margin: 0px; padding: 0px;">
+                        <table width="100%"
+                               style="box-sizing:border-box;-webkit-border-vertical-spacing:4px;-webkit-border-horizontal-spacing:0px;border-collapse:collapse;caption-side:bottom;color: #454748; font-size: 12px; border-spacing: 0px 4px;"
+                               align="right">
+                            <tbody style="border-style:none;box-sizing:border-box;border-left-width:0px;border-bottom-width:0px;border-right-width:0px;border-top-width:0px;border-left-color:inherit;border-bottom-color:inherit;border-right-color:inherit;border-top-color:inherit;">
+                                <tr style="border-style:none;box-sizing:border-box;border-left-width:0px;border-bottom-width:0px;border-right-width:0px;border-top-width:0px;border-left-color:inherit;border-bottom-color:inherit;border-right-color:inherit;border-top-color:inherit;">
+                                    <td style="border-style:none;box-sizing:border-box;border-left-width:0px;border-bottom-width:0px;border-right-width:0px;border-top-width:0px;border-left-color:inherit;border-bottom-color:inherit;border-right-color:inherit;border-top-color:inherit;width: 60%;"
+                                        width="60%">
+                                    </td>
+                                    <td style="border-top-width:0px;border-style:none;box-sizing:border-box;border-left-width:0px;border-bottom-width:0px;border-right-width:0px;border-left-color:inherit;border-bottom-color:inherit;border-right-color:inherit;width: 30%;"
+                                        align="right" width="30%">
+                                        <span style="box-sizing: border-box; line-height: inherit; font-size: 12px; font-weight: bold;">
+                                            Envío:
+                                        </span>
+                                    </td>
+                                    <td style="border-top-width:0px;border-style:none;box-sizing:border-box;border-left-width:0px;border-bottom-width:0px;border-right-width:0px;border-left-color:inherit;border-bottom-color:inherit;border-right-color:inherit;"
+                                        align="right" width="10%">
+                                        <t t-esc="format_amount(object.delivery_subtotal_mail if object.delivery_subtotal_mail else object.amount_delivery, object.currency_id, digits=2) or '0.00'"/>
+                                    </td>
+                                </tr>
+                                <tr style="border-style:none;box-sizing:border-box;border-left-width:0px;border-bottom-width:0px;border-right-width:0px;border-top-width:0px;border-left-color:inherit;border-bottom-color:inherit;border-right-color:inherit;border-top-color:inherit;">
+                                    <td style="border-style:none;box-sizing:border-box;border-left-width:0px;border-bottom-width:0px;border-right-width:0px;border-top-width:0px;border-left-color:inherit;border-bottom-color:inherit;border-right-color:inherit;border-top-color:inherit;width: 60%;"
+                                        width="60%">
+                                    </td>
+                                    <td style="border-style:none;box-sizing:border-box;border-left-width:0px;border-bottom-width:0px;border-right-width:0px;border-top-width:0px;border-left-color:inherit;border-bottom-color:inherit;border-right-color:inherit;border-top-color:inherit;width: 30%;"
+                                        align="right" width="30%">
+                                        <span style="box-sizing: border-box; line-height: inherit; font-size: 12px; font-weight: bold;">
+                                            Subtotal:
+                                        </span>
+                                    </td>
+                                    <td style="border-style:none;box-sizing:border-box;border-left-width:0px;border-bottom-width:0px;border-right-width:0px;border-top-width:0px;border-left-color:inherit;border-bottom-color:inherit;border-right-color:inherit;border-top-color:inherit;width: 10%;"
+                                        align="right"
+                                        t-out="format_amount(object.amount_untaxed, object.currency_id) or ''"
+                                        width="10%">$ 10.00
+                                    </td>
+                                </tr>
+                                <tr style="border-style:none;box-sizing:border-box;border-left-width:0px;border-bottom-width:0px;border-right-width:0px;border-top-width:0px;border-left-color:inherit;border-bottom-color:inherit;border-right-color:inherit;border-top-color:inherit;">
+                                    <td style="border-style:none;box-sizing:border-box;border-left-width:0px;border-bottom-width:0px;border-right-width:0px;border-top-width:0px;border-left-color:inherit;border-bottom-color:inherit;border-right-color:inherit;border-top-color:inherit;width: 60%;"
+                                        width="60%">
+                                    </td>
+                                    <td style="border-style:none;box-sizing:border-box;border-left-width:0px;border-bottom-width:0px;border-right-width:0px;border-top-width:0px;border-left-color:inherit;border-bottom-color:inherit;border-right-color:inherit;border-top-color:inherit;width: 30%;"
+                                        align="right" width="30%">
+                                        <span style="box-sizing: border-box; line-height: inherit; font-size: 12px; font-weight: bold;">
+                                            Impuestos:
+                                        </span>
+                                    </td>
+                                    <td style="border-style:none;box-sizing:border-box;border-left-width:0px;border-bottom-width:0px;border-right-width:0px;border-top-width:0px;border-left-color:inherit;border-bottom-color:inherit;border-right-color:inherit;border-top-color:inherit;width: 10%;"
+                                        align="right"
+                                        t-out="format_amount(object.amount_tax, object.currency_id) or ''"
+                                        width="10%">$ 0.00
+                                    </td>
+                                </tr>
+                                <tr style="border-style:none;box-sizing:border-box;border-left-width:0px;border-bottom-width:0px;border-right-width:0px;border-top-width:0px;border-left-color:inherit;border-bottom-color:inherit;border-right-color:inherit;border-top-color:inherit;">
+                                    <td style="border-style:none;box-sizing:border-box;border-left-width:0px;border-bottom-width:0px;border-right-width:0px;border-top-width:0px;border-left-color:inherit;border-bottom-color:inherit;border-right-color:inherit;border-top-color:inherit;width: 60%;"
+                                        width="60%">
+                                    </td>
+                                    <td style="border-style:solid;box-sizing:border-box;border-left-width:0px;border-bottom-width:0px;border-right-width:0px;border-top-width:1px;border-left-color:inherit;border-bottom-color:inherit;border-right-color:inherit;border-top-color:#dee2e6;width: 30%; border-top: 1px solid #dee2e6;"
+                                        align="right" width="30%">
+                                        <span style="box-sizing: border-box; line-height: inherit; font-size: 12px; font-weight: bold;">
+                                            Total:
+                                        </span>
+                                    </td>
+                                    <td style="border-style:solid;box-sizing:border-box;border-left-width:0px;border-bottom-width:0px;border-right-width:0px;border-top-width:1px;border-left-color:inherit;border-bottom-color:inherit;border-right-color:inherit;border-top-color:#dee2e6;width: 10%; border-top: 1px solid #dee2e6;"
+                                        align="right"
+                                        t-out="format_amount(object.amount_total, object.currency_id) or ''"
+                                        width="10%">$ 10.00
+                                    </td>
+                                </tr>
+                            </tbody>
+                        </table>
+                    </div>
+                    <div style="margin: 0px; padding: 0px;" t-else="">
+                        <table width="100%"
+                               style="box-sizing:border-box;-webkit-border-vertical-spacing:4px;-webkit-border-horizontal-spacing:0px;border-collapse:collapse;caption-side:bottom;color: #454748; font-size: 12px; border-spacing: 0px 4px;"
+                               align="right">
+                            <tbody style="border-style:none;box-sizing:border-box;border-left-width:0px;border-bottom-width:0px;border-right-width:0px;border-top-width:0px;border-left-color:inherit;border-bottom-color:inherit;border-right-color:inherit;border-top-color:inherit;">
+                                <tr style="border-style:none;box-sizing:border-box;border-left-width:0px;border-bottom-width:0px;border-right-width:0px;border-top-width:0px;border-left-color:inherit;border-bottom-color:inherit;border-right-color:inherit;border-top-color:inherit;">
+                                    <td style="border-style:none;box-sizing:border-box;border-left-width:0px;border-bottom-width:0px;border-right-width:0px;border-top-width:0px;border-left-color:inherit;border-bottom-color:inherit;border-right-color:inherit;border-top-color:inherit;width: 60%;"
+                                        width="60%">
+                                    </td>
+                                    <td style="border-style:solid;box-sizing:border-box;border-left-width:0px;border-bottom-width:0px;border-right-width:0px;border-top-width:1px;border-left-color:inherit;border-bottom-color:inhe
+                        rit;border-right-color:inherit;border-top-color:#dee2e6;width: 30%; border-top: 1px solid #dee2e6;"
+                                        align="right" width="30%">
+                                        <span style="box-sizing: border-box; line-height: inherit; font-size: 12px; font-weight: bold;">
+                                            Subtotal:
+                                        </span>
+                                    </td>
+                                    <td style="border-style:solid;box-sizing:border-box;border-left-width:0px;border-bottom-width:0px;border-right-width:0px;border-top-width:1px;border-left-color:inherit;border-bottom-color:inherit;border-right-color:inherit;border-top-color:#dee2e6;width: 10%; border-top: 1px solid #dee2e6;"
+                                        align="right"
+                                        t-out="format_amount(object.amount_untaxed, object.currency_id) or ''"
+                                        width="10%">$ 10.00
+                                    </td>
+                                </tr>
+                                <tr style="border-style:none;box-sizing:border-box;border-left-width:0px;border-bottom-width:0px;border-right-width:0px;border-top-width:0px;border-left-color:inherit;border-bottom-color:inherit;border-right-color:inherit;border-top-color:inherit;">
+                                    <td style="border-style:none;box-sizing:border-box;border-left-width:0px;border-bottom-width:0px;border-right-width:0px;border-top-width:0px;border-left-color:inherit;border-bottom-color:inherit;border-right-color:inherit;border-top-color:inherit;width: 60%;"
+                                        width="60%">
+                                    </td>
+                                    <td style="border-style:none;box-sizing:border-box;border-left-width:0px;border-bottom-width:0px;border-right-width:0px;border-top-width:0px;border-left-color:inherit;border-bottom-color:inherit;border-right-color:inherit;border-top-color:inherit;width: 30%;"
+                                        align="right" width="30%">
+                                        <span style="box-sizing: border-box; line-height: inherit; font-size: 12px; font-weight: bold;">
+                                            Impuestos:
+                                        </span>
+                                    </td>
+                                    <td style="border-style:none;box-sizing:border-box;border-left-width:0px;border-bottom-width:0px;border-right-width:0px;border-top-width:0px;border-left-color:inherit;border-bottom-color:inherit;border-right-color:inherit;border-top-color:inherit;width: 10%;"
+                                        align="right"
+                                        t-out="format_amount(object.amount_tax, object.currency_id) or ''"
+                                        width="10%">$ 0.00
+                                    </td>
+                                </tr>
+                                <tr style="border-style:none;box-sizing:border-box;border-left-width:0px;border-bottom-width:0px;border-right-width:0px;border-top-width:0px;border-left-color:inherit;border-bottom-color:inherit;border-right-color:inherit;border-top-color:inherit;">
+                                    <td style="border-style:none;box-sizing:border-box;border-left-width:0px;border-bottom-width:0px;border-right-width:0px;border-top-width:0px;border-left-color:inherit;border-bottom-color:inherit;border-right-color:inherit;border-top-color:inherit;width: 60%;"
+                                        width="60%">
+                                    </td>
+                                    <td style="border-style:solid;box-sizing:border-box;border-left-width:0px;border-bottom-width:0px;border-right-width:0px;border-top-width:1px;border-left-color:inherit;border-bottom-color:inherit;border-right-color:inherit;border-top-color:#dee2e6;width: 30%; border-top: 1px solid #dee2e6;"
+                                        align="right" width="30%">
+                                        <span style="box-sizing: border-box; line-height: inherit; font-size: 12px; font-weight: bold;">
+                                            Total:
+                                        </span>
+                                    </td>
+                                    <td style="border-style:solid;box-sizing:border-box;border-left-width:0px;border-bottom-width:0px;border-right-width:0px;border-top-width:1px;border-left-color:inherit;border-bottom-color:inherit;border-right-color:inherit;border-top-color:#dee2e6;width: 10%; border-top: 1px solid #dee2e6;"
+                                        align="right"
+                                        t-out="format_amount(object.amount_total, object.currency_id) or ''"
+                                        width="10%">$ 10.00
+                                    </td>
+                                </tr>
+                            </tbody>
+                        </table>
+                    </div>
+                    <div t-if="object.partner_invoice_id" style="margin: 0px; padding: 0px;">
+                        <table width="100%"
+                               style="box-sizing:border-box;border-collapse:collapse;caption-side:bottom;color: #454748; font-size: 12px;">
+                            <tbody style="border-style:none;box-sizing:border-box;border-left-width:0px;border-bottom-width:0px;border-right-width:0px;border-top-width:0px;border-left-color:inherit;border-bottom-color:inherit;border-right-color:inherit;border-top-color:inherit;">
+                                <tr style="border-style:none;box-sizing:border-box;border-left-width:0px;border-bottom-width:0px;border-right-width:0px;border-top-width:0px;border-left-color:inherit;border-bottom-color:inherit;border-right-color:inherit;border-top-color:inherit;">
+                                    <td style="border-style:none;padding:10px 0 0 0;box-sizing:border-box;border-left-width:0px;border-bottom-width:0px;border-right-width:0px;border-top-width:0px;border-left-color:inherit;border-bottom-color:inherit;border-right-color:inherit;border-top-color:inherit;padding-top: 10px;">
+                                        <span style="box-sizing: border-box; line-height: inherit; font-size: 12px; font-weight: bold;">
+                                            <strong style="box-sizing:border-box;font-weight:bolder;color:#003d8b;">
+                                                Dirección de
+                                                facturación:
+                                            </strong>
+                                        </span>
+                                        <t t-out="object.partner_invoice_id.street or ''">1201 S Figueroa St</t>
+                                        <t t-out="object.partner_invoice_id.city or ''">Los Angeles</t>
+                                        <t t-out="object.partner_invoice_id.state_id.name or ''">California</t>
+                                        <t t-out="object.partner_invoice_id.zip or ''">90015</t>
+                                        <t t-out="object.partner_invoice_id.country_id.name or ''">Estados Unidos
+                                        </t>
+                                    </td>
+                                </tr>
+
+                            </tbody>
+                        </table>
+                    </div>
+                    <div t-if="object.partner_shipping_id and not object.only_services"
+                         style="margin: 0px; padding: 0px;">
+                        <table width="100%"
+                               style="box-sizing:border-box;border-collapse:collapse;caption-side:bottom;color: #454748; font-size: 12px;">
+                            <tbody style="border-style:none;box-sizing:border-box;border-left-width:0px;border-bottom-width:0px;border-right-width:0px;border-top-width:0px;border-left-color:inherit;border-bottom-color:inherit;border-right-color:inherit;border-top-color:inherit;">
+                                <tr style="border-style:none;box-sizing:border-box;border-left-width:0px;border-bottom-width:0px;border-right-width:0px;border-top-width:0px;border-left-color:inherit;border-bottom-color:inherit;border-right-color:inherit;border-top-color:inherit;">
+                                    <td style="border-style:none;box-sizing:border-box;border-left-width:0px;border-bottom-width:0px;border-right-width:0px;border-top-width:0px;border-left-color:inherit;border-bottom-color:inherit;border-right-color:inherit;border-top-color:inherit;">
+                                        <br/>
+                                        <span style="box-sizing: border-box; line-height: inherit; font-size: 12px; font-weight: bold;">
+                                            <strong style="box-sizing:border-box;font-weight:bolder;color:#003d8b;">
+                                                Dirección de
+                                                envío:
+                                            </strong>
+                                        </span>
+                                        <t t-out="object.partner_shipping_id.street or ''">1201 S Figueroa St</t>
+                                        <t t-out="object.partner_shipping_id.city or ''">Los Angeles</t>
+                                        <t t-out="object.partner_shipping_id.state_id.name or ''">California</t>
+                                        <t t-out="object.partner_shipping_id.zip or ''">90015</t>
+                                        <t t-out="object.partner_shipping_id.country_id.name or ''">Estados Unidos
+                                        </t>
+                                    </td>
+                                </tr>
+                            </tbody>
+                        </table>
+                        <table t-if="hasattr(object, 'carrier_id') and object.carrier_id" width="100%"
+                               style="box-sizing:border-box;border-collapse:collapse;caption-side:bottom;color: #454748; font-size: 12px;">
+                            <tbody style="border-style:none;box-sizing:border-box;border-left-width:0px;border-bottom-width:0px;border-right-width:0px;border-top-width:0px;border-left-color:inherit;border-bottom-color:inherit;border-right-color:inherit;border-top-color:inherit;">
+                                <tr style="border-style:none;box-sizing:border-box;border-left-width:0px;border-bottom-width:0px;border-right-width:0px;border-top-width:0px;border-left-color:inherit;border-bottom-color:inherit;border-right-color:inherit;border-top-color:inherit;">
+                                    <td style="border-style:none;box-sizing:border-box;border-left-width:0px;border-bottom-width:0px;border-right-width:0px;border-top-width:0px;border-left-color:inherit;border-bottom-color:inherit;border-right-color:inherit;border-top-color:inherit;">
+                                        <span style="box-sizing: border-box; line-height: inherit; font-size: 12px; font-weight: bold;">
+                                            <strong style="box-sizing:border-box;font-weight:bolder;color:#003d8b;">
+                                                Método de
+                                                envío:
+                                            </strong>
+                                        </span>
+                                        <t t-out="object.carrier_id.name or ''"></t>
+
+                                    </td>
+                                </tr>
+                                <tr t-if="object.carrier_id.carrier_description"
+                                    style="border-style:none;box-sizing:border-box;border-left-width:0px;border-bottom-width:0px;border-right-width:0px;border-top-width:0px;border-left-color:inherit;border-bottom-color:inherit;border-right-color:inherit;border-top-color:inherit;">
+                                    <td style="border-style:none;box-sizing:border-box;border-left-width:0px;border-bottom-width:0px;border-right-width:0px;border-top-width:0px;border-left-color:inherit;border-bottom-color:inherit;border-right-color:inherit;border-top-color:inherit;">
+                                        <strong style="box-sizing:border-box;font-weight:bolder;">
+                                            <strong style="box-sizing:border-box;font-weight:bolder;color:#003d8b;">
+                                                Descripción
+                                                de envío:
+                                            </strong>
+                                        </strong>
+                                        <t t-out="object.carrier_id.carrier_description"></t>
+                                    </td>
+                                </tr>
+                            </tbody>
+                        </table>
+                    </div>
+
+                </div>
+            </div>
+
+        </field>
+    </record>
+
+    <!-- Vista heredada para agregar el botón -->
+    <record id="view_order_form_button_despacho" model="ir.ui.view">
+        <field name="name">sale.order.form.inherit.chatbot.button.despacho</field>
+        <field name="model">sale.order</field>
+        <field name="inherit_id" ref="sale.view_order_form"/>
+        <field name="arch" type="xml">
+            <xpath expr="//header" position="inside">
+                <button
+                        name="action_despacho_send"
+                        type="object"
+                        string="Despacho"
+                        class="btn btn-primary"
+                />
+            </xpath>
+        </field>
+    </record>
+</odoo>
+

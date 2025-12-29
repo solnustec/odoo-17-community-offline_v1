@@ -1,0 +1,241 @@
+<?xml version="1.0" encoding="utf-8"?>
+<odoo>
+    <!-- Vista Tree de Desafíos Archivados -->
+    <record id="view_gamification_challenge_history_tree" model="ir.ui.view">
+        <field name="name">gamification.challenge.history.tree</field>
+        <field name="model">gamification.challenge.history</field>
+        <field name="arch" type="xml">
+            <tree string="Historial de Desafíos" decoration-success="success_rate >= 80" decoration-warning="success_rate >= 50 and success_rate &lt; 80" decoration-danger="success_rate &lt; 50">
+                <field name="name"/>
+                <field name="start_date"/>
+                <field name="end_date"/>
+                <field name="manager_id" widget="many2one_avatar_user"/>
+                <field name="total_users" string="Participantes"/>
+                <field name="goal_count" string="Total Metas"/>
+                <field name="goals_reached" string="Alcanzadas"/>
+                <field name="goals_failed" string="Fallidas"/>
+                <field name="success_rate" string="% Éxito" widget="progressbar"/>
+                <field name="total_bonification" string="Total Bonif." sum="Total"/>
+                <field name="date_archived" string="Archivado"/>
+                <button name="action_view_goals" type="object" icon="fa-list" title="Ver Metas"/>
+                <button name="action_print_report" type="object" icon="fa-download" title="Descargar Reporte"/>
+            </tree>
+        </field>
+    </record>
+
+    <!-- Vista Form de Desafío Archivado -->
+    <record id="view_gamification_challenge_history_form" model="ir.ui.view">
+        <field name="name">gamification.challenge.history.form</field>
+        <field name="model">gamification.challenge.history</field>
+        <field name="arch" type="xml">
+            <form string="Desafío Archivado" create="false">
+                <header>
+                    <button name="action_view_goals" type="object" string="Ver Metas" class="btn-primary" icon="fa-list"/>
+                    <button name="action_print_report" type="object" string="Descargar Reporte" class="btn-secondary" icon="fa-download"/>
+                    <field name="state" widget="statusbar" statusbar_visible="archived,cancelled"/>
+                </header>
+                <sheet>
+                    <div class="oe_button_box" name="button_box">
+                        <button name="action_view_goals" type="object" class="oe_stat_button" icon="fa-bullseye">
+                            <field name="goal_count" widget="statinfo" string="Metas"/>
+                        </button>
+                    </div>
+                    <div class="oe_title">
+                        <h1>
+                            <field name="name" readonly="1"/>
+                        </h1>
+                    </div>
+                    <group>
+                        <group string="Información del Desafío">
+                            <field name="original_challenge_id" readonly="1"/>
+                            <field name="manager_id" readonly="1"/>
+                            <field name="start_date" readonly="1"/>
+                            <field name="end_date" readonly="1"/>
+                            <field name="date_archived" readonly="1"/>
+                        </group>
+                        <group string="Estadísticas">
+                            <field name="total_users" readonly="1"/>
+                            <field name="goals_reached" readonly="1"/>
+                            <field name="goals_failed" readonly="1"/>
+                            <field name="goals_inprogress" readonly="1"/>
+                            <field name="success_rate" widget="progressbar" readonly="1"/>
+                            <field name="total_bonification" readonly="1"/>
+                        </group>
+                    </group>
+
+                    <!-- Resumen visual -->
+                    <div class="row mt-4">
+                        <div class="col-md-3">
+                            <div class="card text-center bg-primary text-white">
+                                <div class="card-body">
+                                    <h3><field name="total_users" readonly="1"/></h3>
+                                    <p class="mb-0">Participantes</p>
+                                </div>
+                            </div>
+                        </div>
+                        <div class="col-md-3">
+                            <div class="card text-center bg-success text-white">
+                                <div class="card-body">
+                                    <h3><field name="goals_reached" readonly="1"/></h3>
+                                    <p class="mb-0">Alcanzadas</p>
+                                </div>
+                            </div>
+                        </div>
+                        <div class="col-md-3">
+                            <div class="card text-center bg-danger text-white">
+                                <div class="card-body">
+                                    <h3><field name="goals_failed" readonly="1"/></h3>
+                                    <p class="mb-0">Fallidas</p>
+                                </div>
+                            </div>
+                        </div>
+                        <div class="col-md-3">
+                            <div class="card text-center bg-info text-white">
+                                <div class="card-body">
+                                    <h3>$<field name="total_bonification" readonly="1"/></h3>
+                                    <p class="mb-0">Bonificaciones</p>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+
+                    <notebook>
+                        <page string="Metas Archivadas" name="goals">
+                            <field name="goal_history_ids" readonly="1">
+                                <tree decoration-success="state == 'reached'" decoration-danger="state == 'failed'" decoration-warning="state == 'inprogress'">
+                                    <field name="user_id" widget="many2one_avatar_user"/>
+                                    <field name="department_id"/>
+                                    <field name="department_parent_id" string="Zona"/>
+                                    <field name="definition_name" string="Meta"/>
+                                    <field name="target_goal"/>
+                                    <field name="current_value" string="Alcanzado"/>
+                                    <field name="completeness" widget="progressbar"/>
+                                    <field name="state" widget="badge" decoration-success="state == 'reached'" decoration-warning="state == 'inprogress'" decoration-danger="state == 'failed'"/>
+                                    <field name="reached_date"/>
+                                    <field name="bonification_amount" sum="Total"/>
+                                    <field name="bonification_status" widget="boolean_toggle"/>
+                                </tree>
+                            </field>
+                        </page>
+                        <page string="Notas" name="notes">
+                            <field name="notes" placeholder="Agregar notas sobre este desafío archivado..."/>
+                        </page>
+                    </notebook>
+                </sheet>
+            </form>
+        </field>
+    </record>
+
+    <!-- Vista Search de Desafíos Archivados -->
+    <record id="view_gamification_challenge_history_search" model="ir.ui.view">
+        <field name="name">gamification.challenge.history.search</field>
+        <field name="model">gamification.challenge.history</field>
+        <field name="arch" type="xml">
+            <search string="Buscar Desafíos Archivados">
+                <field name="name"/>
+                <field name="manager_id"/>
+                <separator/>
+                <filter name="filter_high_success" string="Alto Éxito (≥80%)" domain="[('success_rate', '>=', 80)]"/>
+                <filter name="filter_medium_success" string="Éxito Medio (50-80%)" domain="[('success_rate', '>=', 50), ('success_rate', '&lt;', 80)]"/>
+                <filter name="filter_low_success" string="Bajo Éxito (&lt;50%)" domain="[('success_rate', '&lt;', 50)]"/>
+                <separator/>
+                <filter name="filter_this_month" string="Archivados Este Mes" domain="[('date_archived', '>=', (context_today() - relativedelta(day=1)).strftime('%Y-%m-%d'))]"/>
+                <filter name="filter_last_month" string="Archivados Mes Pasado" domain="[('date_archived', '>=', (context_today() - relativedelta(months=1, day=1)).strftime('%Y-%m-%d')), ('date_archived', '&lt;', context_today().strftime('%Y-%m-01'))]"/>
+                <separator/>
+                <group expand="0" string="Agrupar por">
+                    <filter name="group_by_manager" string="Responsable" context="{'group_by': 'manager_id'}"/>
+                    <filter name="group_by_month" string="Mes de Archivado" context="{'group_by': 'date_archived:month'}"/>
+                    <filter name="group_by_end_date" string="Mes de Finalización" context="{'group_by': 'end_date:month'}"/>
+                </group>
+            </search>
+        </field>
+    </record>
+
+    <!-- Vista Kanban de Desafíos Archivados -->
+    <record id="view_gamification_challenge_history_kanban" model="ir.ui.view">
+        <field name="name">gamification.challenge.history.kanban</field>
+        <field name="model">gamification.challenge.history</field>
+        <field name="arch" type="xml">
+            <kanban class="o_kanban_mobile">
+                <field name="name"/>
+                <field name="start_date"/>
+                <field name="end_date"/>
+                <field name="total_users"/>
+                <field name="goal_count"/>
+                <field name="goals_reached"/>
+                <field name="goals_failed"/>
+                <field name="success_rate"/>
+                <field name="total_bonification"/>
+                <templates>
+                    <t t-name="kanban-box">
+                        <div t-attf-class="oe_kanban_card oe_kanban_global_click">
+                            <div class="oe_kanban_content">
+                                <div class="o_kanban_record_top mb-2">
+                                    <div class="o_kanban_record_headings">
+                                        <strong class="o_kanban_record_title">
+                                            <field name="name"/>
+                                        </strong>
+                                    </div>
+                                </div>
+                                <div class="o_kanban_record_body">
+                                    <div class="text-primary fw-bold">
+                                        <field name="goal_count"/> Metas
+                                    </div>
+                                    <div class="text-primary fw-bold">
+                                        <field name="total_users"/> Participantes
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    </t>
+                </templates>
+            </kanban>
+        </field>
+    </record>
+
+    <!-- Vista Pivot de Desafíos Archivados -->
+    <record id="view_gamification_challenge_history_pivot" model="ir.ui.view">
+        <field name="name">gamification.challenge.history.pivot</field>
+        <field name="model">gamification.challenge.history</field>
+        <field name="arch" type="xml">
+            <pivot string="Análisis de Desafíos">
+                <field name="manager_id" type="row"/>
+                <field name="end_date" interval="month" type="col"/>
+                <field name="total_bonification" type="measure"/>
+                <field name="goals_reached" type="measure"/>
+                <field name="goals_failed" type="measure"/>
+            </pivot>
+        </field>
+    </record>
+
+    <!-- Vista Graph de Desafíos Archivados -->
+    <record id="view_gamification_challenge_history_graph" model="ir.ui.view">
+        <field name="name">gamification.challenge.history.graph</field>
+        <field name="model">gamification.challenge.history</field>
+        <field name="arch" type="xml">
+            <graph string="Gráfico de Desafíos" type="bar">
+                <field name="name"/>
+                <field name="goals_reached" type="measure"/>
+                <field name="goals_failed" type="measure"/>
+            </graph>
+        </field>
+    </record>
+
+    <!-- Acción Principal -->
+    <record id="action_gamification_challenge_history" model="ir.actions.act_window">
+        <field name="name">Historial de Desafíos</field>
+        <field name="res_model">gamification.challenge.history</field>
+        <field name="view_mode">kanban,tree,form,pivot,graph</field>
+        <field name="search_view_id" ref="view_gamification_challenge_history_search"/>
+        <field name="context">{}</field>
+        <field name="help" type="html">
+            <p class="o_view_nocontent_smiling_face">
+                No hay desafíos archivados
+            </p>
+            <p>
+                Los desafíos se archivan automáticamente cuando terminan
+                o manualmente desde el botón "Archivar al Historial" en cada desafío.
+            </p>
+        </field>
+    </record>
+</odoo>

@@ -1,0 +1,77 @@
+@media print {
+    body, html {
+        margin: 0 !important;
+        padding: 0 !important;
+        min-height: 100vh;
+        font-family: Arial, sans-serif !important;
+        font-size: 12px!important;
+        background: white !important;
+        color: black !important;
+        overflow: visible !important;
+    }
+
+    body *:not(.printable-area):not(.printable-area *) {
+        display: none !important;
+    }
+
+    /* Container principal */
+    .printable-area {
+        display: block !important;
+        font-size: 12px !important;
+        width: 100% !important;
+        margin: 0 !important;
+        padding: 10px !important;
+        position: relative !important;
+        box-sizing: border-box;
+        page-break-before: avoid;
+        page-break-after: auto;
+    }
+
+    table.report-table {
+        width: 100%;
+        border-collapse: collapse;
+        page-break-inside: auto; 
+    }
+
+    table.report-table tr {
+        page-break-inside: avoid; 
+        page-break-after: auto;
+    }
+
+    table.report-table td, 
+    table.report-table th {
+        padding: 8px 5px;
+        border: 1px solid #ddd !important;
+    }
+
+    .page-break {
+        page-break-before: always;
+        height: 10px;
+        display: block;
+    }
+
+    .modal.custom-modal {
+        display: block !important;
+        position: relative !important;
+        top: auto !important;
+        left: auto !important;
+        transform: none !important;
+        max-width: 100% !important;
+        margin: 0 !important;
+    }
+
+    .modal-body {
+        padding: 15px 0 !important;
+        max-height: none !important;
+        overflow: visible !important;
+    }
+
+    @page {
+        size: auto;   
+        margin: 15mm;
+    }
+}
+
+.modal-content {
+    z-index: 1051 !important;
+}

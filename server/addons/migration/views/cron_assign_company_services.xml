@@ -1,0 +1,33 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<odoo>
+
+    <record id="cron_assign_company_to_services_with_taxes"
+            model="ir.cron">
+        <field name="name">
+            Asignar compañía a servicios con impuestos
+        </field>
+
+        <!-- Modelo -->
+        <field name="model_id"
+               ref="product.model_product_template"/>
+
+        <!-- Código Python -->
+        <field name="state">code</field>
+        <field name="code">
+            model.assign_company_to_services_with_taxes()
+        </field>
+
+        <!-- Configuración -->
+        <field name="user_id"
+               ref="base.user_root"/>
+        <field name="interval_number">1</field>
+        <field name="interval_type">minutes</field>
+        <field name="numbercall">1</field>
+        <field name="doall">False</field>
+        <field name="active">True</field>
+
+        <!-- Prioridad media -->
+        <field name="priority">5</field>
+    </record>
+
+</odoo>

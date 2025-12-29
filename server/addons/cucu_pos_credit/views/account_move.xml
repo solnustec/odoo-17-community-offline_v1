@@ -1,0 +1,36 @@
+<?xml version="1.0"?>
+<odoo>
+    <data>
+        <record id="view_account_move_tree" model="ir.ui.view">
+            <field name="name">account.move.tree</field>
+            <field name="model">account.move</field>
+            <field name="arch" type="xml">
+                <tree string="Account Moves">
+                    <field name="name"/>
+                    <field name="invoice_partner_display_name"/>
+                    <field name="amount_total"/>
+                    <field name="amount_residual"/>
+                    <field name="state"/>
+                    <field name="payment_state"/>
+                </tree>
+            </field>
+        </record>
+
+        <record id="action_account_move_tree_credit" model="ir.actions.act_window">
+            <field name="name">Account Moves</field>
+            <field name="res_model">account.move</field>
+            <field name="view_mode">tree,form</field>
+            <field name="view_id" ref="view_account_move_tree"/>
+            <field name="domain">[('payment_state', '=', 'partial')]</field>
+        </record>
+
+
+        <menuitem action="action_account_move_tree_credit"
+        id="menu_account_moves_tree"
+        parent="account.menu_finance_receivables"
+        name="Credit"
+        groups="base.group_user"       
+        sequence="50"/>
+        
+    </data>
+</odoo>

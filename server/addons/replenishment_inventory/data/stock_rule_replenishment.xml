@@ -1,0 +1,21 @@
+<?xml version="1.0" encoding="utf-8"?>
+<odoo>
+    <data noupdate="0">
+        <record forcecreate="True" id="decimal_rule_replenishment" model="decimal.precision">
+            <field name="name">Replenishment Float</field>
+            <field name="digits">2</field>
+        </record>
+
+        <record model="ir.module.category" id="stock_rule_replenishment_category">
+            <field name="name">Grupo reglas de reabastecimiento</field>
+            <field name="description">Tiene acceso para gestionar máximos y mínimos</field>
+            <field name="sequence">40</field>
+        </record>
+
+        <record id="group_stock_rule_replenishment_admin" model="res.groups">
+            <field name="name">Admin Max y Min</field>
+            <field name="category_id" ref="stock_rule_replenishment_category"/>
+            <field name="users" eval="[(4, ref('base.user_root')), (4, ref('base.user_admin'))]"/>
+        </record>
+    </data>
+</odoo>

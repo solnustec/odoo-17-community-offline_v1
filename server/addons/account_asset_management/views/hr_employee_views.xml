@@ -1,0 +1,115 @@
+<?xml version="1.0" encoding="utf-8"?>
+<odoo>
+    <data>
+
+        <record id="view_employee_form_inherit_assets" model="ir.ui.view">
+            <field name="name">hr.employee.form.inherit.assets</field>
+            <field name="model">hr.employee</field>
+            <field name="inherit_id" ref="hr.view_employee_form"/>
+            <field name="arch" type="xml">
+                <xpath expr="//notebook" position="inside">
+                    <page string="Activos">
+
+                        <!-- ================= Asignaciones Iniciales ================= -->
+                        <group col="1">
+                            <group string="Asignaciones Iniciales" colspan="4">
+                                <field name="asset_assignment_ids"
+                                       context="{'default_custodian_id': active_id}">
+                                    <tree>
+                                        <field name="asset_id"/>
+                                        <field name="assign_date"/>
+                                        <field name="signed_by_custodian" widget="boolean_button"
+                                               readonly="1"
+                                               options="{'terminology': 'Firma'}"/>
+                                        <field name="state"/>
+                                    </tree>
+                                    <form>
+                                        <group>
+                                            <field name="asset_id" readonly="1"/>
+                                            <field name="assign_date" readonly="1"/>
+                                            <field name="signed_by_custodian" readonly="1"
+                                                   widget="boolean_button"
+                                                   options="{'terminology': 'Firma'}"/>
+                                            <field name="state" readonly="1"/>
+                                            <button name="action_sign_assignment"
+                                                    string="Firmar Asignación"
+                                                    type="object"
+                                                    class="btn btn-success"
+                                                    attrs="{'invisible': [('signed_by_custodian','=',True)]}"/>
+                                        </group>
+                                    </form>
+                                </field>
+                            </group>
+                        </group>
+
+                        <!-- ================= Custodio Anterior ================= -->
+                        <group col="1">
+                            <group string="Transferencias como Custodio Anterior" colspan="4">
+                                <field name="asset_transfer_from_ids"
+                                       context="{'default_custodian_from_id': active_id}">
+                                    <tree>
+                                        <field name="asset_id"/>
+                                        <field name="transfer_date"/>
+                                        <field name="custodian_to_id"/>
+                                        <field name="signed_by_from" widget="boolean_button"
+                                               readonly="1"
+                                               options="{'terminology': 'Firma'}"/>
+                                    </tree>
+                                    <form>
+                                        <group>
+                                            <field name="asset_id" readonly="1"/>
+                                            <field name="transfer_date" readonly="1"/>
+                                            <field name="custodian_to_id" readonly="1"/>
+                                            <field name="signed_by_from" readonly="1"
+                                                   widget="boolean_button"
+                                                   options="{'terminology': 'Firma'}"/>
+                                            <button name="action_sign_transfer"
+                                                    string="Firmar Transferencia"
+                                                    type="object"
+                                                    class="btn btn-success"
+                                                    attrs="{'invisible': [('signed_by_from','=',True)]}"/>
+                                        </group>
+                                    </form>
+                                </field>
+                            </group>
+                        </group>
+
+                        <!-- ================= Custodio Nuevo ================= -->
+                        <group col="1">
+                            <group string="Transferencias como Custodio Nuevo" colspan="4">
+                                <field name="asset_transfer_to_ids"
+                                       context="{'default_custodian_to_id': active_id}">
+                                    <tree>
+                                        <field name="asset_id"/>
+                                        <field name="transfer_date"/>
+                                        <field name="custodian_from_id"/>
+                                        <field name="signed_by_to" widget="boolean_button"
+                                               readonly="1"
+                                               options="{'terminology': 'Firma'}"/>
+                                    </tree>
+                                    <form>
+                                        <group>
+                                            <field name="asset_id" readonly="1"/>
+                                            <field name="transfer_date" readonly="1"/>
+                                            <field name="custodian_from_id" readonly="1"/>
+                                            <field name="signed_by_to" readonly="1"
+                                                   widget="boolean_button"
+                                                   options="{'terminology': 'Firma'}"/>
+                                            <button name="action_sign_transfer"
+                                                    string="Firmar Transferencia"
+                                                    type="object"
+                                                    class="btn btn-success"
+                                                    attrs="{'invisible': [('signed_by_to','=',True)]}"/>
+                                        </group>
+                                    </form>
+                                </field>
+                            </group>
+                        </group>
+
+                    </page>
+                </xpath>
+            </field>
+        </record>
+
+    </data>
+</odoo>

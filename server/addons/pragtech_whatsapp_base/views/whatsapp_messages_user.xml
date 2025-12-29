@@ -1,0 +1,65 @@
+<odoo>
+    <data>
+        <!-- Vista Formulario para editar los mensajes -->
+        <record id="view_whatsapp_messages_user_form" model="ir.ui.view">
+            <field name="name">whatsapp.messages.user.form</field>
+            <field name="model">whatsapp_messages_user</field>
+            <field name="arch" type="xml">
+                <form string="Mensajes del Bot">
+                    <sheet>
+                        <group>
+                            <field name="category" widget="radio" options="{'horizontal': true}"/>
+                            <field name="message" placeholder="Deja vacío para usar el mensaje por defecto."/>
+                        </group>
+                        <!-- Bloque separado para el mensaje efectivo con ancho completo -->
+                        <group>
+                            <label for="effective_message" string="Mensaje que se usará" class="oe_form_label"/>
+                            <field name="effective_message" readonly="1" nolabel="1"
+                                   style="white-space: pre-wrap; font-family: monospace; background: #e9f7ef; color: #1b4332; font-size: 14px; padding: 10px; border-radius: 6px;"/>
+                        </group>
+                    </sheet>
+                </form>
+            </field>
+        </record>
+
+        <!-- Vista árbol para listar los mensajes -->
+        <record id="view_whatsapp_messages_user_tree" model="ir.ui.view">
+            <field name="name">whatsapp.messages.user.tree</field>
+            <field name="model">whatsapp_messages_user</field>
+            <field name="arch" type="xml">
+                <tree string="Mensajes del Bot">
+                    <field name="category"/>
+                    <field name="message"/>
+                </tree>
+            </field>
+        </record>
+
+        <!-- Vista de Búsqueda -->
+        <record id="view_whatsapp_messages_user_search" model="ir.ui.view">
+            <field name="name">whatsapp.messages.user.search</field>
+            <field name="model">whatsapp_messages_user</field>
+            <field name="arch" type="xml">
+                <search string="Buscar Mensajes">
+                    <field name="category"/>
+                    <filter string="General" name="category_general" domain="[('category', '=', 'general')]"/>
+                    <filter string="Bienvenida" name="category_bienvenida" domain="[('category', '=', 'bienvenida')]"/>
+                    <filter string="Salida" name="category_salida" domain="[('category', '=', 'salida')]"/>
+                    <filter string="Inactividad" name="category_inactividad"
+                            domain="[('category', '=', 'inactividad')]"/>
+                    <group expand="0" string="Agrupar por">
+                        <filter string="Categoría" name="group_by_category" context="{'group_by': 'category'}"/>
+                    </group>
+                </search>
+            </field>
+        </record>
+
+        <!-- Acción para abrir la vista de mensajes -->
+        <record id="action_whatsapp_messages_user" model="ir.actions.act_window">
+            <field name="name">Mensajes del Bot</field>
+            <field name="res_model">whatsapp_messages_user</field>
+            <field name="view_mode">tree,form</field>
+            <field name="view_id" ref="view_whatsapp_messages_user_tree"/>
+            <field name="search_view_id" ref="view_whatsapp_messages_user_search"/>
+        </record>
+    </data>
+</odoo>

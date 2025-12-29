@@ -1,0 +1,80 @@
+<?xml version="1.0" encoding="utf-8"?>
+<odoo>
+    <data>
+
+        <record id="view_hr_payroll_discounts_search" model="ir.ui.view">
+            <field name="name">hr.payroll.discounts.search</field>
+            <field name="model">hr.payroll.discounts</field>
+            <field name="arch" type="xml">
+                <search string="Abonos y Descuentos">
+                    <field name="employee_id"/>
+                    <field name="employee_identification"/>
+                    <field name="category_id"/>
+                    <field name="date"/>
+
+                    <separator/>
+                    <filter string="Este Mes" name="current_month"
+                            domain="[('date', '>=', datetime.datetime.now().strftime('%Y-%m-01'))]"/>
+                    <filter string="Mes Anterior" name="last_month"
+                            domain="[('date', '>=', (datetime.datetime.now() - datetime.timedelta(days=30)).strftime('%Y-%m-01')),
+                                ('date', '&lt;', datetime.datetime.now().strftime('%Y-%m-01'))]"/>
+
+                    <separator/>
+                    <group expand="0" string="Agrupar Por">
+                        <filter string="Empleado" name="group_employee" context="{'group_by': 'employee_id'}"/>
+                        <filter string="Categoría" name="group_category" context="{'group_by': 'category_id'}"/>
+                        <filter string="Fecha" name="group_date" context="{'group_by': 'date'}"/>
+                    </group>
+                </search>
+            </field>
+        </record>
+
+        <record id="hr_payroll_discount_tree" model="ir.ui.view">
+            <field name="name">hr.payroll.discounts.form</field>
+            <field name="model">hr.payroll.discounts</field>
+            <field name="arch" type="xml">
+                <form>
+                    <group>
+                        <field name="employee_id"/>
+                        <field name="category_id"/>
+                        <field name="date"/>
+                        <field name="amount"/>
+                        <field name="is_percentage"/>
+                        <field name="description"/>
+                    </group>
+                    <div class="oe_chatter mt-5">
+                        <field name="message_ids" widget="mail_thread"/>
+                    </div>
+                </form>
+            </field>
+        </record>
+        <!--        tree view-->
+        <record id="hr_payroll_discount_tree_view" model="ir.ui.view">
+            <field name="name">Abonos y Descuentos</field>
+            <field name="model">hr.payroll.discounts</field>
+            <field name="arch" type="xml">
+                <tree string="Descuentos de Empleados">
+                    <field name="employee_id" widget="many2one_avatar_user"/>
+                    <field name="category_id"/>
+                    <field name="date"/>
+                    <field name="amount"/>
+                    <field name="is_percentage"/>
+                    <field name="state" string="Estado"/>
+                </tree>
+            </field>
+        </record>
+        <record id="hr_payroll_discount_action" model="ir.actions.act_window">
+            <field name="name">Abonos y Descuentos</field>
+            <field name="res_model">hr.payroll.discounts</field>
+            <field name="view_mode">tree,form</field>
+        </record>
+        <menuitem
+                id="hr_payroll_discount_report_menu"
+                name="Abonos y Descuentos"
+                action="hr_payroll_discount_action"
+                sequence="20"
+                web_icon="payroll_other_discounts,static/src/img/icon.png"
+                groups="payroll_other_discounts.group_hr_payroll_discount_admin"
+        />
+    </data>
+</odoo>

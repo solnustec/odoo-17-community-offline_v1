@@ -1,0 +1,45 @@
+<?xml version="1.0" encoding="utf-8"?>
+<odoo>
+        <record id="res_config_settings_view_form" model="ir.ui.view">
+            <field name="name">res.config.settings.view.form.inherit.account.payroll</field>
+            <field name="model">res.config.settings</field>
+            <field name="priority" eval="50"/>
+            <field name="inherit_id" ref="hr_contract.res_config_settings_view_form"/>
+            <field name="arch" type="xml">
+                <xpath expr="//block[@id='hr_payroll_settings']" position="after">
+                    <block title="Utilidades Configuraciones" id="hr_payroll_accountant_utilities">
+                        <setting string="Pago Diario de Utilidades"
+                                 id="account_move_settings"
+                                 title="Pago Diario de Utilidades">
+                            <field name="daily_payment_of_utilities" class="w-25"/>
+                        </setting>
+                        <setting string="Cuenta de Participación en Utilidades"
+                                 id="account_move_settings"
+                                 title="Cuenta de Participación en Utilidades">
+                            <field name="profit_sharing_account" class="w-25"/>
+                        </setting>
+                        <setting string="Cuenta de Retención Judicial"
+                                 id="account_move_settings"
+                                 title="Cuenta de Retención Judicial">
+                            <field name="judicial_withholding_account" class="w-25"/>
+                        </setting>
+                        <setting string="Cuenta de Adelanto de Utilidades"
+                                 id="account_move_settings"
+                                 title="Cuenta de Adelanto de Utilidades">
+                            <field name="advance_profit_account" class="w-25"/>
+                        </setting>
+                        <setting string="Cuenta de Utilidades por Pagar"
+                                 id="account_move_settings"
+                                 title="Cuenta de Utilidades por Pagar">
+                            <field name="profit_payable_account" class="w-25"/>
+                        </setting>
+                        <setting string="Cuenta de Beneficios Solidarios al IESS"
+                                 id="account_move_settings"
+                                 title="Cuenta de Beneficios Solidarios al IESS">
+                            <field name="solidarity_benefits_account_to_iees" class="w-25"/>
+                        </setting>
+                    </block>
+                </xpath>
+            </field>
+        </record>
+</odoo>

@@ -1,0 +1,37 @@
+<?xml version="1.0" encoding="utf-8"?>
+<odoo>
+    <!-- Menu Action -->
+    <record id="menu_chatbot_interaction" model="ir.actions.act_window">
+        <field name="name">Interacciones del Usuario con el Chatbot</field>
+        <field name="res_model">chatbot_message.interaction</field>
+        <field name="view_mode">tree,form,graph</field>
+    </record>
+
+    <!-- Tree view -->
+    <record id="view_user_interaction_tree" model="ir.ui.view">
+        <field name="name">chatbot_message.interaction.tree</field>
+        <field name="model">chatbot_message.interaction</field>
+        <field name="arch" type="xml">
+            <tree string="Iteraciones del chatbot">
+                <field name="menu_selection"/>
+                <field name="create_date"/>
+                <field name="create_time"/>
+                <field name="quantity"/>
+            </tree>
+        </field>
+    </record>
+
+    <record id="view_user_interaction_graph" model="ir.ui.view">
+        <field name="name">chatbot_message.interaction.graph</field>
+        <field name="model">chatbot_message.interaction</field>
+        <field name="arch" type="xml">
+            <graph string="Iteraciones del chatbot">
+                <field name="menu_selection"/>
+                <field name="create_date"/>
+                <field name="quantity"/>
+                <field name="create_time"/>
+            </graph>
+        </field>
+    </record>
+
+</odoo>

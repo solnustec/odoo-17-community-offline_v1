@@ -1,0 +1,40 @@
+# -*- coding: utf-8 -*-
+{
+    "name": "cucu Pos Credit Sales Customers",
+    "summary": "Pos Credit - CUCU",
+    "description": "POS credit module integrated to the Odoo accounting module",
+    "author": "CUCU API Solutions",
+    "website": "https://cucu.bo",
+    "category": "Point of Sale",
+    "version": "1.0",
+    "depends": ["base", "sale", "point_of_sale", "account"],
+    # always loaded
+    "data": [
+        "security/ir.model.access.csv",
+        "views/account_payment.xml",
+        "views/res_config_settings.xml",
+        "views/res_partner.xml",
+        "views/account_move.xml",
+    ],
+    "assets": {
+        "point_of_sale._assets_pos": [
+            "cucu_pos_credit/static/src/js/pos_payment.js",
+            "cucu_pos_credit/static/src/js/Widget/CreatePaymentButtonWidget.js",
+            "cucu_pos_credit/static/src/js/Widget/SeeAllInvoicesButtonWidget.js",
+            "cucu_pos_credit/static/src/js/Popup/RegisterInvoicePaymentPopupWidget.js",
+            "cucu_pos_credit/static/src/js/Popup/PosInvoiceDetail.js",
+            "cucu_pos_credit/static/src/js/Popup/RegisterPaymentPopupWidget.js",
+            "cucu_pos_credit/static/src/js/Screens/POSInvoiceScreen.js",
+            "cucu_pos_credit/static/src/js/Screens/ClientListScreen.js",
+            "cucu_pos_credit/static/src/js/Screens/POSInvoice.js",
+            "cucu_pos_credit/static/src/js/PosModel.js",
+            "cucu_pos_credit/static/src/js/PaymentReprintHist.js",
+            "cucu_pos_credit/static/src/js/OrderReceiptReprint.js",
+            "cucu_pos_credit/static/src/xml/**/*",
+        ],
+    },
+    "price": 65.00,
+    "currency": "USD",
+    "license": "AGPL-3",
+    "images": ["static/description/banner.png"],
+}

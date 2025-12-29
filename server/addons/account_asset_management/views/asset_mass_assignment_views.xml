@@ -1,0 +1,57 @@
+<?xml version="1.0" encoding="utf-8"?>
+<odoo>
+    <data>
+
+        <!-- Vista del wizard -->
+        <record id="view_asset_mass_assignment_wizard_form" model="ir.ui.view">
+            <field name="name">asset.mass.assignment.wizard.form</field>
+            <field name="model">asset.mass.assignment.wizard</field>
+            <field name="arch" type="xml">
+                <form string="Asignación Masiva de Activos">
+                    <group>
+                        <field name="asset_ids" widget="many2many_tags" readonly="1"/>
+                        <field name="custodian_id"/>
+                        <field name="assign_date"/>
+                        <field name="note"/>
+                    </group>
+                    <footer>
+                        <button string="Confirmar Asignación"
+                                type="object"
+                                name="action_confirm_assignment"
+                                class="btn-primary"/>
+                        <button string="Cancelar"
+                                class="btn-secondary"
+                                special="cancel"/>
+                    </footer>
+                </form>
+            </field>
+        </record>
+
+        <!-- Acción para abrir wizard -->
+        <record id="action_asset_mass_assignment_wizard" model="ir.actions.act_window">
+            <field name="name">Asignación Masiva de Activos</field>
+            <field name="res_model">asset.mass.assignment.wizard</field>
+            <field name="view_mode">form</field>
+            <field name="target">new</field>
+        </record>
+
+        <!-- Botón en Acciones de la vista lista -->
+        <record id="action_open_mass_assignment_wizard" model="ir.actions.server">
+            <field name="name">Asignación Activos</field>
+            <field name="model_id" ref="account_asset_management.model_account_asset"/>
+            <field name="binding_model_id" ref="account_asset_management.model_account_asset"/>
+            <field name="binding_view_types">list</field>
+            <field name="state">code</field>
+            <field name="code">
+                action = {
+                "type": "ir.actions.act_window",
+                "res_model": "asset.mass.assignment.wizard",
+                "view_mode": "form",
+                "target": "new",
+                "context": {"active_ids": records.ids},
+                }
+            </field>
+        </record>
+
+    </data>
+</odoo>

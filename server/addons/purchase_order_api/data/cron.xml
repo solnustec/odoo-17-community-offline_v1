@@ -1,0 +1,29 @@
+<?xml version="1.0" encoding="utf-8"?>
+<odoo>
+    <data>
+        <!-- Cron para sincronizar facturas de compra - se ejecuta cada minuto -->
+        <record id="cron_update_sale_summaries" model="ir.cron">
+            <field name="name">Facturas de compras</field>
+            <field name="model_id" ref="model_purchase_data"/>
+            <field name="state">code</field>
+            <field name="code">model.sync_purchase_data()</field>
+            <field name="interval_number">1</field>
+            <field name="interval_type">minutes</field>
+            <field name="numbercall">-1</field>
+            <field name="priority">5</field>
+        </record>
+
+        <!-- Cron para sincronizar notas de crédito de proveedores - se ejecuta cada 2 minutos -->
+        <!-- Se ejecuta después de las facturas para asegurar que las facturas origen ya estén sincronizadas -->
+        <record id="cron_sync_credit_notes" model="ir.cron">
+            <field name="name">Notas de Crédito de Proveedores</field>
+            <field name="model_id" ref="model_credit_note_data"/>
+            <field name="state">code</field>
+            <field name="code">model.sync_credit_note_data()</field>
+            <field name="interval_number">2</field>
+            <field name="interval_type">minutes</field>
+            <field name="numbercall">-1</field>
+            <field name="priority">10</field>
+        </record>
+    </data>
+</odoo>

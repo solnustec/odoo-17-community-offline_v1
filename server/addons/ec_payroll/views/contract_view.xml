@@ -1,0 +1,108 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<odoo>
+	<data>
+		<record model="ir.ui.view" id="hr_contract_form_view">
+			<field name="name">hr.contract.form</field>
+			<field name="model">hr.contract</field>
+			<field name="inherit_id" ref="hr_contract.hr_contract_view_form" />
+			<field name="arch" type="xml">
+				<field name="wage" position="replace">
+					<field name="wage" string="Sueldo IESS / Bonificación Fija"/>
+				</field>
+				<field name="hr_responsible_id" position="after">
+					<field name="type_day"/>
+					<field name="partial_hours" required="type_day == 'partial'"
+						                        invisible="type_day != 'partial'"/>
+					<field name="days_iess" required="type_day == 'partial'"
+						                    invisible="type_day != 'partial'"/>
+					<field name="contracted_hours" required="type_day == 'partial'"
+					                               invisible="type_day != 'partial'"/>
+				</field>
+				<xpath expr="//field[@name='wage']" position="after">
+					<field name="fixed_bonus" string="Bonificación Fija"/>
+				</xpath>
+				<field name="calendar_mismatch" position="before">
+					<field name="struct_id" domain="[('type_id','=',structure_type_id)]"/>
+				</field>
+				<xpath expr="//label[@for='resource_calendar_id']" position="replace">
+				</xpath>
+				<xpath expr="//div[@id='resource_calendar_warning']" position="replace">
+				</xpath>
+			</field>
+		</record>
+		<record model="ir.ui.view" id="hr_contract_form_ecu_inherit">
+			<field name="name">hr.contract.form</field>
+			<field name="model">hr.contract</field>
+			<field name="inherit_id" ref="hr_payroll.hr_contract_form_inherit" />
+			<field name="arch" type="xml">
+				<field name="wage_type" position="after">
+					<field name="region_decimos" />
+					<field name="reserve_payment" />
+					<field name="thirteenth_payment" />
+					<field name="fourteenth_payment" />
+					<field name="value_for_parcial"  invisible="type_day != 'partial'"/>
+				</field>
+			</field>
+		</record>
+		<record model="ir.ui.view" id="hr_contract_view_tree_ecu_inherit">
+			<field name="name">hr.contract.tree.inherit.expense</field>
+			<field name="model">hr.contract</field>
+			<field name="inherit_id" ref="hr_contract.hr_contract_view_tree" />
+			<field name="arch" type="xml">
+				<xpath expr="//field[@name='resource_calendar_id']" position="attributes">
+					<attribute name="invisible">1</attribute>
+				</xpath>
+			</field>
+		</record>
+		<record id="hr_contract_type_view_form" model="ir.ui.view">
+			<field name="name">hr.contract.type.form</field>
+			<field name="model">hr.contract.type</field>
+			<field name="arch" type="xml">
+				<form string="Tipo de Contrato">
+					<group col="4">
+						<field colspan="4" name="name"/>
+						<field name="allow_notifications" />
+						<field name="is_eventual"/>
+						<field name="periodo_eventual" invisible="is_eventual != True"/>
+						<field name="calculate_date_end"/>
+						<field name="dias_prueba" invisible="calculate_date_end != True"/>
+					</group>
+				</form>
+			</field>
+		</record>
+		<record id="hr_contract_type_view_tree" model="ir.ui.view">
+			<field name="name">hr.contract.type.tree</field>
+			<field name="model">hr.contract.type</field>
+			<field name="arch" type="xml">
+				<tree string="Contract Type">
+					<field name="sequence" widget="handle"/>
+					<field colspan="4" name="name"/>
+				</tree>
+			</field>
+		</record>
+		<record id="hr_contract_type_view_search" model="ir.ui.view">
+			<field name="name">hr.contract.type.search</field>
+			<field name="model">hr.contract.type</field>
+			<field name="arch" type="xml">
+				<search string="Tipos de Contrato">
+					<field name="name" string="Tipo de Contrato1"/>
+					<field name="sequence" string="Secuencia"/>
+				</search>
+			</field>
+		</record>
+		<record id="action_hr_contract_type" model="ir.actions.act_window">
+			<field name="name">Tipos de Contrato</field>
+			<field name="res_model">hr.contract.type</field>
+			<field name="view_mode">tree,form</field>
+			<field name="search_view_id" ref="hr_contract_type_view_search"/>
+		</record>
+
+		<menuitem
+				id="hr_menu_contract_type"
+				action="action_hr_contract_type"
+				parent="hr.menu_human_resources_configuration"
+				sequence="3"
+				groups="hr.group_hr_manager"/>
+	</data>
+</odoo>
+

@@ -1,0 +1,35 @@
+<odoo>
+    <!-- Vista de formulario para eliminar productos por Excel -->
+    <record id="view_form_delete_product" model="ir.ui.view">
+        <field name="name">stock.remove.products</field>
+        <field name="model">stock.remove.products</field>
+        <field name="arch" type="xml">
+            <form string="Eliminar productos por Excel">
+                <group>
+                    <field name="file" widget="binary" string="Archivo a Importar" filename="filename"/>
+                    <field name="file_name" invisible="1"/>
+                </group>
+                <footer>
+                    <button name="action_process_file" type="object" string="Procesar" class="btn-primary"/>
+                    <button string="Cancelar" class="btn-secondary" special="cancel"/>
+                </footer>
+            </form>
+        </field>
+    </record>
+
+    <!-- Acción asociada al formulario -->
+    <record id="action_remove_products_excel" model="ir.actions.act_window">
+        <field name="name">Eliminar productos por Excel</field>
+        <field name="res_model">stock.remove.products</field>
+        <field name="view_mode">form</field>
+        <field name="view_id" ref="view_form_delete_product"/>
+        <field name="target">new</field>
+    </record>
+
+    <!-- Menú para la acción -->
+    <menuitem id="menu_stock_remove_products_excel"
+              name="Eliminar productos por Excel"
+              parent="stock.menu_stock_root"
+              action="action_remove_products_excel"
+              sequence="6"/>
+</odoo>

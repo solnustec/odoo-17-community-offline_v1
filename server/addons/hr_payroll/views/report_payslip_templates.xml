@@ -1,0 +1,200 @@
+<?xml version="1.0" encoding="utf-8"?>
+<odoo>
+    <template id="report_payslip">
+        <t t-call="web.html_container">
+            <table style="width: 100%; height: 200px; border-collapse: collapse; margin: 0; padding: 0;">
+                <tr>
+                    <td style="text-align: center; vertical-align: middle; padding: 0;">
+                        <img t-if="company_id.logo"
+                             t-att-src="image_data_uri(company_id.logo)"
+                             style="max-width: 100%; height: auto; max-height: 100%; display: block; margin: auto;"
+                             alt="Logo"/>
+                    </td>
+                </tr>
+            </table>
+            <table style="width:100%; border: 1px solid black; border-collapse: collapse; margin: 0; padding: 0;">
+                <tr>
+                    <td style="text-align: center; border-bottom: 1px solid black; padding-top: 10px;">
+                        <h2>FARMACIAS CUXIBAMBA "FARMACUX CIA. LTDA."</h2>
+                        <h3>ROL DE PAGOS</h3>
+                    </td>
+                </tr>
+                <tr>
+                    <td>
+                        <table style="width:100%; margin: 0; padding: 0; border-collapse: collapse;">
+                            <tr>
+                                <th style="text-align: left; padding: 10px 0px 5px 10px;">NOMBRE DEL TRABAJADOR:</th>
+                                <td><span t-field="o.employee_id">John Smith</span></td>
+                                <th style="text-align: left; padding: 10px 0px 5px 10px;">C.I.:</th>
+                                <td name="identification-id"><span t-field="o.employee_id.identification_id">John123</span></td>
+                            </tr>
+                            <tr>
+                                <th style="text-align: left; padding: 0px 0px 5px 10px;">CARGO:</th>
+                                <td><span t-field="o.employee_id.job_title">Software Engineer</span></td>
+                                <th style="text-align: left; padding: 0px 0px 5px 10px;">CORREO:</th>
+                                <td><span t-field="o.employee_id.work_email">demo@email.com</span></td>
+                            </tr>
+                            <tr>
+                                <td style="text-align: left; padding: 0px 0px 5px 10px;"><strong>MES:</strong>
+                                    <t t-esc="o.get_months_in_spanish(o.date_from, o.date_to)" />
+                                </td>
+                                <td><strong>FECHA:</strong> <span t-field="o.compute_date">2023-08-10</span></td>
+                                <th style="text-align: left; padding: 0px 0px 5px 10px;">ΑÑΟ:</th>
+                                <td><t t-esc="o.date_from.year if o.date_from else 'Fecha no disponible'" /></td>
+                            </tr>
+                            <tr>
+                                <th style="text-align: left; padding: 0px 0px 5px 10px;">DIAS TRABAJADOS:</th>
+                                <td>
+                                    <t t-set="dysmes_line" t-value="o.line_ids.filtered(lambda line: line.code == 'DYSMES')[:1]" />
+                                    <t t-if="dysmes_line">
+                                        <span t-esc="dysmes_line.total"/>
+                                    </t>
+                                </td>
+                                <th></th>
+                                <th></th>
+                            </tr>
+                        </table>
+
+                    </td>
+                </tr>
+                <tr>
+                    <table style="width:100%; border: 1px solid black; margin: 0; padding: 5px; border-collapse: collapse;">
+                        <tr>
+                            <th style="text-align: center; border: 1px solid black; padding-top: 5px;">
+                                <h3>INGRESOS</h3>
+                            </th>
+                            <th style="text-align: center; border: 1px solid black; padding-top: 5px;">
+                                <h3>EGRESOS</h3>
+                            </th>
+                        </tr>
+                        <tr>
+                            <td style="border-right: 1px solid black; width: 50%; vertical-align: top;">
+                                <table style="width: 100%; border-collapse: collapse; margin: 0; padding: 0;">
+                                    <tbody>
+                                        <t t-foreach="o.line_ids.filtered(lambda line: line.category_id.name == 'Ingresos')" t-as="line">
+                                            <tr>
+                                                <!-- Nombre de la línea (concepto) alineado a la izquierda -->
+                                                <td style="text-align: left; padding: 5px; width: 70%;">
+                                                    <span t-field="line.name"/>
+                                                </td>
+
+                                                <!-- Total alineado a la derecha -->
+                                                <td style="text-align: right; padding: 5px; width: 30%;">
+                                                    <span t-esc="line.total"
+                                                          t-options='{"widget": "monetary", "display_currency": o.company_id.currency_id}'
+                                                          t-att-style="'color:#875A7B;' if line.total &lt; 0 else ''"/>
+                                                </td>
+                                            </tr>
+                                        </t>
+                                    </tbody>
+                                </table>
+                            </td>
+                            <td style="width: 50%; vertical-align: top;">
+                                <table style="width: 100%; border-collapse: collapse; margin: 0; padding: 0;">
+                                    <tbody>
+                                        <t t-foreach="o.line_ids.filtered(lambda line: line.category_id.name == 'Egresos')" t-as="line">
+                                            <tr>
+                                                <td style="text-align: left; padding: 5px; width: 70%;">
+                                                    <span t-field="line.name"/>
+                                                </td>
+
+                                                <!-- Total alineado a la derecha -->
+                                                <td style="text-align: right; padding: 5px; width: 30%;">
+                                                    <span t-esc="line.total"
+                                                          t-options='{"widget": "monetary", "display_currency": o.company_id.currency_id}'
+                                                          t-att-style="'color:#875A7B;' if line.total &lt; 0 else ''"/>
+                                                </td>
+                                            </tr>
+                                        </t>
+                                    </tbody>
+                                </table>
+                            </td>
+                            <tr>
+                                <td style="text-align: center; padding-top: 5px; border-right: 1px solid black;">
+                                    <h4>
+                                        TOTAL INGRESOS:
+                                        <t t-set="dysmes_line" t-value="o.line_ids.filtered(lambda line: line.code == 'TOTINGREFIN')[:1]" />
+                                    <t t-if="dysmes_line">
+                                        <span t-esc="dysmes_line.total"/>
+                                    </t>
+                                    </h4>
+                                </td>
+                                <td style="text-align: center; padding-top: 5px;">
+                                    <h4>
+                                        TOTAL EGRESOS:
+                                        <t t-set="dysmes_line" t-value="o.line_ids.filtered(lambda line: line.code == 'TOTEGREFIN')[:1]" />
+                                    <t t-if="dysmes_line">
+                                        <span t-esc="dysmes_line.total"/>
+                                    </t>
+                                    </h4>
+                                </td>
+                            </tr>
+                        </tr>
+                    </table>
+                </tr>
+                <tr>
+                    <table style="width:100%; margin: 0; padding: 5px; border-collapse: collapse; border-bottom: 1px solid black; border-left: 1px solid black; border-right: 1px solid black;">
+                        <tr>
+                            <th style="text-align: center; padding-top: 5px;">
+                                <h4>
+                                    LÍQUIDO A RECIBIR:
+                                    <t t-set="dysmes_line" t-value="o.line_ids.filtered(lambda line: line.code == 'LIQAPAG')[:1]" />
+                                    <t t-if="dysmes_line">
+                                        <span t-esc="dysmes_line.total"
+                                              t-options='{"widget": "monetary", "display_currency": o.company_id.currency_id}' />
+                                    </t>
+                                </h4>
+                            </th>
+                        </tr>
+                    </table>
+                </tr>
+                <tr>
+                    <table style="width:100%; margin: 0; padding: 5px; border-collapse: collapse; border-bottom: 1px solid black; border-left: 1px solid black; border-right: 1px solid black;">
+                        <tr>
+                            <td style="text-align: center; padding: 20px; border-bottom: 1px solid black; border-right: 1px solid black; width:50%;">
+
+                            </td>
+                            <td style="text-align: center; vertical-align: bottom; border-bottom: 1px solid black; height: 100px;">
+                                PALACIOS SOTO EDWIN YOVANNI
+                            </td>
+                        </tr>
+                        <tr>
+                            <th style="text-align: center; padding-top: 5px;  border-right: 1px solid black; width:50%;">
+                                FIRMA
+                            </th>
+                            <th style="text-align: center; padding-top: 5px;">
+                                FIRMA GERENTE
+                            </th>
+                        </tr>
+                    </table>
+                </tr>
+            </table>
+
+
+
+<!--            <div class="page" style="font-family: 'DejaVu Sans', sans-serif;">-->
+<!--                <h2 id="payslip_name"><span t-field="o.name">August 2023 Payslip</span></h2>-->
+<!--                <t t-set="is_invalid" t-value="o._is_invalid()"/>-->
+<!--                <div t-if="is_invalid">-->
+<!--                    <strong id="invalid_warning"><span t-out="is_invalid">Este recibo de nómina no es válido. No es un documento legal.</span></strong>-->
+<!--                </div>-->
+<!--                <div t-else="">-->
+<!--                    <div class="oe_structure"></div>-->
+<!--                </div>-->
+<!--                <table name="employee-infos" id="employee_info_table_1" class="table table-sm table-bordered">-->
+<!--                    <tr id="employee_info_line_1">-->
+<!--                        <td class="w-25"><strong>NOMBRE DEL TRABAJADOR:</strong></td>-->
+<!--                        <td class="w-25"><strong>C.I.:</strong></td>-->
+<!--                    </tr>-->
+        </t>
+    </template>
+
+    <template id="report_payslip_lang">
+        <t t-call="web.html_container">
+            <t t-foreach="docs" t-as="o">
+                <t t-set="o" t-value="o.with_context(lang=o.employee_id.lang or o.env.lang)"/>
+                <t t-call="hr_payroll.report_payslip"/>
+            </t>
+        </t>
+    </template>
+</odoo>

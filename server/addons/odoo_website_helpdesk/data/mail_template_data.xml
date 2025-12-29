@@ -1,0 +1,996 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<odoo>
+    <data noupdate="1">
+        <!-- Plantilla de correo para notificar al cliente sobre la creación de un ticket -->
+        <record id="ticket_created" model="mail.template">
+            <field name="name">Creación de Ticket</field>
+            <field name="model_id" ref="odoo_website_helpdesk.model_ticket_helpdesk"/>
+            <field name="auto_delete" eval="True"/>
+            <field name="email_to">{{object.user_email}}</field>
+            <field name="subject">Ticket creado éxitosamente</field>
+            <field name="body_html"><![CDATA[
+            <div style="margin:0;padding:20px;font-family:'Segoe UI', Arial, sans-serif;background-color:#f5f5f5;">
+                <div style="width:100%;max-width:800px;margin:0 auto;background-color:#fff;border-radius:8px;box-shadow:0 2px 10px rgba(0,0,0,0.08);padding:20px;">
+                    <!-- Encabezado -->
+                    <div style="display: flex; justify-content: space-between; align-items: center; background-color: #F5F5F5; padding: 10px 20px; border-radius: 6px;">
+                        <!-- Logo alineado a la izquierda -->
+                        <div style="display: flex; align-items: center;">
+                            <img src="https://farmaciascuxibamba.com.ec/web/image/website/1/logo/Farmacias%20Cuxibamba?unique=ec0f7ca"
+                                 alt="Logo Farmacias Cuxibamba"
+                                 style="height: 40px; max-width: 150px; object-fit: contain;" />
+                        </div>
+
+                        <!-- Texto del ticket alineado a la derecha -->
+                        <div style="font-size: 14px; font-weight: bold; color: #333; white-space: nowrap;">
+                            TICKET <t t-out="object.name"/>
+                        </div>
+                    </div>
+
+                    <!-- Divisor -->
+                    <div style="height:6px;background:linear-gradient(to right,#ffd700 15%,#004aad 15%);margin:0 0 20px 0;"></div>
+
+                    <!-- Estado del ticket -->
+                    <div style="max-width:350px;margin:0 auto 25px auto;">
+                        <div style="display:flex;border:1px solid #ccc;border-radius:4px;overflow:hidden;">
+                            <div style="flex:1;padding:10px;font-size:12px;font-weight:600;text-align:center;color:#333;">
+                                ESTADO DEL TICKET
+                            </div>
+                            <div style="flex:1;padding:10px;font-size:12px;font-weight:600;text-align:center;color:#004aad;border-left:1px solid #ccc;">
+                                CREADO ÉXITOSAMENTE
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- Asunto del ticket en texto plano centrado -->
+                    <div style="width: 100%; text-align: center; margin: 20px 0;">
+                        <span style="color: #555; font-weight: 600;">Asunto:</span>
+                        <span style="color: #004aad;">
+                            <t t-out="object.subject or 'No especificado'"/>
+                        </span>
+                    </div>
+
+                    <!-- Información alineada -->
+                    <div style="display: flex; flex-wrap: wrap; margin: 20px 20px 30px 20px;">
+                        <!-- Usuario -->
+                        <div style="flex: 0 0 50%; padding-right: 10px; box-sizing: border-box; border-right: 1px solid #eee;">
+                            <div style="margin-bottom:8px;">
+                                <span style="color:#555;font-weight:600;display:inline-block;width:140px;">Usuario:</span>
+                                <span style="color:#004aad;"><t t-out="object.customer_id.name"/></span>
+                            </div>
+                            <div style="margin-bottom:8px;">
+                                <span style="color:#555;font-weight:600;display:inline-block;width:140px;">Cédula / Pasaporte:</span>
+                                <span style="color:#004aad;"><t t-out="object.user_vat or 'No especificado'"/></span>
+                            </div>
+                            <div style="margin-bottom:8px;">
+                                <span style="color:#555;font-weight:600;display:inline-block;width:140px;">Correo:</span>
+                                <span style="color:#004aad;"><t t-out="object.user_email"/></span>
+                            </div>
+                            <div style="margin-bottom:8px;">
+                                <span style="color:#555;font-weight:600;display:inline-block;width:140px;">Departamento:</span>
+                                <span style="color:#004aad;"><t t-out="object.department_id.name or 'No especificado'"/></span>
+                            </div>
+                            <div style="margin-bottom:8px;">
+                                <span style="color:#555;font-weight:600;display:inline-block;width:140px;">Cargo:</span>
+                                <span style="color:#004aad;"><t t-out="object.job_id.name or 'No especificado'"/></span>
+                            </div>
+                        </div>
+
+                        <!-- Ticket -->
+                        <div style="flex: 0 0 50%; padding-left: 10px; box-sizing: border-box;">
+                            <div style="margin-bottom:8px;">
+                                <span style="color:#555;font-weight:600;display:inline-block;width:130px;">Fecha de creación:</span>
+                                <span style="color:#004aad;">
+                                    <t t-out="format_datetime(object.create_date, tz='America/Guayaquil')"/>
+                                </span>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- Botón -->
+                    <div style="text-align:center;margin-top:25px;">
+                        <a t-att-href="'/web#id=%s&cids=1&menu_id=1006&action=3560&model=ticket.helpdesk&view_type=form' % object.id"
+                           style="background-color:#004aad; color:#fff; padding:10px 25px; font-size:13px; font-weight:bold; border-radius:4px; text-decoration:none; display:inline-block;">
+                            VER TICKET
+                        </a>
+                    </div>
+                </div>
+            </div>
+            ]]></field>
+        </record>
+
+        <!-- Plantilla de correo para notificar al cliente sobre la creación de un ticket -->
+        <record id="ticket_created_admin_notification" model="mail.template">
+            <field name="name">Notificación al Administrador de Nuevo Ticket</field>
+            <field name="model_id" ref="odoo_website_helpdesk.model_ticket_helpdesk"/>
+            <field name="auto_delete" eval="True"/>
+            <field name="email_to">{{object.user_email}}</field>
+            <field name="subject">Nuevo Ticket Creado</field>
+            <field name="body_html"><![CDATA[
+            <div style="margin:0;padding:20px;font-family:'Segoe UI', Arial, sans-serif;background-color:#f5f5f5;">
+                <div style="width:100%;max-width:800px;margin:0 auto;background-color:#fff;border-radius:8px;box-shadow:0 2px 10px rgba(0,0,0,0.08);padding:20px;">
+                    <!-- Encabezado -->
+                    <div style="display: flex; justify-content: space-between; align-items: center; background-color: #F5F5F5; padding: 10px 20px; border-radius: 6px;">
+                        <!-- Logo alineado a la izquierda -->
+                        <div style="display: flex; align-items: center;">
+                            <img src="https://farmaciascuxibamba.com.ec/web/image/website/1/logo/Farmacias%20Cuxibamba?unique=ec0f7ca"
+                                 alt="Logo Farmacias Cuxibamba"
+                                 style="height: 40px; max-width: 150px; object-fit: contain;" />
+                        </div>
+
+                        <!-- Texto del ticket alineado a la derecha -->
+                        <div style="font-size: 14px; font-weight: bold; color: #333; white-space: nowrap;">
+                            TICKET <t t-out="object.name"/>
+                        </div>
+                    </div>
+
+                    <!-- Divisor -->
+                    <div style="height:6px;background:linear-gradient(to right,#ffd700 15%,#004aad 15%);margin:0 0 20px 0;"></div>
+
+                    <!-- Estado del ticket -->
+                    <div style="max-width:350px;margin:0 auto 25px auto;">
+                        <div style="display:flex;border:1px solid #ccc;border-radius:4px;overflow:hidden;">
+                            <div style="flex:1;padding:10px;font-size:12px;font-weight:600;text-align:center;color:#333;">
+                                ESTADO DEL TICKET
+                            </div>
+                            <div style="flex:1;padding:10px;font-size:12px;font-weight:600;text-align:center;color:#004aad;border-left:1px solid #ccc;">
+                                NUEVO TICKET CREADO
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- Asunto del ticket en texto plano centrado -->
+                    <div style="width: 100%; text-align: center; margin: 20px 0;">
+                        <span style="color: #555; font-weight: 600;">Asunto:</span>
+                        <span style="color: #004aad;">
+                            <t t-out="object.subject or 'No especificado'"/>
+                        </span>
+                    </div>
+
+                    <!-- Información alineada -->
+                    <div style="display: flex; flex-wrap: wrap; margin: 20px 20px 30px 20px;">
+                        <!-- Usuario -->
+                        <div style="flex: 0 0 50%; padding-right: 10px; box-sizing: border-box; border-right: 1px solid #eee;">
+                            <div style="margin-bottom:8px;">
+                                <span style="color:#555;font-weight:600;display:inline-block;width:140px;">Usuario:</span>
+                                <span style="color:#004aad;"><t t-out="object.customer_id.name"/></span>
+                            </div>
+                            <div style="margin-bottom:8px;">
+                                <span style="color:#555;font-weight:600;display:inline-block;width:140px;">Cédula / Pasaporte:</span>
+                                <span style="color:#004aad;"><t t-out="object.user_vat or 'No especificado'"/></span>
+                            </div>
+                            <div style="margin-bottom:8px;">
+                                <span style="color:#555;font-weight:600;display:inline-block;width:140px;">Correo:</span>
+                                <span style="color:#004aad;"><t t-out="object.user_email"/></span>
+                            </div>
+                            <div style="margin-bottom:8px;">
+                                <span style="color:#555;font-weight:600;display:inline-block;width:140px;">Departamento:</span>
+                                <span style="color:#004aad;"><t t-out="object.department_id.name or 'No especificado'"/></span>
+                            </div>
+                            <div style="margin-bottom:8px;">
+                                <span style="color:#555;font-weight:600;display:inline-block;width:140px;">Cargo:</span>
+                                <span style="color:#004aad;"><t t-out="object.job_id.name or 'No especificado'"/></span>
+                            </div>
+                        </div>
+
+                        <!-- Ticket -->
+                        <div style="flex: 0 0 50%; padding-left: 10px; box-sizing: border-box;">
+                            <div style="margin-bottom:8px;">
+                                <span style="color:#555;font-weight:600;display:inline-block;width:130px;">Fecha de creación:</span>
+                                <span style="color:#004aad;">
+                                    <t t-out="format_datetime(object.create_date, tz='America/Guayaquil')"/>
+                                </span>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- Botón -->
+                    <div style="text-align:center;margin-top:25px;">
+                        <a t-att-href="'/web#id=%s&cids=1&menu_id=1006&action=3560&model=ticket.helpdesk&view_type=form' % object.id"
+                           style="background-color:#004aad; color:#fff; padding:10px 25px; font-size:13px; font-weight:bold; border-radius:4px; text-decoration:none; display:inline-block;">
+                            VER TICKET
+                        </a>
+                    </div>
+                </div>
+            </div>
+            ]]></field>
+        </record>
+
+        <!-- Notificación al usuario asignado sobre el ticket recibido -->
+        <record id="odoo_website_helpdesk_assign_user" model="mail.template">
+            <field name="name">Asignación de Ticket al Usuario</field>
+            <field name="model_id" ref="odoo_website_helpdesk.model_ticket_helpdesk"/>
+            <field name="auto_delete" eval="True"/>
+            <field name="email_to">{{ ','.join(object.assigned_user_ids.mapped('email')) if object.assigned_user_ids else '' }}</field>
+            <field name="subject">Nuevo Ticket Asignado</field>
+            <field name="body_html"><![CDATA[
+            <div style="margin:0;padding:20px;font-family:'Segoe UI', Arial, sans-serif;background-color:#f5f5f5;">
+                <div style="width:100%;max-width:800px;margin:0 auto;background-color:#fff;border-radius:8px;box-shadow:0 2px 10px rgba(0,0,0,0.08);padding:20px;">
+                    <!-- Encabezado -->
+                    <div style="display: flex; justify-content: space-between; align-items: center; background-color: #F5F5F5; padding: 10px 20px; border-radius: 6px;">
+                        <!-- Logo alineado a la izquierda -->
+                        <div style="display: flex; align-items: center;">
+                            <img src="https://farmaciascuxibamba.com.ec/web/image/website/1/logo/Farmacias%20Cuxibamba?unique=ec0f7ca"
+                                 alt="Logo Farmacias Cuxibamba"
+                                 style="height: 40px; max-width: 150px; object-fit: contain;" />
+                        </div>
+
+                        <!-- Texto del ticket alineado a la derecha -->
+                        <div style="font-size: 14px; font-weight: bold; color: #333; white-space: nowrap;">
+                            TICKET <t t-out="object.name"/>
+                        </div>
+                    </div>
+
+                    <!-- Divisor -->
+                    <div style="height:6px;background:linear-gradient(to right,#ffd700 15%,#004aad 15%);margin:0 0 20px 0;"></div>
+
+                    <!-- Estado del ticket -->
+                    <div style="max-width:350px;margin:0 auto 25px auto;">
+                        <div style="display:flex;border:1px solid #ccc;border-radius:4px;overflow:hidden;">
+                            <div style="flex:1;padding:10px;font-size:12px;font-weight:600;text-align:center;color:#333;">
+                                ASIGNADO A
+                            </div>
+                            <div style="flex:1;padding:10px;font-size:12px;font-weight:600;text-align:center;color:#004aad;border-left:1px solid #ccc;">
+                                <t t-out="', '.join(object.assigned_user_ids.mapped('name')) if object.assigned_user_ids else 'No asignado'"/>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- Asunto del ticket en texto plano centrado -->
+                    <div style="width: 100%; text-align: center; margin: 20px 0;">
+                        <span style="color: #555; font-weight: 600;">Asunto:</span>
+                        <span style="color: #004aad;">
+                            <t t-out="object.subject or 'No especificado'"/>
+                        </span>
+                    </div>
+
+                    <!-- Información alineada -->
+                    <div style="display: flex; flex-wrap: wrap; margin: 20px 20px 30px 20px;">
+                        <!-- Usuario -->
+                        <div style="flex: 0 0 50%; padding-right: 10px; box-sizing: border-box; border-right: 1px solid #eee;">
+                            <div style="margin-bottom:8px;">
+                                <span style="color:#555;font-weight:600;display:inline-block;width:140px;">Usuario:</span>
+                                <span style="color:#004aad;"><t t-out="object.customer_id.name"/></span>
+                            </div>
+                            <div style="margin-bottom:8px;">
+                                <span style="color:#555;font-weight:600;display:inline-block;width:140px;">Cédula / Pasaporte:</span>
+                                <span style="color:#004aad;"><t t-out="object.user_vat or 'No especificado'"/></span>
+                            </div>
+                            <div style="margin-bottom:8px;">
+                                <span style="color:#555;font-weight:600;display:inline-block;width:140px;">Correo:</span>
+                                <span style="color:#004aad;"><t t-out="object.user_email"/></span>
+                            </div>
+                            <div style="margin-bottom:8px;">
+                                <span style="color:#555;font-weight:600;display:inline-block;width:140px;">Departamento:</span>
+                                <span style="color:#004aad;"><t t-out="object.department_id.name or 'No especificado'"/></span>
+                            </div>
+                            <div style="margin-bottom:8px;">
+                                <span style="color:#555;font-weight:600;display:inline-block;width:140px;">Cargo:</span>
+                                <span style="color:#004aad;"><t t-out="object.job_id.name or 'No especificado'"/></span>
+                            </div>
+                        </div>
+
+                        <!-- Ticket -->
+                        <div style="flex: 0 0 50%; padding-left: 10px; box-sizing: border-box;">
+                            <div style="margin-bottom:8px;">
+                                <span style="color:#555;font-weight:600;display:inline-block;width:170px;">Tipo de ticket:</span>
+                                <span style="color:#004aad;"><t t-out="object.ticket_type_id.name or 'No especificado'"/></span>
+                            </div>
+                            <div style="margin-bottom:8px;">
+                                <span style="color:#555;font-weight:600;display:inline-block;width:170px;">Fecha de creación:</span>
+                                <span style="color:#004aad;"><t t-out="format_datetime(object.create_date, tz='America/Guayaquil')"/></span>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- Botón -->
+                    <div style="text-align:center;margin-top:25px;">
+                        <a t-att-href="'/web#id=%s&cids=1&menu_id=1006&action=3560&model=ticket.helpdesk&view_type=form' % object.id"
+                           style="background-color:#004aad; color:#fff; padding:10px 25px; font-size:13px; font-weight:bold; border-radius:4px; text-decoration:none; display:inline-block;">
+                            VER TICKET
+                        </a>
+                    </div>
+                </div>
+            </div>
+            ]]></field>
+        </record>
+
+        <!-- Notificación al cliente informando a quién se asignó su ticket -->
+        <record id="odoo_website_helpdesk_to_customer" model="mail.template">
+            <field name="name">Notificación al Cliente sobre Asignación</field>
+            <field name="model_id" ref="odoo_website_helpdesk.model_ticket_helpdesk"/>
+            <field name="auto_delete" eval="True"/>
+            <field name="subject">Asignación de su Ticket</field>
+            <field name="email_to">{{object.user_email}}</field>
+            <field name="body_html"><![CDATA[
+            <div style="margin:0;padding:20px;font-family:'Segoe UI', Arial, sans-serif;background-color:#f5f5f5;">
+                <div style="width:100%;max-width:800px;margin:0 auto;background-color:#fff;border-radius:8px;box-shadow:0 2px 10px rgba(0,0,0,0.08);padding:20px;">
+                    <!-- Encabezado -->
+                    <div style="display: flex; justify-content: space-between; align-items: center; background-color: #F5F5F5; padding: 10px 20px; border-radius: 6px;">
+                        <!-- Logo alineado a la izquierda -->
+                        <div style="display: flex; align-items: center;">
+                            <img src="https://farmaciascuxibamba.com.ec/web/image/website/1/logo/Farmacias%20Cuxibamba?unique=ec0f7ca"
+                                 alt="Logo Farmacias Cuxibamba"
+                                 style="height: 40px; max-width: 150px; object-fit: contain;" />
+                        </div>
+
+                        <!-- Texto del ticket alineado a la derecha -->
+                        <div style="font-size: 14px; font-weight: bold; color: #333; white-space: nowrap;">
+                            TICKET <t t-out="object.name"/>
+                        </div>
+                    </div>
+
+                    <!-- Divisor -->
+                    <div style="height:6px;background:linear-gradient(to right,#ffd700 15%,#004aad 15%);margin:0 0 20px 0;"></div>
+
+                    <!-- Estado del ticket -->
+                    <div style="max-width:350px;margin:0 auto 25px auto;">
+                        <div style="display:flex;border:1px solid #ccc;border-radius:4px;overflow:hidden;">
+                            <div style="flex:1;padding:10px;font-size:12px;font-weight:600;text-align:center;color:#333;">
+                                TICKET ASIGNADO A
+                            </div>
+                            <div style="flex:1;padding:10px;font-size:12px;font-weight:600;text-align:center;color:#004aad;border-left:1px solid #ccc;">
+                                <t t-out="', '.join(object.assigned_user_ids.mapped('name')) if object.assigned_user_ids else 'No asignado'"/>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- Asunto del ticket en texto plano centrado -->
+                    <div style="width: 100%; text-align: center; margin: 20px 0;">
+                        <span style="color: #555; font-weight: 600;">Asunto:</span>
+                        <span style="color: #004aad;">
+                            <t t-out="object.subject or 'No especificado'"/>
+                        </span>
+                    </div>
+
+                    <!-- Información alineada -->
+                    <div style="display: flex; flex-wrap: wrap; margin: 20px 20px 30px 20px;">
+                        <!-- Usuario -->
+                        <div style="flex: 0 0 50%; padding-right: 10px; box-sizing: border-box; border-right: 1px solid #eee;">
+                            <div style="margin-bottom:8px;">
+                                <span style="color:#555;font-weight:600;display:inline-block;width:140px;">Usuario:</span>
+                                <span style="color:#004aad;"><t t-out="object.customer_id.name"/></span>
+                            </div>
+                            <div style="margin-bottom:8px;">
+                                <span style="color:#555;font-weight:600;display:inline-block;width:140px;">Cédula / Pasaporte:</span>
+                                <span style="color:#004aad;"><t t-out="object.user_vat or 'No especificado'"/></span>
+                            </div>
+                            <div style="margin-bottom:8px;">
+                                <span style="color:#555;font-weight:600;display:inline-block;width:140px;">Correo:</span>
+                                <span style="color:#004aad;"><t t-out="object.user_email"/></span>
+                            </div>
+                            <div style="margin-bottom:8px;">
+                                <span style="color:#555;font-weight:600;display:inline-block;width:140px;">Departamento:</span>
+                                <span style="color:#004aad;"><t t-out="object.department_id.name or 'No especificado'"/></span>
+                            </div>
+                            <div style="margin-bottom:8px;">
+                                <span style="color:#555;font-weight:600;display:inline-block;width:140px;">Cargo:</span>
+                                <span style="color:#004aad;"><t t-out="object.job_id.name or 'No especificado'"/></span>
+                            </div>
+                        </div>
+
+                        <!-- Ticket -->
+                        <div style="flex: 0 0 50%; padding-left: 10px; box-sizing: border-box;">
+                            <div style="margin-bottom:8px;">
+                                <span style="color:#555;font-weight:600;display:inline-block;width:170px;">Tipo de ticket:</span>
+                                <span style="color:#004aad;"><t t-out="object.ticket_type_id.name or 'No especificado'"/></span>
+                            </div>
+                            <div style="margin-bottom:8px;">
+                                <span style="color:#555;font-weight:600;display:inline-block;width:170px;">Fecha de creación:</span>
+                                <span style="color:#004aad;"><t t-out="format_datetime(object.create_date, tz='America/Guayaquil')"/></span>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- Botón -->
+                    <div style="text-align:center;margin-top:25px;">
+                        <a t-att-href="'/web#id=%s&cids=1&menu_id=1006&action=3560&model=ticket.helpdesk&view_type=form' % object.id"
+                           style="background-color:#004aad; color:#fff; padding:10px 25px; font-size:13px; font-weight:bold; border-radius:4px; text-decoration:none; display:inline-block;">
+                            VER TICKET
+                        </a>
+                    </div>
+                </div>
+            </div>
+            ]]></field>
+        </record>
+
+        <!-- Plantilla de correo para notificar el inicio de un ticket -->
+        <record id="ticket_stage_in_progress" model="mail.template">
+            <field name="name">Ticket En Curso</field>
+            <field name="model_id" ref="odoo_website_helpdesk.model_ticket_helpdesk"/>
+            <field name="auto_delete" eval="True"/>
+            <field name="email_to">{{object.user_email}}</field>
+            <field name="subject">Ticket en Curso</field>
+            <field name="body_html"><![CDATA[
+            <div style="margin:0;padding:20px;font-family:'Segoe UI', Arial, sans-serif;background-color:#f5f5f5;">
+                <div style="width:100%;max-width:800px;margin:0 auto;background-color:#fff;border-radius:8px;box-shadow:0 2px 10px rgba(0,0,0,0.08);padding:20px;">
+                    <!-- Encabezado -->
+                    <div style="display: flex; justify-content: space-between; align-items: center; background-color: #F5F5F5; padding: 10px 20px; border-radius: 6px;">
+                        <!-- Logo alineado a la izquierda -->
+                        <div style="display: flex; align-items: center;">
+                            <img src="https://farmaciascuxibamba.com.ec/web/image/website/1/logo/Farmacias%20Cuxibamba?unique=ec0f7ca"
+                                 alt="Logo Farmacias Cuxibamba"
+                                 style="height: 40px; max-width: 150px; object-fit: contain;" />
+                        </div>
+
+                        <!-- Texto del ticket alineado a la derecha -->
+                        <div style="font-size: 14px; font-weight: bold; color: #333; white-space: nowrap;">
+                            TICKET <t t-out="object.name"/>
+                        </div>
+                    </div>
+
+                    <!-- Divisor -->
+                    <div style="height:6px;background:linear-gradient(to right,#ffd700 15%,#004aad 15%);margin:0 0 20px 0;"></div>
+
+                    <!-- Estado del ticket -->
+                    <div style="max-width:350px;margin:0 auto 25px auto;">
+                        <div style="display:flex;border:1px solid #ccc;border-radius:4px;overflow:hidden;">
+                            <div style="flex:1;padding:10px;font-size:12px;font-weight:600;text-align:center;color:#333;">
+                                ESTADO DEL TICKET
+                            </div>
+                            <div style="flex:1;padding:10px;font-size:12px;font-weight:600;text-align:center;color:#004aad;border-left:1px solid #ccc;">
+                                EN CURSO
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- Asunto del ticket en texto plano centrado -->
+                    <div style="width: 100%; text-align: center; margin: 20px 0;">
+                        <span style="color: #555; font-weight: 600;">Asunto:</span>
+                        <span style="color: #004aad;">
+                            <t t-out="object.subject or 'No especificado'"/>
+                        </span>
+                    </div>
+
+                    <!-- Información alineada -->
+                    <div style="display: flex; flex-wrap: wrap; margin: 20px 20px 30px 20px;">
+                        <!-- Usuario -->
+                        <div style="flex: 0 0 50%; padding-right: 10px; box-sizing: border-box; border-right: 1px solid #eee;">
+                            <div style="margin-bottom:8px;">
+                                <span style="color:#555;font-weight:600;display:inline-block;width:140px;">Usuario:</span>
+                                <span style="color:#004aad;"><t t-out="object.customer_id.name"/></span>
+                            </div>
+                            <div style="margin-bottom:8px;">
+                                <span style="color:#555;font-weight:600;display:inline-block;width:140px;">Cédula / Pasaporte:</span>
+                                <span style="color:#004aad;"><t t-out="object.user_vat or 'No especificado'"/></span>
+                            </div>
+                            <div style="margin-bottom:8px;">
+                                <span style="color:#555;font-weight:600;display:inline-block;width:140px;">Correo:</span>
+                                <span style="color:#004aad;"><t t-out="object.user_email"/></span>
+                            </div>
+                            <div style="margin-bottom:8px;">
+                                <span style="color:#555;font-weight:600;display:inline-block;width:140px;">Departamento:</span>
+                                <span style="color:#004aad;"><t t-out="object.department_id.name or 'No especificado'"/></span>
+                            </div>
+                            <div style="margin-bottom:8px;">
+                                <span style="color:#555;font-weight:600;display:inline-block;width:140px;">Cargo:</span>
+                                <span style="color:#004aad;"><t t-out="object.job_id.name or 'No especificado'"/></span>
+                            </div>
+                        </div>
+
+                        <!-- Ticket -->
+                        <div style="flex: 0 0 50%; padding-left: 10px; box-sizing: border-box;">
+                            <div style="margin-bottom:8px;">
+                                <span style="color:#555;font-weight:600;display:inline-block;width:170px;">Tipo de ticket:</span>
+                                <span style="color:#004aad;"><t t-out="object.ticket_type_id.name or 'No especificado'"/></span>
+                            </div>
+                            <div style="margin-bottom:8px;">
+                                <span style="color:#555;font-weight:600;display:inline-block;width:170px;">Fecha de creación:</span>
+                                <span style="color:#004aad;">
+                                    <t t-set="user_tz" t-value="'America/Guayaquil'"/>
+                                    <t t-set="date_format" t-value="'dd/MM/YYYY HH:mm:ss'"/>
+                                    <t t-out="format_datetime(object.create_date, dt_format=date_format, tz=user_tz)"/>
+                                </span>
+                            </div>
+                            <div style="margin-bottom:8px;">
+                                <span style="color:#555;font-weight:600;display:inline-block;width:170px;">Fecha de inicio:</span>
+                                <span style="color:#004aad;">
+                                    <t t-set="user_tz" t-value="'America/Guayaquil'"/>
+                                    <t t-set="date_format" t-value="'dd/MM/YYYY HH:mm:ss'"/>
+                                    <t t-out="object.start_date and format_datetime(object.start_date, dt_format=date_format, tz=user_tz) or 'No disponible'"/>
+                                </span>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- Botón -->
+                    <div style="text-align:center;margin-top:25px;">
+                        <a t-att-href="'/web#id=%s&cids=1&menu_id=1006&action=3560&model=ticket.helpdesk&view_type=form' % object.id"
+                           style="background-color:#004aad; color:#fff; padding:10px 25px; font-size:13px; font-weight:bold; border-radius:4px; text-decoration:none; display:inline-block;">
+                            VER TICKET
+                        </a>
+                    </div>
+                </div>
+            </div>
+            ]]></field>
+        </record>
+
+        <!-- Plantilla de correo para notificar que el ticket fue puesto en espera -->
+        <record id="ticket_stage_pending" model="mail.template">
+            <field name="name">Ticket En Espera</field>
+            <field name="model_id" ref="odoo_website_helpdesk.model_ticket_helpdesk"/>
+            <field name="auto_delete" eval="True"/>
+            <field name="email_to">{{object.user_email}}</field>
+            <field name="subject">Ticket en Espera</field>
+            <field name="body_html"><![CDATA[
+            <div style="margin:0;padding:20px;font-family:'Segoe UI', Arial, sans-serif;background-color:#f5f5f5;">
+                <div style="width:100%;max-width:800px;margin:0 auto;background-color:#fff;border-radius:8px;box-shadow:0 2px 10px rgba(0,0,0,0.08);padding:20px;">
+                    <!-- Encabezado -->
+                    <div style="display: flex; justify-content: space-between; align-items: center; background-color: #F5F5F5; padding: 10px 20px; border-radius: 6px;">
+                        <!-- Logo alineado a la izquierda -->
+                        <div style="display: flex; align-items: center;">
+                            <img src="https://farmaciascuxibamba.com.ec/web/image/website/1/logo/Farmacias%20Cuxibamba?unique=ec0f7ca"
+                                 alt="Logo Farmacias Cuxibamba"
+                                 style="height: 40px; max-width: 150px; object-fit: contain;" />
+                        </div>
+
+                        <!-- Texto del ticket alineado a la derecha -->
+                        <div style="font-size: 14px; font-weight: bold; color: #333; white-space: nowrap;">
+                            TICKET <t t-out="object.name"/>
+                        </div>
+                    </div>
+
+                    <!-- Divisor -->
+                    <div style="height:6px;background:linear-gradient(to right,#ffd700 15%,#004aad 15%);margin:0 0 20px 0;"></div>
+
+                    <!-- Estado del ticket -->
+                    <div style="max-width:350px;margin:0 auto 25px auto;">
+                        <div style="display:flex;border:1px solid #ccc;border-radius:4px;overflow:hidden;">
+                            <div style="flex:1;padding:10px;font-size:12px;font-weight:600;text-align:center;color:#333;">
+                                ESTADO DEL TICKET
+                            </div>
+                            <div style="flex:1;padding:10px;font-size:12px;font-weight:600;text-align:center;color:#004aad;border-left:1px solid #ccc;">
+                                EN ESPERA
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- Asunto del ticket en texto plano centrado -->
+                    <div style="width: 100%; text-align: center; margin: 20px 0;">
+                        <span style="color: #555; font-weight: 600;">Asunto:</span>
+                        <span style="color: #004aad;">
+                            <t t-out="object.subject or 'No especificado'"/>
+                        </span>
+                    </div>
+
+                    <!-- Información alineada -->
+                    <div style="display: flex; flex-wrap: wrap; margin: 20px 20px 30px 20px;">
+                        <!-- Usuario -->
+                        <div style="flex: 0 0 50%; padding-right: 10px; box-sizing: border-box; border-right: 1px solid #eee;">
+                            <div style="margin-bottom:8px;">
+                                <span style="color:#555;font-weight:600;display:inline-block;width:140px;">Usuario:</span>
+                                <span style="color:#004aad;"><t t-out="object.customer_id.name"/></span>
+                            </div>
+                            <div style="margin-bottom:8px;">
+                                <span style="color:#555;font-weight:600;display:inline-block;width:140px;">Cédula / Pasaporte:</span>
+                                <span style="color:#004aad;"><t t-out="object.user_vat or 'No especificado'"/></span>
+                            </div>
+                            <div style="margin-bottom:8px;">
+                                <span style="color:#555;font-weight:600;display:inline-block;width:140px;">Correo:</span>
+                                <span style="color:#004aad;"><t t-out="object.user_email"/></span>
+                            </div>
+                            <div style="margin-bottom:8px;">
+                                <span style="color:#555;font-weight:600;display:inline-block;width:140px;">Departamento:</span>
+                                <span style="color:#004aad;"><t t-out="object.department_id.name or 'No especificado'"/></span>
+                            </div>
+                            <div style="margin-bottom:8px;">
+                                <span style="color:#555;font-weight:600;display:inline-block;width:140px;">Cargo:</span>
+                                <span style="color:#004aad;"><t t-out="object.job_id.name or 'No especificado'"/></span>
+                            </div>
+                        </div>
+
+                        <!-- Ticket -->
+                        <div style="flex: 0 0 50%; padding-left: 10px; box-sizing: border-box;">
+                            <div style="margin-bottom:8px;">
+                                <span style="color:#555;font-weight:600;display:inline-block;width:170px;">Tipo de ticket:</span>
+                                <span style="color:#004aad;"><t t-out="object.ticket_type_id.name or 'No especificado'"/></span>
+                            </div>
+                            <div style="margin-bottom:8px;">
+                                <span style="color:#555;font-weight:600;display:inline-block;width:170px;">Fecha de creación:</span>
+                                <span style="color:#004aad;">
+                                    <t t-set="user_tz" t-value="'America/Guayaquil'"/>
+                                    <t t-set="date_format" t-value="'dd/MM/YYYY HH:mm:ss'"/>
+                                    <t t-out="format_datetime(object.create_date, dt_format=date_format, tz=user_tz)"/>
+                                </span>
+                            </div>
+                            <div style="margin-bottom:8px;">
+                                <span style="color:#555;font-weight:600;display:inline-block;width:170px;">Fecha de inicio:</span>
+                                <span style="color:#004aad;">
+                                    <t t-set="user_tz" t-value="'America/Guayaquil'"/>
+                                    <t t-set="date_format" t-value="'dd/MM/YYYY HH:mm:ss'"/>
+                                    <t t-out="object.start_date and format_datetime(object.start_date, dt_format=date_format, tz=user_tz) or 'No disponible'"/>
+                                </span>
+                            </div>
+                            <div style="margin-bottom:8px;">
+                                <span style="color:#555;font-weight:600;display:inline-block;width:170px;">Fecha de puesta en Espera:</span>
+                                <span style="color:#004aad;">
+                                    <t t-set="user_tz" t-value="'America/Guayaquil'"/>
+                                    <t t-set="date_format" t-value="'dd/MM/YYYY HH:mm:ss'"/>
+                                    <t t-out="object.waiting_date and format_datetime(object.waiting_date, dt_format=date_format, tz=user_tz) or 'No disponible'"/>
+                                </span>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- Botón -->
+                    <div style="text-align:center;margin-top:25px;">
+                        <a t-att-href="'/web#id=%s&cids=1&menu_id=1006&action=3560&model=ticket.helpdesk&view_type=form' % object.id"
+                           style="background-color:#004aad; color:#fff; padding:10px 25px; font-size:13px; font-weight:bold; border-radius:4px; text-decoration:none; display:inline-block;">
+                            VER TICKET
+                        </a>
+                    </div>
+                </div>
+            </div>
+            ]]></field>
+        </record>
+
+        <!-- Plantilla de correo para notificar que el ticket fue aprobado y resuelto -->
+        <record id="ticket_approved" model="mail.template">
+            <field name="name">Ticket Resuelto</field>
+            <field name="model_id" ref="odoo_website_helpdesk.model_ticket_helpdesk"/>
+            <field name="auto_delete" eval="True"/>
+            <field name="email_to">{{object.user_email}}</field>
+            <field name="subject">Ticket Resuelto</field>
+            <field name="body_html"><![CDATA[
+            <div style="margin:0;padding:20px;font-family:'Segoe UI', Arial, sans-serif;background-color:#f5f5f5;">
+                <div style="width:100%;max-width:800px;margin:0 auto;background-color:#fff;border-radius:8px;box-shadow:0 2px 10px rgba(0,0,0,0.08);padding:20px;">
+                    <!-- Encabezado -->
+                    <div style="display: flex; justify-content: space-between; align-items: center; background-color: #F5F5F5; padding: 10px 20px; border-radius: 6px;">
+                        <!-- Logo alineado a la izquierda -->
+                        <div style="display: flex; align-items: center;">
+                            <img src="https://farmaciascuxibamba.com.ec/web/image/website/1/logo/Farmacias%20Cuxibamba?unique=ec0f7ca"
+                                 alt="Logo Farmacias Cuxibamba"
+                                 style="height: 40px; max-width: 150px; object-fit: contain;" />
+                        </div>
+
+                        <!-- Texto del ticket alineado a la derecha -->
+                        <div style="font-size: 14px; font-weight: bold; color: #333; white-space: nowrap;">
+                            TICKET <t t-out="object.name"/>
+                        </div>
+                    </div>
+
+                    <!-- Divisor -->
+                    <div style="height:6px;background:linear-gradient(to right,#ffd700 15%,#004aad 15%);margin:0 0 20px 0;"></div>
+
+                    <!-- Estado del ticket -->
+                    <div style="max-width:350px;margin:0 auto 25px auto;">
+                        <div style="display:flex;border:1px solid #ccc;border-radius:4px;overflow:hidden;">
+                            <div style="flex:1;padding:10px;font-size:12px;font-weight:600;text-align:center;color:#333;">
+                                ESTADO DEL TICKET
+                            </div>
+                            <div style="flex:1;padding:10px;font-size:12px;font-weight:600;text-align:center;color:#004aad;border-left:1px solid #ccc;">
+                                RESUELTO
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- Asunto del ticket en texto plano centrado -->
+                    <div style="width: 100%; text-align: center; margin: 20px 0;">
+                        <span style="color: #555; font-weight: 600;">Asunto:</span>
+                        <span style="color: #004aad;">
+                            <t t-out="object.subject or 'No especificado'"/>
+                        </span>
+                    </div>
+
+                    <!-- Información alineada -->
+                    <div style="display: flex; flex-wrap: wrap; margin: 20px 20px 30px 20px;">
+                        <!-- Usuario -->
+                        <div style="flex: 0 0 50%; padding-right: 10px; box-sizing: border-box; border-right: 1px solid #eee;">
+                            <div style="margin-bottom:8px;">
+                                <span style="color:#555;font-weight:600;display:inline-block;width:140px;">Usuario:</span>
+                                <span style="color:#004aad;"><t t-out="object.customer_id.name"/></span>
+                            </div>
+                            <div style="margin-bottom:8px;">
+                                <span style="color:#555;font-weight:600;display:inline-block;width:140px;">Cédula / Pasaporte:</span>
+                                <span style="color:#004aad;"><t t-out="object.user_vat or 'No especificado'"/></span>
+                            </div>
+                            <div style="margin-bottom:8px;">
+                                <span style="color:#555;font-weight:600;display:inline-block;width:140px;">Correo:</span>
+                                <span style="color:#004aad;"><t t-out="object.user_email"/></span>
+                            </div>
+                            <div style="margin-bottom:8px;">
+                                <span style="color:#555;font-weight:600;display:inline-block;width:140px;">Departamento:</span>
+                                <span style="color:#004aad;"><t t-out="object.department_id.name or 'No especificado'"/></span>
+                            </div>
+                            <div style="margin-bottom:8px;">
+                                <span style="color:#555;font-weight:600;display:inline-block;width:140px;">Cargo:</span>
+                                <span style="color:#004aad;"><t t-out="object.job_id.name or 'No especificado'"/></span>
+                            </div>
+                        </div>
+
+                        <!-- Ticket -->
+                        <div style="flex: 0 0 50%; padding-left: 10px; box-sizing: border-box;">
+                            <div style="margin-bottom:8px;">
+                                <span style="color:#555;font-weight:600;display:inline-block;width:170px;">Tipo de ticket:</span>
+                                <span style="color:#004aad;"><t t-out="object.ticket_type_id.name or 'No especificado'"/></span>
+                            </div>
+                            <div style="margin-bottom:8px;">
+                                <span style="color:#555;font-weight:600;display:inline-block;width:170px;">Fecha de creación:</span>
+                                <span style="color:#004aad;">
+                                    <t t-set="user_tz" t-value="'America/Guayaquil'"/>
+                                    <t t-set="date_format" t-value="'dd/MM/YYYY HH:mm:ss'"/>
+                                    <t t-out="format_datetime(object.create_date, dt_format=date_format, tz=user_tz)"/>
+                                </span>
+                            </div>
+                            <div style="margin-bottom:8px;">
+                                <span style="color:#555;font-weight:600;display:inline-block;width:170px;">Fecha de inicio:</span>
+                                <span style="color:#004aad;">
+                                    <t t-set="user_tz" t-value="'America/Guayaquil'"/>
+                                    <t t-set="date_format" t-value="'dd/MM/YYYY HH:mm:ss'"/>
+                                    <t t-out="object.start_date and format_datetime(object.start_date, dt_format=date_format, tz=user_tz) or ''"/>
+                                </span>
+                            </div>
+                            <div style="margin-bottom:8px;">
+                                <span style="color:#555;font-weight:600;display:inline-block;width:170px;">Fecha de Resolución:</span>
+                                <span style="color:#004aad;">
+                                    <t t-set="user_tz" t-value="'America/Guayaquil'"/>
+                                    <t t-set="date_format" t-value="'dd/MM/YYYY HH:mm:ss'"/>
+                                    <t t-out="object.end_date and format_datetime(object.end_date, dt_format=date_format, tz=user_tz) or ''"/>
+                                </span>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- Botón -->
+                    <div style="text-align:center;margin-top:25px;">
+                        <a t-att-href="'/web#id=%s&cids=1&menu_id=1006&action=3560&model=ticket.helpdesk&view_type=form' % object.id"
+                           style="background-color:#004aad; color:#fff; padding:10px 25px; font-size:13px; font-weight:bold; border-radius:4px; text-decoration:none; display:inline-block;">
+                            VER TICKET
+                        </a>
+                    </div>
+                </div>
+            </div>
+            ]]></field>
+        </record>
+
+        <!-- Plantilla de correo para notificar la cancelación de un ticket -->
+        <record id="ticket_canceled" model="mail.template">
+            <field name="name">Ticket Cancelado</field>
+            <field name="model_id" ref="odoo_website_helpdesk.model_ticket_helpdesk"/>
+            <field name="auto_delete" eval="True"/>
+            <field name="email_to">{{object.user_email}}</field>
+            <field name="subject">Ticket cancelado</field>
+            <field name="body_html"><![CDATA[
+            <div style="margin:0;padding:20px;font-family:'Segoe UI', Arial, sans-serif;background-color:#f5f5f5;">
+                <div style="width:100%;max-width:800px;margin:0 auto;background-color:#fff;border-radius:8px;box-shadow:0 2px 10px rgba(0,0,0,0.08);padding:20px;">
+                    <!-- Encabezado -->
+                    <div style="display: flex; justify-content: space-between; align-items: center; background-color: #F5F5F5; padding: 10px 20px; border-radius: 6px;">
+                        <!-- Logo alineado a la izquierda -->
+                        <div style="display: flex; align-items: center;">
+                            <img src="https://farmaciascuxibamba.com.ec/web/image/website/1/logo/Farmacias%20Cuxibamba?unique=ec0f7ca"
+                                 alt="Logo Farmacias Cuxibamba"
+                                 style="height: 40px; max-width: 150px; object-fit: contain;" />
+                        </div>
+
+                        <!-- Texto del ticket alineado a la derecha -->
+                        <div style="font-size: 14px; font-weight: bold; color: #333; white-space: nowrap;">
+                            TICKET <t t-out="object.name"/>
+                        </div>
+                    </div>
+
+                    <!-- Divisor -->
+                    <div style="height:6px;background:linear-gradient(to right,#ffd700 15%,#004aad 15%);margin:0 0 20px 0;"></div>
+
+                    <!-- Estado del ticket -->
+                    <div style="max-width:350px;margin:0 auto 25px auto;">
+                        <div style="display:flex;border:1px solid #ccc;border-radius:4px;overflow:hidden;">
+                            <div style="flex:1;padding:10px;font-size:12px;font-weight:600;text-align:center;color:#333;">
+                                ESTADO DEL TICKET
+                            </div>
+                            <div style="flex:1;padding:10px;font-size:12px;font-weight:600;text-align:center;color:#004aad;border-left:1px solid #ccc;">
+                                CANCELADO
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- Asunto del ticket en texto plano centrado -->
+                    <div style="width: 100%; text-align: center; margin: 20px 0;">
+                        <span style="color: #555; font-weight: 600;">Asunto:</span>
+                        <span style="color: #004aad;">
+                            <t t-out="object.subject or 'No especificado'"/>
+                        </span>
+                    </div>
+
+                    <!-- Información alineada -->
+                    <div style="display: flex; flex-wrap: wrap; margin: 20px 20px 30px 20px;">
+                        <!-- Usuario -->
+                        <div style="flex: 0 0 50%; padding-right: 10px; box-sizing: border-box; border-right: 1px solid #eee;">
+                            <div style="margin-bottom:8px;">
+                                <span style="color:#555;font-weight:600;display:inline-block;width:140px;">Usuario:</span>
+                                <span style="color:#004aad;"><t t-out="object.customer_id.name"/></span>
+                            </div>
+                            <div style="margin-bottom:8px;">
+                                <span style="color:#555;font-weight:600;display:inline-block;width:140px;">Cédula / Pasaporte:</span>
+                                <span style="color:#004aad;"><t t-out="object.user_vat or 'No especificado'"/></span>
+                            </div>
+                            <div style="margin-bottom:8px;">
+                                <span style="color:#555;font-weight:600;display:inline-block;width:140px;">Correo:</span>
+                                <span style="color:#004aad;"><t t-out="object.user_email"/></span>
+                            </div>
+                            <div style="margin-bottom:8px;">
+                                <span style="color:#555;font-weight:600;display:inline-block;width:140px;">Departamento:</span>
+                                <span style="color:#004aad;"><t t-out="object.department_id.name or 'No especificado'"/></span>
+                            </div>
+                            <div style="margin-bottom:8px;">
+                                <span style="color:#555;font-weight:600;display:inline-block;width:140px;">Cargo:</span>
+                                <span style="color:#004aad;"><t t-out="object.job_id.name or 'No especificado'"/></span>
+                            </div>
+                        </div>
+
+                        <!-- Ticket -->
+                        <div style="flex: 0 0 50%; padding-left: 10px; box-sizing: border-box;">
+                            <div style="margin-bottom:8px;">
+                                <span style="color:#555;font-weight:600;display:inline-block;width:170px;">Tipo de ticket:</span>
+                                <span style="color:#004aad;"><t t-out="object.ticket_type_id.name or 'No especificado'"/></span>
+                            </div>
+                            <div style="margin-bottom:8px;">
+                                <span style="color:#555;font-weight:600;display:inline-block;width:170px;">Fecha de creación:</span>
+                                <span style="color:#004aad;">
+                                    <t t-set="user_tz" t-value="'America/Guayaquil'"/>
+                                    <t t-set="date_format" t-value="'dd/MM/YYYY HH:mm:ss'"/>
+                                    <t t-out="format_datetime(object.create_date, dt_format=date_format, tz=user_tz)"/>
+                                </span>
+                            </div>
+                            <div style="margin-bottom:8px;">
+                                <span style="color:#555;font-weight:600;display:inline-block;width:170px;">Fecha de inicio:</span>
+                                <span style="color:#004aad;">
+                                    <t t-set="user_tz" t-value="'America/Guayaquil'"/>
+                                    <t t-set="date_format" t-value="'dd/MM/YYYY HH:mm:ss'"/>
+                                    <t t-out="object.start_date and format_datetime(object.start_date, dt_format=date_format, tz=user_tz) or 'No disponible'"/>
+                                </span>
+                            </div>
+                            <div style="margin-bottom:8px;">
+                                <span style="color:#555;font-weight:600;display:inline-block;width:170px;">Fecha de Cancelación:</span>
+                                <span style="color:#004aad;">
+                                    <t t-set="user_tz" t-value="'America/Guayaquil'"/>
+                                    <t t-set="date_format" t-value="'dd/MM/YYYY HH:mm:ss'"/>
+                                    <t t-out="object.canceled_date and format_datetime(object.canceled_date, dt_format=date_format, tz=user_tz) or 'No disponible'"/>
+                                </span>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- Botón -->
+                    <div style="text-align:center;margin-top:25px;">
+                        <a t-att-href="'/web#id=%s&cids=1&menu_id=1006&action=3560&model=ticket.helpdesk&view_type=form' % object.id"
+                           style="background-color:#004aad; color:#fff; padding:10px 25px; font-size:13px; font-weight:bold; border-radius:4px; text-decoration:none; display:inline-block;">
+                            VER TICKET
+                        </a>
+                    </div>
+                </div>
+            </div>
+            ]]></field>
+        </record>
+
+        <!-- Plantilla de correo para comunicación entre usuario asignado y creador del ticket -->
+        <record id="ticket_communication" model="mail.template">
+            <field name="name">Comunicación del Ticket</field>
+            <field name="model_id" ref="odoo_website_helpdesk.model_ticket_helpdesk"/>
+            <field name="auto_delete" eval="True"/>
+            <field name="email_to">{{ object.assigned_user_id.email if object.env.user.partner_id == object.customer_id else object.customer_id.email }}</field>
+            <field name="email_from">{{ object.env.user.email_formatted }}</field>
+            <field name="subject">Nueva comunicación sobre un Ticket></field>
+            <field name="body_html"><![CDATA[
+            <div style="margin:0;padding:20px;font-family:'Segoe UI', Arial, sans-serif;background-color:#f5f5f5;">
+                <div style="width:100%;max-width:800px;margin:0 auto;background-color:#fff;border-radius:8px;box-shadow:0 2px 10px rgba(0,0,0,0.08);padding:20px;">
+                    <!-- Encabezado -->
+                    <div style="display: flex; justify-content: space-between; align-items: center; background-color: #F5F5F5; padding: 10px 20px; border-radius: 6px;">
+                        <!-- Logo alineado a la izquierda -->
+                        <div style="display: flex; align-items: center;">
+                            <img src="https://farmaciascuxibamba.com.ec/web/image/website/1/logo/Farmacias%20Cuxibamba?unique=ec0f7ca"
+                                 alt="Logo Farmacias Cuxibamba"
+                                 style="height: 40px; max-width: 150px; object-fit: contain;" />
+                        </div>
+
+                        <!-- Texto del ticket alineado a la derecha -->
+                        <div style="font-size: 14px; font-weight: bold; color: #333; white-space: nowrap;">
+                            TICKET <t t-out="object.name"/>
+                        </div>
+                    </div>
+
+                    <!-- Divisor -->
+                    <div style="height:6px;background:linear-gradient(to right,#ffd700 15%,#004aad 15%);margin:0 0 20px 0;"></div>
+
+                    <!-- Estado del ticket -->
+                    <div style="max-width:350px;margin:0 auto 25px auto;">
+                        <div style="display:flex;border:1px solid #ccc;border-radius:4px;overflow:hidden;">
+                            <div style="flex:1;padding:10px;font-size:12px;font-weight:600;text-align:center;color:#333;">
+                                ESTADO DEL TICKET
+                            </div>
+                            <div style="flex:1;padding:10px;font-size:12px;font-weight:600;text-align:center;color:#004aad;border-left:1px solid #ccc;text-transform:uppercase;">
+                               <t t-out="object.stage_id.name"/>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- Asunto del ticket en texto plano centrado -->
+                    <div style="width: 100%; text-align: center; margin: 20px 0;">
+                        <span style="color: #555; font-weight: 600;">Asunto:</span>
+                        <span style="color: #004aad;">
+                            <t t-out="object.subject or 'No especificado'"/>
+                        </span>
+                    </div>
+
+                    <!-- Información alineada -->
+                    <div style="display: flex; flex-wrap: wrap; margin: 20px 20px 30px 20px;">
+                        <!-- Usuario -->
+                        <div style="flex: 0 0 50%; padding-right: 10px; box-sizing: border-box; border-right: 1px solid #eee;">
+                            <div style="margin-bottom:8px;">
+                                <span style="color:#555;font-weight:600;display:inline-block;width:140px;">Usuario:</span>
+                                <span style="color:#004aad;"><t t-out="object.customer_id.name"/></span>
+                            </div>
+                            <div style="margin-bottom:8px;">
+                                <span style="color:#555;font-weight:600;display:inline-block;width:140px;">Cédula / Pasaporte:</span>
+                                <span style="color:#004aad;"><t t-out="object.user_vat or 'No especificado'"/></span>
+                            </div>
+                            <div style="margin-bottom:8px;">
+                                <span style="color:#555;font-weight:600;display:inline-block;width:140px;">Correo:</span>
+                                <span style="color:#004aad;"><t t-out="object.user_email"/></span>
+                            </div>
+                            <div style="margin-bottom:8px;">
+                                <span style="color:#555;font-weight:600;display:inline-block;width:140px;">Departamento:</span>
+                                <span style="color:#004aad;"><t t-out="object.department_id.name or 'No especificado'"/></span>
+                            </div>
+                            <div style="margin-bottom:8px;">
+                                <span style="color:#555;font-weight:600;display:inline-block;width:140px;">Cargo:</span>
+                                <span style="color:#004aad;"><t t-out="object.job_id.name or 'No especificado'"/></span>
+                            </div>
+                        </div>
+
+                        <!-- Ticket -->
+                        <div style="flex: 0 0 50%; padding-left: 10px; box-sizing: border-box;">
+                            <div style="margin-bottom:8px;">
+                                <span style="color:#555;font-weight:600;display:inline-block;width:170px;">Tipo de ticket:</span>
+                                <span style="color:#004aad;"><t t-out="object.ticket_type_id.name or 'No especificado'"/></span>
+                            </div>
+                            <div style="margin-bottom:8px;">
+                                <span style="color:#555;font-weight:600;display:inline-block;width:170px;">Fecha de creación:</span>
+                                <span style="color:#004aad;">
+                                    <t t-set="user_tz" t-value="'America/Guayaquil'"/>
+                                    <t t-set="date_format" t-value="'dd/MM/YYYY HH:mm:ss'"/>
+                                    <t t-out="format_datetime(object.create_date, dt_format=date_format, tz=user_tz)"/>
+                                </span>
+                            </div>
+                            <div style="margin-bottom:8px;">
+                                <span style="color:#555;font-weight:600;display:inline-block;width:170px;">Fecha de inicio:</span>
+                                <span style="color:#004aad;">
+                                    <t t-set="user_tz" t-value="'America/Guayaquil'"/>
+                                    <t t-set="date_format" t-value="'dd/MM/YYYY HH:mm:ss'"/>
+                                    <t t-out="object.start_date and format_datetime(object.start_date, dt_format=date_format, tz=user_tz) or 'No disponible'"/>
+                                </span>
+                            </div>
+                            <div style="margin-bottom:8px;">
+                                <span style="color:#555;font-weight:600;display:inline-block;width:170px;">Fecha de puesta en Espera:</span>
+                                <span style="color:#004aad;">
+                                    <t t-set="user_tz" t-value="'America/Guayaquil'"/>
+                                    <t t-set="date_format" t-value="'dd/MM/YYYY HH:mm:ss'"/>
+                                    <t t-out="object.end_date and format_datetime(object.end_date, dt_format=date_format, tz=user_tz) or 'No disponible'"/>
+                                </span>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- Mensaje del ticket -->
+                    <div style="max-width:600px; margin:0 auto 25px auto;">
+                        <label for="mensaje_ticket"
+                               style="display:block; font-size:16px; font-weight:600; color:#333; margin-bottom:8px;">
+                            Mensaje:
+                        </label>
+
+                        <textarea id="mensaje_ticket" name="mensaje_ticket"
+                                  placeholder="Ingrese su texto aquí..."
+                                  style="width:100%; min-height:150px; font-size:14px; padding:12px; border:1px solid #ccc; border-radius:6px; resize:vertical; color:#333;"></textarea>
+                    </div>
+
+                    <!-- Botón -->
+                    <div style="text-align:center;margin-top:25px;">
+                        <a t-att-href="'/web#id=%s&cids=1&menu_id=1006&action=3560&model=ticket.helpdesk&view_type=form' % object.id"
+                           style="background-color:#004aad; color:#fff; padding:10px 25px; font-size:13px; font-weight:bold; border-radius:4px; text-decoration:none; display:inline-block;">
+                            VER TICKET
+                        </a>
+                    </div>
+                </div>
+            </div>
+            ]]></field>
+        </record>
+    </data>
+</odoo>

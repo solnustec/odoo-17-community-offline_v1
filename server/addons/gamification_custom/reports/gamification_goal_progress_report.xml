@@ -1,0 +1,210 @@
+<?xml version="1.0" encoding="utf-8"?>
+<odoo>
+    <!-- Reporte PDF -->
+    <report
+        id="action_report_progress"
+        model="gamification.goal"
+        string="Reporte de Progreso"
+        report_type="qweb-pdf"
+        name="gamification_custom.report_goal_progress"
+        file="gamification_custom.report_goal_progress"
+        print_report_name="'Reporte_Progreso_Metas_%s' % (time.strftime('%Y%m%d'))"
+        paperformat="base.paperformat_euro"
+    />
+
+    <!-- Reporte XLSX -->
+    <report
+        id="action_report_progress_xlsx"
+        model="gamification.goal"
+        string="Reporte de Progreso XLSX"
+        report_type="xlsx"
+        name="gamification_custom.goal_progress_xlsx"
+        file="gamification_custom.goal_progress_xlsx"
+    />
+
+    <!-- Template del PDF -->
+    <template id="report_goal_progress">
+        <t t-call="web.html_container">
+            <t t-call="web.external_layout">
+                <div class="page">
+                    <style>
+                        .progress-bar-container {
+                            background-color: #e9ecef;
+                            border-radius: 4px;
+                            height: 20px;
+                            width: 100%;
+                        }
+                        .progress-bar-fill {
+                            background-color: #28a745;
+                            height: 100%;
+                            border-radius: 4px;
+                            text-align: center;
+                            color: white;
+                            font-size: 12px;
+                            line-height: 20px;
+                        }
+                        .state-reached { color: #28a745; font-weight: bold; }
+                        .state-inprogress { color: #ffc107; font-weight: bold; }
+                        .state-failed { color: #dc3545; font-weight: bold; }
+                        .state-draft { color: #6c757d; font-weight: bold; }
+                        .header-info { margin-bottom: 20px; }
+                        .summary-box {
+                            background-color: #f8f9fa;
+                            padding: 15px;
+                            border-radius: 5px;
+                            margin-bottom: 20px;
+                        }
+                    </style>
+
+                    <div class="header-info">
+                        <h2>Reporte de Progreso de Metas</h2>
+                        <p>
+                            <strong>Fecha de generación:</strong> <span t-esc="time.strftime('%d/%m/%Y %H:%M')"/>
+                        </p>
+                        <t t-if="data and data.get('challenge_name')">
+                            <p><strong>Desafío:</strong> <span t-esc="data.get('challenge_name')"/></p>
+                        </t>
+                        <t t-if="data and data.get('user_name')">
+                            <p><strong>Usuario:</strong> <span t-esc="data.get('user_name')"/></p>
+                        </t>
+                    </div>
+
+                    <!-- Resumen -->
+                    <div class="summary-box">
+                        <div class="row">
+                            <div class="col-3 text-center">
+                                <h4 t-esc="len(docs)"/>
+                                <small>Total Metas</small>
+                            </div>
+                            <div class="col-3 text-center">
+                                <h4 class="state-reached" t-esc="len([g for g in docs if g.state == 'reached'])"/>
+                                <small>Alcanzadas</small>
+                            </div>
+                            <div class="col-3 text-center">
+                                <h4 class="state-inprogress" t-esc="len([g for g in docs if g.state == 'inprogress'])"/>
+                                <small>En Progreso</small>
+                            </div>
+                            <div class="col-3 text-center">
+                                <h4 class="state-failed" t-esc="len([g for g in docs if g.state == 'failed'])"/>
+                                <small>Fallidas</small>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- Tabla de metas -->
+                    <table class="table table-sm table-bordered" style="font-size: 11px;">
+                        <thead style="background-color: #343a40; color: white;">
+                            <tr>
+                                <th style="width: 15%;">Usuario</th>
+                                <th style="width: 12%;">Departamento</th>
+                                <th style="width: 15%;">Meta</th>
+                                <th style="width: 12%;">Desafío</th>
+                                <th style="width: 8%;">Estado</th>
+                                <th style="width: 15%;">Progreso</th>
+                                <th style="width: 8%;">F. Cumplimiento</th>
+                                <th style="width: 8%;">Bonificación $</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            <tr t-foreach="docs" t-as="goal">
+                                <td><span t-esc="goal.user_id.name or '-'"/></td>
+                                <td><span t-esc="goal.x_user_department_id.name or '-'"/></td>
+                                <td><span t-esc="goal.definition_id.name or goal.display_name or '-'"/></td>
+                                <td><span t-esc="goal.challenge_id.name or '-'"/></td>
+                                <td>
+                                    <span t-if="goal.state == 'reached'" class="state-reached">✓ Alcanzada</span>
+                                    <span t-if="goal.state == 'inprogress'" class="state-inprogress">⏳ En Progreso</span>
+                                    <span t-if="goal.state == 'failed'" class="state-failed">✗ Fallida</span>
+                                    <span t-if="goal.state == 'draft'" class="state-draft">Borrador</span>
+                                </td>
+                                <td>
+                                    <div class="progress-bar-container">
+                                        <div class="progress-bar-fill" t-attf-style="width: #{min(goal.completeness or 0, 100)}%;">
+                                            <span t-esc="'{:.1f}%'.format(goal.completeness or 0)"/>
+                                        </div>
+                                    </div>
+                                </td>
+                                <td><span t-esc="goal.x_reached_date.strftime('%d/%m/%Y') if goal.x_reached_date else '-'"/></td>
+                                <td style="text-align: right;">
+                                    <span t-if="goal.x_bonification_amount" t-esc="'${:.2f}'.format(goal.x_bonification_amount)"/>
+                                    <span t-else="">-</span>
+                                </td>
+                            </tr>
+                        </tbody>
+                    </table>
+
+                    <!-- Pie de página con totales -->
+                    <div class="summary-box" style="margin-top: 20px;">
+                        <div class="row">
+                            <div class="col-8">
+                                <strong>Total bonificaciones de metas alcanzadas:</strong>
+                            </div>
+                            <div class="col-4 text-right">
+                                <strong t-esc="'${:.2f}'.format(sum(g.x_bonification_amount or 0 for g in docs if g.state == 'reached'))"/>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </t>
+        </t>
+    </template>
+</odoo>
+<!--<odoo>
+    <report
+        id="action_report_progress"
+        model="gamification.goal"
+        string="Reporte de Progreso"
+        report_type="qweb-pdf"
+        name="gamification_custom.report_goal_progress"
+        file="gamification_custom.report_goal_progress"
+        print_report_name="'progreso_metas_%s' % (object.user_id.name.replace(' ', '_') if object and hasattr(object, 'user_id') else 'general')"
+    />
+
+    <report
+        id="action_report_progress_xlsx"
+        model="gamification.goal"
+        string="Reporte de Progreso XLSX"
+        report_type="xlsx"
+        name="gamification_custom.goal_progress_xlsx"
+        file="gamification_custom.goal_progress_xlsx"
+    />
+
+    <template id="report_goal_progress">
+        <t t-call="web.html_container">
+            <t t-call="web.internal_layout">
+                <div class="page">
+                    <h2>Progreso de Metas</h2>
+                    <p>
+                        <t t-if="data.get('user_name')">Usuario: <t t-esc="data.get('user_name')"/></t>
+                        <t t-if="data.get('goal_count')"> | Total de metas: <t t-esc="data.get('goal_count')"/></t>
+                        <t t-if="data.get('challenge_name')"> | Desafío: <t t-esc="data.get('challenge_name')"/></t>
+                    </p>
+                    <table class="table table-sm o_main_table" style="width:100%;">
+                        <thead>
+                            <tr>
+                                <th>Meta</th>
+                                <th>Desafío</th>
+                                <th>Estado</th>
+                                <th>Avance</th>
+                                <th>Fecha de cumplimiento</th>
+                                <th>Bonificación</th>
+                                <th>Bonificación monetaria</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            <tr t-foreach="docs" t-as="goal">
+                                <td><span t-esc="goal.definition_id.name or goal.display_name"/></td>
+                                <td><span t-esc="goal.challenge_id.name"/></td>
+                                <td><span t-esc="goal._fields['state'].convert_to_export(goal.state, goal)"/></td>
+                                <td><span t-esc="'%.2f%%' % (goal.completeness or 0.0)"/></td>
+                                <td><span t-esc="goal.x_reached_date and goal.x_reached_date.strftime('%d/%m/%Y') or ''"/></td>
+                                <td><span t-esc="goal.x_bonification"/></td>
+                                <td><span t-esc="goal.x_bonification_amount"/></td>
+                            </tr>
+                        </tbody>
+                    </table>
+                </div>
+            </t>
+        </t>
+    </template>
+</odoo>-->

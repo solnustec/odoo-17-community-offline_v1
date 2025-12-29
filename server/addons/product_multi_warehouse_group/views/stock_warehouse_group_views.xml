@@ -1,0 +1,44 @@
+<odoo>
+    <!-- Vista de formulario -->
+    <record id="view_warehouse_group_form" model="ir.ui.view">
+        <field name="name">stock.warehouse.group.form</field>
+        <field name="model">stock.warehouse.group</field>
+        <field name="arch" type="xml">
+            <form>
+                <sheet>
+                    <group>
+                        <field name="name"/>
+                        <!-- Cambiamos el widget para usar checkboxes -->
+                        <field name="warehouse_ids" widget="many2many_checkboxes"/>
+                    </group>
+                </sheet>
+            </form>
+        </field>
+    </record>
+
+    <!-- Vista de lista -->
+    <record id="view_warehouse_group_tree" model="ir.ui.view">
+        <field name="name">stock.warehouse.group.tree</field>
+        <field name="model">stock.warehouse.group</field>
+        <field name="arch" type="xml">
+            <tree>
+                <field name="name"/>
+            </tree>
+        </field>
+    </record>
+
+    <!-- Acción -->
+    <record id="action_warehouse_group" model="ir.actions.act_window">
+        <field name="name">Grupo de Farmacias</field>
+        <field name="res_model">stock.warehouse.group</field>
+        <field name="view_mode">tree,form</field>
+        <field name="view_id" ref="view_warehouse_group_tree"/>
+    </record>
+
+    <!-- Menú -->
+    <menuitem id="menu_warehouse_group"
+              name="Grupo de Farmacias"
+              parent="stock.menu_stock_root"
+              action="action_warehouse_group"
+              sequence="10"/>
+</odoo>

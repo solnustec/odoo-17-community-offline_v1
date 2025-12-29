@@ -1,0 +1,79 @@
+<odoo>
+    <!-- Vista de formulario para Instituciones -->
+    <record id="view_institution_form" model="ir.ui.view">
+        <field name="name">institution.form</field>
+        <field name="model">institution</field>
+        <field name="arch" type="xml">
+            <form string="Instituciones">
+                <sheet>
+                    <group>
+                        <field name="id_institutions"/>
+                        <field name="name"/>
+                        <field name="ruc_institution"/>
+                        <field name="agreement_date"/>
+                        <field name="address"/>
+                        <field name="cellphone"/>
+                        <field name="court_day"/>
+                        <field name="additional_discount_percentage"/>
+                        <field name="pvp"/>
+                        <field name="type_credit_institution"/>
+                        <field name="pos_ids" widget="many2many_tags"/>
+                    </group>
+                    <group string="Gestión de Clientes por Excel">
+                        <field name="excel_file" filename="excel_filename"/>
+                        <div class="oe_button_box" name="button_box">
+                            <button name="action_import_clients_excel"
+                                    type="object"
+                                    string="📥 Importar Excel"
+                                    class="btn-primary"/>
+                            <button name="action_export_clients_excel"
+                                    type="object"
+                                    string="📤 Exportar Excel"
+                                    class="btn-secondary"/>
+                        </div>
+                    </group>
+                    <notebook>
+                        <page string="Clientes Asociados">
+                            <field name="institution_client_ids">
+                                <tree editable="bottom">
+                                    <field name="partner_id" string="Cliente"/>
+                                    <field name="sale" string="Cupo asignado"/>
+                                    <field name="available_amount" string="Saldo"/>
+                                </tree>
+                            </field>
+                        </page>
+                    </notebook>
+                </sheet>
+
+            </form>
+        </field>
+    </record>
+
+    <!-- Vista de árbol para Instituciones -->
+    <record id="view_institution_tree" model="ir.ui.view">
+        <field name="name">institution.tree</field>
+        <field name="model">institution</field>
+        <field name="arch" type="xml">
+            <tree string="Registro de Instituciones">
+                <field name="name"/>
+                <field name="ruc_institution"/>
+                <field name="address"/>
+                <field name="court_day"/>
+                <field name="additional_discount_percentage"/>
+            </tree>
+        </field>
+    </record>
+
+    <!-- Acción para Instituciones -->
+    <record id="action_institution" model="ir.actions.act_window">
+        <field name="name">Instituciones</field>
+        <field name="res_model">institution</field>
+        <field name="view_mode">tree,form</field>
+    </record>
+
+    <!-- Menú para Instituciones -->
+    <menuitem id="menu_institution"
+              name="Instituciones"
+              parent="point_of_sale.menu_point_config_product"
+              action="action_institution"/>
+</odoo>

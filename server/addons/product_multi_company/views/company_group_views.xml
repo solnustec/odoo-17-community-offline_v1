@@ -1,0 +1,42 @@
+<?xml version="1.0" ?>
+<odoo>
+    <record id="view_company_group_tree" model="ir.ui.view">
+        <field name="name">company.group.tree</field>
+        <field name="model">company.group</field>
+        <field name="arch" type="xml">
+            <tree string="Grupos de Empresas">
+                <field name="name"/>
+                <field name="company_ids"/>
+            </tree>
+        </field>
+    </record>
+
+    <record id="view_company_group_form" model="ir.ui.view">
+        <field name="name">company.group.form</field>
+        <field name="model">company.group</field>
+        <field name="arch" type="xml">
+            <form string="Grupo de Empresas">
+                <sheet>
+                    <group>
+                        <field name="name"/>
+                        <field name="company_ids" widget="many2many_tags"/>
+                    </group>
+                </sheet>
+            </form>
+        </field>
+    </record>
+
+    <record id="action_company_group" model="ir.actions.act_window">
+        <field name="name">Grupos de Empresas</field>
+        <field name="res_model">company.group</field>
+        <field name="view_mode">tree,form</field>
+        <field name="view_id" ref="view_company_group_tree"/>
+        <field name="help" type="html">
+            <p class="o_view_nocontent_smiling_face">
+                Crea tu primer grupo de empresas
+            </p>
+        </field>
+    </record>
+
+    <menuitem id="menu_company_group_root" name="Grupos de Empresas" sequence="10" action="action_company_group" parent="base.menu_administration"/>
+</odoo>

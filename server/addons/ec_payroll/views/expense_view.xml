@@ -1,0 +1,212 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<odoo>
+	<data>
+		<record model="ir.ui.view" id="hr_expense_form_view">
+			<field name="name">hr.expense.form</field>
+			<field name="model">hr.expense</field>
+			<field name="inherit_id" ref="hr_expense.hr_expense_form_view" />
+			<field name="arch" type="xml">
+			
+				<xpath expr="//button[@name='submit_expenses']" position="after">
+                	<button string='Imprimir Gastos'
+						type="object" class="oe_highlight" name="get_print_expense" />
+                </xpath>
+                
+				<field name="product_id" position="replace" />
+				<field name="unit_amount" position="replace" />
+				<field name="quantity" position="replace" />
+				<field name="tax_ids" position="replace" />
+				<field name="account_id" position="replace" />
+				<field name="total_amount" position="replace" />
+				<field name="reference" position="replace" />
+				<field name="currency_id" position="replace" />
+				<field name="analytic_account_id" position="replace" />
+				<field name="date" position="replace" />
+				<field name="employee_id" position="replace" />
+				<field name="payment_mode" position="replace" />
+				<field name="sheet_id" position="replace" />
+				<field name="company_id" position="replace" />
+				<label for="payment_mode" position="replace" />
+				<label for="quantity" position="replace" />
+				<field name="sale_order_id" position="replace" />
+				<field name="description" position="replace">
+					<group>
+						<group>
+							<field name="employee_id" />
+							<label for="payment_mode" />
+							<div>
+								<field name="payment_mode" widget="radio" />
+							</div>
+						</group>
+						<group>
+							<field name="sheet_id" invisible="1" />
+							<field name="date" />
+							<field name="company_id" groups="base.group_multi_company" />
+						</group>
+					</group>
+					<notebook colpsan="4">
+						<page string="Detalle de Gastos">
+							<field name="invoice_data_ids" colspan="4" nolabel="1">
+								<tree>
+									<field name="type" />
+									<field name="partner_id" />
+									<field name="product_id" />
+									<field name="description" />
+									<field name="subtotal_iva" sum="" />
+									<field name="subtotal_retencion_iva" sum="" />
+									<field name="subtotal_retencion_renta" sum="" />
+									<field name="subtotal" sum="" />
+								</tree>
+								<form>
+									<group>
+										<group>
+											<field name="type" />
+											<field name="foreign" invisible="1" />
+											<field name="partner_id"
+												invisible="type != 'invoice'" required="type == 'invoice'"/>
+											<field name="description" />
+											<field name="document_type"
+												invisible="type != 'invoice'" required="type == 'invoice'"/>
+											<field name="authorization_third_id"
+												required="foreign == False and document_type == 'normal' and type == 'invoice'" invisible=""':['|',('foreign','=',True), '|', ('document_type','!=','normal'), ('type', '!=', 'invoice')]}"
+												domain="[('partner_id', '=', partner_id),('document_type','=','invoice')]"
+												context="{'default_partner_id': partner_id, 'default_document_type': 'invoice','document_type':'invoice', 'form_view_ref':'ec_sri_authorizathions.sri_authorization_supplier_documents_form_view'}"
+												options="{'no_quick_create': True}" />
+											<field name="electronic_authorization"
+												invisible="document_type != 'electronic' or type != 'invoice'" required="document_type == 'electronic' and type == 'invoice'"/>
+											<field name="document_number"
+												invisible="type != 'invoice'" required="type == 'invoice'"/>
+											<field name="invoice_date"
+												invisible="type != 'invoice'" required="type == 'invoice'"/>
+											<field name="tax_support_id"
+												invisible="type != 'invoice'" required="type == 'invoice'"/>
+										</group>
+										<group>
+											<field name="product_id" widget="selection" required="1" />
+											<field name="quantity" />
+											<field name="price_unit" />
+											<field name="tax_ids" widget="many2many_tags"
+												invisible="type != 'invoice'" required="type == 'invoice'"/>
+											<field name="subtotal_iva" invisible="type != 'invoice'"/>
+											<field name="subtotal_retencion_iva" invisible="type != 'invoice'"/>
+											<field name="subtotal_retencion_renta" invisible="type != 'invoice'"/>
+											<field name="subtotal" />
+											<field name="account_analytic_id" />
+										</group>
+									</group>
+								</form>
+							</field>
+						</page>
+						<page string="Facturas">
+							<field name="invoice_ids" nolabel="1"
+								invisible="invoice_ids == []"/>
+						</page>
+						<page string="Notas">
+							<field name="description" placeholder="Notes..." />
+						</page>
+					</notebook>
+				</field>
+			</field>
+		</record>
+
+		<record model="ir.ui.view" id="hr_expense_sheet_form_view">
+			<field name="name">hr.expense.sheet.form</field>
+			<field name="model">hr.expense.sheet</field>
+			<field name="inherit_id" ref="hr_expense.view_hr_expense_sheet_form" />
+			<field name="arch" type="xml">
+				<xpath
+					expr="//field[@name='expense_line_ids']/tree//field[@name='analytic_account_id']"
+					position="attributes">
+					<attribute name="invisible">1</attribute>
+				</xpath>
+				<xpath
+					expr="//field[@name='expense_line_ids']/tree//field[@name='tax_ids']"
+					position="attributes">
+					<attribute name="invisible">1</attribute>
+				</xpath>
+				<xpath
+					expr="//field[@name='expense_line_ids']/tree//field[@name='total_amount']"
+					position="replace">
+					<field name="total_expense_invoice" />
+					<field name="total_expense_no_invoice" />
+					<field name="total_expense" />
+				</xpath>
+				<field name="payment_mode" position="after">
+					<field name="payment_id" invisible="payment_id == False"/>
+				</field>
+				<field name="journal_id" position="replace">
+					<field name="paid_journal_id" widget="selection"
+						domain="[('type', 'in', ('bank', 'cash'))]" />
+					<field name="payment_date"
+						required="paid_journal_id != False"/>
+					<field name="type_bank_account" invisible="1" />
+					<field name="hide_payment_method" invisible="1" />
+					<field name="payment_method_id" string=" " widget="radio"
+						invisible="hide_payment_method == True"/>
+					<field name="payment_method_code" invisible="1" />
+					<field name="beneficiary" placeholder="Si es diferente al nombre del empleado"
+						invisible="type_bank_account != 'current'"/>
+					<field name="check_id"
+						invisible="type_bank_account != 'current' or payment_method_code != 'check_printing'" required="type_bank_account == 'current' and payment_method_code == 'check_printing'"
+						domain="[('state', '=', 'active'), ('journal_id', '=', paid_journal_id)]" />
+					<field name="city_id"
+						invisible="type_bank_account != 'current' or payment_method_code != 'check_printing'" required="type_bank_account == 'current' and payment_method_code == 'check_printing'"/>
+					<field name="date_release" string="Fecha para Deposito"
+						invisible="type_bank_account != 'current' or payment_method_code != 'check_printing'"
+						placeholder="Deje vacío para usar fecha de pago" help="Aplica solo para cheques" />
+					<field name="total_expense" />
+				</field>
+				<field name="accounting_date" position="replace" />
+				<button name="%(hr_expense.hr_expense_sheet_register_payment_wizard_action)d"
+					position="replace">
+					<button name="generate_payment" type="object" string="Generar Pago"
+						class="oe_highlight o_expense_sheet_pay" invisible="state != 'post'"
+						context="{'default_amount': total_amount, 'partner_id': address_id}"
+						groups="account.group_account_user" />
+
+				</button>
+			</field>
+		</record>
+
+
+		<record model="ir.ui.view" id="hr_expense_pivot_view">
+			<field name="name">hr.expense.pivot</field>
+			<field name="model">hr.expense</field>
+			<field name="inherit_id" ref="hr_expense.hr_expense_view_pivot" />
+			<field name="arch" type="xml">
+				<field name="total_amount" position="replace">
+					<field name="total_expense_invoice" type="measure"/>
+					<field name="total_expense_no_invoice" type="measure"/>
+					<field name="total_expense" type="measure"/>
+				</field>
+			</field>
+		</record>
+
+		<record model="ir.ui.view" id="hr_expense_graph_view">
+			<field name="name">hr.expense.graph</field>
+			<field name="model">hr.expense</field>
+			<field name="inherit_id" ref="hr_expense.hr_expense_view_graph" />
+			<field name="arch" type="xml">
+				<field name="total_amount" position="replace">
+					<field name="total_expense_invoice" type="measure"/>
+					<field name="total_expense_no_invoice" type="measure"/>
+					<field name="total_expense" type="measure"/>
+				</field>
+			</field>
+		</record>
+
+		<record model="ir.ui.view" id="hr_expense_tree_view">
+			<field name="name">hr.expense.tree</field>
+			<field name="model">hr.expense</field>
+			<field name="inherit_id" ref="hr_expense.view_expenses_tree" />
+			<field name="arch" type="xml">
+				<field name="total_amount" position="replace">
+					<field name="total_expense_invoice" sum=""/>
+					<field name="total_expense_no_invoice" sum=""/>
+					<field name="total_expense" sum=""/>
+				</field>
+			</field>
+		</record>
+
+	</data>
+</odoo>

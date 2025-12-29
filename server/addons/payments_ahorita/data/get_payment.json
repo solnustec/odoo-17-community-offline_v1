@@ -1,0 +1,23 @@
+{
+  "Information": {
+    "TypeSearch": "QR_REFERENCE",
+    "TransactionCode": "eyJUWVAiOiIzIiwiQ0giOiIxIiwiSUQiOiJ0NVJlbjdrdCtNL3pqUUFxNlA5NkZ3N0R2cmEvNWhDY0FWS0JIRFhtRW5VPSJ9",
+    "TransactionDate": "2024-11-21T00:00:00",
+    "TransactionDateEnd": "2024-11-21T00:00:00",
+    "UniqueCode": "26115388-xzhcpmeh-3ACCDF1042521A8AE0",
+    "IdLastMovement": 0,
+    "PageSize": 30
+  },
+  "MessageId": "getTransactionData-20241120105502",
+  "TransactionId": "20241120105502",
+  "ChannelId": "AEX",
+  "DeviceId": "FAKE_ID",
+  "SourceIP": "127.0.0.1",
+  "MessageCreationDate": "2024-11-22T11:17:26.5122722-05:00",
+  "UserId": 415472,
+  "SessionId": "0",
+  "FingerPrint": null,
+  "UserLanguage": "ES",
+  "OriginTransaction": "CONSULTA PAGO QR"
+}
+

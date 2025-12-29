@@ -1,0 +1,16 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<odoo>
+    <!--    Menu item en configuracion-->
+    <menuitem id="menu_app_mobile_settings"
+              name="Aplicación móvil"
+              parent="website.menu_website_global_configuration"
+              sequence="60">
+        <!--        submenu-->
+        <menuitem id="menu_ecommerce_payment_providers1"
+                  name="Banners de publicidad"
+                  action="api_store.menu_app_mobile_action_banners"
+                  sequence="10"
+        />
+
+    </menuitem>
+</odoo>

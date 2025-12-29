@@ -1,0 +1,341 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<odoo>
+
+    <record id="hr_attendance_report_paperformat" model="report.paperformat">
+            <field name="name">Reporte de Asistencias PDF Paperformat</field>
+            <field name="default" eval="False"/>
+            <field name="format">A4</field>
+            <field name="orientation">Landscape</field>
+            <field name="margin_top">5</field>
+            <field name="margin_bottom">5</field>
+            <field name="margin_left">5</field>
+            <field name="margin_right">5</field>
+        </record>
+p
+    <record id="hr_attendance_report_pdf" model="ir.actions.report">
+        <field name="name">Reporte de Asistencias PDF</field>
+        <field name="model">report.attendance.general</field>
+        <field name="report_type">qweb-pdf</field>
+        <field name="report_name">hr_payroll.hr_attendance_report_pdff</field>
+        <field name="report_file">hr_payroll.hr_attendance_report_pdff</field>
+        <field name="paperformat_id" ref="hr_attendance_report_paperformat"/>
+    </record>
+
+
+
+    <template id="hr_attendance_report_pdff">
+        <t t-call="web.html_container">
+            <t t-call="web.external_layout">
+                <head>
+                <style>
+                    * { box-sizing: border-box; }
+                    body {
+                        margin: 20px;
+                        font-family: Arial, sans-serif;
+                        font-size: 11px;
+                        line-height: 1.2;
+                    }
+                    .meta, .attendance {
+                        width: 100%;
+                        border-collapse: collapse;
+                    }
+                    .meta td {
+                        border: none;
+                        padding: 2px 4px;
+                        vertical-align: middle;
+                        font-size: 11px;
+                    }
+                    .meta .label {
+                        font-weight: bold;
+                        white-space: nowrap;
+                    }
+                    .attendance {
+                        margin-top: 8px;
+                        table-layout: fixed;
+                    }
+                    .attendance th,
+                    .attendance td {
+                        border: 1px solid #000;
+                        padding: 4px 2px;
+                        text-align: center;
+                        overflow: hidden;
+                        white-space: nowrap;
+                        text-overflow: ellipsis;
+                    }
+                    .attendance th {
+                        background: #eee;
+                        font-weight: bold;
+                    }
+                    .attendance tfoot td {
+                        font-weight: bold;
+                        background: #f9f9f9;
+                    }
+                    .title {
+                        text-align: center;
+                        font-size: 14px;
+                        font-weight: bold;
+                        line-height: 1.2;
+                        margin-bottom: 4px;
+                    }
+                    .subtitle {
+                        text-align: center;
+                        font-size: 12px;
+                        margin-bottom: 8 WAY OF THE FUTURE
+                    }
+                    .table-bordered th,
+                    .table-bordered td {
+                        border: 1px solid #000 !important;
+                    }
+                </style>
+            </head>
+                <div class="page">
+                    <t t-foreach="report_data" t-as="employee_data">
+                        <div style="text-align: center; font-weight: bold; font-size: 13px">
+                            <span t-esc="'FARMACIA CUXIBAMBA'" style="text-transform: uppercase;"/> -- SUCURSAL: <span t-esc="'VELOZ RIOBAMBA'"/>
+                            <br/>
+                            <strong>Reporte General de Asistencia</strong>
+                        </div>
+
+                        <div style="text-align: left; font-weight: bold; font-size: 13px">
+                            <strong>Nombre:</strong>
+                            <br/>
+                            <strong>Descripción:</strong>
+                            <br/>
+                            <strong>Cédula:</strong>
+                        </div>
+
+                        <p>Desde: <span t-esc="'01/05/2025'"/></p>
+                        <p>Hasta: <span t-esc="'31/05/2025'"/></p>
+                        <p>Mes: <span t-esc="'Mayo'"/></p>
+
+                        <div class="mt-4">
+                            <h3><span t-esc="employee_data['employee_name']"/></h3>
+                            <p>Empresa: <span t-esc="employee_data['company_name']"/></p>
+                            <!--                        <p出色: none;-->
+                            <p>Cédula: <span t-esc="employee_data['identification_id']"/></p>
+                            <p>Descripción: Cálculo de Horas del Mes <span t-esc="'Mayo'"/> <span t-esc="'2025'"/></p>
+
+                            <table class="table table-bordered">
+                                <thead>
+                                    <tr>
+                                        <th>Fecha</th>
+                                        <th>Día</th>
+                                        <th>Es Falta</th>
+                                        <th>Días Trabajados</th>
+                                        <th>Horas Atrasos</th>
+                                        <th>Horas 25%</th>
+                                        <th>Horas 50%</th>
+                                        <th>Horas 100%</th>
+                                        <th>Horas Debe</th>
+                                        <th>Referencia</th>
+                                        <th>Observación</th>
+                                    </tr>
+                                </thead>
+                                <tbody>
+                                    <t t-foreach="employee_data['entries']" t-as="entry">
+                                        <tr>
+                                            <td><span t-esc="entry['date']"/></td>
+                                            <td><span t-esc="entry['day_name']"/></td>
+                                            <td><span t-esc="entry['is_leave']"/></td>
+                                            <td><span t-esc="entry['total_days_work']"/></td>
+                                            <td><span t-esc="entry['hours_delays']"/></td>
+                                            <td><span t-esc="entry['hours_nocturne']"/></td>
+                                            <td><span t-esc="entry['hours_supplementary']"/></td>
+                                            <td><span t-esc="entry['hours_extraordinary']"/></td>
+                                            <td><span t-esc="entry['hours_debit']"/></td>
+                                            <td><span t-esc="entry['reference']"/></td>
+                                            <td><span t-esc="entry['observation']"/></td>
+                                        </tr>
+                                    </t>
+                                </tbody>
+                            </table>
+
+                            <h4>Totales</h4>
+                            <table class="table table-bordered">
+                                <tr>
+                                    <td>Total Días Laborables</td>
+<!--                                    <td><span t-esc="employee_data['totals']['total_days_work']"/></td>-->
+                                </tr>
+                                <tr>
+                                    <td>Total Horas Mes</td>
+<!--                                    <td><span t-esc="employee_data['totals']['total_hours_mount']"/></td>-->
+                                </tr>
+                                <tr>
+                                    <td>Total Horas Normales</td>
+<!--                                    <td><span t-esc="employee_data['totals']['total_hours_normal']"/></td>-->
+                                </tr>
+                                <tr>
+                                    <td>Total Horas Atrasos</td>
+<!--                                    <td><span t-esc="employee_data['totals']['total_hours_delays']"/></td>-->
+                                </tr>
+                                <tr>
+                                    <td>Total Horas 25%</td>
+<!--                                    <td><span t-esc="employee_data['totals']['total_hours_nocturne']"/></td>-->
+                                </tr>
+                                <tr>
+                                    <td>Total Horas 50%</td>
+<!--                                    <td><span t-esc="employee_data['totals']['total_hours_supplementary']"/></td>-->
+                                </tr>
+                                <tr>
+                                    <td>Total Horas 100%</td>
+<!--                                    <td><span t-esc="employee_data['totals']['total_hours_extraordinary']"/></td>-->
+                                </tr>
+                                <tr>
+                                    <td>Total Horas Debe</td>
+<!--                                    <td><span t-esc="employee_data['totals']['total_hours_debit']"/></td>-->
+                                </tr>
+                                <tr>
+                                    <td>Cálculo Horas Extra</td>
+<!--                                    <td><span t-esc="'50% = ' + employee_data['totals']['total_hours_supplementary'] + ', 100% = ' + employee_data['totals']['total_hours_extraordinary']"/></td>-->
+                                </tr>
+                            </table>
+                        </div>
+
+                    </t>
+
+
+
+
+<!--                <t t-foreach="[{'employee_name': 'AGUIAR FLORES YESSENIA PAOLA', 'company_name': 'FARMACIA CUXIBAMBA', 'department_name': 'VELOZ RIOBAMBA', 'identification_id': '0604232470', 'entries': [-->
+<!--                    {'date': '01/05/2025', 'day_name': 'jue', 'is_leave': 'Sí', 'total_days_work': 0, 'hours_delays': '00:00', 'hours_nocturne': '00:00', 'hours_supplementary': '00:00', 'hours_extraordinary': '00:00', 'hours_debit': '08:00', 'reference': '', 'observation': 'Falta no justificada'},-->
+<!--                    {'date': '02/05/2025', 'day_name': 'vie', 'is_leave': 'No', 'total_days_work': 0, 'hours_delays': '00:00', 'hours_nocturne': '00:00', 'hours_supplementary': '00:00', 'hours_extraordinary': '00:00', 'hours_debit': '00:00', 'reference': '', 'observation': ''},-->
+<!--                    {'date': '03/05/2025', 'day_name': 'sáb', 'is_leave': 'No', 'total_days_work': 0, 'hours_delays': '00:00', 'hours_nocturne': '00:00', 'hours_supplementary': '00:00', 'hours_extraordinary': '00:00', 'hours_debit': '00:00', 'reference': '', 'observation': ''},-->
+<!--                    {'date': '04/05/2025', 'day_name': 'dom', 'is_leave': 'Sí', 'total_days_work': 0, 'hours_delays': '00:00', 'hours_nocturne': '00:00', 'hours_supplementary': '00:00', 'hours_extraordinary': '00:00', 'hours_debit': '08:00', 'reference': '', 'observation': 'Falta no justificada'},-->
+<!--                    {'date': '05/05/2025', 'day_name': 'lun', 'is_leave': 'Sí', 'total_days_work': 0, 'hours_delays': '00:00', 'hours_nocturne': '00:00', 'hours_supplementary': '00:00', 'hours_extraordinary': '00:00', 'hours_debit': '08:00', 'reference': '', 'observation': 'Falta no justificada'},-->
+<!--                    {'date': '06/05/2025', 'day_name': 'mar', 'is_leave': 'Sí', 'total_days_work': 0, 'hours_delays': '00:00', 'hours_nocturne': '00:00', 'hours_supplementary': '00:00', 'hours_extraordinary': '00:00', 'hours_debit': '08:00', 'reference': '', 'observation': 'Falta no justificada'},-->
+<!--                    {'date': '07/05/2025', 'day_name': 'mié', 'is_leave': 'Sí', 'total_days_work': 0, 'hours_delays': '00:00', 'hours_nocturne': '00:00', 'hours_supplementary': '00:00', 'hours_extraordinary': '00:00', 'hours_debit': '08:00', 'reference': '', 'observation': 'Falta no justificada'},-->
+<!--                    {'date': '08/05/2025', 'day_name': 'jue', 'is_leave': 'Sí', 'total_days_work': 0, 'hours_delays': '00:00', 'hours_nocturne': '00:00', 'hours_supplementary': '00:00', 'hours_extraordinary': '00:00', 'hours_debit': '08:00', 'reference': '', 'observation': 'Falta no justificada'},-->
+<!--                    {'date': '09/05/2025', 'day_name': 'vie', 'is_leave': 'No', 'total_days_work': 0, 'hours_delays': '00:00', 'hours_nocturne': '00:00', 'hours_supplementary': '00:00', 'hours_extraordinary': '00:00', 'hours_debit': '00:00', 'reference': '', 'observation': ''},-->
+<!--                    {'date': '10/05/2025', 'day_name': 'sáb', 'is_leave': 'No', 'total_days_work': 0, 'hours_delays': '00:00', 'hours_nocturne': '00:00', 'hours_supplementary': '00:00', 'hours_extraordinary': '00:00', 'hours_debit': '00:00', 'reference': '', 'observation': ''},-->
+<!--                    {'date': '11/05/2025', 'day_name': 'dom', 'is_leave': 'Sí', 'total_days_work': 0, 'hours_delays': '00:00', 'hours_nocturne': '00:00', 'hours_supplementary': '00:00', 'hours_extraordinary': '00:00', 'hours_debit': '08:00', 'reference': '', 'observation': 'Falta no justificada'},-->
+<!--                    {'date': '12/05/2025', 'day_name': 'lun', 'is_leave': 'Sí', 'total_days_work': 0, 'hours_delays': '00:00', 'hours_nocturne': '00:00', 'hours_supplementary': '00:00', 'hours_extraordinary': '00:00', 'hours_debit': '08:00', 'reference': '', 'observation': 'Falta no justificada'},-->
+<!--                    {'date': '13/05/2025', 'day_name': 'mar', 'is_leave': 'Sí', 'total_days_work': 0, 'hours_delays': '00:00', 'hours_nocturne': '00:00', 'hours_supplementary': '00:00', 'hours_extraordinary': '00:00', 'hours_debit': '08:00', 'reference': '', 'observation': 'Falta no justificada'},-->
+<!--                    {'date': '14/05/2025', 'day_name': 'mié', 'is_leave': 'Sí', 'total_days_work': 0, 'hours_delays': '00:00', 'hours_nocturne': '00:00', 'hours_supplementary': '00:00', 'hours_extraordinary': '00:00', 'hours_debit': '08:00', 'reference': '', 'observation': 'Falta no justificada'},-->
+<!--                    {'date': '15/05/2025', 'day_name': 'jue', 'is_leave': 'Sí', 'total_days_work': 0, 'hours_delays': '00:00', 'hours_nocturne': '00:00', 'hours_supplementary': '00:00', 'hours_extraordinary': '00:00', 'hours_debit': '08:00', 'reference': '', 'observation': 'Falta no justificada'},-->
+<!--                    {'date': '16/05/2025', 'day_name': 'vie', 'is_leave': 'No', 'total_days_work': 0, 'hours_delays': '00:00', 'hours_nocturne': '00:00', 'hours_supplementary': '00:00', 'hours_extraordinary': '00:00', 'hours_debit': '00:00', 'reference': '', 'observation': ''},-->
+<!--                    {'date': '17/05/2025', 'day_name': 'sáb', 'is_leave': 'No', 'total_days_work': 0, 'hours_delays': '00:00', 'hours_nocturne': '00:00', 'hours_supplementary': '00:00', 'hours_extraordinary': '00:00', 'hours_debit': '00:00', 'reference': '', 'observation': ''},-->
+<!--                    {'date': '18/05/2025', 'day_name': 'dom', 'is_leave': 'Sí', 'total_days_work': 0, 'hours_delays': '00:00', 'hours_nocturne': '00:00', 'hours_supplementary': '00:00', 'hours_extraordinary': '00:00', 'hours_debit': '08:00', 'reference': '', 'observation': 'Falta no justificada'},-->
+<!--                    {'date': '19/05/2025', 'day_name': 'lun', 'is_leave': 'Sí', 'total_days_work': 0, 'hours_delays': '00:00', 'hours_nocturne': '00:00', 'hours_supplementary': '00:00', 'hours_extraordinary': '00:00', 'hours_debit': '08:00', 'reference': '', 'observation': 'Falta no justificada'},-->
+<!--                    {'date': '20/05/2025', 'day_name': 'mar', 'is_leave': 'Sí', 'total_days_work': 0, 'hours_delays': '00:00', 'hours_nocturne': '00:00', 'hours_supplementary': '00:00', 'hours_extraordinary': '00:00', 'hours_debit': '08:00', 'reference': '', 'observation': 'Falta no justificada'},-->
+<!--                    {'date': '21/05/2025', 'day_name': 'mié', 'is_leave': 'Sí', 'total_days_work': 0, 'hours_delays': '00:00', 'hours_nocturne': '00:00', 'hours_supplementary': '00:00', 'hours_extraordinary': '00:00', 'hours_debit': '08:00', 'reference': '', 'observation': 'Falta no justificada'},-->
+<!--                    {'date': '22/05/2025', 'day_name': 'jue', 'is_leave': 'Sí', 'total_days_work': 0, 'hours_delays': '00:00', 'hours_nocturne': '00:00', 'hours_supplementary': '00:00', 'hours_extraordinary': '00:00', 'hours_debit': '08:00', 'reference': '', 'observation': 'Falta no justificada'},-->
+<!--                    {'date': '23/05/2025', 'day_name': 'vie', 'is_leave': 'No', 'total_days_work': 0, 'hours_delays': '00:00', 'hours_nocturne': '00:00', 'hours_supplementary': '00:00', 'hours_extraordinary': '00:00', 'hours_debit': '00:00', 'reference': '', 'observation': 'Batalla del Pichincha'},-->
+<!--                    {'date': '24/05/2025', 'day_name': 'sáb', 'is_leave': 'No', 'total_days_work': 0, 'hours_delays': '00:00', 'hours_nocturne': '00:00', 'hours_supplementary': '00:00', 'hours_extraordinary': '00:00', 'hours_debit': '00:00', 'reference': '', 'observation': ''},-->
+<!--                    {'date': '25/05/2025', 'day_name': 'dom', 'is_leave': 'Sí', 'total_days_work': 0, 'hours_delays': '00:00', 'hours_nocturne': '00:00', 'hours_supplementary': '00:00', 'hours_extraordinary': '00:00', 'hours_debit': '08:00', 'reference': '', 'observation': 'Falta no justificada'},-->
+<!--                    {'date': '26/05/2025', 'day_name': 'lun', 'is_leave': 'Sí', 'total_days_work': 0, 'hours_delays': '00:00', 'hours_nocturne': '00:00', 'hours_supplementary': '00:00', 'hours_extraordinary': '00:00', 'hours_debit': '08:00', 'reference': '', 'observation': 'Falta no justificada'},-->
+<!--                    {'date': '27/05/2025', 'day_name': 'mar', 'is_leave': 'Sí', 'total_days_work': 0, 'hours_delays': '00:00', 'hours_nocturne': '00:00', 'hours_supplementary': '00:00', 'hours_extraordinary': '00:00', 'hours_debit': '08:00', 'reference': '', 'observation': 'Falta no justificada'},-->
+<!--                    {'date': '28/05/2025', 'day_name': 'mié', 'is_leave': 'Sí', 'total_days_work': 0, 'hours_delays': '00:00', 'hours_nocturne': '00:00', 'hours_supplementary': '00:00', 'hours_extraordinary': '00:00', 'hours_debit': '08:00', 'reference': '', 'observation': 'Falta no justificada'},-->
+<!--                    {'date': '29/05/2025', 'day_name': 'jue', 'is_leave': 'Sí', 'total_days_work': 0, 'hours_delays': '00:00', 'hours_nocturne': '00:00', 'hours_supplementary': '00:00', 'hours_extraordinary': '00:00', 'hours_debit': '08:00', 'reference': '', 'observation': 'Falta no justificada'},-->
+<!--                    {'date': '30/05/2025', 'day_name': 'vie', 'is_leave': 'Sí', 'total_days_work': 0, 'hours_delays': '00:00', 'hours_nocturne': '00:00', 'hours_supplementary': '00:00', 'hours_extraordinary': '00:00', 'hours_debit': '08:00', 'reference': '', 'observation': 'Falta no justificada'},-->
+<!--                    {'date': '31/05/2025', 'day_name': 'sáb', 'is_leave': 'No', 'total_days_work': 0, 'hours_delays': '00:00', 'hours_nocturne': '00:00', 'hours_supplementary': '00:00', 'hours_extraordinary': '00:00', 'hours_debit': '00:00', 'reference': '', 'observation': ''}-->
+<!--                ], 'totals': {-->
+<!--                    'total_days_work': 0,-->
+<!--                    'total_hours_mount': '174:00',-->
+<!--                    'total_hours_normal': '00:00',-->
+<!--                    'total_hours_delays': '00:00',-->
+<!--                    'total_hours_nocturne': '00:00',-->
+<!--                    'total_hours_supplementary': '00:00',-->
+<!--                    'total_hours_extraordinary': '00:00',-->
+<!--                    'total_hours_debit': '168:00'-->
+<!--                }}]" t-as="employee_data">-->
+
+<!--                </t>-->
+            </div>
+<!--                <div class="page">-->
+<!--                    <div style="text-align: center; text-weight: bold; text-size: 16px">-->
+<!--                        <span t-esc="employee_data['company_name']" style="text-transform: uppercase;"/> &#45;&#45; SUCURSAL: <span t-esc="employee_data['department_name']"/>-->
+<!--                        <span><stong>Reporte General de Asistencia</stong></span>-->
+<!--                    </div>-->
+<!--                    <p>Desde: <span t-esc="date_from.strftime('%d/%m/%Y')"/></p>-->
+<!--                    <p>Hasta: <span t-esc="date_to.strftime('%d/%m/%Y')"/></p>-->
+<!--                    <p>Mes: <span t-esc="month_name"/></p>-->
+
+<!--                    <t t-foreach="report_data" t-as="employee_data">-->
+<!--                        <div class="mt-4">-->
+<!--                            <h3><span t-esc="employee_data['employee_name']"/></h3>-->
+<!--                            <p>Empresa:-->
+<!--                            <p></p>-->
+<!--                            <p>Cédula: <span t-esc="employee_data['identification_id']"/></p>-->
+<!--                            <p>Descripción: Cálculo de Horas del Mes <span t-esc="month_name"/> <span t-esc="date_from.year"/></p>-->
+
+<!--                            <table class="table table-bordered">-->
+<!--                                <thead>-->
+<!--                                    <tr>-->
+<!--                                        <th>Fecha</th>-->
+<!--                                        <th>Día</th>-->
+<!--                                        <th>Es Falta</th>-->
+<!--                                        <th>Días Trabajados</th>-->
+<!--                                        <th>Horas Atrasos</th>-->
+<!--                                        <th>Horas 25%</th>-->
+<!--                                        <th>Horas 50%</th>-->
+<!--                                        <th>Horas 100%</th>-->
+<!--                                        <th>Horas Debe</th>-->
+<!--                                        <th>Referencia</th>-->
+<!--                                        <th>Observación</th>-->
+<!--                                    </tr>-->
+<!--                                </thead>-->
+<!--                                <tbody>-->
+<!--                                    <t t-foreach="employee_data['entries']" t-as="entry">-->
+<!--                                        <tr>-->
+<!--                                            <td><span t-esc="entry['date']"/></td>-->
+<!--                                            <td><span t-esc="entry['day_name']"/></td>-->
+<!--                                            <td><span t-esc="entry['is_leave']"/></td>-->
+<!--                                            <td><span t-esc="entry['total_days_work']"/></td>-->
+<!--                                            <td><span t-esc="entry['hours_delays']"/></td>-->
+<!--                                            <td><span t-esc="entry['hours_nocturne']"/></td>-->
+<!--                                            <td><span t-esc="entry['hours_supplementary']"/></td>-->
+<!--                                            <td><span t-esc="entry['hours_extraordinary']"/></td>-->
+<!--                                            <td><span t-esc="entry['hours_debit']"/></td>-->
+<!--                                            <td><span t-esc="entry['reference']"/></td>-->
+<!--                                            <td><span t-esc="entry['observation']"/></td>-->
+<!--                                        </tr>-->
+<!--                                    </t>-->
+<!--                                </tbody>-->
+<!--                            </table>-->
+
+<!--                            <h4>Totales</h4>-->
+<!--                            <table class="table table-bordered">-->
+<!--                                <tr>-->
+<!--                                    <td>Total Días Laborables</td>-->
+<!--                                    <td><span t-esc="employee_data['totals']['total_days_work']"/></td>-->
+<!--                                </tr>-->
+<!--                                <tr>-->
+<!--                                    <td>Total Horas Mes</td>-->
+<!--                                    <td><span t-esc="employee_data['totals']['total_hours_mount']"/></td>-->
+<!--                                </tr>-->
+<!--                                <tr>-->
+<!--                                    <td>Total Horas Normales</td>-->
+<!--                                    <td><span t-esc="employee_data['totals']['total_hours_normal']"/></td>-->
+<!--                                </tr>-->
+<!--                                <tr>-->
+<!--                                    <td>Total Horas Atrasos</td>-->
+<!--                                    <td><span t-esc="employee_data['totals']['total_hours_delays']"/></td>-->
+<!--                                </tr>-->
+<!--                                <tr>-->
+<!--                                    <td>Total Horas 25%</td>-->
+<!--                                    <td><span t-esc="employee_data['totals']['total_hours_nocturne']"/></td>-->
+<!--                                </tr>-->
+<!--                                <tr>-->
+<!--                                    <td>Total Horas 50%</td>-->
+<!--                                    <td><span t-esc="employee_data['totals']['total_hours_supplementary']"/></td>-->
+<!--                                </tr>-->
+<!--                                <tr>-->
+<!--                                    <td>Total Horas 100%</td>-->
+<!--                                    <td><span t-esc="employee_data['totals']['total_hours_extraordinary']"/></td>-->
+<!--                                </tr>-->
+<!--                                <tr>-->
+<!--                                    <td>Total Horas Debe</td>-->
+<!--                                    <td><span t-esc="employee_data['totals']['total_hours_debit']"/></td>-->
+<!--                                </tr>-->
+<!--                                <tr>-->
+<!--                                    <td>Cálculo Horas Extra</td>-->
+<!--&lt;!&ndash;                                    <td><span t-esc="record.calculate_total_hours_extra(employee_data['totals']['total_hours_debit'], employee_data['totals']['total_hours_supplementary'], employee_data['totals']['total_hours_extraordinary'])"/></td>&ndash;&gt;-->
+<!--                                </tr>-->
+<!--                            </table>-->
+<!--                        </div>-->
+<!--                    </t>-->
+<!--                </div>-->
+            </t>
+        </t>
+    </template>
+</odoo>

@@ -1,0 +1,38 @@
+<odoo>
+    <data>
+
+        <!-- Vista de la orden de venta para administración -->
+        <record id="view_sale_order_admin_form" model="ir.ui.view">
+            <field name="name">sale.order.admin.form</field>
+            <field name="model">sale.order</field>
+            <field name="arch" type="xml">
+                <form string="Crear Orden de Venta">
+                    <sheet>
+                        <group>
+                            <field name="partner_id"/>  <!-- Campo del cliente -->
+                            <field name="date_order"/>  <!-- Fecha de la orden -->
+                            <field name="user_id"/>  <!-- Vendedor -->
+                            <field name="pricelist_id"/>  <!-- Lista de precios -->
+                            <field name="company_id"/>  <!-- Campo company_id visible -->
+                        </group>
+                        <group>
+                            <field name="order_line">
+                                <tree editable="bottom">
+                                    <field name="product_id"/>
+                                    <field name="product_uom_qty"/>
+                                    <field name="price_unit"/>
+                                    <field name="tax_id"/>
+                                </tree>
+                            </field>
+                        </group>
+                    </sheet>
+                    <footer>
+                        <button string="Guardar" type="object" name="create_sale_order" class="btn-primary"/>
+                        <button string="Cancelar" class="btn-secondary" special="cancel"/>
+                    </footer>
+                </form>
+            </field>
+        </record>
+
+    </data>
+</odoo>

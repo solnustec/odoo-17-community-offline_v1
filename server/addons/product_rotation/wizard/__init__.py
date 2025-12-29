@@ -1,0 +1,2 @@
+# -*- coding: utf-8 -*-
+from . import product_rotation_transfer_wizard

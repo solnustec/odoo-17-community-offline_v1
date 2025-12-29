@@ -1,0 +1,296 @@
+<?xml version="1.0" encoding="utf-8"?>
+<odoo>
+    <template id="report_payslip_liquidations_template">
+        <t t-call="web.html_container">
+            <t t-call="web.internal_layout">
+                <style>
+                    body {
+                    font-family: Arial, sans-serif;
+                    font-size: 11px;
+                    background-color: #f8f9fa;
+                    }
+                    .document-container {
+                    background: white;
+                    margin: 20px auto;
+                    max-width: 800px;
+                    padding: 20px;
+                    box-shadow: 0 0 10px rgba(0,0,0,0.1);
+                    }
+                    .header-title {
+                    text-align: center;
+                    font-weight: bold;
+                    font-size: 14px;
+                    margin-bottom: 5px;
+                    }
+                    .form-code {
+                    text-align: center;
+                    font-size: 10px;
+                    margin-bottom: 20px;
+                    }
+                    .employee-info {
+                    border: 2px solid #000;
+                    padding: 8px;
+                    margin-bottom: 15px;
+                    }
+                    .section-title {
+                    background-color: #e9ecef;
+                    font-weight: bold;
+                    text-align: center;
+                    padding: 5px;
+                    border: 1px solid #000;
+                    }
+                    .data-table {
+                    border-collapse: collapse;
+                    width: 100%;
+                    font-size: 10px;
+                    }
+                    .data-table th, .data-table td {
+                    border: 1px solid #000;
+                    padding: 3px 5px;
+                    text-align: left;
+                    }
+                    .data-table th {
+                    background-color: #f8f9fa;
+                    font-weight: bold;
+                    }
+                    .text-center { text-align: center !important; }
+                    .text-right { text-align: right !important; }
+                    .fw-bold { font-weight: bold !important; }
+                    .small-text { font-size: 9px; }
+                    .vacation-table {
+                    font-size: 9px;
+                    }
+                    .signatures {
+                    margin-top: 30px;
+                    font-size: 8px;
+                    }
+                    .signature-box {
+                    border-top: 1px solid #000;
+                    text-align: center;
+                    padding-top: 5px;
+                    margin-top: 20px;
+                    }
+                    .note-section {
+                    margin-top: 15px;
+                    font-size: 9px;
+                    background-color: #f8f9fa;
+                    padding: 8px;
+                    border: 1px solid #ccc;
+                    }
+                </style>
+                <!-- Header -->
+                <div class="header-title" style="padding-top: 100px;">HOJA DE CALCULO DE LIQUIDACIÓN DE HABERES</div>
+                <div class="form-code">FORM-FC-TH.012.V1</div>
+
+                <!-- Employee Information -->
+                <div class="employee-info">
+                    <div class="row">
+                        <div class="col-6">
+                            <strong>NOMBRE Y APELLIDO:</strong> <t t-esc="payslip.employee_id.name or 'ORDOÑEZ SALAZAR DIEGO RENE'"/>
+                        </div>
+                        <div class="col-6">
+                            <t t-set="meses" t-value="{'1': 'ENERO', '2': 'FEBRERO', '3': 'MARZO', '4': 'ABRIL', '5': 'MAYO', '6': 'JUNIO', '7': 'JULIO', '8': 'AGOSTO', '9': 'SEPTIEMBRE', '10': 'OCTUBRE', '11': 'NOVIEMBRE', '12': 'DICIEMBRE'}" />
+                            <strong>DIAS LABORADOS
+                                <t t-if="payslip.employee_id.contract_id.date_end">
+                                    <t t-esc="meses[str(payslip.employee_id.contract_id.date_end.month)]" />/<t t-esc="payslip.employee_id.contract_id.date_end.year" />:
+                                </t>
+                                <t t-else="">
+
+                                </t>
+
+                            </strong> <t t-esc="payslip.line_ids.filtered(lambda line: line.code == 'DYSMES')[:1].amount or '0,00'"/>
+                        </div>
+                    </div>
+                    <div class="row mt-2">
+                        <div class="col-3"><strong>C.I.:</strong> <t t-esc="payslip.employee_id.identification_id or 'N/A'"/></div>
+                        <div class="col-3"><strong>F. ENTRADA:</strong> <t t-esc="payslip.employee_id.contract_id.date_start or 'N/A'"/></div>
+                        <div class="col-3"><strong>F. SALIDA:</strong> <t t-esc="payslip.employee_id.contract_id.date_end or 'N/A'"/></div>
+                        <div class="col-3"><strong>SALARIO:</strong> <t t-esc="payslip.employee_id.contract_id.wage or 'N/A'"/></div>
+                    </div>
+                </div>
+
+                <!-- Main Content Row -->
+                <div class="row">
+                    <!-- Left Column -->
+                    <div class="col-6" style="padding-right: 15px;">
+                        <!-- Hours and Values Table -->
+                        <table class="data-table mb-3">
+                            <thead>
+                                <tr class="section-title">
+                                    <th colspan="2">TOTAL DIAS Y HORAS LABORADAS</th>
+                                </tr>
+                            </thead>
+                            <tbody>
+                                <tr><td>DIARIO</td><td class="text-right"><t t-esc="payslip.line_ids.filtered(lambda line: line.code == 'DAYLY')[:1].amount or '0,00'"/></td></tr>
+                                <tr><td>VALOR 25%</td><td class="text-right"><t t-esc="payslip.line_ids.filtered(lambda line: line.code == 'VAL_NOC_25')[:1].amount or '0,00'"/></td></tr>
+                                <tr><td>VALOR 50%</td><td class="text-right"><t t-esc="payslip.line_ids.filtered(lambda line: line.code == 'VAL_NOC_50')[:1].amount or '0,00'"/></td></tr>
+                                <tr><td>VALOR 100%</td><td class="text-right"><t t-esc="payslip.line_ids.filtered(lambda line: line.code == 'VAL_NOC_100')[:1].amount or '0,00'"/></td></tr>
+                                <tr><td>NRO H. AL 25%</td><td class="text-right"><t t-esc="payslip.line_ids.filtered(lambda line: line.code == 'NRO_HR_25')[:1].amount or '0,00'"/></td></tr>
+                                <tr><td>NRO H. AL 50%</td><td class="text-right"><t t-esc="payslip.line_ids.filtered(lambda line: line.code == 'NRO_HR_50')[:1].amount or '0,00'"/></td></tr>
+                                <tr><td>NRO H. AL 100%</td><td class="text-right"><t t-esc="payslip.line_ids.filtered(lambda line: line.code == 'NRO_HR_100')[:1].amount or '0,00'"/></td></tr>
+                                <tr><td>TOTAL HORAS 25%</td><td class="text-right"><t t-esc="payslip.line_ids.filtered(lambda line: line.code == 'TOT_HR_25')[:1].amount or '0,00'"/></td></tr>
+                                <tr><td>TOTAL HORAS 50%</td><td class="text-right"><t t-esc="payslip.line_ids.filtered(lambda line: line.code == 'TOT_HR_50')[:1].amount or '0,00'"/></td></tr>
+                                <tr><td>TOTAL HORAS 100%</td><td class="text-right"><t t-esc="payslip.line_ids.filtered(lambda line: line.code == 'TOT_HR_100')[:1].amount or '0,00'"/></td></tr>
+                                <tr><td>VALOR DIAS LABORADOS</td><td class="text-right"><t t-esc="payslip.line_ids.filtered(lambda line: line.code == 'TOT_HR_100')[:1].amount or '0,00'"/></td></tr>
+                                <tr class="fw-bold"><td>TOTAL DIAS Y HORAS LABORADAS</td><td class="text-right"><t t-esc="payslip.line_ids.filtered(lambda line: line.code == 'TOTINGM')[:1].amount or '0,00'"/></td></tr>
+                            </tbody>
+                        </table>
+
+                        <!-- Monthly Breakdown Table -->
+                        <table class="data-table vacation-table">
+                            <thead>
+                                <tr class="section-title">
+                                    <th colspan="7">CALCULO DÉCIMOS Y VACACIONES PROPORCIONALES A LA FECHA DE SALIDA</th>
+                                </tr>
+                                <tr>
+                                    <th>MES</th>
+                                    <th>VALORES REPORTADO IESS</th>
+                                    <th># DÍAS</th>
+                                    <th>XIII</th>
+                                    <th>XIV</th>
+                                    <th>VACACIONES ANUALES </th>
+                                </tr>
+                            </thead>
+                            <tbody>
+                                <t t-if="extra_info">
+                                    <t t-foreach="extra_info" t-as="data">
+                                        <tr>
+                                            <td><t t-esc="data.get('month')"/></td>
+                                            <td class="text-center"><t t-esc="data.get('neto')"/></td>
+                                            <td class="text-center"><t t-esc="data.get('days')"/></td>
+                                            <td class="text-right"><t t-esc="data.get('dt')"/></td>
+                                            <td class="text-right"><t t-esc="data.get('dc')"/></td>
+                                            <td class="text-right"><t t-esc="data.get('holidays')"/></td>
+    <!--                                            <td class="text-right"><t t-esc="mes.valores_iess"/></td>-->
+                                        </tr>
+                                    </t>
+                                </t>
+                                <t t-else="">
+                                    <tr><td>ago-24</td><td class="text-center">573,57</td><td class="text-center">30</td><td class="text-right">39,17</td><td></td><td></td><td></td></tr>
+                                    <tr><td>sept-24</td><td class="text-center">661,26</td><td class="text-center">30</td><td class="text-right">39,17</td><td></td><td></td><td></td></tr>
+                                    <tr><td>oct-24</td><td class="text-center">603,61</td><td class="text-center">30</td><td class="text-right">39,17</td><td></td><td></td><td></td></tr>
+                                    <tr><td>nov-24</td><td class="text-center">600,70</td><td class="text-center">30</td><td class="text-right">39,17</td><td></td><td></td><td></td></tr>
+                                    <tr><td>dic-24</td><td class="text-center">678,21</td><td class="text-center">30</td><td class="text-right">56,52</td><td></td><td></td><td></td></tr>
+                                    <tr><td>ene-25</td><td class="text-center">671,85</td><td class="text-center">30</td><td class="text-right">55,99</td><td></td><td></td><td></td></tr>
+                                    <tr><td>feb-25</td><td class="text-center">619,70</td><td class="text-center">30</td><td class="text-right">51,64</td><td></td><td></td><td></td></tr>
+                                    <tr><td>mar-25</td><td class="text-center">586,04</td><td class="text-center">30</td><td class="text-right">48,84</td><td></td><td></td><td></td></tr>
+                                </t>
+                                <tr class="fw-bold">
+                                    <td>TOTALES</td>
+                                    <td class="text-center"><t t-esc="holidays_totals.get('neto')"/></td>
+                                    <td class="text-center"><t t-esc="holidays_totals.get('days')"/></td>
+                                    <td class="text-right"><t t-esc="holidays_totals.get('dt')"/></td>
+                                    <td class="text-right"><t t-esc="holidays_totals.get('dc')"/></td>
+                                    <td class="text-right"><t t-esc="holidays_totals.get('holidays')"/></td>
+                                </tr>
+                            </tbody>
+                        </table>
+                    </div>
+
+                    <!-- Right Column -->
+                    <div class="col-6">
+                        <!-- Income Section -->
+                        <table class="data-table mb-3">
+                            <thead>
+                                <tr class="section-title">
+                                    <th colspan="2">INGRESOS</th>
+                                </tr>
+                            </thead>
+                            <tbody>
+                                <tr><td>DESAHUCIO (<t t-esc="payslip.line_ids.filtered(lambda line: line.code == 'DESAH')[:1].amount or '0,00'"/> AÑO)</td><td class="text-right"><t t-esc="payslip.line_ids.filtered(lambda line: line.code == 'DESAH')[:1].amount or '0,00'"/></td></tr>
+                                <tr><td>DIAS TRABAJADOS (<t t-esc="payslip.line_ids.filtered(lambda line: line.code == 'DYSMES')[:1].amount or '0,00'"/>)</td><td class="text-right"><t t-esc="payslip.line_ids.filtered(lambda line: line.code == 'VAL_DAYS_LB')[:1].amount or '0,00'"/></td></tr>
+                                <tr><td>HORA 25%</td><td class="text-right"><t t-esc="payslip.line_ids.filtered(lambda line: line.code == 'TOT_HR_25')[:1].amount or '0,00'"/></td></tr>
+                                <tr><td>HORA 50%</td><td class="text-right"><t t-esc="payslip.line_ids.filtered(lambda line: line.code == 'TOT_HR_50')[:1].amount or '0,00'"/></td></tr>
+                                <tr><td>HORA 100%</td><td class="text-right"><t t-esc="payslip.line_ids.filtered(lambda line: line.code == 'TOT_HR_100')[:1].amount or '0,00'"/></td></tr>
+                                <tr><td>BONIFICACION POR IMPULSACION</td><td class="text-right"><t t-esc="payslip.line_ids.filtered(lambda line: line.code == 'BN_Y_CM')[:1].amount or '0,00'"/></td></tr>
+                                <tr><td>TURNOS</td><td class="text-right"><t t-esc="payslip.line_ids.filtered(lambda line: line.code == 'TRNOS')[:1].amount or '0,00'"/></td></tr>
+                                <tr><td>DECIMO TERCERO</td><td class="text-right"><t t-esc="payslip.line_ids.filtered(lambda line: line.code == 'DEC_TER')[:1].amount or '0,00'"/></td></tr>
+                                <tr><td>DECIMO CUARTO</td><td class="text-right"><t t-esc="payslip.line_ids.filtered(lambda line: line.code == 'DEC_CU')[:1].amount or '0,00'"/></td></tr>
+                                <tr><td>FONDO DE RESERVA</td><td class="text-right"><t t-esc="payslip.line_ids.filtered(lambda line: line.code == 'FND_RES')[:1].amount or '0,00'"/></td></tr>
+                                <tr><td>VACACION PENDIENTE</td><td class="text-right"><t t-esc="payslip.line_ids.filtered(lambda line: line.code == 'VAC_PEND')[:1].amount or '0,00'"/></td></tr>
+                                <tr class="fw-bold"><td>TOTAL INGRESOS</td><td class="text-right"><t t-esc="payslip.line_ids.filtered(lambda line: line.code == 'TOT_INGR')[:1].amount or '0,00'"/></td></tr>
+                            </tbody>
+                        </table>
+
+                        <!-- Deductions Section -->
+                        <table class="data-table">
+                            <thead>
+                                <tr class="section-title">
+                                    <th colspan="2">DESCUENTOS</th>
+                                </tr>
+                            </thead>
+                            <tbody>
+                                <t t-foreach="payslip.line_ids.filtered(lambda line: line.category_id.code == 'EGRE')" t-as="line">
+                                    <tr><td><t t-esc="line.name"/></td><td class="text-right"><t t-esc="line.amount or '0,00'"/></td></tr>
+                                </t>
+<!--                                <tr><td>DESCUENTO IESS 9,45%</td><td class="text-right"><t t-esc="payslip.line_ids.filtered(lambda line: line.code == 'DES_IESS_9_4')[:1].amount or '0,00'"/></td></tr>-->
+<!--                                <tr><td>PRESTAMO IESS CUOTA MAYO 2025</td><td class="text-right"><t t-esc="payslip.line_ids.filtered(lambda line: line.code == 'PREST_IESS')[:1].amount or '0,00'"/></td></tr>-->
+<!--                                <tr><td>MAL COBRO DE BAUCHER</td><td class="text-right"><t t-esc="payslip.line_ids.filtered(lambda line: line.code == 'DAYS_LAB')[:1].amount or '0,00'"/></td></tr>-->
+<!--                                <tr><td>FALTANTES DE CAJA ABRIL 2025</td><td class="text-right"><t t-esc="payslip.line_ids.filtered(lambda line: line.code == 'FLT_CJA')[:1].amount or '0,00'"/></td></tr>-->
+<!--                                <tr><td>CREDITO PERSONAL FARMACIA 06/05/2025</td><td class="text-right"><t t-esc="payslip.line_ids.filtered(lambda line: line.code == 'CRED_FARM')[:1].amount or '0,00'"/></td></tr>-->
+<!--                                <tr><td>INVENTARIO DE FARMACIA 06/05/2025</td><td class="text-right"><t t-esc="payslip.line_ids.filtered(lambda line: line.code == 'INV_FARM')[:1].amount or '0,00'"/></td></tr>-->
+<!--                                <tr><td>DIAS NO LABORADOS</td><td class="text-right"><t t-esc="payslip.line_ids.filtered(lambda line: line.code == 'DAY_NO_LAB')[:1].amount or '0,00'"/></td></tr>-->
+<!--                                <tr><td>ANTICIPO DE SUELDO</td><td class="text-right"><t t-esc="payslip.line_ids.filtered(lambda line: line.code == 'ANT_SUELD')[:1].amount or '0,00'"/></td></tr>-->
+<!--                                <tr><td>VACACIONES ANTICIPADAS 1 DIA</td><td class="text-right"><t t-esc="payslip.line_ids.filtered(lambda line: line.code == 'VAC_ANT')[:1].amount or '0,00'"/></td></tr>-->
+<!--                                <tr><td>PENSIONES ALIMENTICIAS</td><td class="text-right"><t t-esc="payslip.line_ids.filtered(lambda line: line.code == 'PENS_ALIM')[:1].amount or '0,00'"/></td></tr>-->
+    <!--                                <tr><td>UNIFORMES INSTITUCIONALES</td><td class="text-right"><t t-esc="payslip.line_ids.filtered(lambda line: line.code == 'DAYS_LAB')[:1].amount or '0,00'"/></td></tr>-->
+    <!--                                <tr><td>CURSOS Y CAPACITACIONES</td><td class="text-right"><t t-esc="payslip.line_ids.filtered(lambda line: line.code == 'DAYS_LAB')[:1].amount or '0,00'"/></td></tr>-->
+    <!--                                <tr><td>ART. 190 CODIGO DE TRABAJO</td><td class="text-right"><t t-esc="payslip.line_ids.filtered(lambda line: line.code == 'DAYS_LAB')[:1].amount or '0,00'"></td></tr>-->
+                                <tr class="fw-bold"><td>TOTAL EGRESOS</td><td class="text-right"><t t-esc="payslip.line_ids.filtered(lambda line: line.code == 'TOT_EGRE')[:1].amount or '0,00'"/></td></tr>
+                                <tr class="fw-bold" style="background-color: #d4edda;"><td>TOTAL A PAGAR EN LIQUIDACION</td><td class="text-right"><t t-esc="payslip.line_ids.filtered(lambda line: line.code == 'TOT_PAY_LIQUI')[:1].amount or '0,00'"/></td></tr>
+                            </tbody>
+                        </table>
+                    </div>
+                </div>
+
+                <!-- Note Section -->
+                <div class="note-section">
+                    <strong>NOTA:</strong> <t t-esc="payslip.note or ''"/>
+                </div>
+
+                <!-- Signatures Section -->
+                <div class="signatures">
+                    <div class="row">
+                        <div class="col-3 py-1 px-2">
+                            <div class="signature-box">
+                                <div class="fw-bold">ELABORADO POR</div>
+                                <div><t t-esc="False or 'GERMANIA JARAMILLO C.'"/></div>
+                                <div><t t-esc="False or 'ANALISTA DE NOMINA'"/></div>
+                            </div>
+                        </div>
+                        <div class="col-3 py-1 px-2">
+                            <div class="signature-box">
+                                <div class="fw-bold">APROBADO POR</div>
+                                <div><t t-esc="False or 'CESAR CONSTANTE.'"/></div>
+                                <div><t t-esc="False or 'CONTROL INTERNO'"/></div>
+                            </div>
+                        </div>
+                        <div class="col-3 py-1 px-2">
+                            <div class="signature-box">
+                                <div class="fw-bold">REVISADO POR:</div>
+                                <div><t t-esc="False or 'JUSTO LANCHI M.'"/></div>
+                                <div><t t-esc="False or 'GERENTE GENERAL'"/></div>
+                            </div>
+                        </div>
+                        <div class="col-3 py-1 px-2">
+                            <div class="signature-box">
+                                <div class="fw-bold">AUTORIZADO POR</div>
+                                <div><t t-esc="False or 'EDWIN YOVANNI PALACIOS S.'"/></div>
+                                <div><t t-esc="False or 'JEFE DE TALENTO HUMANO'"/></div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </t>
+        </t>
+    </template>
+
+    <template id="report_payslip_liquidations">
+        <t t-call="web.html_container">
+            <t t-foreach="docs" t-as="o">
+                <t t-set="o" t-value="o.with_context(lang=o.employee_id.lang or o.env.lang)"/>
+                <t t-call="hr_payroll.report_payslip_liquidations_template"/>
+            </t>
+        </t>
+    </template>
+</odoo>

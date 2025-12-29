@@ -1,0 +1,8 @@
+id,name,model_id:id,group_id:id,perm_read,perm_write,perm_create,perm_unlink
+access_custom_field_public,custom.field.public,model_custom_field,base.group_public,1,0,0,0
+access_custom_field,custom.field.user,model_custom_field,base.group_user,1,0,0,0
+access_custom_category_public,custom.category.public,model_custom_category,base.group_public,1,0,0,0
+access_custom_category,custom.category.user,model_custom_category,base.group_user,1,0,0,0
+access_custom_generic_field,custom.generic_field.user,model_custom_generic_field,base.group_user,1,0,0,0
+access_ir_model_public,ir.model.public,base.model_ir_model,base.group_public,1,0,0,0
+

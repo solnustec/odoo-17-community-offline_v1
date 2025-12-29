@@ -1,0 +1,21 @@
+<?xml version="1.0" encoding="utf-8"?>
+<odoo>
+
+    <template id="show_button" inherit_id="website_sale.products_item" name="Button invisible" priority="20">
+        <xpath expr="//div[hasclass('o_wsale_product_btn')]" position="inside">
+            <t t-set="product_variant_id" t-value="product._get_first_possible_variant_id()"/>
+            <input name="product_id" t-att-value="product_variant_id" type="hidden"/>
+            <t t-if="not product_variant_id and not template_price_vals['price_reduce'] or website.prevent_zero_price_sale">
+                <a t-if="not product._website_show_quick_add()"
+                   href="#"
+                   role="button"
+                   class="btn btn-primary a-submit"
+                   aria-label=" "
+                   title=" "
+                   style="pointer-events: none; opacity: 1; background: transparent; color: transparent;">
+                    <span class="fa fa-shopping-cart bg-color" style="pointer-events: none; color: transparent !important;"/>
+                </a>
+            </t>
+        </xpath>
+    </template>
+</odoo>

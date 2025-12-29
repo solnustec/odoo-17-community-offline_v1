@@ -1,0 +1,22 @@
+<odoo>
+    <!-- Formulario de la empresa -->
+    <record id="view_company_form_inherit_establecimiento" model="ir.ui.view">
+        <field name="name">res.company.form.inherit.establecimiento</field>
+        <field name="model">res.company</field>
+        <field name="inherit_id" ref="base.view_company_form"/>
+        <field name="arch" type="xml">
+            <!-- Colocamos los campos después del campo 'vat' que siempre está presente -->
+            <xpath expr="//group" position="inside">
+                <group string="Configuración guía de remisión">
+                    <field name="establecimiento"/>
+                    <field name="punto_emision"/>
+                    <field name="numero_guia_remision"/>
+                    <field name="numero_guia_pruebas"/>
+                    <field name="l10n_ec_obligado_contabilidad"/>
+                    <field name="l10n_ec_establishment_code"/>
+                    <field name="l10n_ec_edi_certificate_id"/>
+                </group>
+            </xpath>
+        </field>
+    </record>
+</odoo>

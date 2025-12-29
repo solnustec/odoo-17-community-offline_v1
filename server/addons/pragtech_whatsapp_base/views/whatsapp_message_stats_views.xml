@@ -1,0 +1,39 @@
+<odoo>
+    <record id="view_whatsapp_messages_pivot" model="ir.ui.view">
+        <field name="name">whatsapp.messages.pivot</field>
+        <field name="model">whatsapp.messages</field>
+        <field name="arch" type="xml">
+            <pivot string="WhatsApp Mensajes - Frecuencia">
+                <field name="time" type="row"/>
+                <field name="hour" type="col"/>
+                <field name="message_count" type="measure"/>
+            </pivot>
+        </field>
+    </record>
+
+    <record id="view_whatsapp_messages_graph" model="ir.ui.view">
+        <field name="name">whatsapp.messages.graph</field>
+        <field name="model">whatsapp.messages</field>
+        <field name="arch" type="xml">
+            <graph string="Frecuencia por Hora" type="bar">
+                <field name="hour" type="row"/>
+                <field name="message_count" type="measure"/>
+            </graph>
+        </field>
+    </record>
+
+    <record id="action_whatsapp_messages_stats" model="ir.actions.act_window">
+        <field name="name">Estadísticas de Mensajes</field>
+        <field name="res_model">whatsapp.messages</field>
+        <field name="view_mode">pivot,graph</field>
+        <field name="view_id" ref="view_whatsapp_messages_pivot"/>
+        <field name="context">{}</field>
+        <field name="domain">[]</field>
+    </record>
+
+    <menuitem id="menu_whatsapp_stats"
+              name="Estadísticas de Mensajes"
+              parent="menu_whatsapp_root"
+              action="action_whatsapp_messages_stats"/>
+
+</odoo>

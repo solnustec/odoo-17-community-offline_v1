@@ -1,0 +1,12 @@
+<?xml version="1.0" encoding="utf-8"?>
+<odoo>
+    <record id="delete_duplicated_purchase_orders_by_id" model="ir.cron">
+        <field name="name">Eliminar Compras duplicadas</field>
+        <field name="model_id" ref="model_product_purchase_history"/>
+        <field name="state">code</field>
+        <field name="code">model.remove_duplicate_by_id_purchase_old()</field>
+        <field name="interval_number">1</field>
+        <field name="interval_type">days</field>
+        <field name="numbercall">-1</field>
+    </record>
+</odoo>

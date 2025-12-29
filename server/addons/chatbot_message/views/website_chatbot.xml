@@ -1,0 +1,30 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<odoo>
+    <!-- Menu item en configuracion -->
+    <menuitem id="menu_datos_chatbot"
+              name="Chatbot"
+              parent="mass_mailing.mass_mailing_menu_root"
+    >
+        <!-- Submenú -->
+        <menuitem id="menu_productos_chatbot1"
+                  name="Nombre de productos"
+                  action="chatbot_message.menu_productos_chatbot"
+        />
+        <menuitem id="menu_location_chatbot1"
+                  name="Locaciones del usuario"
+                  action="chatbot_message.menu_location_chatbot"
+        />
+        <menuitem id="menu_city_chatbot1"
+                  name="Farmacia turno/24 horas"
+                  action="chatbot_message.menu_city_chatbot"
+        />
+        <menuitem id="menu_delivery_chatbot1"
+                  name="Información de envío"
+                  action="chatbot_message.menu_delivery_chatbot"
+        />
+        <menuitem id="menu_menu_chatbot1"
+                  name="Iteraciones del usuario con el menu"
+                  action="chatbot_message.menu_chatbot_interaction"
+        />
+    </menuitem>
+</odoo>

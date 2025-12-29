@@ -1,0 +1,9 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<templates xml:space="preserve">
+    <!-- Elemento del menú desplegable para exportar PDF de encuestas -->
+    <t t-name="web.SurveyExportPdf">
+        <DropdownItem class="'o_survey_export_pdf_menu'" onSelected.bind="onDirectExportPdf">
+            <i class="fa fa-fw fa-file-pdf-o me-1"/>Exportar Métricas de Encuesta PDF
+        </DropdownItem>
+    </t>
+</templates> 

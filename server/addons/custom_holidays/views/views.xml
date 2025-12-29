@@ -1,0 +1,100 @@
+<odoo>
+    <data>
+        <record id="hr_leave_allocation_view_form_manager_inherit" model="ir.ui.view">
+            <field name="name">hr.leave.allocation.view.form.manager.inherit</field>
+            <field name="model">hr.leave.allocation</field>
+            <field name="inherit_id" ref="hr_holidays.hr_leave_allocation_view_form_manager"/>
+            <field name="arch" type="xml">
+                <xpath expr="//field[@name='employee_ids']" position="replace">
+                    <field name="employee_ids" widget="many2many_avatar_employee"
+                           groups="hr_holidays.group_hr_holidays_user"
+                           invisible="holiday_type != 'employee' or state != 'confirm' and employee_id"
+                           readonly="state in ['refuse', 'validate']"
+                           required="holiday_type == 'employee' and state == 'confirm'"
+                           domain="[('contract_id.state', '=', 'open')]"/>
+                </xpath>
+            </field>
+        </record>
+
+        <record id="edit_holiday_status_exclude_form" model="ir.ui.view">
+            <field name="name">hr.leave.type.form</field>
+            <field name="model">hr.leave.type</field>
+            <field name="inherit_id" ref="hr_holidays.edit_holiday_status_form" />
+            <field name="arch" type="xml">
+                <xpath expr="//group[@name='configuration']" position="after">
+                    <group name="Excluir fines de semana" string="Excluir">
+                        <field name="exclude_weekends"/>
+                    </group>
+                </xpath>
+            </field>
+        </record>
+
+
+        <record id="hr_accrual_plan_view_form_inherit" model="ir.ui.view">
+            <field name="name">hr.leave.accrual.plan.form.inherit</field>
+            <field name="model">hr.leave.accrual.plan</field>
+            <field name="inherit_id" ref="hr_holidays.hr_accrual_plan_view_form" />
+            <field name="arch" type="xml">
+                <xpath expr="//field[@name='name']" position="after">
+                    <field name="is_plan_general"/>
+                </xpath>
+                <xpath expr="//span[@class='oe_grey']" position="before">
+                    <group>
+                        <group string="Fecha general">
+                            <field name="day_plan_general" style="width: 2rem"/>
+                            <field name="month_plan_general" style="width: 4.75rem"/>
+                        </group>
+                    </group>
+                </xpath>
+            </field>
+        </record>
+
+
+
+        <record id="resource_calendar_leaves_form_view_new" model="ir.ui.view">
+            <field name="name">resource.calendar.leaves.form.new</field>
+            <field name="model">resource.calendar.leaves</field>
+            <field name="arch" type="xml">
+                <form>
+                    <sheet>
+                        <div class="oe_title">
+                            <h1><field name="name" placeholder="Nombre del Feriado"/></h1><br/>
+                        </div>
+                        <group>
+                            <group>
+                                <field name="date_from" string="Desde"/>
+                                <field name="date_to" string="Hasta" />
+                                <field name="type_of_leave_holiday" string="Tipo de Feriado" />
+                                <field name="city_id" invisible="type_of_leave_holiday == 'national'" string="Ciudad"/>
+                           </group>
+                        </group>
+                    </sheet>
+                </form>
+            </field>
+        </record>
+
+        <record id="resource_calendar_leaves_tree_view_new" model="ir.ui.view">
+            <field name="name">resource.calendar.leaves.tree.new</field>
+            <field name="model">resource.calendar.leaves</field>
+            <field name="arch" type="xml">
+                <tree string="Feriados">
+                    <field name="name"/>
+                    <field name="date_from"/>
+                    <field name="date_to"/>
+                    <field name="type_of_leave_holiday"/>
+                    <field name="city_id" invisible="type_of_leave_holiday == 'national'"/>
+                </tree>
+            </field>
+        </record>
+
+        <record id="hr_holidays.open_view_public_holiday" model="ir.actions.act_window">
+            <field name="name">Feriados</field>
+            <field name="view_ids" eval="[(5, 0, 0),
+        (0, 0, {'view_mode': 'tree', 'view_id': ref('resource_calendar_leaves_tree_view_new')}),
+        (0, 0, {'view_mode': 'form', 'view_id': ref('resource_calendar_leaves_form_view_new')}),
+    ]"/>
+            <field name="view_mode">tree,form</field>
+            <field name="context">{'group_by': ['type_of_leave_holiday']}</field>
+        </record>
+    </data>
+</odoo>

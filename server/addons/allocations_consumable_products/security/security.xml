@@ -1,0 +1,11 @@
+<odoo>
+    <!-- Grupo admin con XML ID asignado -->
+    <record id="group_admin_consumibles" model="res.groups" forcecreate="False">
+        <field name="name">Admin consumibles</field>
+    </record>
+
+    <!-- Grupo solo lectura -->
+    <record id="group_consumibles_readonly" model="res.groups" forcecreate="False">
+        <field name="name">Lectura consumibles</field>
+    </record>
+</odoo>

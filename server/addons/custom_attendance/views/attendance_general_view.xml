@@ -1,0 +1,121 @@
+<odoo>
+    <data>
+
+        <record id="view_hr_attendance_general_search" model="ir.ui.view">
+            <field name="name">hr.attendance.general.search</field>
+            <field name="model">hr.attendance.general</field>
+            <field name="arch" type="xml">
+                <search>
+                    <!-- Campo de búsqueda por user_id -->
+                    <field name="user_id" string="Usuario ID"/>
+                    <field name="reference" string="Referencia"/>
+
+                    <!-- Filtro por usuarios no existentes -->
+                    <filter name="user_id_not_exist"
+                            string="Usuarios no existentes"
+                            domain="[('user_id_exist', '=', False)]"/>
+
+                    <!-- Filtro: Este mes -->
+                    <filter name="filter_by_month"
+                            string="Este mes"
+                            domain="[('timestamp', '&gt;=', context_today().strftime('%Y-%m-01')),
+                                     ('timestamp', '&lt;', (context_today() + relativedelta(months=1)).strftime('%Y-%m-01'))]"
+                            help="Mostrar registros del mes actual"/>
+
+                    <!-- Filtro: Hoy -->
+                    <filter name="filter_today"
+                            string="Hoy"
+                            domain="[('timestamp', '&gt;=', context_today().strftime('%Y-%m-%d 00:00:00')),
+                                ('timestamp', '&lt;', (context_today() + relativedelta(days=1)).strftime('%Y-%m-%d 00:00:00'))]"
+                            help="Mostrar registros de hoy"/>
+
+
+
+
+
+                    <!-- Filtro: Semana pasada -->
+                    <filter name="filter_last_week"
+                            string="Semana pasada"
+                            domain="[('timestamp', '&gt;=', context_today() - relativedelta(weeks=-1))]"
+                            help="Mostrar registros de la semana pasada"/>
+                    <filter name="archived" string="Archivado" domain="[('active', '=', False)]"/>
+
+
+                    <field name="timestamp" string="Fecha"/>
+                </search>
+            </field>
+        </record>
+
+        <record id="view_form_general_attendances" model="ir.ui.view">
+            <field name="name">form.attendance.general</field>
+            <field name="model">hr.attendance.general</field>
+            <field name="arch" type="xml">
+                <form>
+                    <sheet>
+                        <div class="oe_title">
+                            <h2><field name="user_id" placeholder="Identificación"/></h2><br/>
+                        </div>
+                        <group>
+                            <group>
+                                <field name="timestamp"/>
+                                <field name="origen" readonly="1"/>
+                            </group>
+                            <group>
+                                <field name="reference"/>
+                            </group>
+                        </group>
+                    </sheet>
+                </form>
+            </field>
+        </record>
+
+        <record id="tree_form_general_attendances" model="ir.ui.view">
+            <field name="name">tree.attendance.general</field>
+            <field name="model">hr.attendance.general</field>
+            <field name="arch" type="xml">
+                <tree decoration-danger="color == 1" >
+                    <header>
+                        <button name="%(action_hr_attendance_general_modal)d"
+                                type="action" string="Procesar Marcaciones"
+                                groups="hr_contract.group_hr_contract_manager"
+                                display="always"/>
+                        <button name="action_update_state"
+                                type="object" string="Actualizar"
+                                groups="hr_contract.group_hr_contract_manager"
+                                icon="fa-refresh"
+                                display="always"/>
+                    </header>
+                    <field name="user_id"/>
+                    <field name="timestamp"/>
+                    <field name="reference"/>
+                    <field name="origen"/>
+                    <field name="create_date" string="Creación"/>
+                    <field name="color" column_invisible="1"/>
+                </tree>
+            </field>
+        </record>
+
+
+        <record id="action_general_attendances" model="ir.actions.act_window">
+            <field name="name">Registro de Marcaciones</field>
+            <field name="type">ir.actions.act_window</field>
+            <field name="res_model">hr.attendance.general</field>
+            <field name="view_mode">search,tree,form</field>
+            <field name="view_ids" eval="[(5, 0, 0),
+        (0, 0, {'view_mode': 'tree', 'view_id': ref('tree_form_general_attendances')}),
+        (0, 0, {'view_mode': 'form', 'view_id': ref('view_form_general_attendances')}),
+    ]"/>
+            <field name="search_view_id" ref="view_hr_attendance_general_search"/>
+            <field name="context">{'search_default_user_id_not_exist': 1}</field>
+        </record>
+
+
+        <menuitem id="menu_general_attendances"
+                  name="Marcaciones"
+                  parent="hr_attendance.menu_hr_attendance_root"
+                  action="action_general_attendances"
+                  sequence="5"/>
+
+    </data>
+</odoo>
+

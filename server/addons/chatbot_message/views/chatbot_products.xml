@@ -1,0 +1,36 @@
+<?xml version="1.0" encoding="utf-8"?>
+<odoo>
+    <!-- Menu Action -->
+    <record id="menu_productos_chatbot" model="ir.actions.act_window">
+        <field name="name">Lista de productos</field>
+        <field name="res_model">chatbot_message.product</field>
+        <field name="view_mode">tree,graph</field>
+    </record>
+
+    <!-- Banner tree view -->
+    <record id="view_user_product_tree" model="ir.ui.view">
+        <field name="name">chatbot_message.product.tree</field>
+        <field name="model">chatbot_message.product</field>
+        <field name="arch" type="xml">
+            <tree string="Productos del chatbot">
+                <field name="user_id"/>
+                <field name="product_name"/>
+                <field name="create_date"/>
+                <field name="create_time"/>
+            </tree>
+        </field>
+    </record>
+
+    <record id="view_user_product_graph" model="ir.ui.view">
+        <field name="name">chatbot_message.product.graph</field>
+        <field name="model">chatbot_message.product</field>
+        <field name="arch" type="xml">
+            <graph string="Productos del chatbot">
+                <field name="product_name"/>
+                <field name="user_id"/>
+                <field name="create_date"/>
+                <field name="create_time"/>
+            </graph>
+        </field>
+    </record>
+</odoo>

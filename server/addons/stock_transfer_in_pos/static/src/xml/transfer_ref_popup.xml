@@ -1,0 +1,25 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!--Plantilla utilizada para mostrar la referencia de la transferencia creada-->
+<template id="template" xml:space="preserve">
+    <t t-name="TransferRefPopup" owl="1">
+        <div class="popup popup-text popup-med stock-transfer-popup">
+            <h2 class="p-3">Transferencia de Stock</h2>
+            <div class="d-flex justify-content-center align-items-center gap-2" style="height: 60px; margin-top: 20px;">
+                <span>Referencia de la Transferencia:</span>
+                <span
+                    class="fw-bold"
+                    style="color: #017e84; cursor: pointer;"
+                    t-on-click="printReceipt">
+                    <t t-esc="props.data['name']"/>
+                    <i class="fa fa-download ms-2" title="Descargar recibo"/>
+                </span>
+            </div>
+            <div class="footer pb-3">
+                <div class="button cancel btn btn-lg btn-secondary"
+                     t-on-click="cancel">
+                      Aceptar
+                </div>
+            </div>
+        </div>
+    </t>
+</template>

@@ -1,0 +1,24 @@
+<odoo>
+    <data>
+        <record id="view_partner_address_form_vat_inherit" model="ir.ui.view">
+            <field name="name">res.partner.address.form.vat.inherit</field>
+            <field name="model">res.partner</field>
+            <field name="inherit_id" ref="base.view_partner_form"/>
+            <field name="priority" eval="1"/>
+            <field name="arch" type="xml">
+                <!-- Agregar campo VAT después del teléfono -->
+                <xpath expr="//field[@name='child_ids']/form/sheet//div[@name='div_address']" position="inside">
+                    <group>
+                        <field name="l10n_latam_identification_type_id"
+                               string="Tipo de identificación"
+                               invisible="type != 'invoice'"/>
+                        <field name="vat"
+                               string="Nro. de identificación"
+                               placeholder="Nro. de identificación"
+                               invisible="type != 'invoice'"/>
+                    </group>
+                </xpath>
+            </field>
+        </record>
+    </data>
+</odoo>

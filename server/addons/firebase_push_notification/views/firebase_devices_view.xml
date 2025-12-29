@@ -1,0 +1,55 @@
+<?xml version="1.0" encoding="utf-8"?>
+<odoo>
+    <data>
+        <!--        mensajes de notifiacion-->
+        <record id="menu_firebase_push_notification_messages_action" model="ir.actions.act_window">
+            <field name="name">Mensajes de Notificacion</field>
+            <field name="res_model">notification.message</field>
+            <field name="view_mode">tree,form</field>
+        </record>
+        <record id="view_firebase_notification_messages_tree" model="ir.ui.view">
+            <field name="name">notification.message.tree</field>
+            <field name="model">notification.message</field>
+            <field name="arch" type="xml">
+                <tree string="Mensajes de Notificación">
+                    <field name="type"/>
+                    <field name="title"/>
+                    <field name="body"/>
+                </tree>
+            </field>
+        </record>
+
+        <!--        devices-->
+
+        <record id="menu_firebase_push_devices_action" model="ir.actions.act_window">
+            <field name="name">Dispositivos</field>
+            <field name="res_model">push.device</field>
+            <field name="view_mode">tree,form</field>
+        </record>
+        <record id="view_firebase_push_devices_tree" model="ir.ui.view">
+            <field name="name">push.device.tree</field>
+            <field name="model">push.device</field>
+            <field name="arch" type="xml">
+                <tree string="Dispositivos">
+                    <field name="name"/>
+                    <field name="user_id"/>
+                    <field name="created_at"/>
+<!--                    <field name="register_id"/>-->
+                    <field name="active"/>
+                </tree>
+            </field>
+        </record>
+        <record id="action_test_firebase_connection" model="ir.actions.server">
+            <field name="name">Probar Conexión Firebase</field>
+            <field name="model_id" ref="firebase_push_notification.model_push_device"/>
+            <field name="binding_model_id" ref="firebase_push_notification.model_push_device"/>
+            <field name="binding_view_types">list,form</field>
+            <field name="state">code</field>
+            <field name="code"><![CDATA[
+        env['firebase.service'].test_firebase_connection(records.ids)
+    ]]>
+            </field>
+        </record>
+
+    </data>
+</odoo>

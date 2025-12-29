@@ -1,0 +1,15 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<templates xml:space="preserve">
+    <t t-name="point_of_sale.PaymentScreenButtons" t-inherit="point_of_sale.PaymentScreenButtons"
+       t-inherit-mode="extension">
+        <xpath expr="//div[hasclass('payment-buttons')]" position="inside">
+            <button
+                    class="button sale-order btn btn-light py-3 text-start rounded-0 border-bottom"
+                    t-att-class="{ 'highlight text-bg-primary': state.buttonClicked }"
+                    t-on-click="toggleSaleOrder">
+                <i class="fa fa-shopping-cart me-2" role="img" title="Orden de Venta"/>
+                <span>Orden de entrega</span>
+            </button>
+        </xpath>
+    </t>
+</templates>

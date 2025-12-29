@@ -1,0 +1,18 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<templates id="template" xml:space="preserve">
+    <t t-name="point_of_sale.PartnerDetailsEdit" t-inherit="point_of_sale.PartnerDetailsEdit" t-inherit-mode="extension" owl="1">
+        <xpath expr="//div[contains(@class, 'partner-details-box')]" position="inside">
+            <div class="partner-detail col">
+                <label class="form-label label" for="birth_date">Fecha de Nacimiento</label>
+                <input class="detail form-control"
+                       id="birth_date"
+                       name="birth_date"
+                       type="date"
+                       t-model="props.partner.birth_date"
+                       t-att-class="{'border-danger': missingFields.includes('birth_date')}"
+                       t-on-change="(ev) => changes.birth_date = ev.target.value"/>
+            </div>
+        </xpath>
+    </t>
+</templates>
+

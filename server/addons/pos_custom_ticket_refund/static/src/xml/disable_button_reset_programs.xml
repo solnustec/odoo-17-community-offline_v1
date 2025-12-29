@@ -1,0 +1,7 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<templates id="template" xml:space="preserve">
+    <t t-name="pos_custom_ticket_refund.ResetProgramsButton" t-inherit="pos_loyalty.ResetProgramsButton" t-inherit-mode="extension" owl="1">
+        <xpath expr="//button" position="replace">
+        </xpath>
+    </t>
+</templates>

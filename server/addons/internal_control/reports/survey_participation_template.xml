@@ -1,0 +1,73 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<odoo>
+    <!-- Reporte de participación: usa plantilla base -->
+    <template id="report_survey_participation">
+        <t t-call="internal_control.survey_base_template">
+            <t t-set="report_title" t-value="'Reporte de Participación'"/>
+            <t t-set="content_title" t-value="'Resultados de Participación:'"/>
+            <t t-set="report_type" t-value="'participation'"/>
+        </t>
+    </template>
+
+    <!-- Template específico para el contenido de participación -->
+    <template id="survey_participation_content">
+        <div style="padding: 20px; margin-top: 15px; font-size: 11px;">
+            <!-- Tabla de participación (Componente reutilizable) -->
+            <t t-call="internal_control.survey_participation_table"/>
+
+            <!-- Resumen -->
+            <div style="background-color: #ecf0f1; padding: 15px; border-radius: 5px; margin-top: 20px;">
+                <h4 style="margin-bottom: 15px; font-weight: bold; color: #333;">Resumen:</h4>
+                <t t-set="total_si" t-value="sum(docs.mapped('respuestas_si'))"/>
+                <t t-set="total_no" t-value="sum(docs.mapped('respuestas_no'))"/>
+                <t t-set="total_no_respondieron" t-value="sum(docs.mapped('no_respondieron'))"/>
+                <t t-set="total_respuestas" t-value="sum(docs.mapped('total_respuestas'))"/>
+                <t t-set="promedio_participacion" t-value="sum(docs.mapped('porcentaje_participacion')) / len(docs) if docs else 0"/>
+                
+                <table style="width: 100%; border-collapse: collapse; margin-bottom: 20px;">
+                    <thead>
+                        <tr style="background-color: #f8f9fa; border: 1px solid #ddd;">
+                            <th style="border: 1px solid #ddd; padding: 8px; text-align: left; font-weight: bold; width: 50%; background-color: #fff; vertical-align: middle;">Métrica</th>
+                            <th style="border: 1px solid #ddd; padding: 8px; text-align: left; font-weight: bold; width: 50%; background-color: #fff; vertical-align: middle;">Valor</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        <tr style="border: 1px solid #ddd; background-color: #fff;">
+                            <td style="border: 1px solid #ddd; padding: 8px; font-weight: 600; color: #555; background-color: #fff;">Total Sí</td>
+                            <td style="border: 1px solid #ddd; padding: 8px; color: #000; background-color: #fff;"><t t-out="total_si"/></td>
+                        </tr>
+                        <tr style="border: 1px solid #ddd; background-color: #fff;">
+                            <td style="border: 1px solid #ddd; padding: 8px; font-weight: 600; color: #555; background-color: #fff;">Total No</td>
+                            <td style="border: 1px solid #ddd; padding: 8px; color: #000; background-color: #fff;"><t t-out="total_no"/></td>
+                        </tr>
+                        <tr style="border: 1px solid #ddd; background-color: #fff;">
+                            <td style="border: 1px solid #ddd; padding: 8px; font-weight: 600; color: #555; background-color: #fff;">Total No Respondió</td>
+                            <td style="border: 1px solid #ddd; padding: 8px; color: #000; background-color: #fff;"><t t-out="total_no_respondieron"/></td>
+                        </tr>
+                        <tr style="border: 1px solid #ddd; background-color: #fff;">
+                            <td style="border: 1px solid #ddd; padding: 8px; font-weight: 600; color: #555; background-color: #fff;">Total Respuestas</td>
+                            <td style="border: 1px solid #ddd; padding: 8px; color: #000; background-color: #fff;"><t t-out="total_respuestas"/></td>
+                        </tr>
+                        <tr style="border: 1px solid #ddd; background-color: #fff;">
+                            <td style="border: 1px solid #ddd; padding: 8px; font-weight: 600; color: #555; background-color: #fff;">Promedio % Participación</td>
+                            <td style="border: 1px solid #ddd; padding: 8px; color: #000; background-color: #fff;"><t t-out="'%.1f' % promedio_participacion"/>%</td>
+                        </tr>
+                    </tbody>
+                </table>
+            </div>
+
+            <!-- Matriz de Riesgo -->
+            <t t-call="internal_control.survey_risk_matrix"/>
+
+            <t t-if="observations">
+                <div style="margin-top:20px;">
+                    <strong>Observaciones:</strong>
+                    <p t-out="observations"/>
+                </div>
+            </t>
+
+            <!-- Footer (Componente reutilizable) -->
+            <t t-call="internal_control.survey_footer"/>
+        </div>
+    </template>
+</odoo>

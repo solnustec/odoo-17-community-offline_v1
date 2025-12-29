@@ -1,0 +1,49 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<odoo>
+	<data>
+		
+
+		<record model="ir.ui.view" id="account_journal_form_pagos_view">
+			<field name="name">account.journal.form.pagos</field>
+			<field name="model">account.journal</field>
+			<field name="priority" eval="20" />
+			<field name="inherit_id" ref="account.view_account_journal_form" />
+			<field name="arch" type="xml">
+				
+				<field name="postpone_account_id" position="replace">
+					<field name="postpone_account_id" domain="[('deprecated', '=', False)]" 
+						required="type == 'bank'">
+					</field>
+				</field>
+			</field>
+		</record>
+		<record model="ir.ui.view" id="pago_nomina_tree_view">
+			<field name="name">account.payment.tree</field>
+			<field name="model">account.payment</field>
+			<field name="arch" type="xml">
+				<tree string="Pagos de Nómina">
+<!--					<field name="communication" />-->
+					<field name="partner_id" />
+<!--					<field name="payment_date" />-->
+					<field name="journal_id" />
+					<field name="state"/>
+				</tree>
+			</field>
+		</record>
+
+		<record model="ir.actions.act_window" id="action_invoice_nomina_pago">
+			<field name="name">Pagos de Nómina</field>
+			<field name="type">ir.actions.act_window</field>
+			<field name="res_model">account.payment</field>
+			<field name="view_mode">tree,form</field>
+			<field name="domain">['|', ('request_loan_line_id', '!=', None), ('hr_payment_type', '=', 'pago_nomina')]</field>
+			<!-- <field name="context">{"search_default_filter_by_inactive":1}</field> -->
+			<field name="view_id" ref="pago_nomina_tree_view" />
+			<!-- <field name="search_view_id" ref="sri_type_document_view_only_search_view" /> -->
+		</record>
+
+
+		<menuitem name="Pagos de Nómina" id="menu_pago_nomina" groups="ec_payroll.group_developer_account"
+			sequence="30" action="action_invoice_nomina_pago" parent="account.menu_finance_payables" />
+	</data>
+</odoo>

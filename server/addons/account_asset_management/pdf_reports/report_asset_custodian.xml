@@ -1,0 +1,165 @@
+<?xml version="1.0" encoding="utf-8"?>
+<odoo>
+    <template id="report_asset_custodian">
+        <t t-call="web.html_container">
+            <t t-call="web.external_layout">
+                <main class="o_report_layout afx-wrap">
+
+                    <!-- ===== Logo ===== -->
+                    <div style="text-align:left; margin-bottom:10px;">
+                        <img t-if="docs and docs[0].company_id.logo"
+                             t-att-src="image_data_uri(docs[0].company_id.logo)"
+                             style="max-height:80px; max-width:250px; display:block; margin:0;"
+                             alt="Logo"/>
+                    </div>
+
+                    <!-- ===== Título ===== -->
+                    <h3 style="text-align:center; font-weight:700; font-size:18px; margin:10px 0;">
+                        REPORTE DE ACTIVOS POR CUSTODIO
+                    </h3>
+
+                    <!-- ===== Datos Custodio ===== -->
+                    <p>
+                        <strong>Custodio:</strong>
+                        <span t-esc="docs and docs[0].asset_custodian_id.name or 'N/A'"/>
+                    </p>
+                    <p>
+                        <strong>Departamento:</strong>
+                        <span t-esc="docs and docs[0].asset_custodian_id.department_id.name or 'N/A'"/>
+                    </p>
+                    <p>
+                        <strong>Fecha de Reporte:</strong>
+                        <span t-esc="time.strftime('%d/%m/%Y')"/>
+                    </p>
+
+                    <!-- ===== Tabla de Activos ===== -->
+                    <table class="table table-sm table-bordered"
+                           style="width:100%; margin-top:15px; font-size:11px; border-collapse:collapse;">
+                        <thead>
+                            <tr style="background:#f0f0f0; text-align:center; font-weight:bold;">
+                                <th>Código</th>
+                                <th>Nombre</th>
+                                <th>Clase</th>
+                                <th>Subclase</th>
+                                <th>Marca</th>
+                                <th>Modelo</th>
+                                <th>Serie</th>
+                                <th>Estado</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            <tr t-foreach="docs" t-as="asset">
+                                <td>
+                                    <span t-esc="asset.asset_code or ''"/>
+                                </td>
+                                <td>
+                                    <span t-esc="asset.name or ''"/>
+                                </td>
+                                <td>
+                                    <span t-esc="asset.class_id.name or ''"/>
+                                </td>
+                                <td>
+                                    <span t-esc="asset.subclass_id.name or ''"/>
+                                </td>
+                                <td>
+                                    <span t-esc="asset.asset_brand_id.name or ''"/>
+                                </td>
+                                <td>
+                                    <span t-esc="asset.asset_model or ''"/>
+                                </td>
+                                <td>
+                                    <span t-esc="asset.asset_serial or ''"/>
+                                </td>
+                                <td>
+                                    <span t-esc="asset.asset_status or ''"/>
+                                </td>
+                            </tr>
+                        </tbody>
+                    </table>
+
+                    <!-- ===== Total ===== -->
+                    <p style="margin-top:10px; font-weight:bold;">
+                        Total de activos:
+                        <span t-esc="len(docs)"/>
+                    </p>
+
+                    <!-- ===== Párrafos ===== -->
+                    <div style="font-size:12px; margin-top:15px; line-height:1.6;">
+                        <ol>
+                            <li>
+                                Los Activos descritos en la presente acta, estarán bajo responsabilidad del usuario
+                                firmante y se
+                                ingresarán a su nombre en el Sistema de Activos Fijos, quien se hará cargo del buen uso
+                                y
+                                conservación, así como de notificar cualquier tipo de novedad como daño o, de ser el
+                                caso,
+                                necesidad de mantenimiento. El usuario dispone de cinco días laborables desde la fecha
+                                de la
+                                presente acta para comunicar cualquier modificación, caso contrario se registrará la
+                                aceptación en el
+                                sistema de manera automática.
+                            </li>
+                            <li>
+                                En caso de requerimiento o movimiento (retiro, cambio, traslado, etc.) de un Activo bajo
+                                su
+                                responsabilidad, se lo deberá gestionar únicamente con el funcionario a cargo del
+                                Control de Activos
+                                Fijos mediante correo electrónico, quien realizará el correspondiente registro y
+                                actualización en el
+                                sistema de Activos Fijos.
+                            </li>
+                            <li>
+                                En caso de negligencia comprobada en el uso y custodia de los Activos bajo su
+                                responsabilidad
+                                (pérdida o daño), se autoriza a Farmacias Cuxibamba realizar el descuento de su
+                                remuneración
+                                mensual, según valor de recuperación del Activo, siempre y cuando no se atente a los
+                                derechos del
+                                trabajador conforme a la normativa legal aplicable al efecto.
+                            </li>
+                        </ol>
+                    </div>
+
+                    <!-- ===== Firmas ===== -->
+                    <table style="width:100%; margin-top:40px; border-collapse:collapse; font-size:12px; text-align:center;">
+                        <tr>
+                            <td style="border:1px solid #000; width:33%; padding:20px; height:180px; vertical-align:bottom;">
+                                <strong>ACTIVOS FIJOS</strong>
+                                <br/>
+                                <br/>
+                                ADMINISTRADOR DE ACTIVOS FIJOS
+                                <br/>
+                                VILLA COBOS CARLOS DANIEL
+                                <br/>
+                                <strong>C.I:</strong>
+                                1105024036
+                            </td>
+                            <td style="border:1px solid #000; width:33%; padding:20px; height:180px; vertical-align:bottom;">
+                                <strong>SERVICIOS GENERALES</strong>
+                                <br/>
+                                <br/>
+                                LÍDER DE SERVICIOS GENERALES
+                                <br/>
+                                ORELLANA NARANJO MONICA DEL ROCIO
+                                <br/>
+                                <strong>C.I:</strong>
+                                1102965801
+                            </td>
+                            <td style="border:1px solid #000; width:33%; padding:20px; height:180px; vertical-align:bottom;">
+                                <strong>COORDINADOR</strong>
+                                <br/>
+                                <br/>
+                                RESPONSABLE
+                                <br/>
+                                <span t-esc="docs and docs[0].asset_custodian_id.name or 'N/A'"/>
+                                <br/>
+                                <strong>C.I:</strong>
+                                <span t-esc="docs and docs[0].asset_custodian_id.identification_id or 'N/A'"/>
+                            </td>
+                        </tr>
+                    </table>
+                </main>
+            </t>
+        </t>
+    </template>
+</odoo>

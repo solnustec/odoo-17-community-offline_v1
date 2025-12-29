@@ -1,0 +1,22 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<templates id="template" xml:space="preserve">
+  <!-- Extiende la plantilla de la línea del pedido -->
+  <t t-inherit="point_of_sale.Orderline" t-inherit-mode="extension">
+
+    <xpath expr="//ul[@class='info-list']/li[contains(@class,'price-per-unit')]/following-sibling::li[1]"
+           position="replace">
+      <li t-if="props.line?.get_discount?.()"
+          class="orderline-discount-pill d-flex align-items-center gap-2">
+        <!-- Muestra el precio final y el %; ajusta si tienes helpers propios -->
+        <span class="discount-final fw-bold">
+          <t t-esc="env.utils.formatCurrency(props.line.get_price_with_tax())"/>
+        </span>
+        <span class="badge-percent">
+          <t t-esc="props.line.get_discount()"/>%
+        </span>
+        <span class="label ms-1">descuento</span>
+      </li>
+    </xpath>
+
+  </t>
+</templates>

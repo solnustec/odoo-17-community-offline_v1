@@ -1,0 +1,99 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<odoo>
+	<data>
+		<record model="ir.ui.view" id="cen_lineas_anticipo_tree">
+			<field name="name">request.loan.payment.line.tree</field>
+			<field name="model">request.loan.payment.line</field>
+			<field name="priority">0</field>
+			<field name="arch" type="xml">
+				<tree string="Líneas de Anticipo" limit="200" editable="bottom">
+					<field name="employee_id" readonly="1" required="1"/>
+					<field name="observation"/>
+					<field name="amount_pending" force_save="1"/>
+					<field name="amount" sum="Total Pagado"/>
+				</tree>
+			</field>
+		</record>
+		<record model="ir.ui.view" id="cen_lineas_anticipo_search">
+			<field name="name">request.loan.payment.line.search</field>
+			<field name="model">request.loan.payment.line</field>
+			<field name="arch" type="xml">
+				<search string="Empleado">
+					<field name="employee_id" />
+				</search>
+			</field>
+		</record>
+		<record model="ir.actions.act_window" id="action_cen_lineas_anticipo_tree">
+			<field name="name">Líneas de Anticipo</field>
+			<field name="res_model">request.loan.payment.line</field>
+			<field name="view_mode">tree</field>
+			<field name="view_id" ref="cen_lineas_anticipo_tree" />
+			<field name="search_view_id" ref="cen_lineas_anticipo_search" />
+		</record>
+		<record model="ir.ui.view" id="res_user_filter_form_view">
+			<field name="name">request.loan.inherit.form</field>
+			<field name="model">request.loan.payment</field>
+			<field name="type">form</field>
+			<field name="inherit_id" ref="ec_payroll.request_loan_payment_form_view" />
+			<field name="arch" type="xml">
+				<xpath expr="//button[@name='action_view_payment']" position="before">
+                    <button
+                        type="object"
+                        name="action_view_lines"
+                        class="oe_stat_button"
+                        invisible="line_count == 0"
+                        icon="fa-random">
+                        <field name="line_count"
+                            widget="statinfo"
+                            string=""/>
+                    </button>
+                </xpath>
+				<xpath expr="//button[@name='action_request']" position="before">
+					<button name="action_get_employee" type="object" invisible="state != 'draft'" string="Cargar empleados" />
+					<button name="generar_reporte_quincena" type="object"
+								invisible="state == 'draft'"
+								string="Descargar Excel" class="oe_highlight" />
+				</xpath>
+				<xpath expr="//tree" position="attributes">
+					<attribute name="limit">200</attribute>
+				</xpath>
+				<xpath expr="//button[@name='create_payment']" position="attributes">
+					<attribute name="invisible">state != 'requested'</attribute>
+				</xpath>
+				<xpath
+					expr="//field[@name='employee_id']"
+					position="replace">
+					<field name="type_advance" />
+					<field name="rule_id" options="{'no_create': True, 'no_open': True}" />
+				</xpath>
+				<xpath
+					expr="//field[@name='request_date']"
+					position="before">
+					<field name="tipo_carga"/>
+					<field name="hr_structure" invisible="tipo_carga == 'all'"/>
+				</xpath>
+				<xpath
+					expr="//field[@name='request_user_id']"
+					position="before">
+					<field name="tipo_anticipo"/>
+					<field name="monto_asignado" required="1"/>
+					<field name="forma_pago_id" invisible="1" required="1"/>
+				</xpath>
+				<xpath expr="//field[@name='line_ids']/tree/field[@name='transaction_id']" position="before">
+	 				<field name="employee_id" readonly="1" required="1"/>
+				</xpath>
+				<xpath expr="//field[@name='line_ids']/tree/field[@name='transaction_id']" position="attributes">
+	 				<attribute name="domain">[('processed', '=', False)]</attribute>
+				</xpath>
+				<xpath expr="//field[@name='line_ids']/form/group" position="inside">
+					<field name="employee_id" readonly="1" required="1"/>
+				</xpath>
+				<xpath expr="//field[@name='request_date']" position="after">
+					<field name="payment_journal_id" required="state == 'requested'" readonly="state == 'done'" invisible="1"/>
+					<field name="payment_account_id" required="state == 'requested'" readonly="state == 'done'" invisible="1"/>
+					<field name="payment_date" required="state == 'requested'" readonly="state == 'done'" invisible="state == 'draft'"/>
+				</xpath>
+			</field>
+		</record>
+	</data>
+</odoo>

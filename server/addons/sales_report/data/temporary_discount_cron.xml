@@ -1,0 +1,12 @@
+<odoo>
+    <record id="ir_cron_expire_temporary_discount_rewards" model="ir.cron">
+        <field name="name">Loyalty | Archivar descuentos temporales</field>
+        <field name="model_id" ref="loyalty.model_loyalty_program"/>
+        <field name="state">code</field>
+        <field name="code">model._cron_expire_temporary_discount_rewards()</field>
+        <field name="interval_number">1</field>
+        <field name="interval_type">days</field>
+        <field name="numbercall">-1</field>
+        <field name="active">True</field>
+    </record>
+</odoo>

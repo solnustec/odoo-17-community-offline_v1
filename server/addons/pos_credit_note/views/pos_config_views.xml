@@ -1,0 +1,22 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<odoo>
+    <record id="view_pos_config_form_inherit" model="ir.ui.view">
+        <field name="name">pos.config.form.inherit</field>
+        <field name="model">pos.config</field>
+        <field name="inherit_id" ref="point_of_sale.pos_config_view_form"/>
+        <field name="arch" type="xml">
+            <!-- Insertar el nuevo campo debajo del campo 'other_devices' dentro del setting correspondiente -->
+            <xpath expr="//setting[@id='other_devices']" position="after">
+                <setting id="point_of_sale_id_setting" string="Id de la bodega" help="Este campo hace referencia a un identificador único del punto de venta.">
+                    <field name="point_of_sale_id"/>
+                </setting>
+                <setting id="point_of_sale_series_setting" string="Serie punto de venta" help="Este campo hace referencia al serial que tiene el punto de venta.">
+                    <field name="point_of_sale_series"/>
+                </setting>
+                <setting id="point_of_sale_series_setting" string="IP maquina local" help="IP maquina local">
+                    <field name="ip_maquina_local"/>
+                </setting>
+            </xpath>
+        </field>
+    </record>
+</odoo>

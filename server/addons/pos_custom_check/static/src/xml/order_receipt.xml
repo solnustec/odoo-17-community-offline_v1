@@ -1,0 +1,29 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<templates id="template" xml:space="preserve">
+
+    <t t-name="pos_custom_check.OrderReceipt" t-inherit="point_of_sale.OrderReceipt" t-inherit-mode="extension" owl="1">
+        <xpath expr="//div[hasclass('paymentlines')]/span[hasclass('pos-receipt-right-align')]" position="after">
+            <div class="check" t-foreach="props.data.paymentlines" t-as="line" t-key="line_index">
+                <t t-if="line.allow_check_info">
+    <!--                <div class="row">-->
+    <!--                    <t t-foreach='env.pos.banks' t-as="bank" t-key="bank.id">-->
+    <!--                        <t t-if="bank.id == line.bank_name">-->
+    <!--                            Bank Name : <t t-esc="bank.name"/>-->
+    <!--                        </t>-->
+    <!--                    </t>-->
+    <!--                </div>-->
+    <!--                <div class="row">-->
+    <!--                   Bank Account : <t t-esc="line.bank_account"/>-->
+    <!--                </div>-->
+<!--                    t-foreach="props.data.paymentlines" t-as="line" t-key="line_index"-->
+                    <div class="checkNO">
+                       Check Number :  <t t-esc="line.check_number"/>
+                    </div>
+    <!--                <div class="row">-->
+    <!--                    Owner Name : <t t-esc="line.owner_name"/>-->
+    <!--                </div>-->
+                </t>
+            </div>
+        </xpath>
+    </t>
+</templates>

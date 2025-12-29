@@ -1,0 +1,5 @@
+id,name,model_id:id,group_id:id,perm_read,perm_write,perm_create,perm_unlink
+
+access_digital_payment_config_user,digital.payment.config,model_digital_payment_config,base.group_user,1,1,1,1
+access_ahorita_post_user,ahorita.post,model_ahorita_post,base.group_user,1,1,1,1
+access_deuna_post_user,deuna.post,model_deuna_post,base.group_user,1,1,1,1

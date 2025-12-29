@@ -1,0 +1,156 @@
+<?xml version="1.0" encoding="utf-8"?>
+<odoo>
+    <data>
+        <!-- Dashboard Form View -->
+        <record id="view_gamification_dashboard_form" model="ir.ui.view">
+            <field name="name">gamification.dashboard.form</field>
+            <field name="model">gamification.dashboard</field>
+            <field name="arch" type="xml">
+                <form string="Mis Metas" create="false" delete="false" edit="false">
+                    <header>
+                        <button name="action_my_goals" type="object" string="Ver Metas Activas" class="btn-primary"/>
+                        <button name="action_goals_progress" type="object" string="Ver Progreso" style="display: none;"/>
+                        <button name="action_my_badges" type="object" string="Ver Insignias" class="btn-secondary"/>
+                        <button name="action_list_badges" type="object" string="Ver Lista de Insignias" style="display: none;"/>
+                        <button name="action_my_history" type="object" string="Ver Historial" class="btn-secondary"/>
+                    </header>
+                    <sheet>
+                        <div class="oe_title">
+                            <h1>
+                                <field name="display_name" readonly="1"/>
+                            </h1>
+                        </div>
+
+                        <!-- Tarjetas de Resumen -->
+                        <div class="row">
+                            <div class="col-md-3 d-flex mb-3">
+                                <div class="card text-center w-100 h-100" style="cursor: pointer;" onclick="document.querySelector('button[name=&quot;action_my_goals&quot;]').click();">
+                                    <div class="card-body d-flex flex-column justify-content-center py-3">
+                                        <div class="mb-2">
+                                            <i class="fa fa-bullseye fa-2x text-primary"></i>
+                                        </div>
+                                        <h3 class="text-primary mb-1">
+                                            <field name="goal_count" readonly="1"/>
+                                        </h3>
+                                        <p class="card-text fw-bold mb-0" style="font-size: 12px;">Metas Activas</p>
+                                    </div>
+                                </div>
+                            </div>
+                            <div class="col-md-3 d-flex mb-3">
+                                <div class="card text-center w-100 h-100" style="cursor: pointer;" onclick="document.querySelector('button[name=&quot;action_my_badges&quot;]').click();">
+                                    <div class="card-body d-flex flex-column justify-content-center py-3">
+                                        <div class="mb-2">
+                                            <i class="fa fa-trophy fa-2x text-warning"></i>
+                                        </div>
+                                        <h3 class="text-warning mb-1">
+                                            <field name="badge_count" readonly="1"/>
+                                        </h3>
+                                        <p class="card-text fw-bold mb-0" style="font-size: 12px;">Insignias</p>
+                                    </div>
+                                </div>
+                            </div>
+                            <div class="col-md-3 d-flex mb-3">
+                                <div class="card text-center w-100 h-100" style="cursor: pointer;" onclick="document.querySelector('button[name=&quot;action_goals_progress&quot;]').click();">
+                                    <div class="card-body d-flex flex-column justify-content-center py-3">
+                                        <div class="mb-2">
+                                            <i class="fa fa-tasks fa-2x text-info"></i>
+                                        </div>
+                                        <h3 class="text-info mb-1">
+                                            <field name="avg_progress" readonly="1"/>%
+                                        </h3>
+                                        <p class="card-text fw-bold mb-0" style="font-size: 12px;">Progreso Promedio</p>
+                                    </div>
+                                </div>
+                            </div>
+                            <div class="col-md-3 d-flex mb-3">
+                                <div class="card text-center w-100 h-100" style="cursor: pointer;" onclick="document.querySelector('button[name=&quot;action_my_history&quot;]').click();">
+                                    <div class="card-body d-flex flex-column justify-content-center py-3">
+                                        <div class="mb-2">
+                                            <i class="fa fa-history fa-2x text-secondary"></i>
+                                        </div>
+                                        <h3 class="text-secondary mb-1">
+                                            <field name="history_count" readonly="1"/>
+                                        </h3>
+                                        <p class="card-text fw-bold mb-0" style="font-size: 12px;">Historial</p>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+
+                        <!-- Desafío Actual con Progreso -->
+                        <div class="row">
+                            <div class="col-12">
+                                <div class="card mb-3 shadow-sm">
+                                    <div class="card-header bg-primary text-white">
+                                        <i class="fa fa-flag"></i> Mi Desafío Actual
+                                    </div>
+                                    <div class="card-body p-2">
+                                        <field name="x_current_challenge_html" widget="html" nolabel="1" readonly="1"/>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+
+                        <!-- Meta cumplida más reciente -->
+                        <div class="row">
+                            <div class="col-12">
+                                <div class="card mb-3 shadow-sm">
+                                    <div class="card-header bg-success text-white">
+                                        <i class="fa fa-check-circle"></i> Meta Cumplida Más Reciente
+                                    </div>
+                                    <div class="card-body">
+                                        <field name="x_banner_html" widget="html" nolabel="1" readonly="1"/>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    </sheet>
+                </form>
+            </field>
+        </record>
+
+        <!-- Dashboard Tree View -->
+        <record id="view_gamification_dashboard_tree" model="ir.ui.view">
+            <field name="name">gamification.dashboard.tree</field>
+            <field name="model">gamification.dashboard</field>
+            <field name="arch" type="xml">
+                <tree string="Dashboards de Gamificación">
+                    <field name="user_id"/>
+                    <field name="goal_count"/>
+                    <field name="badge_count"/>
+                    <field name="avg_progress"/>
+                </tree>
+            </field>
+        </record>
+
+        <!-- Actions -->
+        <record id="action_gamification_dashboard" model="ir.actions.act_window">
+            <field name="name">Mis Metas</field>
+            <field name="res_model">gamification.dashboard</field>
+            <field name="view_mode">form</field>
+            <field name="view_id" ref="view_gamification_dashboard_form"/>
+            <field name="target">current</field>
+            <field name="context">{'search_default_user_id': user.id}</field>
+            <field name="domain">[('user_id', '=', user.id)]</field>
+        </record>
+
+        <!-- Server Action for Dashboard -->
+        <record id="action_users_dashboard_server" model="ir.actions.server">
+            <field name="name">Mis Metas</field>
+            <field name="model_id" ref="model_gamification_dashboard"/>
+            <field name="state">code</field>
+            <field name="code">
+dashboard = env['gamification.dashboard'].get_or_create_dashboard()
+action = {
+    "type": "ir.actions.act_window",
+    "name": "Mis Metas",
+    "res_model": "gamification.dashboard",
+    "view_mode": "form",
+    "views": [(env.ref("gamification_custom.view_gamification_dashboard_form").id, "form")],
+    "res_id": dashboard.id,
+    "target": "current",
+}
+            </field>
+        </record>
+    </data>
+</odoo>

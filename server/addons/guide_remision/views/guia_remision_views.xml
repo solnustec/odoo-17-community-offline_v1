@@ -1,0 +1,48 @@
+<odoo>
+    <record id="view_stock_picking_form_inherit" model="ir.ui.view">
+        <field name="name">stock.picking.form.inherit.vehiculo</field>
+        <field name="model">stock.picking</field>
+        <field name="inherit_id" ref="stock.view_picking_form"/>
+        <field name="arch" type="xml">
+            <xpath expr="//notebook/page[@name='note']" position="after">
+                <page string="Guía de Remisión">
+                    <group col="2">
+                        <group string="Número de Guía de Remisión">
+                            <field name="numero_guia_remision"/>
+                        </group>
+                        <group string="Clave de acceso">
+                            <field name="clave_acceso_sri"/>
+                            <button name="consultar_guia_remision" type="object" string="Consultar SRI"
+                                    class="oe_highlight"/>
+                        </group>
+                    </group>
+                    <group col="2">
+                        <group string="Información Transportista">
+                            <field name="transportista_id"/>
+                            <field name="identificacion"/>
+                            <field name="vehiculo_transportista_id" string="Vehículo Asociado"/>
+                            <field name="placa" string="Placa del Vehículo" readonly="1"/>
+                        </group>
+                        <group string="Información de Transporte">
+                            <field name="fecha_inicio_transporte"/>
+                            <field name="fecha_fin_transporte"/>
+                            <field name="direccion_partida"/>
+                            <field name="direccion_llegada"/>
+                            <field name="city"/>
+                            <field name="ruta"/>
+                        </group>
+                    </group>
+                    <group string="Destinatario">
+                        <field name="destinatario_id"/>
+                        <field name="identificacion_destinatario"/>
+                        <field name="destino"/>
+                        <field name="motivo_traslado"/>
+                    </group>
+                    <group string="Productos">
+                        <field name="productos"/>
+                    </group>
+                </page>
+            </xpath>
+        </field>
+    </record>
+</odoo>

@@ -1,0 +1,263 @@
+<odoo>
+    <data noupdate="1">
+
+        <!-- 🔹 ELECTRODOMESTICOS -->
+        <record id="asset_brand_electrodomesticos_umco" model="asset.brand">
+            <field name="name">UMCO</field>
+            <field name="active">True</field>
+            <field name="class_id" ref="asset_class_electrodomesticos"/>
+        </record>
+        <record id="asset_brand_electrodomesticos_ecasa" model="asset.brand">
+            <field name="name">ECASA</field>
+            <field name="active">True</field>
+            <field name="class_id" ref="asset_class_electrodomesticos"/>
+        </record>
+        <record id="asset_brand_electrodomesticos_electrolux" model="asset.brand">
+            <field name="name">ELECTROLUX</field>
+            <field name="active">True</field>
+            <field name="class_id" ref="asset_class_electrodomesticos"/>
+        </record>
+        <record id="asset_brand_electrodomesticos_haceb" model="asset.brand">
+            <field name="name">HACEB</field>
+            <field name="active">True</field>
+            <field name="class_id" ref="asset_class_electrodomesticos"/>
+        </record>
+        <record id="asset_brand_electrodomesticos_omidea" model="asset.brand">
+            <field name="name">OMIDEA</field>
+            <field name="active">True</field>
+            <field name="class_id" ref="asset_class_electrodomesticos"/>
+        </record>
+        <record id="asset_brand_electrodomesticos_haier" model="asset.brand">
+            <field name="name">HAIER</field>
+            <field name="active">True</field>
+            <field name="class_id" ref="asset_class_electrodomesticos"/>
+        </record>
+        <record id="asset_brand_electrodomesticos_sin_marca" model="asset.brand">
+            <field name="name">SIN MARCA</field>
+            <field name="active">True</field>
+            <field name="class_id" ref="asset_class_electrodomesticos"/>
+        </record>
+
+        <!-- 🔹 EQUIPO DE OFICINA -->
+        <record id="asset_brand_equipo_de_oficina_samsung" model="asset.brand">
+            <field name="name">SAMSUNG</field>
+            <field name="active">True</field>
+            <field name="class_id" ref="asset_class_equipo_de_oficina"/>
+        </record>
+        <record id="asset_brand_equipo_de_oficina_panasonic" model="asset.brand">
+            <field name="name">PANASONIC</field>
+            <field name="active">True</field>
+            <field name="class_id" ref="asset_class_equipo_de_oficina"/>
+        </record>
+        <record id="asset_brand_equipo_de_oficina_nokia" model="asset.brand">
+            <field name="name">NOKIA</field>
+            <field name="active">True</field>
+            <field name="class_id" ref="asset_class_equipo_de_oficina"/>
+        </record>
+        <record id="asset_brand_equipo_de_oficina_sin_marca" model="asset.brand">
+            <field name="name">SIN MARCA</field>
+            <field name="active">True</field>
+            <field name="class_id" ref="asset_class_equipo_de_oficina"/>
+        </record>
+
+        <!-- 🔹 EQUIPOS DE COMPUTACION -->
+        <record id="asset_brand_equipos_de_computacion_dell" model="asset.brand">
+            <field name="name">DELL</field>
+            <field name="active">True</field>
+            <field name="class_id" ref="asset_class_equipos_de_computacion"/>
+        </record>
+        <record id="asset_brand_equipos_de_computacion_hp" model="asset.brand">
+            <field name="name">HP</field>
+            <field name="active">True</field>
+            <field name="class_id" ref="asset_class_equipos_de_computacion"/>
+        </record>
+        <record id="asset_brand_equipos_de_computacion_lenovo" model="asset.brand">
+            <field name="name">LENOVO</field>
+            <field name="active">True</field>
+            <field name="class_id" ref="asset_class_equipos_de_computacion"/>
+        </record>
+        <record id="asset_brand_equipos_de_computacion_asus" model="asset.brand">
+            <field name="name">ASUS</field>
+            <field name="active">True</field>
+            <field name="class_id" ref="asset_class_equipos_de_computacion"/>
+        </record>
+        <record id="asset_brand_equipos_de_computacion_lg" model="asset.brand">
+            <field name="name">LG</field>
+            <field name="active">True</field>
+            <field name="class_id" ref="asset_class_equipos_de_computacion"/>
+        </record>
+        <record id="asset_brand_equipos_de_computacion_genius" model="asset.brand">
+            <field name="name">GENIUS</field>
+            <field name="active">True</field>
+            <field name="class_id" ref="asset_class_equipos_de_computacion"/>
+        </record>
+        <record id="asset_brand_equipos_de_computacion_epson" model="asset.brand">
+            <field name="name">EPSON</field>
+            <field name="active">True</field>
+            <field name="class_id" ref="asset_class_equipos_de_computacion"/>
+        </record>
+        <record id="asset_brand_equipos_de_computacion_forza" model="asset.brand">
+            <field name="name">FORZA</field>
+            <field name="active">True</field>
+            <field name="class_id" ref="asset_class_equipos_de_computacion"/>
+        </record>
+        <record id="asset_brand_equipos_de_computacion_nexxt" model="asset.brand">
+            <field name="name">NEXXT</field>
+            <field name="active">True</field>
+            <field name="class_id" ref="asset_class_equipos_de_computacion"/>
+        </record>
+        <record id="asset_brand_equipos_de_computacion_kingston" model="asset.brand">
+            <field name="name">KINGSTON</field>
+            <field name="active">True</field>
+            <field name="class_id" ref="asset_class_equipos_de_computacion"/>
+        </record>
+        <record id="asset_brand_equipos_de_computacion_sandisk" model="asset.brand">
+            <field name="name">SANDISK</field>
+            <field name="active">True</field>
+            <field name="class_id" ref="asset_class_equipos_de_computacion"/>
+        </record>
+        <record id="asset_brand_equipos_de_computacion_sin_marca" model="asset.brand">
+            <field name="name">SIN MARCA</field>
+            <field name="active">True</field>
+            <field name="class_id" ref="asset_class_equipos_de_computacion"/>
+        </record>
+
+        <!-- 🔹 HERRAMIENTAS -->
+        <record id="asset_brand_herramientas_bosch" model="asset.brand">
+            <field name="name">BOSCH</field>
+            <field name="active">True</field>
+            <field name="class_id" ref="asset_class_herramientas"/>
+        </record>
+        <record id="asset_brand_herramientas_stanley" model="asset.brand">
+            <field name="name">STANLEY</field>
+            <field name="active">True</field>
+            <field name="class_id" ref="asset_class_herramientas"/>
+        </record>
+        <record id="asset_brand_herramientas_blackdecker" model="asset.brand">
+            <field name="name">BLACK+DECKER</field>
+            <field name="active">True</field>
+            <field name="class_id" ref="asset_class_herramientas"/>
+        </record>
+        <record id="asset_brand_herramientas_pretul" model="asset.brand">
+            <field name="name">PRETUL</field>
+            <field name="active">True</field>
+            <field name="class_id" ref="asset_class_herramientas"/>
+        </record>
+        <record id="asset_brand_herramientas_sin_marca" model="asset.brand">
+            <field name="name">SIN MARCA</field>
+            <field name="active">True</field>
+            <field name="class_id" ref="asset_class_herramientas"/>
+        </record>
+
+        <!-- 🔹 MUEBLES Y ENSERES -->
+        <record id="asset_brand_muebles_y_enseres_cinna" model="asset.brand">
+            <field name="name">CINNA</field>
+            <field name="active">True</field>
+            <field name="class_id" ref="asset_class_muebles_y_enseres"/>
+        </record>
+        <record id="asset_brand_muebles_y_enseres_eames" model="asset.brand">
+            <field name="name">EAMES</field>
+            <field name="active">True</field>
+            <field name="class_id" ref="asset_class_muebles_y_enseres"/>
+        </record>
+        <record id="asset_brand_muebles_y_enseres_pica" model="asset.brand">
+            <field name="name">PICA</field>
+            <field name="active">True</field>
+            <field name="class_id" ref="asset_class_muebles_y_enseres"/>
+        </record>
+        <record id="asset_brand_muebles_y_enseres_sin_marca" model="asset.brand">
+            <field name="name">SIN MARCA</field>
+            <field name="active">True</field>
+            <field name="class_id" ref="asset_class_muebles_y_enseres"/>
+        </record>
+
+        <!-- 🔹 SUMINISTROS DE COMPUTACION -->
+        <record id="asset_brand_suministros_de_computacion_genius" model="asset.brand">
+            <field name="name">GENIUS</field>
+            <field name="active">True</field>
+            <field name="class_id" ref="asset_class_suministros_de_computacion"/>
+        </record>
+        <record id="asset_brand_suministros_de_computacion_argom" model="asset.brand">
+            <field name="name">ARGOM</field>
+            <field name="active">True</field>
+            <field name="class_id" ref="asset_class_suministros_de_computacion"/>
+        </record>
+        <record id="asset_brand_suministros_de_computacion_klipxtreme" model="asset.brand">
+            <field name="name">KLIPXTREME</field>
+            <field name="active">True</field>
+            <field name="class_id" ref="asset_class_suministros_de_computacion"/>
+        </record>
+        <record id="asset_brand_suministros_de_computacion_data_traveler" model="asset.brand">
+            <field name="name">DATA TRAVELER</field>
+            <field name="active">True</field>
+            <field name="class_id" ref="asset_class_suministros_de_computacion"/>
+        </record>
+        <record id="asset_brand_suministros_de_computacion_sin_marca" model="asset.brand">
+            <field name="name">SIN MARCA</field>
+            <field name="active">True</field>
+            <field name="class_id" ref="asset_class_suministros_de_computacion"/>
+        </record>
+
+        <!-- 🔹 SUMINISTROS DE OFICINA -->
+        <record id="asset_brand_suministros_de_oficina_casio" model="asset.brand">
+            <field name="name">CASIO</field>
+            <field name="active">True</field>
+            <field name="class_id" ref="asset_class_suministros_de_oficina"/>
+        </record>
+        <record id="asset_brand_suministros_de_oficina_kwtrio" model="asset.brand">
+            <field name="name">KW-TRIO</field>
+            <field name="active">True</field>
+            <field name="class_id" ref="asset_class_suministros_de_oficina"/>
+        </record>
+        <record id="asset_brand_suministros_de_oficina_artesco" model="asset.brand">
+            <field name="name">ARTESCO</field>
+            <field name="active">True</field>
+            <field name="class_id" ref="asset_class_suministros_de_oficina"/>
+        </record>
+        <record id="asset_brand_suministros_de_oficina_sin_marca" model="asset.brand">
+            <field name="name">SIN MARCA</field>
+            <field name="active">True</field>
+            <field name="class_id" ref="asset_class_suministros_de_oficina"/>
+        </record>
+
+        <!-- 🔹 UTILES DE LIMPIEZA -->
+        <record id="asset_brand_utiles_de_limpieza_adama" model="asset.brand">
+            <field name="name">ADAMA</field>
+            <field name="active">True</field>
+            <field name="class_id" ref="asset_class_utiles_de_limpieza"/>
+        </record>
+        <record id="asset_brand_utiles_de_limpieza_elitech" model="asset.brand">
+            <field name="name">ELITECH</field>
+            <field name="active">True</field>
+            <field name="class_id" ref="asset_class_utiles_de_limpieza"/>
+        </record>
+        <record id="asset_brand_utiles_de_limpieza_sin_marca" model="asset.brand">
+            <field name="name">SIN MARCA</field>
+            <field name="active">True</field>
+            <field name="class_id" ref="asset_class_utiles_de_limpieza"/>
+        </record>
+
+        <!-- 🔹 OTROS SUMINISTROS -->
+        <record id="asset_brand_otros_suministros_balta" model="asset.brand">
+            <field name="name">BALTA</field>
+            <field name="active">True</field>
+            <field name="class_id" ref="asset_class_otros_suministros"/>
+        </record>
+        <record id="asset_brand_otros_suministros_homehatra" model="asset.brand">
+            <field name="name">HOME HATRA</field>
+            <field name="active">True</field>
+            <field name="class_id" ref="asset_class_otros_suministros"/>
+        </record>
+        <record id="asset_brand_otros_suministros_sylvania" model="asset.brand">
+            <field name="name">SYLVANIA</field>
+            <field name="active">True</field>
+            <field name="class_id" ref="asset_class_otros_suministros"/>
+        </record>
+        <record id="asset_brand_otros_suministros_sin_marca" model="asset.brand">
+            <field name="name">SIN MARCA</field>
+            <field name="active">True</field>
+            <field name="class_id" ref="asset_class_otros_suministros"/>
+        </record>
+
+    </data>
+</odoo>

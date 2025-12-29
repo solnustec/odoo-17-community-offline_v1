@@ -1,0 +1,13 @@
+<odoo>
+    <record id="loyalty_reward_form_inherit_is_temporary" model="ir.ui.view">
+        <field name="name">loyalty.reward.form.inherit.is.temporary</field>
+        <field name="model">loyalty.reward</field>
+        <field name="inherit_id" ref="loyalty.loyalty_reward_view_form"/>
+        <field name="arch" type="xml">
+            <!-- Insertar después de date_to -->
+            <xpath expr="//field[@name='date_to']" position="after">
+                <field name="is_temporary" readonly="1"/>
+            </xpath>
+        </field>
+    </record>
+</odoo>

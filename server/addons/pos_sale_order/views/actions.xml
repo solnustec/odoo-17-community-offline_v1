@@ -1,0 +1,17 @@
+<odoo>
+    <record id="pos_order_action_create_invoice" model="ir.actions.server">
+        <field name="name">Crear Factura Consolidada/Individual</field>
+        <field name="model_id" ref="point_of_sale.model_pos_order"/>
+        <field name="binding_model_id" ref="point_of_sale.model_pos_order"/>
+        <field name="state">code</field>
+        <field name="code">
+            action = {
+                'type': 'ir.actions.act_window',
+                'res_model': 'pos.invoice.wizard',
+                'view_mode': 'form',
+                'target': 'new',
+                'context': dict(records.env.context, active_ids=records.ids),
+            }
+        </field>
+    </record>
+</odoo>

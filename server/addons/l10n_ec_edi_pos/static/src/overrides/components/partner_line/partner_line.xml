@@ -1,0 +1,28 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<templates id="template" xml:space="preserve">
+    <t t-name="PartnerLineRestrictFinalCostumer" t-inherit="point_of_sale.PartnerLine" t-inherit-mode="extension"
+       owl="1">
+        <xpath expr="//td[@class='edit-partner-button-cell']" position="replace">
+            <t t-if="props.partner.vat != '9999999999999'">
+                <td class="edit-partner-button-cell">
+                <button class="edit-partner-button btn btn-primary border"
+                        t-on-click.stop="() => props.onClickEdit(props.partner)">DETAILS</button>
+                    <button t-if="_isPartnerSelected"
+                            class="unselect-tag-mobile d-inline-block d-lg-none btn btn-light border ms-2">
+                    <i class="fa fa-times"></i>
+                        <span> UNSELECT </span>
+                </button>
+            </td>
+            </t>
+            <t t-else="">
+                <td class="edit-partner-button-cell">
+                    <div>
+
+                    </div>
+                </td>
+            </t>
+        </xpath>
+
+
+    </t>
+</templates>

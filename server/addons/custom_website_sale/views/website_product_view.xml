@@ -1,0 +1,46 @@
+<?xml version="1.0" encoding="utf-8"?>
+<odoo>
+    <!--    template de la vista del producto-->
+    <template id="product_template_inherit" inherit_id="website_sale.product">
+        <xpath expr="//h1[@itemprop='name']" position="replace">
+            <t t-if="product.unit_size_display">
+                <h3 class="text-primary">
+                    <p t-esc="product.name +' '+ product.unit_size_display"/>
+                </h3>
+            </t>
+            <t t-else="">
+                <h3 class="text-primary">
+                    <p t-esc="product.name "/>
+                </h3>
+            </t>
+        </xpath>
+    </template>
+    <!--    agregando la informaciond ela unidades en la linea del carrito de compras-->
+    <template id="website_product_cart_inherit" inherit_id="website_sale.cart_lines">
+        <xpath expr="//div[@id='cart_products']//div//t//div[@class='flex-grow-1']//t//h6" position="replace">
+            <t t-if="line.product_id.unit_size_display">
+                <h6 t-esc="line.name_short" class="d-inline align-top h6 fw-bold"/>
+                <h6 class="d-inline align-top h6 fw-bold" t-esc="line.product_id.unit_size_display"/>
+            </t>
+            <t t-else="">
+                <h6 t-esc="line.name_short" class="d-inline align-top h6 fw-bold"/>
+            </t>
+        </xpath>
+    </template>
+
+    <!--    agregando el campo en la pagina principal de la tienda en el grid-->
+    <template id="website_product_grid_store_inherit" inherit_id="website_sale.products_item">
+        <xpath expr="//a[@itemprop='name']"
+               position="replace">
+            <t t-if="product.unit_size_display">
+                <a class="text-primary text-decoration-none" itemprop="name" t-att-href="product_href"
+                   t-att-content="product.name" t-esc="product.name + ' ' + product.unit_size_display"/>
+            </t>
+            <t t-else="">
+                <a class="text-primary text-decoration-none" itemprop="name" t-att-href="product_href"
+                   t-att-content="product.name" t-esc="product.name"/>
+            </t>
+        </xpath>
+    </template>
+</odoo>
+

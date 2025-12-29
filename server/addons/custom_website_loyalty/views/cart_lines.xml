@@ -1,0 +1,111 @@
+<?xml version="1.0" encoding="utf-8"?>
+<odoo>
+
+    <!-- Ocultar los productos de tipo descuento (rewards) en el carrito -->
+    <template id="cart_lines_inherit_hide_rewards" inherit_id="website_sale.cart_lines"
+              name="Hide Reward Lines in Cart">
+        <xpath expr="//div[@t-foreach='website_sale_order.website_order_line']" position="attributes">
+            <attribute name="t-attf-class">
+                o_cart_product d-flex align-items-stretch gap-3
+                #{line.reward_id.reward_type == 'discount' and 'd-none'}
+                #{line.linked_line_id and 'optional_product info'}
+                #{not line_last and 'border-bottom pb-4'}
+                #{line_index &gt; 0 and 'pt-4'}
+            </attribute>
+        </xpath>
+    </template>
+
+    <!-- Estructura visual de la línea de carrito (botón eliminar, nombre, etc.) -->
+    <template id="cart_lines_inherit_though_price_apply_discount" inherit_id="website_sale.cart_lines"
+              name="Cart Line Layout">
+        <xpath expr="//div[@class='flex-grow-1']" position="replace">
+            <div class="flex-grow-1">
+                <t t-call="website_sale.cart_line_product_link">
+                    <h6 t-field="line.name_short" class="d-inline align-top h6 fw-bold"/>
+                </t>
+                <t t-call="website_sale.cart_line_description_following_lines">
+                    <t t-set="div_class" t-value="''"/>
+                </t>
+                <t t-if="not line.is_reward_line">
+                    <div>
+                        <a href='#'
+                           class="js_delete_product d-none d-md-inline-block small"
+                           aria-label="Remove from cart"
+                           title="Remove from cart">Eliminar
+                        </a>
+                        <button class="js_delete_product btn btn-light d-inline-block d-md-none"
+                                title="remove">
+                            <i class="fa fa-trash-o"/>
+                        </button>
+                    </div>
+                </t>
+            </div>
+        </xpath>
+    </template>
+
+    <!-- Mostrar solo el precio final (sin tachado) en las líneas del carrito -->
+    <template id="cart_lines_show_price_discount" inherit_id="website_sale.cart_lines"
+              name="Remove Strikethrough Price in Cart">
+        <xpath expr="//span[@t-out='product_price']" position="replace">
+            <span t-out="product_price"
+                  class="mx-1 text-primary fw-bold"
+                  style="white-space: nowrap;"
+                  t-options="{'widget': 'monetary', 'display_currency': website_sale_order.currency_id}"/>
+        </xpath>
+    </template>
+
+    <!-- Mostrar correctamente precios en tarjetas de productos individuales -->
+    <template id="product_card_individual_aply_discount" inherit_id="website_sale.product_price"
+              name="Product Card Apply Discount">
+        <xpath expr="//span[@class='oe_price']" position="replace">
+            <t t-if="combination_info.get('price_add_discount')">
+                <span class="oe_price text-muted"
+                      style="white-space: nowrap; text-decoration: line-through;"
+                      t-out="combination_info['price']"
+                      t-options="{'widget': 'monetary', 'display_currency': website.currency_id}"/>
+                <span class="oe_price text-primary oe_price_discount_c"
+                      t-out="combination_info['price_add_discount']"
+                      t-att-data-id="combination_info['product_template_id']"
+                      style="white-space: nowrap;"
+                      t-options="{'widget': 'monetary', 'display_currency': website.currency_id}"/>
+            </t>
+            <t t-else="">
+                <span class="oe_price text-muted"
+                      style="white-space: nowrap;"
+                      t-out="combination_info['price']"
+                      t-options="{'widget': 'monetary', 'display_currency': website.currency_id}"/>
+            </t>
+        </xpath>
+    </template>
+
+    <!-- Mostrar precios en la vista de listado de productos de la tienda -->
+    <template id="product_list_inherit_show_price_apply_discount" inherit_id="website_sale.products_item"
+              name="Product List Discount Display">
+        <xpath expr="//div[@class='product_price']" position="replace">
+            <div class="product_price" itemprop="offers" itemscope="itemscope" itemtype="http://schema.org/Offer">
+                <t t-if="'base_price' in template_price_vals and (template_price_vals['base_price'] &gt; template_price_vals['price_reduce']) and (template_price_vals['price_reduce'] or not website.prevent_zero_price_sale)">
+                    <del t-attf-class="text-muted me-1 h6 mb-0" style="white-space: nowrap;">
+                        <em class="small" t-esc="template_price_vals['base_price']"
+                            t-options="{'widget': 'monetary', 'display_currency': website.currency_id}"/>
+                    </del>
+                </t>
+                <t t-if="template_price_vals.get('discounted_price_rounded')" class="h6 mb-0">
+                    <span class="h6 mb-0 oe_striked_price"
+                          t-esc="template_price_vals['price_reduce']"
+                          t-options="{'widget': 'monetary', 'display_currency': website.currency_id}"/>
+                    <span class="h6 mb-0 mx-1"
+                          t-esc="template_price_vals['discounted_price_rounded']"
+                          t-options="{'widget': 'monetary', 'display_currency': website.currency_id}"/>
+                </t>
+                <t t-else="">
+                    <span class="h6 mb-0"
+                          t-esc="template_price_vals['price_reduce']"
+                          t-options="{'widget': 'monetary', 'display_currency': website.currency_id}"/>
+                    <span itemprop="price" style="display:none;" t-esc="template_price_vals['price_reduce']"/>
+                    <span itemprop="priceCurrency" style="display:none;" t-esc="website.currency_id.name"/>
+                </t>
+            </div>
+        </xpath>
+    </template>
+
+</odoo>

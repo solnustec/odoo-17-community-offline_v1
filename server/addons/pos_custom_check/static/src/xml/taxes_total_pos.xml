@@ -1,0 +1,52 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<templates id="template" xml:space="preserve">
+    <t t-name="pos_custom_check.OrderWidgetCustom" t-inherit="point_of_sale.OrderWidget" t-inherit-mode="extension"
+       owl="1">
+        <!-- ELIMINAR PRODUCTOS DE LA ORDEN-->
+        <xpath expr="//div[contains(@class, 'order-summary')]" position="before">
+            <div>
+                <button class="control-button btn btn-light text-bg-danger rounded-0 fw-bolder w-100"
+                    t-on-click="() => this.deleteProductsOrder()">
+                    <i class="fa fa-trash"></i>
+                    <span> </span>
+                    <span>Eliminar Productos</span>
+                </button>
+            </div>
+        </xpath>
+        <xpath expr="//div[contains(@class, 'order-summary')]" position="replace">
+            <div t-if="props.total or props.tax"
+                 class="order-summary w-100 py-1 px-2 bg-100 text-end fw-bolder fs-2 lh-sm">
+                <div class="d-flex justify-content-between mx-1 mb-4">
+                    <div class="mx-1 pt-md-2">
+                        <div class="text-start mx-1 pt-md-1 fs-6 d-flex justify-content-between">
+                            <span style="min-width: 103px;">Subt. 0 %:</span>
+                            <span>$                                <t t-esc="this.state.subtotalTax0"/>
+                            </span>
+                        </div>
+                        <div class="text-start mx-1 pt-md-1 fs-6 d-flex justify-content-between">
+                            <span style="min-width: 103px;">Subt. 15%:</span>
+                            <span>$                                <t t-esc="this.state.subtotalTax15"/>
+                            </span>
+                        </div>
+                        <div class="text-start mx-1 pt-md-1 fs-6 d-flex justify-content-between">
+                            <span style="min-width: 103x;">IVA:</span>
+                            <span>                                <t t-esc="(props.tax || 0 )"/>
+                            </span>
+                        </div>
+
+                    </div>
+                    <div class="mx-1 pt-md-2">
+                        <div class="text-end mx-1 pt-md-1 fs-5 d-flex justify-content-between">
+                            <span style="min-width: 110px;">Valor Bruto:</span>
+                            <span>$ <t t-esc="this.state.grossvalue"/></span>
+                        </div>
+                        <div class="text-end mx-1 pt-md-2 fs-5 d-flex justify-content-between">
+                            <span style="min-width: 110px;">Total:</span>
+                            <span> <t t-esc="props.total"/></span>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </xpath>
+    </t>
+</templates>

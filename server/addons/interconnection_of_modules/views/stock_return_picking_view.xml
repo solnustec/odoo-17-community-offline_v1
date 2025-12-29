@@ -1,0 +1,17 @@
+<odoo>
+    <record id="view_return_picking_inherit_locations" model="ir.ui.view">
+        <field name="name">stock.return.picking.inherit.locations</field>
+        <field name="model">stock.return.picking</field>
+        <field name="inherit_id" ref="stock.view_stock_return_picking_form"/>
+        <field name="arch" type="xml">
+            <!-- Insertar el nuevo campo warehouse_id antes de location_id -->
+            <xpath expr="//field[@name='location_id']" position="before">
+                <field name="warehouse_id" options="{'no_open': True}" required="1"/>
+            </xpath>
+            <!-- Ocultar el campo location_id -->
+            <xpath expr="//field[@name='location_id']" position="attributes">
+                <attribute name="invisible">1</attribute>
+            </xpath>
+        </field>
+    </record>
+</odoo>

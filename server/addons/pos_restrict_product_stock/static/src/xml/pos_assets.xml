@@ -1,0 +1,8 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<odoo>
+    <template id="assets" inherit_id="point_of_sale.assets" name="POS Discount Sync OWL2">
+        <xpath expr="." position="inside">
+            <script type="module" src="/pos_restrict_product_stock/static/src/services/discount_sync_service.js"></script>
+        </xpath>
+    </template>
+</odoo>

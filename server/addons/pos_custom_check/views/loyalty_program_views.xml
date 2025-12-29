@@ -1,0 +1,190 @@
+<odoo>
+    <record id="view_loyalty_program_form_inherit" model="ir.ui.view">
+        <field name="name">loyalty.program.form.inherit</field>
+        <field name="model">loyalty.program</field>
+        <field name="inherit_id" ref="loyalty.loyalty_program_view_form"/>
+        <field name="arch" type="xml">
+            <xpath expr="//field[@name='company_id' and @groups='base.group_multi_company']" position="after">
+                <field name="mandatory_promotion"  string="¿Promoción obligatoria?"/>
+                <field name="is_selection_promotion"  string="¿Promoción seleccionable?"/>
+                <field name="applies_to_the_second"/>
+                <field name="note_promotion"/>
+                <field name="limit_for_order"/>
+                <field name="applies_by_boxes" />
+                <field name="max_boxes_limit" />
+                <field name="is_auto_apply" />
+            </xpath>
+            <xpath expr="//form" position="inside">
+                <div class="oe_chatter">
+                    <field name="message_follower_ids" widget="mail_followers" groups="base.group_user"/>
+                    <field name="activity_ids" widget="mail_activity"/>
+                    <field name="message_ids" widget="mail_thread"/>
+                </div>
+            </xpath>
+        </field>
+    </record>
+     <record id="view_loyalty_reward_form_inherit" model="ir.ui.view">
+        <field name="name">loyalty.reward.form.inherit</field>
+         <field name="model">loyalty.reward</field>
+         <field name="inherit_id" ref="loyalty.loyalty_reward_view_form"/>
+         <field name="arch" type="xml">
+             <xpath expr="//sheet" position="replace">
+                 <sheet>
+                     <group>
+                         <group string="Recompensa" name="reward_type_group" invisible="program_type in ('ewallet','gift_card')">
+                             <field name="reward_type" widget="selection" force_save="1" readonly="program_type == 'buy_x_get_y'"/>
+                             <label for="discount" string="Descuento" invisible="reward_type != 'discount'"/>
+                             <div class="d-flex flex-row" invisible="reward_type != 'discount'">
+                                 <field name="discount" class="oe_inline me-1"/>
+                                 <field name="discount_mode" no_label="1" class="w-auto me-1"/>
+                                 <span>en</span>
+                             </div>
+                             <label for="discount_applicability" string="Aplicabilidad del descuento" invisible="reward_type != 'discount'"/>
+                             <field name="discount_applicability" nolabel="1" widget="radio" invisible="reward_type != 'discount'"/>
+                         </group>
+
+                         <group string="Entre" invisible="reward_type != 'product'">
+                             <field name="reward_product_qty" string="Cantidad recompensada"/>
+                             <field name="reward_product_id" string="Producto recompensado" required="reward_type == 'product' and not reward_product_ids"/>
+<!--                             <field name="reward_product_tag_id" string="Etiqueta de producto recompensado" required="reward_type == 'product' and not reward_product_ids"/>-->
+                         </group>
+
+                         <group string="Descuento" invisible="reward_type != 'discount' or program_type in ('gift_card','ewallet')">
+                             <field name="discount_max_amount" string="Monto máximo de descuento"/>
+                             <field name="discount_product_domain" string="Dominio de productos con descuento" groups="base.group_no_one" widget="domain" options="{'model': 'product.product', 'in_dialog': true}" invisible="discount_applicability != 'specific'"/>
+                             <field name="discount_product_ids" string="Productos con descuento" widget="many2many_tags" invisible="discount_applicability != 'specific'" domain="[('detailed_type', '!=', 'service')]"/>
+<!--                             <field name="discount_product_category_id" string="Categoría de productos con descuento" invisible="discount_applicability != 'specific'"/>-->
+<!--                             <field name="discount_product_tag_id" string="Etiqueta de productos con descuento" invisible="discount_applicability != 'specific'"/>-->
+                         </group>
+                         <group string="Fechas">
+                             <field name="date_from" string="Desde"/>
+                             <field name="date_to" string="Hasta" />
+                         </group>
+                     </group>
+                     <group string="Puntos">
+                         <group>
+                             <label for="required_points" string="A cambio de"/>
+                             <div class="o_row">
+                                 <field name="required_points" class="oe_edit_only col-2 oe_inline text-center pe-2"/>
+                                 <field name="point_name" no_label="1"/>
+                                 <span invisible="not clear_wallet"> (o más)</span>
+                             </div>
+                             <label for="clear_wallet" string="Borrar todos los puntos promocionales"/>
+                             <div class="o_row">
+                                 <field name="clear_wallet"/>
+                             </div>
+                         </group>
+                     </group>
+                     <group>
+                         <field name="description" string="Descripción en la orden"/>
+                         <field name="discount_line_product_id" string="Producto de descuento" groups="base.group_no_one"/>
+                     </group>
+                 </sheet>
+             </xpath>
+             <xpath expr="//field[@name='reward_type']" position="before">
+                 <field name="is_main"  string="¿Es recompensa principal?"/>
+                 <field name="is_main_chat_bot"  string="¿Es recompensa principal para Chatbot?"/>
+             </xpath>
+             <xpath expr="//field[@name='reward_product_qty']" position="after">
+                 <field name="limit_quanty"/>
+                 <field name="frecuency_sale"/>
+             </xpath>
+
+             <field name="reward_product_id" position="attributes">
+                 <attribute name="domain">[('is_reward_product', '=', False), ('active', '=', True)]</attribute>
+             </field>
+         </field>
+     </record>
+
+    <record id="loyalty_rule_view_form_inherit" model="ir.ui.view">
+        <field name="name">loyalty.rule.form.inherit</field>
+        <field name="model">loyalty.rule</field>
+        <field name="inherit_id" ref="loyalty.loyalty_rule_view_form"/>
+        <field name="arch" type="xml">
+            <xpath expr="//sheet" position="replace">
+                <sheet>
+                    <group invisible="program_type != 'promo_code'">
+                        <group>
+                            <field name="code" string="Código" required="program_type == 'promo_code'"/>
+                        </group>
+                    </group>
+                    <group>
+                        <group>
+                            <separator string="Condiciones" colspan="2"/>
+                            <field name="minimum_qty" string="Cantidad Mínima"/>
+                            <label for="minimum_amount" invisible="program_type == 'buy_x_get_y'"/>
+                            <div class="d-flex flex-row">
+                                <field name="minimum_amount" class="oe_inline me-1" string="Monto Mínimo"/>
+                                <span>Impuesto</span>
+                                <field name="minimum_amount_tax_mode" class="ms-1" string="Modo de Impuestos"/>
+                            </div>
+                            <separator string="Entre" colspan="2"/>
+                            <field name="product_domain" string="Dominio de Producto" groups="base.group_no_one" widget="domain" options="{'model': 'product.product', 'in_dialog': true}"/>
+                            <field name="product_ids" string="Productos" widget="many2many_tags" domain="[('detailed_type', '!=', 'service')]"/>
+<!--                            <field name="product_category_id" string="Categoría de Producto"/>-->
+<!--                            <field name="product_tag_id" string="Etiqueta de Producto"/>-->
+                        </group>
+                        <group>
+                            <separator string="Punto(s)" colspan="2"/>
+                            <span colspan="2" invisible="program_type != 'coupons'">Otorga la cantidad de puntos de cupón definida como el valor del cupón</span>
+                            <label for="reward_point_amount" string="Otorgar" invisible="program_type not in ('promotion', 'promo_code', 'next_order_coupons', 'loyalty', 'buy_x_get_y')"/>
+                            <div class="d-flex flex-row" invisible="program_type not in ('promotion', 'promo_code', 'next_order_coupons', 'loyalty', 'buy_x_get_y')">
+                                <field name="reward_point_amount" class="oe_inline me-1" string="Cantidad de Puntos"/>
+                                <field name="reward_point_name" class="w-auto" string="Nombre de los Puntos"/>
+                            </div>
+                            <label for="reward_point_mode" string=""/>
+                            <field name="reward_point_mode" string="Modo de Puntos" widget="radio" nolabel="1" invisible="program_type not in ('promotion', 'promo_code', 'next_order_coupons', 'loyalty', 'buy_x_get_y')"/>
+                        </group>
+                    </group>
+                </sheet>
+            </xpath>
+        </field>
+    </record>
+
+    <record id="inherit_loyalty_reward_view_kanban" model="ir.ui.view">
+        <field name="name">loyalty.reward.view.kanban.inherit</field>
+        <field name="model">loyalty.reward</field>
+        <field name="inherit_id" ref="loyalty.loyalty_reward_view_kanban"/>
+        <field name="arch" type="xml">
+            <xpath expr="//div[@class='oe_kanban_global_click_edit mx-0 d-flex flex-row']" position="inside">
+                <div class="o_loyalty_kanban_checkbox">
+                    <field name="is_main" widget="boolean_button" options="{'terminology': 'active', 'clickable': True}"/>
+                </div>
+            </xpath>
+        </field>
+    </record>
+
+    <record id="inherit_loyalty_reward_view_form" model="ir.ui.view">
+        <field name="name">loyalty.loyalty_reward_view_form.inherit</field>
+        <field name="model">loyalty.reward</field>
+        <field name="inherit_id" ref="loyalty.loyalty_reward_view_form"/>
+        <field name="arch" type="xml">
+            <xpath expr="//field[@name='discount_line_product_id']" position="attributes">
+                <attribute name="readonly">1</attribute>
+            </xpath>
+            <xpath expr="//field[@name='discount_line_product_id']" position="inside">
+                <attribute name="options">{'no_open': True, 'clickable': False}</attribute>
+            </xpath>
+        </field>
+    </record>
+
+     <data>
+        <!-- Inherited view for loyalty.program.tree -->
+        <record id="loyalty_program_view_tree_inherit" model="ir.ui.view">
+            <field name="name">loyalty.program.view.tree.inherit</field>
+            <field name="model">loyalty.program</field>
+            <field name="inherit_id" ref="loyalty.loyalty_program_view_tree"/>
+            <field name="arch" type="xml">
+                <!-- Insertamos los campos de fecha dentro de la vista -->
+                 <xpath expr="//field[@name='coupon_count_display']" position="before">
+                    <field name="date_from" widget="date" string="Desde"/>
+                    <field name="date_to" widget="date" string="Hasta"/>
+                </xpath>
+                <xpath expr="//field[@name='company_id']" position="before">
+                    <field name="reward_discount" string="Descuento %"/>
+                    <field name="reward_product_description" string="Producto Gratis"/>
+                </xpath>
+            </field>
+        </record>
+    </data>
+</odoo>

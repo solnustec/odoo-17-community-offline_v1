@@ -1,0 +1,173 @@
+.display_qty {
+  background: #714b67;
+  position: absolute;
+  top: 0;
+  left: 0;
+  width: 30px;
+  height: 20px;
+  border-radius: 3px;
+  text-align: center;
+  font-weight: bold;
+  font-size: 14px;
+  color: white;
+}
+.not-available {
+  background: #808080;
+}
+.display_virtual {
+  background: #017e84;
+  position: absolute;
+  top: 0;
+  right: 0;
+  width: 30px;
+  height: 20px;
+  border-radius: 3px;
+  text-align: center;
+  font-weight: bold;
+  font-size: 14px;
+  color: white;
+}
+
+.product-name {
+  display: contents;
+}
+
+/* div.row.mt-2 {
+  margin: 0 -4px 0 4px;
+} */
+/* === BOTONES Y ETIQUETAS === */
+
+/* Stock */
+.badge-stock {
+  background-color: #004094;
+  color: white; /* Texto blanco  máximo contraste */
+  padding: 0.25rem 0.5rem;
+  border-radius: 0.35rem;
+  font-weight: 600;
+  text-align: center;
+  margin-left: -3px;
+}
+
+/* Descuento: Verde Vibrante (Oferta y Positividad) */
+.badge-discount {
+  background-color: #FF9800; /* Verde brillante para ofertas */
+  color: #FFFFFF; /* Texto blanco para resaltar la oferta */
+  padding: 0.25rem 0.5rem;
+  border-radius: 0.35rem;
+  font-weight: 600;
+  text-align: center;
+  margin-left: -3px;
+  margin-right: -3px;
+}
+
+/* UOM: Amarillo Vibrante (Atención y Urgencia) */
+.badge-uom {
+  background-color: #ffd700; /* Amarillo para llamar la atención */
+  color: #343a40; /* Negro para buen contraste en amarillo */
+  padding: 0.25rem 0.5rem;
+  border-radius: 0.35rem;
+  font-weight: 600;
+  text-align: center;
+  margin-left: -3px;
+}
+
+/* Sin Promo: Gris Neutro (Equilibrio y Sencillez) */
+.badge-promo {
+  background-color: #28A745; /* Gris neutro para discreción */
+  color: #FFFFFF; /* Mantener texto blanco para consistencia */
+  padding: 0.25rem 0.5rem;
+  border-radius: 0.35rem;
+  font-weight: 600;
+  text-align: center;
+}
+
+/* Stock por recibir: Azul claro (Pendiente y En tránsito) */
+.badge-incoming-stock {
+  background-color: #17a2b8; /* Azul cyan para indicar pendiente */
+  color: #FFFFFF; /* Texto blanco para buen contraste */
+  padding: 0.25rem 0.5rem;
+  border-radius: 0.35rem;
+  font-weight: 600;
+  text-align: center;
+  font-size: 0.85rem;
+}
+/* === OTROS ELEMENTOS === */
+
+/* Marca/Laboratorio: fondo claro + borde gris */
+.label-laboratory {
+  background-color: #ced4da; /* Blanco muy ligero */
+  color: #343a40; /* Negro para el texto */
+  padding: 0.1rem 0rem;
+  border-radius: 0.35rem;
+  font-weight: 500;
+  text-align: center;
+}
+
+/* Código de barras: fondo oscuro + monoespaciado */
+.code-bar {
+  background-color: #ced4da;
+  color: #343a40;
+  font-family: monospace;
+  font-size: 0.9rem;
+  padding: 0.25rem 0.5rem;
+  border-radius: 0.35rem;
+  text-align: center;
+  user-select: text;
+  font-weight: 600;
+  letter-spacing: 1px;
+}
+
+.product-information-tag {
+  border-color: transparent #066ebd80 transparent transparent;
+}
+
+.product-name {
+  display: contents;
+}
+
+.product-content {
+  display: flex;
+  justify-content: end !important;
+}
+
+.leftpane {
+  max-width: 600px;
+  width: 600px;
+}
+
+.product-img img {
+  height: 100px;
+  object-fit: contain;
+}
+
+.product-list {
+  display: grid;
+  gap: 0.25rem; /* Equivalente a gap-1 */
+  padding: 0.25rem; /* Equivalente a p-1 */
+  grid-template-columns: repeat(
+    4,
+    1fr
+  ) !important; /* 6 columnas de igual ancho */
+}
+
+div.row.mt-2 {
+  margin: 0 -3px;
+}
+
+@media (max-width: 1200px) {
+  .product-list {
+    grid-template-columns: repeat(
+      4,
+      1fr
+    ) !important; /* 4 columnas en pantallas medianas */
+  }
+}
+
+@media (max-width: 768px) {
+  .product-list {
+    grid-template-columns: repeat(
+      2,
+      1fr
+    ) !important; /* 2 columnas en móviles */
+  }
+}

@@ -1,0 +1,33 @@
+<?xml version="1.0" encoding="utf-8"?>
+<odoo>
+    <data noupdate="0">
+        <!-- ======================= CATEGORIA ======================= -->
+        <record id="module_category_product_rotation" model="ir.module.category">
+            <field name="name">Rotacion de Productos</field>
+            <field name="description">Categoria para permisos de analisis de rotacion de productos</field>
+            <field name="sequence">50</field>
+        </record>
+
+        <!-- ======================= GRUPO DE REVISORES ======================= -->
+        <record id="group_rotation_reviewer" model="res.groups">
+            <field name="name">Revisor de Rotacion</field>
+            <field name="category_id" ref="module_category_product_rotation"/>
+            <field name="comment">
+                Usuarios que reciben notificaciones diarias sobre productos sin rotacion.
+                Pueden revisar y gestionar el inventario estancado.
+            </field>
+        </record>
+
+        <!-- ======================= GRUPO DE ADMINISTRADORES ======================= -->
+        <record id="group_rotation_manager" model="res.groups">
+            <field name="name">Administrador de Rotacion</field>
+            <field name="category_id" ref="module_category_product_rotation"/>
+            <field name="implied_ids" eval="[(4, ref('group_rotation_reviewer'))]"/>
+            <field name="comment">
+                Administradores con acceso completo al modulo de rotacion.
+                Pueden configurar parametros y ejecutar recalculos manuales.
+            </field>
+        </record>
+
+    </data>
+</odoo>

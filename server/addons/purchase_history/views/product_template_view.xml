@@ -1,0 +1,25 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<odoo>
+    <!--    Inherit the view of product.template and add separate tab for purchase
+            history-->
+    <record id="view_product_template_purchase_history_tab" model="ir.ui.view">
+        <field name="name">product.template.purchase.history.tab</field>
+        <field name="model">product.template</field>
+        <field name="inherit_id" ref="product.product_template_only_form_view"/>
+        <field name="arch" type="xml">
+            <xpath expr="//page[@name='purchase']" position="after">
+                <page string="Historial de Compras">
+                        <field name="purchase_history_ids">
+                            <tree>
+                                <field name="purchase_order_id" string="Orden de Compra"/>
+                                <field name="partner_id" string="Proveedor"/>
+                                <field name="quantity" string="Cantidad"/>
+                                <field name="price_unit" string="Precio Unitario"/>
+                                <field name="date_order" string="Fecha" widget="date"/>
+                            </tree>
+                        </field>
+                </page>
+            </xpath>
+        </field>
+    </record>
+</odoo>

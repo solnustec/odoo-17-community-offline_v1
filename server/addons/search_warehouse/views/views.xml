@@ -1,0 +1,60 @@
+<odoo>
+  <data>
+    <!-- explicit list view definition -->
+<!--
+    <record model="ir.ui.view" id="search_warehouse.list">
+      <field name="name">search_warehouse list</field>
+      <field name="model">search_warehouse.search_warehouse</field>
+      <field name="arch" type="xml">
+        <tree>
+          <field name="name"/>
+          <field name="value"/>
+          <field name="value2"/>
+        </tree>
+      </field>
+    </record>
+-->
+
+    <!-- actions opening views on models -->
+<!--
+    <record model="ir.actions.act_window" id="search_warehouse.action_window">
+      <field name="name">search_warehouse window</field>
+      <field name="res_model">search_warehouse.search_warehouse</field>
+      <field name="view_mode">tree,form</field>
+    </record>
+-->
+
+    <!-- server action to the one above -->
+<!--
+    <record model="ir.actions.server" id="search_warehouse.action_server">
+      <field name="name">search_warehouse server</field>
+      <field name="model_id" ref="model_search_warehouse_search_warehouse"/>
+      <field name="state">code</field>
+      <field name="code">
+        action = {
+          "type": "ir.actions.act_window",
+          "view_mode": "tree,form",
+          "res_model": model._name,
+        }
+      </field>
+    </record>
+-->
+
+    <!-- Top menu item -->
+<!--
+    <menuitem name="search_warehouse" id="search_warehouse.menu_root"/>
+-->
+    <!-- menu categories -->
+<!--
+    <menuitem name="Menu 1" id="search_warehouse.menu_1" parent="search_warehouse.menu_root"/>
+    <menuitem name="Menu 2" id="search_warehouse.menu_2" parent="search_warehouse.menu_root"/>
+-->
+    <!-- actions -->
+<!--
+    <menuitem name="List" id="search_warehouse.menu_1_list" parent="search_warehouse.menu_1"
+              action="search_warehouse.action_window"/>
+    <menuitem name="Server to list" id="search_warehouse" parent="search_warehouse.menu_2"
+              action="search_warehouse.action_server"/>
+-->
+  </data>
+</odoo>

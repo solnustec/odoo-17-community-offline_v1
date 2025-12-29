@@ -1,0 +1,132 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<templates id="template" xml:space="preserve">
+    <t t-name="api_client_proassislife.OrderLinePopup" owl="1">
+        <div class="popup popup-CheckInfoPopup modal-content"
+             style="max-width: 1100px;border-radius: 10px; box-shadow: 0 5px 15px rgba(0, 0, 0, 0.3); position: fixed; top: 50%; left: 50%; transform: translate(-50%, -50%);">
+
+            <div class="modal-header bg-primary text-white text-center">
+                <h5 class="modal-title">Información del Cliente</h5>
+            </div>
+
+            <div class="modal-body container" style="max-height: 500px; overflow-y: auto;">
+                <t t-if="contractData.length > 0">
+                    <t t-foreach="contractData" t-as="plan" t-key="plan.Codigo">
+
+                        <div class="row mb-2">
+                            <div class="col-4">
+                                <h6 class="text-primary">Datos del Titular</h6>
+                                <table class="table table-sm table-bordered">
+                                    <tbody>
+                                        <tr><td><strong>Nombre</strong></td>
+                                            <td><t t-esc="plan.Titular[0].Nombres"/>
+                                                <t t-esc="plan.Titular[0].Apellidos"/></td>
+                                        </tr>
+                                        <tr><td><strong>Documento</strong></td>
+                                            <td><t t-esc="plan.Titular[0].NumeroDocumento"/></td></tr>
+                                        <tr><td><strong>Edad</strong></td>
+                                            <td><t t-esc="plan.Titular[0].Edad"/>
+                                                años</td></tr>
+                                        <tr>
+                                        <td><strong>Fecha Nacimiento</strong></td>
+                                            <td><t t-esc="new Date(plan.Titular[0].FechaNacimiento).toLocaleDateString()"/></td>
+                                    </tr>
+                                    </tbody>
+                                </table>
+                            </div>
+                            <div class="col-4">
+                                <h6 class="text-primary">Datos del Plan</h6>
+                                <table class="table table-sm table-bordered">
+                                    <tbody>
+                                        <tr><td><strong>Nombre</strong></td>
+                                            <td><t t-esc="plan.NombrePlan"/></td></tr>
+                                        <tr><td><strong>Producto</strong></td>
+                                            <td><t t-esc="plan.Producto"/></td></tr>
+                                        <tr><td><strong>Estado</strong></td>
+                                            <td><t t-esc="plan.Estado"/></td></tr>
+                                        <tr><td><strong>Cobertura</strong></td>
+                                            <td><t t-esc="plan.CoberturaMaxima"/></td></tr>
+                                    </tbody>
+                                </table>
+                            </div>
+                            <div class="col-4">
+                                <h6 class="text-primary">Detalles del Plan</h6>
+                                <table class="table table-sm table-bordered">
+                                    <tbody>
+                                        <tr><td><strong>Deducible</strong></td>
+                                            <td><t t-esc="plan.DeducibleTotal"/></td></tr>
+                                        <tr>
+                                            <td><strong>Es Moroso</strong></td>
+                                            <td>
+                                                <t t-if="plan.EsMoroso">Sí</t>
+                                                <t t-else="">No</t>
+                                            </td>
+                                        </tr>
+                                        <tr>
+                                            <td><strong>Fecha Inicio</strong></td>
+                                            <td><t t-esc="new Date(plan.FechaInicio).toLocaleDateString()"/></td>
+                                        </tr>
+                                        <tr>
+                                            <td><strong>Fecha Fin</strong></td>
+                                            <td><t t-esc="new Date(plan.FechaVigencia).toLocaleDateString()"/></td>
+                                        </tr>
+                                        </tbody>
+                                </table>
+                            </div>
+                        </div>
+
+                        <t t-if="plan.Beneficiarios.length > 0">
+                            <div class="row mb-2">
+                                <div class="col-12">
+                                    <h6 class="text-primary">Beneficiarios</h6>
+                                    <table class="table table-sm table-bordered">
+                                        <thead class="table-light">
+                                            <tr>
+                                                <th>Nombre</th>
+                                                <th>Identificación</th>
+                                                <th>Relación</th>
+                                                <th>Edad</th>
+                                                <th>Valor</th>
+                                            </tr>
+                                        </thead>
+                                        <tbody>
+                                            <t t-foreach="plan.Beneficiarios" t-as="beneficiario"
+                                               t-key="beneficiario.NumeroDocumento">
+                                                <tr>
+                                                    <td><t t-esc="beneficiario.Nombres"/>
+                                                        <t t-esc="beneficiario.Apellidos"/></td>
+                                                    <td><t t-esc="beneficiario.NumeroDocumento"/></td>
+                                                    <td><t t-esc="beneficiario.RelacionDependiente"/></td>
+                                                    <td><t t-esc="beneficiario.Edad"/>
+                                                        años</td>
+                                                    <td>
+                                                        <t t-if="beneficiario.BeneficiosPlan.length > 0">
+                                                            <ul class="mb-0">
+                                                                <t t-foreach="beneficiario.BeneficiosPlan"
+                                                                   t-as="beneficio" t-key="beneficio.Nombre">
+                                                                    <li> <t t-esc="beneficio.Valor"/></li>
+                                                                </t>
+                                                            </ul>
+                                                        </t>
+                                                        <t t-else="">No aplica</t>
+                                                    </td>
+                                                </tr>
+                                            </t>
+                                        </tbody>
+                                    </table>
+                                </div>
+                            </div>
+                        </t>
+
+                    </t>
+                </t>
+                <t t-else="">
+                    <p class="text-danger text-center">No hay información disponible.</p>
+                </t>
+            </div>
+
+            <div class="modal-footer d-flex justify-content-right">
+                <button class="btn btn-secondary btn-sm" t-on-click="cancel">Cerrar</button>
+            </div>
+        </div>
+    </t>
+</templates>

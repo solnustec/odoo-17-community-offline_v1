@@ -1,0 +1,20 @@
+<?xml version="1.0" encoding="utf-8"?>
+<odoo>
+    <data noupdate="1">
+
+        <record id="seq_employee_shift_allocation" model="ir.sequence">
+            <field name="name">Employee Shift Allocation</field>
+            <field name="code">employee.shift.allocation</field>
+            <field name="prefix">SA-</field>
+            <field name="padding">4</field>
+            <field name="company_id" eval="False"/>
+        </record>
+        <record id="seq_employee_shift_changes" model="ir.sequence">
+            <field name="name">Employee Shift Changes</field>
+            <field name="code">employee.shift.changes</field>
+            <field name="prefix">EXCEP-</field>
+            <field name="padding">4</field>
+            <field name="company_id" eval="False"/>
+        </record>
+    </data>
+</odoo>

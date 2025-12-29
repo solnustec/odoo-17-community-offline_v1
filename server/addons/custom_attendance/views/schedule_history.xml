@@ -1,0 +1,46 @@
+<odoo>
+    <data>
+
+
+        <record id="view_employee_schedule_history_search" model="ir.ui.view">
+            <field name="name">employee.schedule.history.search</field>
+            <field name="model">employee.schedule.history</field>
+            <field name="arch" type="xml">
+                <search>
+                    <field name="employee_id" string="Empleado"/>
+                </search>
+            </field>
+        </record>
+
+        <record id="tree_employee_schedule_history" model="ir.ui.view">
+            <field name="name">tree.employee.schedule.history</field>
+            <field name="model">employee.schedule.history</field>
+            <field name="arch" type="xml">
+                <tree editable="bottom">
+                    <field name="employee_id" string="Empleado"/>
+                    <field name="calendar_id" string="Horario"/>
+                    <field name="start_datetime" string="Inicia"/>
+                    <field name="end_datetime" string="Termina" />
+                </tree>
+            </field>
+        </record>
+
+
+        <record id="action_employee_schedule_history" model="ir.actions.act_window">
+            <field name="name">Historial Horarios</field>
+            <field name="type">ir.actions.act_window</field>
+            <field name="res_model">employee.schedule.history</field>
+            <field name="view_mode">search,tree</field>
+            <field name="search_view_id" ref="view_employee_schedule_history_search"/>
+        </record>
+
+
+        <menuitem id="menu_employee_schedule_history"
+                  name="Historial Horarios"
+                  parent="hr_attendance.menu_hr_attendance_root"
+                  action="action_employee_schedule_history"
+                  sequence="6"/>
+
+    </data>
+</odoo>
+

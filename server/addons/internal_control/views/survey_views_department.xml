@@ -1,0 +1,176 @@
+<?xml version="1.0" encoding="utf-8"?>
+<odoo>
+
+    <record id="view_survey_survey_form_inherit" model="ir.ui.view">
+        <field name="name">survey.survey.form.inherit</field>
+        <field name="model">survey.survey</field>
+        <field name="inherit_id" ref="survey.survey_survey_view_form"/>
+        <field name="arch" type="xml">
+            <xpath expr="//header" position="inside">
+                <button name="action_export_results"
+                        type="object"
+                        string="Exportar Resultados"
+                        class="oe_highlight"
+                        icon="fa-file-pdf-o"/>
+            </xpath>
+            <xpath expr="//form/sheet" position="inside">
+                <group>
+                    <field name="category_id" options="{'no_create': False}" string="Categoría"/>
+                    <field name="tag_ids" widget="many2many_tags" options="{'no_create': False}" string="Etiquetas"/>
+                    <field name="is_anonymous" widget="boolean_toggle" options="{'no_create': False}" string="Encuesta Anónima"/>
+                    <field name="department_id" options="{'no_create': True}" readonly="is_department_locked"/>
+                    <field name="is_department_locked" invisible="1"/>
+                </group>
+                <group string="Opciones de Puntuación">
+                    <group>
+                        <field name="scoring_type" widget="radio"/>
+                    </group>
+                    <group>
+                        <field name="scoring_success_min" invisible="scoring_type == 'no_scoring'"/>
+                    </group>
+                </group>
+            </xpath>
+        </field>
+    </record>
+
+    <record id="survey_survey_kanban_view_inherit" model="ir.ui.view">
+        <field name="name">survey.survey.kanban.inherit</field>
+        <field name="model">survey.survey</field>
+        <field name="inherit_id" ref="survey.survey_survey_view_kanban"/>
+        <field name="arch" type="xml">
+            <xpath expr="//kanban" position="inside">
+                <filter name="group_by_category" string="Agrupar por Categoría" context="{'group_by': 'category_id'}"/>
+            </xpath>
+        </field>
+    </record>
+
+    <record id="view_survey_survey_tree_inherit" model="ir.ui.view">
+        <field name="name">survey.survey.tree.inherit</field>
+        <field name="model">survey.survey</field>
+        <field name="inherit_id" ref="survey.survey_survey_view_tree"/>
+        <field name="arch" type="xml">
+            <xpath expr="//tree" position="inside">
+                <field name="tag_ids" string="Etiquetas"/>
+            </xpath>
+        </field>
+    </record>
+
+    <!-- Vista del wizard para crear encuestas por categoría -->
+    <record id="view_survey_create_by_category_wizard_form" model="ir.ui.view">
+        <field name="name">survey.create.by.category.wizard.form</field>
+        <field name="model">survey.create.by.category.wizard</field>
+        <field name="arch" type="xml">
+            <form string="Crear Encuesta por Categoría">
+                <sheet>
+                    <group>
+                        <group>
+                            <field name="name" placeholder="Ej: Encuesta de Cumplimiento Q1 2024"/>
+                            <field name="category_id" options="{'no_create': False}"/>
+                            <field name="section_method" widget="radio"/>
+                        </group>
+                        <group>
+                            <field name="department_id" options="{'no_create': True}" readonly="is_department_locked"/>
+                            <field name="is_department_locked" invisible="1"/>
+                            <field name="is_anonymous" widget="boolean_toggle"/>
+                        </group>
+                    </group>
+                    
+
+                    <group invisible="section_method != 'manual'">
+                        <field name="num_sections" widget="integer" string="Número de Secciones"/>
+                    </group>
+                    
+
+                    <group invisible="section_method != 'file'">
+                        <field name="section_file" filename="section_filename"/>
+                        <field name="section_filename" invisible="1"/>
+                    </group>
+                    
+                    <!-- Alert informativo fuera del group para ancho completo -->
+                    <div class="alert alert-info" invisible="section_method != 'file'" style="width: 100%; margin: 10px 0;">
+                        <strong>Formato del archivo:</strong>
+                        <ul>
+                            <li><strong>Excel (.xlsx, .xls):</strong> Una columna con nombres de secciones</li>
+                            <li><strong>CSV:</strong> Una columna con nombres de secciones</li>
+                        </ul>
+                        <strong>Ejemplo:</strong>
+                        <br/>
+                        <code>Datos Personales<br/>Satisfacción<br/>Comentarios</code>
+                    </div>
+                    
+                    <group>
+                        <field name="description" placeholder="Descripción automática según la categoría seleccionada"/>
+                    </group>
+                    
+                    <group string="Opciones Adicionales">
+                        <field name="add_file_question_per_section" widget="boolean_toggle"/>
+                        <field name="add_image_section_at_end" widget="boolean_toggle"/>
+                    </group>
+                </sheet>
+                <footer>
+                    <button name="action_create_survey" string="Crear Encuesta" type="object" class="btn-primary"/>
+                    <button string="Cancelar" class="btn-secondary" special="cancel"/>
+                </footer>
+            </form>
+        </field>
+    </record>
+
+    <record id="survey_survey_view_search_inherit" model="ir.ui.view">
+        <field name="name">survey.survey.search.inherit</field>
+        <field name="model">survey.survey</field>
+        <field name="inherit_id" ref="survey.survey_survey_view_search"/>
+        <field name="arch" type="xml">
+            <xpath expr="//search" position="inside">
+                <field name="category_id" string="Categoría"/>
+                <field name="tag_ids" string="Etiquetas"/>
+                <separator/>
+                <filter name="category" string="Categoría" context="{'group_by': 'category_id'}"/>
+                <filter name="tags" string="Etiquetas" context="{'group_by': 'tag_ids'}"/>
+            </xpath>
+        </field>
+    </record>
+
+    <record id="survey_survey_view_search_report_filter" model="ir.ui.view">
+        <field name="name">survey.survey.search.report.filter</field>
+        <field name="model">survey.survey</field>
+        <field name="inherit_id" ref="survey.survey_survey_view_search"/>
+        <field name="arch" type="xml">
+            <xpath expr="//search" position="inside">
+                <separator/>
+                <field name="category_id" string="Categoría"/>
+            </xpath>
+        </field>
+    </record>
+
+    <record id="view_survey_form_inherit_export_pdf" model="ir.ui.view">
+        <field name="name">survey.survey.form.inherit.export.pdf</field>
+        <field name="model">survey.user_input</field>
+        <field name="inherit_id" ref="survey.survey_user_input_view_form"/>
+        <field name="arch" type="xml">
+            <xpath expr="//header" position="inside">
+                <button name="action_export_pdf"
+                        type="object"
+                        string="Exportar PDF"
+                        class="oe_highlight"
+                        icon="fa-file-pdf-o"/>
+                <button name="action_send_email_survey"
+                        type="object"
+                        string="Enviar Encuesta"
+                        class="oe_highlight"
+                        icon="fa-envelope"/>
+            </xpath>
+        </field>
+    </record>
+
+  <record id="survey_user_input_view_tree_inherit_email_display" model="ir.ui.view">
+    <field name="name">survey.user_input.view.tree.email_display</field>
+    <field name="model">survey.user_input</field>
+    <field name="inherit_id" ref="survey.survey_user_input_view_tree"/>
+    <field name="arch" type="xml">
+      <field name="email" position="replace">
+        <field name="email_display" string="Correo"/>
+      </field>
+    </field>
+  </record>
+
+</odoo>

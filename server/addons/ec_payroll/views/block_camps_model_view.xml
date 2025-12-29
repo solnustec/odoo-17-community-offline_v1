@@ -1,0 +1,55 @@
+<odoo>
+
+    <record id="employee_field_block_search_view" model="ir.ui.view">
+        <field name="name">employee.field.block.search</field>
+        <field name="model">employee.field.block</field>
+        <field name="arch" type="xml">
+            <search>
+                <field name="category_id" string="Categoría de Búsqueda"/>
+                <group expand="0" string="Group By">
+                    <filter string="¿Desbloqueado?" name="state" context="{'group_by':'unblock'}"/>
+                </group>
+            </search>
+        </field>
+    </record>
+
+
+    <record id="view_employee_field_block_tree" model="ir.ui.view">
+        <field name="name">employee.field.block.tree</field>
+        <field name="model">employee.field.block</field>
+        <field name="arch" type="xml">
+            <tree string="Configuración de Bloqueo de Campos" sample="1" multi_edit="1">
+                <field name="category_id" widget="many2many_tags"/>
+                <field name="model_id" readonly="1"/>
+                <field name="field_id" readonly="1"/>
+                <field name="unblock"/>
+            </tree>
+        </field>
+    </record>
+
+    <record id="view_employee_field_block_form" model="ir.ui.view">
+        <field name="name">employee.field.block.form</field>
+        <field name="model">employee.field.block</field>
+        <field name="arch" type="xml">
+            <form string="Configuración de Bloqueo de Campos">
+                <sheet>
+                    <group>
+                        <field name="category_id" widget="many2many_tags"/>
+                        <field name="model_id"/>
+                        <field name="field_id"/>
+                        <field name="unblock"/>
+                    </group>
+                </sheet>
+            </form>
+        </field>
+    </record>
+
+    <record id="action_employee_field_block" model="ir.actions.act_window">
+        <field name="name">Bloqueo de Campos Empleado Perfil</field>
+        <field name="res_model">employee.field.block</field>
+        <field name="view_mode">tree,form</field>
+    </record>
+
+    <menuitem id="menu_employee_field_block" name="Bloqueo de Campos Empleado Perfil"
+              parent="hr.menu_config_employee" sequence="20" action="action_employee_field_block"/>
+</odoo>

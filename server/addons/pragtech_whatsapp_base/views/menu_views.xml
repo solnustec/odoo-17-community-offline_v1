@@ -1,0 +1,64 @@
+<!--<odoo>-->
+<!--    <data>-->
+<!--        &lt;!&ndash; Acción para abrir la interfaz de chat &ndash;&gt;-->
+<!--        <record id="action_whatsapp_chat" model="ir.actions.client">-->
+<!--            <field name="name">WhatsApp Chat</field>-->
+<!--            <field name="tag">whatsapp_chat_action</field>-->
+<!--        </record>-->
+
+<!--        &lt;!&ndash; Acción para abrir la vista de mensajes &ndash;&gt;-->
+<!--        <record id="action_whatsapp_messages_user" model="ir.actions.act_window">-->
+<!--            <field name="name">Mensajes del Bot</field>-->
+<!--            <field name="res_model">whatsapp_messages_user</field>-->
+<!--            <field name="view_mode">tree,form</field>-->
+<!--        </record>-->
+
+<!--        &lt;!&ndash; Menú en la barra de aplicaciones &ndash;&gt;-->
+<!--        <menuitem name="WhatsApp" id="menu_whatsapp_root" sequence="10"/>-->
+
+<!--        &lt;!&ndash; Opción en el menú para abrir el chat &ndash;&gt;-->
+<!--        <menuitem name="Chat de WhatsApp" id="menu_whatsapp_chat"-->
+<!--                  parent="menu_whatsapp_root" action="action_whatsapp_chat"/>-->
+
+<!--        &lt;!&ndash; Menú para los Mensajes del Bot &ndash;&gt;-->
+<!--        <menuitem name="Mensajes del Bot" id="menu_whatsapp_messages"-->
+<!--                  parent="menu_whatsapp_root" action="action_whatsapp_messages_user"/>-->
+<!--    </data>-->
+<!--</odoo>-->
+
+<odoo>
+    <data>
+        <!-- Acción para abrir la interfaz de chat -->
+        <record id="action_whatsapp_chat" model="ir.actions.client">
+            <field name="name">WhatsApp Chat</field>
+            <field name="tag">whatsapp_chat_action</field>
+        </record>
+
+        <!-- Acción para abrir la vista de mensajes -->
+        <record id="action_whatsapp_messages_user" model="ir.actions.act_window">
+            <field name="name">Mensajes del Bot</field>
+            <field name="res_model">whatsapp_messages_user</field>
+            <field name="view_mode">tree,form</field>
+        </record>
+
+        <!-- Menú en la barra de aplicaciones -->
+        <menuitem
+                name="WhatsApp"
+                id="menu_whatsapp_root"
+                sequence="10"
+                groups="pragtech_whatsapp_base.group_whatsApp_see_all_messages"
+        />
+
+        <!-- Opción en el menú para abrir el chat -->
+        <menuitem name="Chat de WhatsApp" id="menu_whatsapp_chat"
+                  parent="menu_whatsapp_root" action="action_whatsapp_chat"/>
+
+        <!-- Cambia aquí el parent para que sea el menú del módulo chatbot_message -->
+        <menuitem name="Mensajes del Bot" id="menu_whatsapp_messages"
+                  parent="chatbot_message.menu_datos_chatbot" action="action_whatsapp_messages_user"/>
+    </data>
+</odoo>
+
+
+
+

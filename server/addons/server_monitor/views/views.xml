@@ -1,0 +1,15 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<odoo>
+    <record id="action_server_monitor_dashboard" model="ir.actions.client">
+        <field name="name">Server Monitor</field>
+        <field name="tag">server_monitor</field>
+        <!--            <field name="target">main</field>-->
+    </record>
+
+    <menuitem id="menu_server_monitor_root" name="Server Monitor" sequence="10"/>
+    <menuitem id="menu_server_monitor_dashboard"
+              name="Dashboard"
+              parent="menu_server_monitor_root"
+              action="action_server_monitor_dashboard"
+              sequence="10"/>
+</odoo>

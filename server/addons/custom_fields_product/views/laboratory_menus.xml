@@ -1,0 +1,22 @@
+<?xml version="1.0" encoding="utf-8"?>
+<odoo>
+    <menuitem id="custom_fields_product.menu_product_laboratory"
+              name="Información extra"
+              parent="stock.menu_stock_inventory_control"
+              sequence="60">
+        <menuitem id="custom_fields_product.menu_product_laboratory_action"
+                  action="custom_fields_product.action_product_laboratory_action"
+                  name="Laboratorios"
+        />
+        <menuitem id="custom_fields_product.menu_product_brand_action"
+                  action="custom_fields_product.action_product_brand_action"
+                  name="Marcas"
+        />
+        <menuitem id="custom_fields_product.menu_product_manufacturer_action"
+                  action="custom_fields_product.action_product_manufacturer_action"
+                  name="Fabricante"
+        />
+    </menuitem>
+
+
+</odoo>

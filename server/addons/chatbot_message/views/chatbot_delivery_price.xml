@@ -1,0 +1,50 @@
+<?xml version="1.0" encoding="utf-8"?>
+ <odoo>
+     <!-- Menu Action -->
+     <record id="menu_delivery_chatbot" model="ir.actions.act_window">
+         <field name="name">Información de envío</field>
+         <field name="res_model">chatbot_message.delivery</field>
+         <field name="view_mode">tree,graph</field>
+     </record>
+
+     <!-- Banner tree view -->
+     <record id="view_user_delivery_tree" model="ir.ui.view">
+         <field name="name">chatbot_message.delivery.tree</field>
+         <field name="model">chatbot_message.delivery</field>
+         <field name="arch" type="xml">
+             <tree string="Información del envío">
+                 <field name="sale_order_id"/>
+                 <field name="user_id"/>
+                 <field name="gps_address_link"/>
+                 <field name="province"/>
+                 <field name="city"/>
+                 <field name="main_street"/>
+                 <field name="shipping_price"/>
+                 <field name="distance_km"/>
+                 <field name="type_delivery"/>
+                 <field name="create_date"/>
+                 <field name="create_time"/>
+             </tree>
+         </field>
+     </record>
+
+     <record id="view_user_delivery_graph" model="ir.ui.view">
+         <field name="name">chatbot_message.delivery.graph</field>
+         <field name="model">chatbot_message.delivery</field>
+         <field name="arch" type="xml">
+             <graph string="Información del envío">
+                 <field name="sale_order_id"/>
+                 <field name="user_id"/>
+                 <field name="gps_address_link"/>
+                 <field name="province"/>
+                 <field name="city"/>
+                 <field name="main_street"/>
+                 <field name="shipping_price"/>
+                 <field name="distance_km"/>
+                 <field name="type_delivery"/>
+                 <field name="create_date"/>
+                 <field name="create_time"/>
+             </graph>
+         </field>
+     </record>
+ </odoo>

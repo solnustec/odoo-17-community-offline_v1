@@ -1,0 +1,37 @@
+<?xml version="1.0" encoding="utf-8"?>
+<odoo>
+    <data>
+        <record id="shift_allocation_report_paperformat2" model="report.paperformat">
+            <field name="name">Shift Allocation Report Paperformat</field>
+            <field name="default" eval="False"/>
+            <field name="format">A4</field>
+            <field name="orientation">Landscape</field>
+            <field name="margin_top">10</field>
+            <field name="margin_bottom">10</field>
+            <field name="margin_left">10</field>
+            <field name="margin_right">10</field>
+        </record>
+<!--        <record id="action_shift_allocation_report" model="ir.actions.report">-->
+<!--            <field name="name">Asignación de Turnos</field>-->
+<!--            <field name="model">employee.shift.allocation</field>-->
+<!--            <field name="report_type">qweb-pdf</field>-->
+<!--            <field name="report_name">employee_shift_scheduling_app.shift_report</field>-->
+<!--            <field name="report_file">employee_shift_scheduling_app.shift_report</field>-->
+<!--            <field name="paperformat_id" ref="shift_allocation_report_paperformat"/>-->
+<!--            <field name="print_report_name">'Asignación de turnos - %s' % (object.name)</field>-->
+<!--            <field name="binding_model_id" ref="employee_shift_scheduling_app.model_employee_shift_allocation"/>-->
+<!--            <field name="binding_type">report</field>-->
+<!--        </record>-->
+        <record id="action_shift_change_report" model="ir.actions.report">
+            <field name="name">Excepción Generada</field>
+            <field name="model">employee.shift.changes</field>
+            <field name="report_type">qweb-pdf</field>
+            <field name="report_name">employee_shift_scheduling_app.shift_change_report</field>
+            <field name="report_file">employee_shift_scheduling_app.shift_change_report</field>
+            <field name="paperformat_id" ref="shift_allocation_report_paperformat2"/>
+            <field name="print_report_name">'Cambio de turnos - %s' % (object.name)</field>
+            <field name="binding_model_id" ref="employee_shift_scheduling_app.model_employee_shift_changes"/>
+            <field name="binding_type">report</field>
+        </record>
+    </data>
+</odoo>

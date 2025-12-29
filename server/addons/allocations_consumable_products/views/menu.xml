@@ -1,0 +1,83 @@
+<odoo>
+
+    <!-- TREE VIEW -->
+    <record id="view_products_consumable_tree" model="ir.ui.view">
+        <field name="name">allocations.consumable.products.tree</field>
+        <field name="model">allocations.consumable.products</field>
+        <field name="arch" type="xml">
+            <tree>
+                <field name="name" string="Producto"/>
+                <field name="stock_total"
+                       string="Stock Disponible"
+                       groups="allocations_consumable_products.group_admin_consumibles"/>
+            </tree>
+        </field>
+    </record>
+
+    <!-- FORM VIEW -->
+    <record id="view_products_consumable_form" model="ir.ui.view">
+        <field name="name">allocations.consumable.products.form</field>
+        <field name="model">allocations.consumable.products</field>
+        <field name="arch" type="xml">
+            <form string="Producto de Consumo">
+                <sheet>
+                    <group>
+                        <field name="name"/>
+                        <field name="id_visual"/>
+                        <field name="stock_total"
+                               readonly="1"
+                               groups="allocations_consumable_products.group_admin_consumibles"/>
+
+                    </group>
+                </sheet>
+            </form>
+        </field>
+    </record>
+
+    <!-- FORM INHERIT WITH STAT BUTTON -->
+    <record id="view_products_consumable_form_inherit" model="ir.ui.view">
+        <field name="name">products.consumable.form.inherit.moves</field>
+        <field name="model">allocations.consumable.products</field>
+        <field name="inherit_id" ref="allocations_consumable_products.view_products_consumable_form"/>
+        <field name="arch" type="xml">
+            <xpath expr="//sheet" position="before">
+                <header>
+                    <button name="action_view_moves"
+                            type="object"
+                            string="Movimientos"
+                            class="oe_stat_button"
+                            icon="fa-exchange"
+                            groups="allocations_consumable_products.group_admin_consumibles">
+                        <field name="stock_total"
+                               widget="statinfo"
+                               groups="allocations_consumable_products.group_admin_consumibles"/>
+                    </button>
+                </header>
+            </xpath>
+        </field>
+    </record>
+
+    <!-- ACTION -->
+    <record id="action_consumable_products" model="ir.actions.act_window">
+        <field name="name">Productos de Consumo</field>
+        <field name="res_model">allocations.consumable.products</field>
+        <field name="view_mode">tree,form</field>
+        <field name="view_id" ref="view_products_consumable_tree"/>
+    </record>
+
+    <!-- MENU -->
+    <menuitem id="menu_root_consumable_products"
+          name="Productos de Consumo"
+          sequence="10"
+          web_icon="allocations_consumable_products,static/description/icon.png"
+          groups="allocations_consumable_products.group_admin_consumibles,allocations_consumable_products.group_consumibles_readonly"/>
+
+
+    <menuitem id="menu_consumable_products_submenu"
+          name="Listado de Productos"
+          parent="menu_root_consumable_products"
+          action="action_consumable_products"
+          groups="allocations_consumable_products.group_admin_consumibles,allocations_consumable_products.group_consumibles_readonly"/>
+
+
+</odoo>

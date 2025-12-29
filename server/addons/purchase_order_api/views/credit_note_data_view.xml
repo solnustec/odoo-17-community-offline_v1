@@ -1,0 +1,52 @@
+<odoo>
+    <!-- Vista de formulario para Notas de Crédito -->
+    <record id="view_credit_note_data_form" model="ir.ui.view">
+        <field name="name">credit.note.data.form</field>
+        <field name="model">credit.note.data</field>
+        <field name="arch" type="xml">
+            <form string="Notas de Crédito de Proveedores" readonly="1">
+                <sheet>
+                    <group>
+                        <field name="account_move_id"/>
+                        <field name="json_data" widget="monospaced" placeholder="JSON Data"/>
+                        <field name="credit_note_external_id"/>
+                        <field name="sent"/>
+                        <field name="active"/>
+                        <field name="sync_date"/>
+                        <field name="errors" readonly="0"/>
+                    </group>
+                </sheet>
+            </form>
+        </field>
+    </record>
+
+    <!-- Vista de árbol para Notas de Crédito -->
+    <record id="view_credit_note_data_tree" model="ir.ui.view">
+        <field name="name">credit.note.data.tree</field>
+        <field name="model">credit.note.data</field>
+        <field name="arch" type="xml">
+            <tree string="Notas de Crédito de Proveedores">
+                <field name="account_move_id"/>
+                <field name="json_data" widget="monospaced" placeholder="JSON Data"/>
+                <field name="sent" readonly="1"/>
+                <field name="credit_note_external_id" readonly="1"/>
+                <field name="active" readonly="1"/>
+                <field name="sync_date"/>
+                <field name="errors" readonly="0"/>
+            </tree>
+        </field>
+    </record>
+
+    <!-- Acción para Notas de Crédito -->
+    <record id="action_credit_note_data_action" model="ir.actions.act_window">
+        <field name="name">Notas de Crédito Proveedores</field>
+        <field name="res_model">credit.note.data</field>
+        <field name="view_mode">tree,form</field>
+    </record>
+
+    <!-- Menú para Notas de Crédito -->
+    <menuitem id="menu_credit_note_data"
+              name="Notas de Crédito Proveedores"
+              parent="point_of_sale.menu_point_config_product"
+              action="action_credit_note_data_action"/>
+</odoo>

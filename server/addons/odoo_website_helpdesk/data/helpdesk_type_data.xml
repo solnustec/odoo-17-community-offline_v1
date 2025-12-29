@@ -1,0 +1,24 @@
+<?xml version="1.0" encoding="utf-8"?>
+<odoo>
+    <data noupdate="1">
+        <!-- Registro para un tipo de ticket del servicio de asistencia que representa una consulta general -->
+        <record id="ticket_type_1" model="helpdesk.type">
+            <field name="name">Consulta</field>
+        </record>
+
+        <!-- Registro para un tipo de ticket del servicio de asistencia que representa un problema -->
+        <record id="ticket_type_2" model="helpdesk.type">
+            <field name="name">Problema</field>
+        </record>
+
+        <!-- Registro para un tipo de ticket del servicio de asistencia que representa una solicitud de reparación -->
+        <record id="ticket_type_3" model="helpdesk.type">
+            <field name="name">Reparación</field>
+        </record>
+
+        <!-- Registro para un tipo de ticket del servicio de asistencia que representa una solicitud de mantenimiento -->
+        <record id="ticket_type_4" model="helpdesk.type">
+            <field name="name">Mantenimiento</field>
+        </record>
+    </data>
+</odoo>

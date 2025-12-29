@@ -1,0 +1,53 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<templates id="template" xml:space="preserve">
+  <t t-inherit="point_of_sale.TicketScreen" t-inherit-mode="extension">
+
+    <!-- Insertamos un botón al lado del SearchBar -->
+    <xpath expr="//div[contains(concat(' ', normalize-space(@class), ' '), ' controls ')]//SearchBar" position="after">
+      <div class="date-range-toggle position-relative ms-2">
+        <button class="btn btn-outline-secondary" t-on-click="toggleDatePanel">
+          Rango de fechas
+        </button>
+
+        <!-- Panel desplegable (anclado al botón) -->
+        <t t-if="datePanel.open">
+          <div class="position-absolute bg-white border rounded p-3 shadow"
+               style="top: 100%; right: 0; min-width: 320px; z-index: 1050;">
+            <div class="d-flex justify-content-between align-items-center mb-2">
+              <strong>Filtrar órdenes por fecha</strong>
+              <button class="btn btn-sm btn-light" t-on-click="closeDatePanel" title="Cerrar">×</button>
+            </div>
+
+            <div class="d-flex align-items-center gap-2">
+              <input type="date" class="form-control" t-model="dateRange.from"/>
+              <span>-</span>
+              <input type="date" class="form-control" t-model="dateRange.to"/>
+            </div>
+
+            <div class="d-flex justify-content-end gap-2 mt-3">
+              <button class="btn btn-light" t-on-click="clearDateRange"
+                      t-att-disabled="!(dateRange.from || dateRange.to)">
+                Limpiar
+              </button>
+              <button class="btn btn-primary" t-on-click="applyDateRange"
+                      t-att-disabled="!(dateRange.from &amp;&amp; dateRange.to)">
+                Aplicar
+              </button>
+            </div>
+          </div>
+        </t>
+      </div>
+    </xpath>
+
+    <!-- Overlay de carga mientras se buscan órdenes SYNCED -->
+    <xpath expr="//div[contains(concat(' ', normalize-space(@class), ' '), ' ticket-screen ')]" position="inside">
+      <t t-if="loading.visible">
+        <div style="position: fixed; inset: 0; background: rgba(0,0,0,0.35);
+                    display: flex; align-items: center; justify-content: center; z-index: 2000;">
+          <i class="fa fa-spinner fa-spin fa-3x text-white" role="img" aria-label="Cargando"></i>
+        </div>
+      </t>
+    </xpath>
+
+  </t>
+</templates>

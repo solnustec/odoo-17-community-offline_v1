@@ -1,0 +1,103 @@
+<?xml version="1.0" encoding="utf-8"?>
+<odoo>
+
+    <!-- Tree View -->
+    <record id="sale_daily_aggregate_view_tree" model="ir.ui.view">
+        <field name="name">sale.daily.aggregate.tree</field>
+        <field name="model">sale.daily.aggregate</field>
+        <field name="arch" type="xml">
+            <tree string="Agregados Diarios" create="false">
+                <field name="date"/>
+                <field name="product_id"/>
+                <field name="warehouse_id"/>
+                <field name="qty_net" sum="Total"/>
+            </tree>
+        </field>
+    </record>
+
+    <!-- Form View -->
+    <record id="sale_daily_aggregate_view_form" model="ir.ui.view">
+        <field name="name">sale.daily.aggregate.form</field>
+        <field name="model">sale.daily.aggregate</field>
+        <field name="arch" type="xml">
+            <form string="Agregado Diario" create="false" edit="false">
+                <sheet>
+                    <group>
+                        <group>
+                            <field name="date"/>
+                            <field name="product_id"/>
+                        </group>
+                        <group>
+                            <field name="warehouse_id"/>
+                            <field name="qty_net"/>
+                        </group>
+                    </group>
+                </sheet>
+            </form>
+        </field>
+    </record>
+
+    <!-- Search View -->
+    <record id="sale_daily_aggregate_view_search" model="ir.ui.view">
+        <field name="name">sale.daily.aggregate.search</field>
+        <field name="model">sale.daily.aggregate</field>
+        <field name="arch" type="xml">
+            <search string="Buscar Agregados">
+                <field name="product_id"/>
+                <field name="warehouse_id"/>
+                <field name="date"/>
+                <separator/>
+                <filter string="Hoy" name="today" domain="[('date', '=', context_today().strftime('%Y-%m-%d'))]"/>
+                <filter string="Última Semana" name="last_week" domain="[('date', '>=', (context_today() - datetime.timedelta(days=7)).strftime('%Y-%m-%d'))]"/>
+                <filter string="Último Mes" name="last_month" domain="[('date', '>=', (context_today() - datetime.timedelta(days=30)).strftime('%Y-%m-%d'))]"/>
+                <separator/>
+                <group expand="0" string="Agrupar Por">
+                    <filter string="Fecha" name="group_date" context="{'group_by': 'date'}"/>
+                    <filter string="Producto" name="group_product" context="{'group_by': 'product_id'}"/>
+                    <filter string="Almacén" name="group_warehouse" context="{'group_by': 'warehouse_id'}"/>
+                </group>
+            </search>
+        </field>
+    </record>
+
+    <!-- Pivot View -->
+    <record id="sale_daily_aggregate_view_pivot" model="ir.ui.view">
+        <field name="name">sale.daily.aggregate.pivot</field>
+        <field name="model">sale.daily.aggregate</field>
+        <field name="arch" type="xml">
+            <pivot string="Análisis de Ventas">
+                <field name="date" type="row" interval="day"/>
+                <field name="product_id" type="row"/>
+                <field name="warehouse_id" type="col"/>
+                <field name="qty_net" type="measure"/>
+            </pivot>
+        </field>
+    </record>
+
+    <!-- Graph View -->
+    <record id="sale_daily_aggregate_view_graph" model="ir.ui.view">
+        <field name="name">sale.daily.aggregate.graph</field>
+        <field name="model">sale.daily.aggregate</field>
+        <field name="arch" type="xml">
+            <graph string="Ventas por Día" type="line">
+                <field name="date" type="row"/>
+                <field name="qty_net" type="measure"/>
+            </graph>
+        </field>
+    </record>
+
+    <!-- Action -->
+    <record id="action_sale_daily_aggregate" model="ir.actions.act_window">
+        <field name="name">Agregados Diarios</field>
+        <field name="res_model">sale.daily.aggregate</field>
+        <field name="view_mode">tree,pivot,graph,form</field>
+        <field name="context">{'search_default_last_month': 1}</field>
+        <field name="help" type="html">
+            <p class="o_view_nocontent_smiling_face">
+                No hay agregados de ventas aún
+            </p>
+            <p>Los agregados se generan automáticamente con cada venta.</p>
+        </field>
+    </record>
+
+</odoo>

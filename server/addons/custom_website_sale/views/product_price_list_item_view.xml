@@ -1,0 +1,38 @@
+<odoo>
+    <!--    agregando el campo unit_size en la vista tree de la lista de precios-->
+    <record id="view_product_pricelist_form_inherit" model="ir.ui.view">
+        <field name="name">product.pricelist.form.inherit</field>
+        <field name="model">product.pricelist</field>
+        <field name="inherit_id" ref="product.product_pricelist_view"/>
+        <field name="arch" type="xml">
+            <xpath expr="//page[@name='pricelist_rules']//field[@name='item_ids']//tree[@groups='product.group_sale_pricelist']//field[@name='price']"
+                   position="after">
+                <field name="unit_size"/>
+            </xpath>
+
+        </field>
+    </record>
+
+    <!--    Agregar el campo al modal del product list item de la lista de precios-->
+    <record id="view_product_price_list_item_form_modal" model="ir.ui.view">
+        <field name="name">product.pricelist.form.inherit</field>
+        <field name="model">product.pricelist.item</field>
+        <field name="inherit_id" ref="product.product_pricelist_item_form_view"/>
+        <field name="arch" type="xml">
+            <xpath expr="sheet//group[@name='pricelist_rule_base']//group//field[@name='fixed_price']" position="after">
+                <field name="unit_size"/>
+            </xpath>
+        </field>
+    </record>
+    <!--    Agregando el campo en la vista de lista de precios del producto-->
+    <record id="tree_view_product_item_price_list_form" model="ir.ui.view">
+        <field name="name">product.pricelist.item.form.inherit</field>
+        <field name="model">product.pricelist.item</field>
+        <field name="inherit_id" ref="product.product_pricelist_item_tree_view_from_product"/>
+        <field name="arch" type="xml">
+            <xpath expr="field[@name='fixed_price']" position="after">
+                <field name="unit_size"/>
+            </xpath>
+        </field>
+    </record>
+</odoo>

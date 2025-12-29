@@ -1,0 +1,99 @@
+<?xml version="1.0" encoding="utf-8"?>
+<odoo>
+
+    <!-- Asignaciones de farmacias a categorías -->
+    <record id="view_gamification_department_assignment_tree" model="ir.ui.view">
+        <field name="name">gamification.department.assignment.tree</field>
+        <field name="model">gamification.department.assignment</field>
+        <field name="arch" type="xml">
+            <tree>
+                <field name="department_id"/>
+                <field name="category_id"/>
+            </tree>
+        </field>
+    </record>
+
+    <record id="view_gamification_department_assignment_form" model="ir.ui.view">
+        <field name="name">gamification.department.assignment.form</field>
+        <field name="model">gamification.department.assignment</field>
+        <field name="arch" type="xml">
+            <form string="Asignación de farmacia">
+                <sheet>
+                    <group>
+                        <field name="department_id"/>
+                        <field name="category_id"/>
+                    </group>
+                </sheet>
+            </form>
+        </field>
+    </record>
+
+    <!-- Categorías de farmacias -->
+    <record id="view_gamification_department_category_tree" model="ir.ui.view">
+        <field name="name">gamification.department.category.tree</field>
+        <field name="model">gamification.department.category</field>
+        <field name="arch" type="xml">
+            <tree>
+                <field name="name"/>
+                <field name="code"/>
+                <field name="department_count"/>
+            </tree>
+        </field>
+    </record>
+
+    <record id="view_gamification_department_category_form" model="ir.ui.view">
+        <field name="name">gamification.department.category.form</field>
+        <field name="model">gamification.department.category</field>
+        <field name="arch" type="xml">
+            <form string="Categoría de farmacia">
+                <sheet>
+                    <group>
+                        <field name="name"/>
+                        <field name="code"/>
+                        <field name="department_count" readonly="1"/>
+                    </group>
+                    <notebook>
+                        <page string="Farmacias asignadas">
+                            <field name="department_ids">
+                                <tree editable="bottom">
+                                    <field name="department_id"/>
+                                </tree>
+                            </field>
+                        </page>
+                    </notebook>
+                </sheet>
+            </form>
+        </field>
+    </record>
+
+    <record id="action_gamification_department_category" model="ir.actions.act_window">
+        <field name="name">Categorías de farmacias</field>
+        <field name="res_model">gamification.department.category</field>
+        <field name="view_mode">tree,form</field>
+        <field name="context">{'default_code': 'a'}</field>
+    </record>
+
+    <record id="action_gamification_department_assignment" model="ir.actions.act_window">
+        <field name="name">Asignación de farmacias</field>
+        <field name="res_model">gamification.department.assignment</field>
+        <field name="view_mode">tree,form</field>
+    </record>
+
+    <!-- Menús dentro del módulo de gamificación custom -->
+    <menuitem id="menu_gamification_custom_department_categories"
+              name="Categorías de farmacias"
+              parent="menu_gamification_custom_root"
+              action="action_gamification_department_category"
+              groups="gamification_custom.group_gamification_manager"
+              sequence="80"/>
+
+    <menuitem id="menu_gamification_custom_department_assignment"
+              name="Asignación de farmacias"
+              parent="menu_gamification_custom_root"
+              action="action_gamification_department_assignment"
+              groups="gamification_custom.group_gamification_manager"
+              sequence="90"/>
+
+</odoo>
+
+

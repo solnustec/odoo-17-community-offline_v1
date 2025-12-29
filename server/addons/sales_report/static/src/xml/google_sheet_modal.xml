@@ -1,0 +1,112 @@
+<?xml version="1.0" encoding="utf-8"?>
+<template xml:space="preserve" owl="1">
+  <t t-name="sales_report.GoogleSheetModal">
+    <div
+            t-if="props.isOpen"
+            id="modal"
+            class="modal fade show centered-modal"
+            style="display: block; overflow-y: auto"
+            tabindex="-1"
+            role="dialog"
+            t-on-click="onClickOutside"
+    >
+      <div class="modal-dialog ">
+        <div class="modal-content">
+          <div class="modal-header">
+            <h6 class="modal-title" id="exampleModalLabel">
+              <t t-esc="state.product_name"/>
+            </h6>
+              <b class="mx-3 float-end"><t t-esc="state.uom_po_id"/></b>
+              <button
+                      type="button"
+                      class="btn-close"
+                      data-bs-dismiss="modal"
+                      aria-label="Close"
+                      t-on-click="closeModal"
+              />
+          </div>
+            <div class="modal-body">
+            <form class="row">
+<!--              <div class="col-12">-->
+
+<!--                  <input-->
+<!--                          type="text"-->
+<!--                          class="form-control"-->
+<!--                          t-model="state.product_name"-->
+<!--                          id="recipient-name"-->
+<!--                  />-->
+<!--              </div>-->
+                <div class="col-6">
+                <label for="recipient-name" class="col-form-label"
+                >Tot. Ventas del mes (<t t-esc="state.uom_po_id"/>):</label
+                >
+                    <input
+                            type="text"
+                            class="form-control"
+                            t-model="state.product_sales"
+                            id="recipient-name"
+                    />
+              </div>
+                <div class="col-6">
+                <label for="recipient-name" class="col-form-label"
+                >Stock Bodega Matilde (Unid.)</label
+                >
+                    <input
+                            type="text"
+                            class="form-control"
+                            t-model="state.stock"
+                            id="recipient-name"
+                            aria-describedby="passwordHelpBlock"
+                    />
+
+              </div>
+                <div class="col-12 mt-2">
+                    <textarea
+                            type="text"
+                            rows="4"
+                            class="form-control"
+                            t-model="state.location"
+                            id="recipient-name"
+                    />
+              </div>
+                <div class="col-12 mt-2">
+
+                    <input
+                            placeholder="Observaciones"
+                            type="text"
+                            class="form-control"
+                            t-model="state.observation"
+                            id="message-text"
+                    />
+              </div>
+            </form>
+          </div>
+            <div class="modal-footer">
+
+            <button
+                    type="button"
+                    class="btn btn-secondary"
+                    data-bs-dismiss="modal"
+                    t-on-click="closeModal"
+            >
+              Cancelar
+            </button>
+                <button
+                        t-att-class="this.state.sending ? 'btn  btn-primary mx-3' : 'btn  btn-success mx-3'"
+                        type="button"
+                        t-on-click="() => this.sendToGoogleSheet()"
+                >
+                    <t t-if="this.state.sending">
+                    Enviando espere...
+                </t>
+                    <t t-else="">
+                        Registrar en excel <i class="fa fa-file-excel-o"/>
+                    </t>
+
+            </button>
+          </div>
+        </div>
+      </div>
+    </div>
+  </t>
+</template>

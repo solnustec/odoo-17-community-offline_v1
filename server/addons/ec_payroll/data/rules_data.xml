@@ -1,0 +1,420 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<odoo>
+	<data>
+
+		<!-- Categorias -->
+        <!--<record id="NET" model="hr.salary.rule.category">
+            <field name="name">Net</field>
+            <field name="code">NET</field>
+        </record>-->
+		<record id="INGR" model="hr.salary.rule.category">
+			<field name="name">Ingresos</field>
+			<field name="code">INGR</field>
+			<field name="type">input</field>
+		</record>
+        <record id="OINGSUB" model="hr.salary.rule.category">
+            <field name="name">Otros Ingresos por Subsidio</field>
+            <field name="code">OINGSUB</field>
+            <field name="type">input</field>
+        </record>
+		<record id="OINGR" model="hr.salary.rule.category">
+			<field name="name">Otros Ingresos</field>
+			<field name="code">OINGR</field>
+			<field name="type">input</field>
+		</record>
+		<record id="OINGRN" model="hr.salary.rule.category">
+			<field name="name">Otros Ingresos no Descontables</field>
+			<field name="code">OINGRN</field>
+			<field name="type">input</field>
+		</record>
+        <record id="TOTINGR" model="hr.salary.rule.category">
+            <field name="name">Toting</field>
+            <field name="code">TOTINGR</field>
+        </record>
+		<record id="EGRE" model="hr.salary.rule.category">
+			<field name="name">Egresos</field>
+			<field name="code">EGRE</field>
+			<field name="type">output</field>
+		</record>
+        <record id="OEGRE" model="hr.salary.rule.category">
+            <field name="name">Otros Egresos</field>
+            <field name="code">OEGR</field>
+            <field name="type">output</field>
+        </record>
+        <record id="TOTEGRES" model="hr.salary.rule.category">
+            <field name="name">Totegres</field>
+            <field name="code">TOTEGRES</field>
+        </record>-->
+		<record id="CONT" model="hr.salary.rule.category">
+			<field name="name">Contribución de la Compañia</field>
+			<field name="code">CONT</field>
+			<field name="type">input</field>
+		</record>
+		<record id="SALBAS" model="hr.salary.rule.percentage.base">
+			<field name="name">Sueldo Básico</field>
+			<field name="base">contract.wage</field>
+		</record>
+		<record id="SBU" model="hr.salary.rule.percentage.base">
+			<field name="name">Sueldo Básico Unificado</field>
+			<field name="base">sbu_actual</field>
+		</record>
+		<record id="SALBRU" model="hr.salary.rule.percentage.base">
+			<field name="name">Total Ingresos</field>
+			<field name="base">categories['BASIC']</field>
+		</record>
+		<record id="Ingresos" model="hr.salary.rule.percentage.base">
+			<field name="name">Ingresos + Otros Ingresos</field>
+			<field name="base">categories['BASIC'] + categories['OINGR']</field>
+		</record>
+		<record id="SALNET" model="hr.salary.rule.percentage.base">
+			<field name="name">Salario Neto</field>
+			<field name="base">categories['BASIC'] + categories['OINGR'] - categories['EGRE']</field>
+		</record>
+
+        <!-- Ingresos + OIngresos + OIngresosSubsidio -->
+        <record id="0INGSUB" model="hr.salary.rule.percentage.base">
+            <field name="name">Ingresos + Otros Ingresos + Ingresos Subsidios</field>
+            <field name="base">categories['BASIC'] + categories['OINGR'] + categories['OINGSUB']</field>
+        </record>
+        <record id="structure_base_13" model="hr.payroll.structure">
+            <field name="name">DECIMO3</field>
+            <field name="type_id" search="[('name', '=', 'Worker')]"/>
+        </record>
+        <record id="structure_base_14" model="hr.payroll.structure">
+            <field name="name">DECIMO4</field>
+            <field name="type_id" search="[('name', '=', 'Worker')]"/>
+        </record>
+        <record id="structure_base_vac" model="hr.payroll.structure">
+            <field name="name">VACACIONES</field>
+            <field name="type_id" search="[('name', '=', 'Worker')]"/>
+        </record>
+        <record id="structure_anticipo_quin" model="hr.payroll.structure">
+            <field name="name">ANTICIPO QUINCENAL</field>
+            <field name="type_id" search="[('name', '=', 'Worker')]"/>
+        </record>
+
+        <record id="hr_pago_decimo3_anual" model="hr.salary.rule">
+            <field name="name">Pago Anual Décimo Tercero</field>
+            <field name="sequence" eval="10"/>
+            <field name="code">DTERCEROANUAL</field>
+            <field name="category_id" ref="OINGRN"/>
+            <field name="struct_id" search="[('name', '=', 'DECIMO3')]"/>
+            <field name="condition_select">python</field>
+            <field name="condition_python">result=contract.thirteenth_payment=='accumulated'</field>
+            <field name="amount_select">code</field>
+            <field name="amount_python_compute">result = payslip.sum_thirteenth("")</field>
+        </record>
+        <record id="hr_pago_decimo4_anual" model="hr.salary.rule">
+            <field name="name">Pago Anual Décimo Cuarto</field>
+            <field name="sequence" eval="10"/>
+            <field name="code">DCUARTOANUAL</field>
+            <field name="category_id" ref="OINGRN"/>
+            <field name="struct_id" search="[('name', '=', 'DECIMO4')]"/>
+            <field name="condition_select">python</field>
+            <field name="condition_python">result=contract.fourteenth_payment=='accumulated'</field>
+            <field name="amount_select">code</field>
+            <field name="amount_python_compute">result = payslip.sum_fourtheent("")</field>
+        </record>
+        <record id="hr_pago_vacaciones_anual" model="hr.salary.rule">
+            <field name="name">Pago Vacaciones Gozadas</field>
+            <field name="sequence" eval="10"/>
+            <field name="code">VACGOZ</field>
+            <field name="category_id" ref="OINGR"/>
+            <field name="struct_id" search="[('name', '=', 'VACACIONES')]"/>
+            <field name="condition_select">none</field>
+            <field name="amount_select">code</field>
+            <field name="amount_python_compute">result = payslip.vacations('')</field>
+        </record>
+        <record id="hr_pago_anticipo_quincenal" model="hr.salary.rule">
+            <field name="name">Anticipo Quincenal</field>
+            <field name="sequence" eval="1"/>
+            <field name="code">ANTQUINC</field>
+            <field name="category_id" ref="EGRE"/>
+            <field name="struct_id" search="[('name', '=', 'ANTICIPO QUINCENAL')]"/>
+            <field name="condition_select">none</field>
+            <field name="amount_select">percentage</field>
+            <field name="percentage_id" eval="SALBAS"></field>
+            <field name="amount_percentage">40</field>
+        </record>
+
+        <!-- Reglas Ingresos-->
+        <record id="hr_rule_basic" model="hr.salary.rule">
+            <field name="name">Sueldo Ganado</field>
+            <field name="sequence" eval="1"/>
+            <field name="code">BASICG</field>
+            <field name="category_id" ref="ec_payroll.INGR"/>
+            <field name="struct_id" search="[('name', '=', 'Worker Pay')]"/>
+            <field name="condition_select">python</field>
+            <field name="condition_python">result = payslip.type_slip == 'end_month'</field>
+            <field name="amount_select">code</field>
+            <field name="amount_python_compute">
+result = payslip.basic_salary
+            </field>
+        </record>
+		<record id="hr_decimo_cuarto_accum" model="hr.salary.rule">
+            <field name="name">Pago mensual de la décimocuarta remuneración</field>
+            <field name="sequence" eval="120"/>
+            <field name="code">DCUARTOMEN</field>
+            <field name="category_id" ref="ec_payroll.OINGRN"/>
+            <field name="struct_id" search="[('name', '=', 'Worker Pay')]"/>
+            <field name="condition_select">python</field>
+            <field name="condition_python">result = payslip.type_slip == 'end_month' and contract.fourteenth_payment=='payment_employee'</field>
+            <field name="amount_select">percentage</field>
+            <field name="percentage_id" ref="SBU"></field>
+            <field name="quantity">1</field>
+            <field name="amount_select">code</field>
+            <field name="amount_python_compute">resultado=0
+sbu_actual = 460.0
+resultado = ((sbu_actual / 12) / 30) * payslip.days_worked
+result = resultado</field>
+        </record>
+        <record id="hr_decimo_cuarto" model="hr.salary.rule">
+            <field name="name">Décimo Cuarto</field>
+            <field name="sequence" eval="301"/>
+            <field name="code">DCUARTO</field>
+            <field name="category_id" ref="ec_payroll.CONT"/>
+            <field name="struct_id" search="[('name', '=', 'Worker Pay')]"/>
+            <field name="condition_select">python</field>
+            <field name="condition_python">result = payslip.type_slip == 'end_month' and contract.fourteenth_payment=='accumulated'</field>
+            <field name="amount_select">percentage</field>
+            <field name="percentage_id" ref="SBU"></field>
+            <field name="quantity">1</field>
+            <field name="amount_select">code</field>
+            <field name="amount_python_compute">resultado = 0
+sbu_actual = 460.0
+resultado = sbu_actual / 12
+result = resultado</field>
+        </record>
+        <record id="hr_decimo_tercero_accum" model="hr.salary.rule">
+            <field name="name">Pago mensual de la décimotercera remuneración</field>
+            <field name="sequence" eval="121"/>
+            <field name="code">DTERCEROMEN</field>
+            <field name="category_id" ref="ec_payroll.OINGRN"/>
+            <field name="struct_id" search="[('name', '=', 'Worker Pay')]"/>
+            <field name="condition_select">python</field>
+            <field name="condition_python">result = payslip.type_slip == 'end_month' and contract.thirteenth_payment=='payment_employee'</field>
+            <field name="amount_select">code</field>
+            <field name="percentage_id" ref="0INGSUB"></field>
+            <field name="quantity">1</field>
+            <field name="amount_percentage" eval="(1.0 / 12.0) * 100.0"/>
+            <field name="amount_python_compute">resultado = 0
+total_ingresos=payslip.basic_salary
+resultado =  total_ingresos/12
+result = resultado</field>
+        </record>
+        <record id="hr_decimo_tercero" model="hr.salary.rule">
+            <field name="name">Décimo Tercero</field>
+            <field name="sequence" eval="302"/>
+            <field name="code">DTERCERO</field>
+            <field name="category_id" ref="ec_payroll.CONT"/>
+            <field name="struct_id" search="[('name', '=', 'Worker Pay')]"/>
+            <field name="condition_select">python</field>
+            <field name="condition_python">result = payslip.type_slip == 'end_month' and contract.thirteenth_payment=='accumulated'</field>
+            <field name="amount_select">code</field>
+            <field name="percentage_id" ref="0INGSUB"></field>
+            <field name="quantity">1</field>
+            <field name="amount_percentage" eval="(1.0 / 12.0) * 100.0"/>
+            <field name="amount_python_compute">resultado = 0
+total_ingresos=categories['BASIC']
+resultado =  total_ingresos/12
+result = resultado</field>
+        </record>
+        <record id="hr_fondos_reserva" model="hr.salary.rule">
+            <field name="name">Fondos de Reserva Pagados</field>
+            <field name="sequence" eval="130"/>
+            <field name="code">FRESERVAP</field>
+            <field name="category_id" ref="ec_payroll.OINGRN"/>
+            <field name="struct_id" search="[('name', '=', 'Worker Pay')]"/>
+            <field name="condition_select">python</field>
+            <field name="condition_python">result = payslip.continuidad_fondos_reserva and payslip.type_slip == 'end_month' and contract.reserve_payment=='payment_employee'</field>
+            <field name="amount_select">percentage</field>
+            <field name="percentage_id" ref="0INGSUB"></field>
+            <field name="quantity">1</field>
+            <field name="amount_percentage" eval="(1.0 / 12.0) * 100.0" />
+        </record>
+        <record id="hr_fondos_reserva_acumulados" model="hr.salary.rule">
+            <field name="name">Fondos de Reserva Acumulados</field>
+            <field name="sequence" eval="304"/>
+            <field name="code">FRESERVAC</field>
+            <field name="category_id" ref="ec_payroll.CONT"/>
+            <field name="struct_id" search="[('name', '=', 'Worker Pay')]"/>
+            <field name="condition_select">python</field>
+            <field name="condition_python">result = payslip.continuidad_fondos_reserva and payslip.type_slip == 'end_month' and contract.reserve_payment=='accumulated'</field>
+            <field name="amount_select">percentage</field>
+            <field name="percentage_id" ref="0INGSUB"></field>
+            <field name="quantity">1</field>
+            <field name="amount_percentage" eval="(1.0 / 12.0) * 100.0" />
+			<field name="pay_to_other">True</field>
+			<field name="partner_id" search="[('ref', '=', '1760004650001')]"
+				model="res.partner"></field>
+        </record>
+         <!--<record id="hr_payroll.default_gross_salary_rule" model="hr.salary.rule">
+            <field name="name">Total Ingresos</field>
+            <field name="sequence" eval="200"/>
+            <field name="code">GROSS</field>
+            <field name="category_id" ref="hr_payroll.GROSS"/>
+            <field name="struct_id" search="[('name', '=', 'Worker Pay')]"/>
+            <field name="condition_select">none</field>
+            <field name="amount_select">code</field>
+            <field name="amount_python_compute">result = categories['INGR'] + categories['OINGRN']</field>
+        </record>-->
+
+        <record id="hr_rule_anticipo_quincena" model="hr.salary.rule">
+            <field name="name">Anticipo de Quincena</field>
+            <field name="sequence" eval="201"/>
+            <field name="appears_on_payslip">False</field>
+            <field name="code">ANTQUINCENA</field>
+            <field name="category_id" ref="EGRE"/>
+            <field name="struct_id" search="[('name', '=', 'Worker Pay')]"/>
+            <field name='condition_select'>none</field>
+            <field name="amount_select">percentage</field>
+            <field name="percentage_id" eval="SALBAS"></field>
+            <field name="amount_percentage">0</field>
+        </record>
+        <record id="hr_iess_personal" model="hr.salary.rule">
+            <field name="name">IESS Personal</field>
+            <field name="sequence" eval="202"/>
+            <field name="code">IESSPERSONAL</field>
+            <field name="category_id" ref="EGRE"/>
+            <field name="struct_id" search="[('name', '=', 'Worker Pay')]"/>
+            <field name="condition_select">python</field>
+            <field name="condition_python">result = payslip.type_slip == 'end_month'</field>
+            <field name="amount_select">code</field>
+            <field name="amount_python_compute">
+result = payslip.basic_salary * 0.0945
+            </field>
+            <field name="quantity">1</field>
+			<field name="pay_to_other">True</field>
+        </record>
+
+        <record id="hr_total_egresos" model="hr.salary.rule">
+            <field name="name">Total Egresos</field>
+            <field name="sequence" eval="205"/>
+            <field name="code">TOTEGRE</field>
+            <field name="category_id" ref="ec_payroll.TOTEGRES"/>
+            <field name="struct_id" search="[('name', '=', 'Worker Pay')]"/>
+            <field name="condition_select">none</field>
+            <field name="amount_select">code</field>
+            <field name="amount_python_compute">result = categories['EGRE'] + categories['OEGR']
+            </field>
+        </record>
+
+         <!--<record id="hr_neto_a_recibir" model="hr.salary.rule">
+            <field name="name">Sueldo a Recibir</field>
+            <field name="sequence" eval="299"/>
+            <field name="code">NET</field>
+            <field name="category_id" ref="ec_payroll.NET"/>
+            <field name="struct_id" search="[('name', '=', 'Worker Pay')]"/>
+            <field name="condition_select">none</field>
+            <field name="amount_select">code</field>
+            <field name="amount_python_compute">result = categories['TOTINGR'] - categories['TOTEGRES']</field>
+        </record>-->
+
+        <record id="hr_iess_patronal" model="hr.salary.rule">
+            <field name="name">IESS Patronal</field>
+            <field name="sequence" eval="300"/>
+            <field name="code">IESSPATRONAL</field>
+            <field name="category_id" ref="CONT"/>
+            <field name="struct_id" search="[('name', '=', 'Worker Pay')]"/>
+            <field name="condition_select">python</field>
+            <field name="condition_python">result = payslip.type_slip == 'end_month'</field>
+            <field name="amount_select">code</field>
+            <field name="amount_python_compute">
+result = payslip.basic_salary * 0.1215
+            </field>
+            <field name="quantity">1</field>
+			<field name="pay_to_other">True</field>
+			<field name="partner_id" search="[('ref', '=', '1760004650001')]"
+				model="res.partner"></field>
+        </record>
+
+        <!--<record id="hr_rule_horas_ex_suplementarias" model="hr.salary.rule">
+            <field name="name">Horas Extras Suplementarias</field>
+            <field name="sequence" eval="10"/>
+            <field name="appears_on_payslip">False</field>
+            <field name="code">HEXTSUPLE</field>
+            <field name="category_id" ref="OINGR"/>
+            <field name="struct_id" search="[('name', '=', 'Worker Pay')]"/>
+            <field name='condition_select'>none</field>
+            <field name="amount_select">fix</field>
+        </record>-->
+
+        <!--<record id="hr_rule_horas_ex_extraordinarias" model="hr.salary.rule">
+            <field name="name">Horas Extras Extraordinarias</field>
+            <field name="sequence" eval="11"/>
+            <field name="appears_on_payslip">False</field>
+            <field name="code">HEXTEXTRA</field>
+            <field name="category_id" ref="OINGR"/>
+            <field name="struct_id" search="[('name', '=', 'Worker Pay')]"/>
+            <field name='condition_select'>none</field>
+            <field name="amount_select">fix</field>
+        </record>-->
+
+        <!--<record id="hr_rule_horas_ex_nocturnas" model="hr.salary.rule">
+            <field name="name">Horas Extras Nocturnas</field>
+            <field name="sequence" eval="11"/>
+            <field name="appears_on_payslip">False</field>
+            <field name="code">HEXTNOCT</field>
+            <field name="category_id" ref="OINGR"/>
+            <field name="struct_id" search="[('name', '=', 'Worker Pay')]"/>
+            <field name='condition_select'>none</field>
+            <field name="amount_select">fix</field>
+        </record>-->
+
+        <!--<record id="hr_fondos_provision_vacaciones" model="hr.salary.rule">
+            <field name="name">Provision de Vacaciones</field>
+            <field name="sequence" eval="3000"/>
+            <field name="code">PROVACACIONES</field>
+            <field name="category_id" ref="CONT"/>
+            <field name="struct_id" search="[('name', '=', 'Worker Pay')]"/>
+            <field name="condition_select">none</field>
+            <field name="amount_select">code</field>
+            <field name="amount_python_compute">result = (payslip.basic_salary) /24</field>
+        </record>-->
+
+        <record model="ir.module.category" id="group_employee_perfil">
+            <field name="name">Campos Empleado</field>
+            <field name="description">Valida las horas extras de las entradas de trabajo</field>
+            <field name="sequence">40</field>
+        </record>
+        <record id="group_employee_perfil_admin" model="res.groups">
+            <field name="name">Empleado Perfil</field>
+            <field name="category_id" ref="group_employee_perfil"/>
+        </record>
+
+        <record id="cron_update_birthday_mailing_list" model="ir.cron">
+            <field name="name">Actualizar lista empleados cumpleaños</field>
+            <field name="model_id" ref="hr.model_hr_employee"/>
+            <field name="state">code</field>
+            <field name="code">
+                <![CDATA[
+## Requiere el nombre de la lista que se va a actualizar.
+## Ejemplo: model.update_birthday_mailing_list("empleados cumpleaños")
+model.update_birthday_mailing_list()
+            ]]>
+            </field>
+            <field name="interval_number">1</field>
+            <field name="interval_type">days</field>
+            <field name="numbercall">0</field>
+            <field name="active">True</field>
+        </record>
+
+        <record id="cron_send_birthday_mailing_list" model="ir.cron">
+            <field name="name">Enviar correos a lista empleados cumpleaños</field>
+            <field name="model_id" ref="hr.model_hr_employee"/>
+            <field name="state">code</field>
+            <field name="code">
+                <![CDATA[
+## Requiere el ID del correo o plantilla de cumpleaños.
+## Ejemplo: model.send_email_birthday_mailing_list(12)
+model.send_email_birthday_mailing_list()
+            ]]>
+            </field>
+            <field name="interval_number">1</field>
+            <field name="interval_type">days</field>
+            <field name="numbercall">0</field>
+            <field name="active">True</field>
+        </record>
+
+	</data>
+</odoo>

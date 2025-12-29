@@ -1,0 +1,89 @@
+<?xml version="1.0" encoding="utf-8"?>
+<templates id="template" xml:space="preserve">
+    <t t-name="CustomModalTemplate">
+        <div class="modal custom-modal" style="display:flex; align-items:center; justify-content:center; background: white; padding: 20px; border: 1px solid #ccc;">
+            <div class="modal-dialog">
+                <div class="modal-content">
+                    <div id="receipt-container" class="printable-area">
+                        <div class="modal-header text-center" style="display: flex; flex-direction: column; align-items: center">
+<!--                        <img t-attf-src="/web/image?model=res.company&amp;id=#{props.pos.company.id}&amp;field=logo" alt="Logo" />-->
+                        <!--<h5 class="modal-title"><t t-esc="props.title"/></h5>-->
+                        <div style="margin-bottom: 10px; display: flex; flex-direction: column; align-items: center">
+                            <p style="margin-bottom: 2px;"><t t-esc="props.pos.company.name"/></p>
+                            <p style="margin-bottom: 2px;">RUC: <t t-esc="props.pos.company.vat"/></p>
+                            <p style="margin-bottom: 2px;"><t t-esc="props.pos.company.email"/></p>
+                            <p style="margin-bottom: 2px;">Sucursal: <t t-esc="props.warehouse_name"/></p>
+                        </div>
+
+                        <div class="sucursal-info" style="margin-top: 15px; display: flex; flex-direction: column; align-items: center">
+                            <!--<h5 class="modal-title"><t t-esc="props.title"/></h5>-->
+                            <strong>REGULACIÓN DE INVENTARIO</strong>
+                            <strong><p><t t-esc="props.registration_number"/></p></strong>
+                        </div>
+                    </div>
+
+                    <div class="modal-body" style="max-height: 400px; overflow-y: auto;">
+                        <div class="report-info" style="margin-bottom: 20px;">
+                            <div>
+                                <strong>LABORATORIO: </strong>
+                                <span t-esc="props.laboratory"/>
+                            </div>
+                            <div>
+                                <strong>FECHA DE INICIO: </strong>
+                                <span t-esc="props.date_start"/>
+                            </div>
+                            <div>
+                                <strong>FECHA DE FIN: </strong>
+                                <span t-esc="props.date_end"/>
+                            </div>
+                            <div>
+                                <strong>ELABORADO: </strong>
+                                <span t-esc="props.employee"/>
+                            </div>
+                            <div>
+                                <strong>FECHA DE IMPRESIÓN: </strong>
+                                <span t-esc="props.date_print"/>
+                            </div>
+                        </div>
+
+                        <table class="table report-table" style="width:100%; border-collapse: collapse;">
+                            <thead>
+                                <tr>
+                                    <th class="text-center" style="padding: 3px;">DESCRIPCIÓN</th>
+                                    <th class="text-center" style="padding: 3px;">FALTA</th>
+                                    <th class="text-center" style="padding: 3px;">SOBRA</th>
+                                </tr>
+                            </thead>
+                            <tbody>
+                                <t t-foreach="props.tableData" t-as="row" t-key="row.product_id">
+                                    <tr>
+                                        <td class="text-center" style="padding: 3px;"><t t-esc="row.product_name"/></td>
+                                        <td class="text-center" style="padding: 3px;"><t t-esc="row.stock_missing"/></td>
+                                        <td class="text-center" style="padding: 3px;"><t t-esc="row.stock_over"/></td>
+                                    </tr>
+                                </t>
+                            </tbody>
+                        </table>
+
+                        <div style="margin-top: 20px;">
+                            <strong>FALTANTES: </strong>
+                            <span t-esc="total_missing"/>
+                        </div>
+                        <div>
+                            <strong>SOBRANTES: </strong>
+                            <span t-esc="total_left_over"/>
+                        </div>
+                    </div>
+                    </div>
+
+                    <div class="modal-footer">
+                        <button type="button" class="btn btn-secondary" onclick="printReceipt()">Imprimir recibo</button>
+                        <button type="button" class="btn btn-primary" t-on-click="close">
+                            <t t-esc="props.closeText"/>
+                        </button>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </t>
+</templates> 

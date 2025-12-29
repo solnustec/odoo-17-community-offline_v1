@@ -1,0 +1,104 @@
+<?xml version="1.0" encoding="utf-8"?>
+<odoo>
+    <!-- Formulário do Indexador -->
+    <record id="view_product_ai_search_indexer_form" model="ir.ui.view">
+        <field name="name">product.ai.search.indexer.form</field>
+        <field name="model">product.ai.search.indexer</field>
+        <field name="arch" type="xml">
+            <form>
+                <header>
+                    <button string="👀 Previsualizar Productos" name="action_preview_products" type="object" class="btn-info" invisible="indexation_started"/>
+                    <button string="🚀 Iniciar Indexación" name="action_start_indexation" type="object" class="btn-success" invisible="indexation_started"/>
+                    <button string="📊 Estado de Elasticsearch" name="action_check_elasticsearch_status" type="object" class="btn-secondary"/>
+                    <button string="🔄 Reiniciar" name="action_reset" type="object" class="btn-warning" invisible="not indexation_completed"/>
+                    <field name="indexation_started" invisible="1"/>
+                    <field name="indexation_completed" invisible="1"/>
+                </header>
+                <sheet>
+                    <div class="oe_title">
+                        <h1>🤖 Indexador de Productos para Búsqueda IA</h1>
+                        <p>Generar embeddings y almacenarlos en Elasticsearch para búsqueda inteligente</p>
+                    </div>
+                    
+                    <group>
+                        <group string="⚙️ Configuraciones de Indexación">
+                            <field name="index_type"/>
+                            <field name="category_id" invisible="index_type != 'category'" required="index_type == 'category'"/>
+                            <field name="custom_domain" invisible="index_type != 'custom'" required="index_type == 'custom'"/>
+                            <field name="max_products"/>
+                            <field name="batch_size"/>
+                        </group>
+                        
+                        <group string="📊 Resultados de la Indexación" invisible="not indexation_started">
+                            <field name="total_found" readonly="1"/>
+                            <field name="total_indexed" readonly="1"/>
+                            <field name="total_failed" readonly="1"/>
+                            <field name="indexation_time" readonly="1"/>
+                            <field name="indexation_rate" readonly="1"/>
+                        </group>
+                    </group>
+                    
+                    <notebook invisible="not indexation_started">
+                        <page string="📋 Registro de Progreso" name="progress_log">
+                            <field name="progress_log" nolabel="1" readonly="1" widget="text"/>
+                        </page>
+                        <page string="❌ Detalles de Errores" name="error_details" invisible="not error_details">
+                            <field name="error_details" nolabel="1" readonly="1" widget="text"/>
+                        </page>
+                    </notebook>
+                    
+                    <div class="mt32" invisible="indexation_started">
+                        <div class="row">
+                            <div class="col-md-12">
+                                <div class="alert alert-info">
+                                    <h4><i class="fa fa-info-circle"/> Cómo Funciona la Indexación</h4>
+                                    <ol class="mb-0">
+                                        <li><strong>Selección de Productos:</strong> Elija qué productos indexar usando los filtros</li>
+                                        <li><strong>Previsualización:</strong> Vea cuántos y cuáles productos serán procesados</li>
+                                        <li><strong>Generación de Embeddings:</strong> El sistema creará representaciones vectoriales usando OpenAI</li>
+                                        <li><strong>Almacenamiento:</strong> Los embeddings se guardan en Elasticsearch</li>
+                                        <li><strong>Búsqueda IA:</strong> Permite búsquedas en lenguaje natural</li>
+                                    </ol>
+                                </div>
+                            </div>
+                        </div>
+                        
+                        <div class="row">
+                            <div class="col-md-6">
+                                <div class="alert alert-success">
+                                    <h4><i class="fa fa-lightbulb-o"/> Tipos de Indexación</h4>
+                                    <ul class="mb-0">
+                                        <li><strong>Todos los Productos:</strong> Indexa todos los productos (activos e inactivos) que sean vendibles</li>
+                                        <li><strong>Productos Publicados:</strong> Solo productos visibles en el sitio</li>
+                                        <li><strong>Por Categoría:</strong> Filtra por una categoría específica</li>
+                                        <li><strong>Dominio Personalizado:</strong> Use filtros avanzados de Odoo</li>
+                                    </ul>
+                                </div>
+                            </div>
+                            <div class="col-md-6">
+                                <div class="alert alert-warning">
+                                    <h4><i class="fa fa-clock-o"/> Consideraciones de Rendimiento</h4>
+                                    <ul class="mb-0">
+                                        <li><strong>Tiempo:</strong> ~5-10 productos por minuto (depende de OpenAI)</li>
+                                        <li><strong>Costo:</strong> Cada producto genera una solicitud a OpenAI</li>
+                                        <li><strong>Lotes:</strong> Procesamiento por lotes evita timeout</li>
+                                        <li><strong>Límite:</strong> Comience con pocos productos para prueba</li>
+                                    </ul>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </sheet>
+            </form>
+        </field>
+    </record>
+
+    <!-- Ação do Indexador -->
+    <record id="action_product_ai_search_indexer" model="ir.actions.act_window">
+    <field name="name">🤖 Indexador de Productos IA</field>
+        <field name="res_model">product.ai.search.indexer</field>
+        <field name="view_mode">form</field>
+        <field name="target">new</field>
+        <field name="context">{}</field>
+    </record>
+</odoo>

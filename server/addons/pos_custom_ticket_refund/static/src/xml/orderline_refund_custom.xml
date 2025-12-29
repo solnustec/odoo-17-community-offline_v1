@@ -1,0 +1,50 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<templates id="template" xml:space="preserve">
+    <t t-name="pos_custom_ticket_refund.TicketScreenOrderline" t-inherit="point_of_sale.TicketScreen" t-inherit-mode="extension" owl="1">
+        <xpath expr="//Orderline" position="replace">
+            <Orderline line="line.getDisplayData()"
+                       class="{
+                           'orderline-refund-selected': this.getRefundQty(line)
+                        }"
+                       t-on-click="() => this.onClickOrderline(line)">
+                <t t-set="toRefundDetail" t-value="line.pos.toRefundLines[line.id]" />
+                <li t-if="!line.pos.isProductQtyZero(line.refunded_qty)"
+                    class="info refund-note mt-1">
+                    <strong t-esc="env.utils.formatProductQty(line.refunded_qty)" />
+                    <span> Refunded</span>
+                </li>
+                <li t-if="!line.pos.isProductQtyZero(toRefundDetail?.qty)" class="info to-refund-highlight refund-note mt-1 fw-bold text-danger">
+                                    <t t-set="_destinationOrderUid" t-value="toRefundDetail.destinationOrderUid"/>
+                    <t t-set="refundQty" t-value="env.utils.formatProductQty(toRefundDetail.qty)"/>
+                    <t t-if="_destinationOrderUid">
+                        Refunding <t t-esc="refundQty" /> in
+                        <span t-esc="_destinationOrderUid"
+                              class="order-link ms-1 text-decoration-underline cursor-pointer"
+                              t-on-click.stop="() => this.onClickRefundOrderUid(_destinationOrderUid)" />
+                    </t>
+                    <t t-else="">
+                        To Refund: <t t-esc="refundQty" />
+                    </t>
+                </li>
+                <t t-if="!line.reward_id and !line.refunded_orderline_id and line.refunded_qty == 0">
+                    <t t-if="refundQty">
+                        <button
+                            class="btn btn-secondary"
+                            t-on-click.stop="() => this.click_refund_line_remove(line)" >
+                            Cancelar
+                        </button>
+                    </t>
+                    <t t-else="">
+                        <button
+                            class="btn btn-primary"
+                            t-on-click.stop="() => this.click_refund_line_add(line)" >
+                            Devolver
+                        </button>
+                    </t>
+                </t>
+
+            </Orderline>
+        </xpath>
+    </t>
+</templates>
+

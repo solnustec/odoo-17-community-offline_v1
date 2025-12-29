@@ -1,0 +1,18 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<odoo>
+	<data>
+		<record model="ir.ui.view" id="camp_list_black_view">
+			<field name="name">applicant.camp.list</field>
+			<field name="model">hr.applicant</field>
+			<field name="inherit_id" ref="hr_recruitment.hr_kanban_view_applicant" />
+			<field name="arch" type="xml">
+				<xpath expr="//div[@class='o_kanban_record_subtitle']" position="inside">
+					<field name="in_blacklist" invisible="1"/>
+					<t t-if="record.in_blacklist.raw_value">
+						<spam> - <strong>En lista negra</strong></spam>
+					</t>
+				</xpath>
+			</field>
+		</record>
+    </data>
+</odoo>

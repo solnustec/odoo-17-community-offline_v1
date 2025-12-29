@@ -1,0 +1,13 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<templates id="template" xml:space="preserve">
+    <t t-name="custom_holidays.TimeOffCardCustom" t-inherit="hr_holidays.TimeOffCard" t-inherit-mode="extension" owl="1">
+        <xpath expr="//span[contains(@t-att-class, 'o_timeoff_details')]" position="after">
+            <t t-if="data.departmentFieldValue">
+                <span t-att-class="'text-uppercase o_timeoff_details p-1 bg-success text-white'">
+                        <t t-esc="data.departmentFieldValue"/>
+                </span>
+            </t>
+        </xpath>
+    </t>
+</templates>
+

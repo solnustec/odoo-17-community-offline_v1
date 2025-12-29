@@ -1,0 +1,40 @@
+<odoo>
+    <record id="view_order_form_custom" model="ir.ui.view">
+        <field name="name">sale.order.form.custom</field>
+        <field name="model">sale.order</field>
+        <field name="inherit_id" ref="sale.view_order_form"/>
+        <field name="arch" type="xml">
+
+            <xpath expr="//header" position="inside">
+                <button name="action_download_sale_order_csv"
+                        type="object"
+                        string="Descargar CSV"
+                        class="btn-secondary"
+                        icon="fa-download"/>
+            </xpath>
+
+            <xpath expr="//notebook" position="inside">
+                <page string="Validez de la oferta">
+                    <group>
+                        <group>
+                            <field name="warranty_period"/>
+                            <field name="warranty_unit"/>
+                        </group>
+                        <group>
+                            <field name="validity_period"/>
+                            <field name="validity_unit"/>
+                        </group>
+                    </group>
+                </page>
+            </xpath>
+
+            <xpath expr="//group[.//field[@name='commitment_date']]" position="inside">
+                <group>
+                    <field name="delivery_time" readonly="1"/>
+                    <field name="delivery_unit" readonly="1"/>
+                </group>
+            </xpath>
+
+        </field>
+    </record>
+</odoo>

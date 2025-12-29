@@ -1,0 +1,62 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<templates xml:space="preserve">
+    <!-- Template for survey export dialog with observations -->
+    <t t-name="SurveyExportDialog.List" class="survey-export-pdf">
+        <Dialog size="'lg'" title="props.title" modalRef="modalRef">
+            <div class="container-fluid">
+                <!-- Body Section -->
+                <div class="row mb-3" t-if="props.body">
+                    <div class="col-12">
+                        <p t-esc="props.body"/>
+                    </div>
+                </div>
+                
+                <!-- Field Selection Section -->
+                <div class="row mb-3">
+                    <div class="col-12">
+                        <h5 class="mb-3">Seleccionar Campos a Exportar:</h5>
+                        <div class="row">
+                            <t t-foreach="props.exportedFields" t-as="example" t-key="example">
+                                <div class="col-md-4 col-sm-6 mb-2" id="check">
+                                    <div class="form-check">
+                                        <input type="checkbox" 
+                                               class="form-check-input" 
+                                               t-att-id="example.name"
+                                               t-att-name="example.name"
+                                               t-att-value="example.label"/>
+                                        <label class="form-check-label" t-att-for="example.name">
+                                            <t t-esc="example.label"/>
+                                        </label>
+                                    </div>
+                                </div>
+                            </t>
+                        </div>
+                    </div>
+                </div>
+                
+                <!-- Observations Section -->
+                <div class="row mb-3">
+                    <div class="col-12">
+                        <h5 class="mb-3">Observaciones (Opcional):</h5>
+                        <div class="form-group">
+                            <textarea class="form-control" 
+                                      rows="4" 
+                                      placeholder="Ingrese observaciones adicionales para el reporte..."
+                                      t-on-input="onObservationsChange"/>
+                        </div>
+                    </div>
+                </div>
+            </div>
+            
+            <t t-set-slot="footer">
+                <button class="btn" 
+                        t-att-class="props.confirmClass" 
+                        t-on-click="_confirm" 
+                        t-esc="props.confirmLabel"/>
+                <button class="btn btn-secondary" 
+                        t-on-click="_cancel" 
+                        t-esc="props.cancelLabel"/>
+            </t>
+        </Dialog>
+    </t>
+</templates> 

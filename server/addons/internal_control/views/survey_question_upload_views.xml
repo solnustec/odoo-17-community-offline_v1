@@ -1,0 +1,21 @@
+<?xml version="1.0" encoding="utf-8"?>
+<odoo>
+    <!-- Vista heredada del formulario de survey.question -->
+    <record id="survey_question_form_upload" model="ir.ui.view">
+        <field name="name">survey.question.view.form.inherit.upload.file</field>
+        <field name="model">survey.question</field>
+        <field name="inherit_id" ref="survey.survey_question_form"/>
+        <field name="arch" type="xml">
+            <xpath expr="//div[hasclass('o_preview_questions')]" position="inside">
+                <div invisible="question_type != 'upload_file'">
+                    <p class="o_upload_file">Subir Archivos
+                        <i class="fa fa-upload"/>
+                    </p>
+                </div>
+            </xpath>
+            <xpath expr="//field[@name='constr_mandatory']" position="after">
+                <field name="upload_multiple_file" invisible="question_type != 'upload_file'"/>
+            </xpath>
+        </field>
+    </record>
+</odoo> 

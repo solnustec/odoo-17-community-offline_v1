@@ -1,0 +1,82 @@
+<?xml version="1.0" encoding="utf-8"?>
+<odoo>
+    <record id="action_inventory_schedule_form" model="ir.actions.act_window">
+        <field name="name">Cronograma de Regulación de inventario</field>
+        <field name="res_model">inventory.schedule</field>
+        <field name="view_mode">tree,form</field>
+    </record>
+
+    <record id="view_inventory_schedule_search" model="ir.ui.view">
+        <field name="name">inventory.schedule.search</field>
+        <field name="model">inventory.schedule</field>
+        <field name="arch" type="xml">
+            <search>
+                <filter name="active" string="Activos" domain="[('active','=',True)]"/>
+                <filter name="archived" string="Archivados" domain="[('active','=',False)]"/>
+            </search>
+        </field>
+    </record>
+
+    <record id="view_inventory_regulation_schedule_tree" model="ir.ui.view">
+        <field name="name">Cronograma</field>
+        <field name="model">inventory.schedule</field>
+        <field name="arch" type="xml">
+            <tree string="Cronograma de inventario">
+                <field name="name"/>
+                <field name="start_date"/>
+                <field name="end_date"/>
+                <field name="laboratory_ids" widget="many2many_tags"/>
+                <field name="user_id"/>
+                <field name="state" widget="badge"/>
+            </tree>
+        </field>
+    </record>
+
+    <record id="view_inventory_regulation_schedule_form" model="ir.ui.view">
+        <field name="name">Agregar cronograma</field>
+        <field name="model">inventory.schedule</field>
+        <field name="arch" type="xml">
+            <form create="false">
+                <header>
+                    <field name="state" widget="statusbar" clickable="true"/>
+                    <button name="action_process" type="object" invisible="state not in ['draft',]"
+                            string="Procesar cronograma"
+                            class="btn-success"
+                    />
+                </header>
+                <sheet>
+                    <group>
+                        <field name="name" readonly="state == 'process'"/>
+                    </group>
+                    <group>
+                        <group>
+                            <field name="start_date" widget="date" readonly="state == 'process'"/>
+                            <field name="laboratory_ids" widget="many2many_tags" readonly="state == 'process'"/>
+                        </group>
+                        <group>
+                            <field name="end_date" readonly="state == 'process'"/>
+                            <field name="warehouse_ids" widget="many2many_tags" readonly="state == 'process'"/>
+                        </group>
+
+                    </group>
+                    <notebook>
+                        <page string="Detalles de  Regulación de Inventario">
+                            <field name="schedule_detail_ids" string="Detalles" readonly="state == 'process'">
+                                <tree>
+                                    <field name="warehouse_id"/>
+                                    <field name="laboratory_id"/>
+                                    <field name="completion_date"/>
+                                    <field name="completion_user_id"/>
+                                    <field name="status"/>
+                                </tree>
+                            </field>
+                        </page>
+                    </notebook>
+                </sheet>
+                <div class="oe_chatter">
+                    <field name="message_ids" widget="mail_thread"/>
+                </div>
+            </form>
+        </field>
+    </record>
+</odoo>

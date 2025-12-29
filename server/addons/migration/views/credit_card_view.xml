@@ -1,0 +1,42 @@
+<odoo>
+    <!-- Vista de formulario para Tarjetas de Crédito -->
+    <record id="view_credit_card_form" model="ir.ui.view">
+        <field name="name">credit.card.form</field>
+        <field name="model">credit.card</field>
+        <field name="arch" type="xml">
+            <form string="Registro de Tarjetas de Crédito">
+                <sheet>
+                    <group>
+                        <field name="name_card"/>
+                        <field name="code_card"/>
+                    </group>
+                </sheet>
+            </form>
+        </field>
+    </record>
+
+    <!-- Vista de árbol para Tarjetas de Crédito -->
+    <record id="view_credit_card_tree" model="ir.ui.view">
+        <field name="name">credit.card.tree</field>
+        <field name="model">credit.card</field>
+        <field name="arch" type="xml">
+            <tree string="Registro de Tarjetas de Crédito">
+                <field name="name_card"/>
+                <field name="code_card"/>
+            </tree>
+        </field>
+    </record>
+
+    <!-- Acción para Tarjetas de Crédito -->
+    <record id="action_credit_card" model="ir.actions.act_window">
+        <field name="name">Tarjetas de Crédito</field>
+        <field name="res_model">credit.card</field>
+        <field name="view_mode">tree,form</field>
+    </record>
+
+    <!-- Menú para Tarjetas de Crédito -->
+    <menuitem id="menu_credit_card"
+              name="Tarjetas de Crédito"
+              parent="point_of_sale.menu_point_config_product"
+              action="action_credit_card"/>
+</odoo>

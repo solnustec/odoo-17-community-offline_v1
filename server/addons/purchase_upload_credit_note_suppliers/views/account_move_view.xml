@@ -1,0 +1,115 @@
+<odoo>
+    <!-- Vista form para notas de credito -->
+    <record id="view_move_form_inherit_credit_note_type" model="ir.ui.view">
+        <field name="name">account.move.form.inherit.credit.note.type</field>
+        <field name="model">account.move</field>
+        <field name="inherit_id" ref="account.view_move_form"/>
+        <field name="arch" type="xml">
+            <!-- Insertar campo 'reversion de' (factura a la que se le aplica la nota de credito) -->
+            <!-- Insertar campo motivo y tipo de nota de credito -->
+            <xpath expr="//field[@name='ref']" position="after">
+                <field name="reversed_entry_id"
+                       string="Factura"
+                       readonly="state != 'draft'"
+                       invisible="move_type != 'in_refund'"
+                       domain="[
+                           ('id', '!=', id),
+                           ('state', '=', 'posted'),
+                           ('company_id', '=', company_id),
+                           ('move_type', '=', 'in_invoice')
+                       ]"/>
+                <field name="reason" readonly="state != 'draft'" invisible="move_type != 'in_refund'"/>
+                <field name="credit_note_type" readonly="state != 'draft'" invisible="move_type != 'in_refund'"/>
+                <field name="warehouse_id"
+                       string="Almacén/Bodega"
+                       readonly="state != 'draft'"
+                       domain="[
+                           ('lot_stock_id.return_location', '=', True),
+                       ]"
+                       invisible="move_type != 'in_refund'"/>
+            </xpath>
+            <!-- Cambiar nombre al campo invoice_date ('Fecha de la factura') por 'Fecha de emision' -->
+            <!-- Compras -->
+            <xpath expr="//group[@id='header_right_group']/label[@for='invoice_date' and contains(@invisible, 'in_invoice')]" position="attributes">
+                <attribute name="string">Fecha de emisión</attribute>
+            </xpath>
+            <!-- Insertar el campo l10n_ec_authorization_date ('Fecha de autorizacion') -->
+            <xpath expr="//field[@name='invoice_date']" position="after">
+                <field name="l10n_ec_authorization_date"
+                       string="Fecha de autorización"
+                       readonly="state != 'draft'"
+                       invisible="move_type not in ('in_invoice','in_refund')"/>
+            </xpath>
+            <!--Insertar campo flag ('sri_data_loaded') para verificar si la factura/nota de credito se ha importado-->
+            <xpath expr="//sheet" position="inside">
+                <!-- Disponible para todos los usuarios pero invisible -->
+                <field name="sri_data_loaded" invisible="1"/>
+            </xpath>
+            <!-- Campo flag ('sri_data_loaded') visible solo en modo debug -->
+            <xpath expr="//field[@name='warehouse_id']" position="after">
+                <field name="sri_data_loaded"
+                       groups="base.group_no_one"
+                       string="Datos cargados desde el SRI"
+                       widget="boolean_toggle"
+                       invisible="move_type not in ('in_invoice', 'in_refund')"/>
+            </xpath>
+            <!--Hacer no editable el campo del proveedor ('partner_id') cuando el flag sea True-->
+            <xpath expr="//field[@name='partner_id'][1]" position="attributes">
+                <attribute name="readonly">sri_data_loaded or state!='draft'</attribute>
+            </xpath>
+        </field>
+    </record>
+
+    <!-- Vista form del modulo l10n_ec_edi -->
+    <record id="view_move_form_inherit_authorization_number" model="ir.ui.view">
+        <field name="name">account.move.form.inherit.authorization.number</field>
+        <field name="model">account.move</field>
+        <field name="inherit_id" ref="l10n_ec_edi.account_move_form_invoice_and_withhold_view"/>
+        <field name="arch" type="xml">
+            <xpath expr="//field[@name='l10n_ec_authorization_number']" position="attributes">
+                <attribute name="invisible">not (l10n_show_ec_authorization or move_type in ('in_invoice','in_refund'))</attribute>
+                <attribute name="readonly">state != 'draft'</attribute>
+            </xpath>
+        </field>
+    </record>
+
+    <!-- Vista tree para notas de credito de proveedores -->
+    <record id="view_in_invoice_refund_tree_inherit_credit_fields" model="ir.ui.view">
+        <field name="name">account.in.invoice.refund.tree.inherit.credit.fields</field>
+        <field name="model">account.move</field>
+        <field name="inherit_id" ref="account.view_in_invoice_refund_tree"/>
+        <field name="arch" type="xml">
+            <!-- Insertar campo motivo y tipo de nota de credito -->
+            <xpath expr="//field[@name='ref']" position="after">
+                <field name="reason" optional="hide"/>
+                <field name="credit_note_type" optional="hide"/>
+                <field name="warehouse_id" string="Almacén/Bodega" optional="hide"/>
+            </xpath>
+            <!-- Cambiar nombre al campo invoice_date ('Fecha de la factura') por 'Fecha de emision' -->
+            <xpath expr="//field[@name='invoice_date']" position="attributes">
+                <attribute name="string">Fecha de emisión</attribute>
+            </xpath>
+            <!-- Insertar el campo l10n_ec_authorization_date ('Fecha de autorizacion') -->
+            <xpath expr="//field[@name='invoice_date']" position="after">
+                <field name="l10n_ec_authorization_date" optional="hide"/>
+            </xpath>
+        </field>
+    </record>
+
+    <!-- Vista tree para facturas de proveedores -->
+    <record id="view_in_invoice_bill_tree_inherit_date_fields" model="ir.ui.view">
+        <field name="name">account.in.invoice.bill.tree.inherit.date.fields</field>
+        <field name="model">account.move</field>
+        <field name="inherit_id" ref="account.view_in_invoice_bill_tree"/>
+        <field name="arch" type="xml">
+            <!-- Cambiar nombre al campo invoice_date ('Fecha de la factura') por 'Fecha de emision' -->
+            <xpath expr="//field[@name='invoice_date']" position="attributes">
+                <attribute name="string">Fecha de emisión</attribute>
+            </xpath>
+            <!-- Insertar el campo l10n_ec_authorization_date ('Fecha de autorizacion') -->
+            <xpath expr="//field[@name='invoice_date']" position="after">
+                <field name="l10n_ec_authorization_date" optional="hide"/>
+            </xpath>
+        </field>
+    </record>
+</odoo>

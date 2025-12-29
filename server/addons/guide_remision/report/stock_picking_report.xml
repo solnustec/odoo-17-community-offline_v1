@@ -1,0 +1,157 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<odoo>
+    <data>
+
+        <!-- ========================================================= -->
+        <!--              FORMATO DE PAPEL 80MM                       -->
+        <!-- ========================================================= -->
+        <record id="paperformat_stock_picking_receipt" model="report.paperformat">
+            <field name="name">Stock Picking Receipt 80mm</field>
+            <field name="default" eval="False"/>
+            <field name="format">custom</field>
+            <field name="page_width">80</field>
+            <field name="page_height">297</field>
+            <field name="orientation">Portrait</field>
+            <field name="margin_top">3</field>
+            <field name="margin_bottom">3</field>
+            <field name="margin_left">3</field>
+            <field name="margin_right">3</field>
+            <field name="header_line" eval="False"/>
+            <field name="disable_shrinking" eval="True"/>
+        </record>
+
+
+        <!-- ========================================================= -->
+        <!--            ACCIÓN DEL REPORTE (ir.actions.report)        -->
+        <!-- ========================================================= -->
+        <record id="report_stock_picking_receipt" model="ir.actions.report">
+            <field name="name">Recibo de Transferencia</field>
+            <field name="model">stock.picking</field>
+            <field name="report_type">qweb-pdf</field>
+
+            <field name="report_name">guide_remision.report_stock_picking_receipt_document</field>
+            <field name="report_file">guide_remision.report_stock_picking_receipt_document</field>
+
+            <field name="print_report_name">'Recibo_Transferencia_' + object.name</field>
+
+            <field name="paperformat_id" ref="guide_remision.paperformat_stock_picking_receipt"/>
+        </record>
+
+
+        <!-- ========================================================= -->
+        <!--                     TEMPLATE QWEB                        -->
+        <!-- ========================================================= -->
+        <template id="report_stock_picking_receipt_document">
+            <t t-call="web.basic_layout">
+                <t t-set="doc" t-value="docs[0]"/>
+                <t t-set="company" t-value="doc.company_id"/>
+                <t t-set="warehouse_origin" t-value="doc.picking_type_id.warehouse_id"/>
+                <main style="padding:0; margin:0;">
+                    <div style="max-width:72mm; margin:0 auto; font-size:11px; font-family: monospace;">
+
+                        <!-- ===== ENCABEZADO EMPRESA ===== -->
+                        <div style="text-align:center; margin-bottom:8px;">
+                            <div style="font-weight:bold; font-size:11px; line-height:1.3;">
+                                <t t-esc="company.name"/>
+                            </div>
+                            <div style="font-size:10px;">
+                                SUCURSAL:<t t-esc="warehouse_origin.name or ''"/>
+                            </div>
+                            <div style="font-size:10px;">
+                                RUC: <t t-esc="company.vat or ''"/>
+                            </div>
+                            <div style="font-size:10px;">
+                                DIREC.: <t t-esc="company.street or ''"/>
+                            </div>
+                            <div style="font-size:10px;">
+                                Telf.: <t t-esc="company.phone or ''"/>
+                            </div>
+                            <div style="font-size:10px;">
+                                CONTRIBUYENTE ESPECIAL NAC-DGERCG13-00236
+                            </div>
+                            <div style="font-size:10px;">
+                                <t t-esc="company.email or ''"/>
+                            </div>
+                            <div style="font-size:11px; font-weight:bold; margin-top:5px;">
+                                TRANSFERENCIA Nro.: <t t-esc="doc.name"/>
+                            </div>
+                            <div style="font-size:10px;">
+                                Tipo: ENTREGA <t t-if="doc.type_transfer == '1'">EXPRESS</t><t t-else="">NORMAL</t>
+                            </div>
+                        </div>
+
+                        <!-- ===== INFO TRANSFERENCIA ===== -->
+                        <div style="text-align:left; margin-bottom:5px; font-size:10px;">
+                            <div>
+                                <span style="font-weight:bold;">FECHA:</span>
+                                <t t-set="fecha_local" t-value="doc.scheduled_date + datetime.timedelta(hours=-5) if doc.scheduled_date else False"/>
+                                <t t-esc="fecha_local.strftime('%Y-%m-%d %H:%M:%S') if fecha_local else ''"/>
+                            </div>
+                            <div>
+                                <span style="font-weight:bold;">BOD. ORIGEN:</span>
+                                <t t-esc="warehouse_origin.name or ''"/>
+                            </div>
+                            <div>
+                                <span style="font-weight:bold;">BOD. DESTINO:</span>
+                                <t t-esc="doc.location_dest_id.warehouse_id.name or doc.location_dest_id.name or ''"/>
+                            </div>
+                        </div>
+
+                        <!-- ===== TABLA DE PRODUCTOS ===== -->
+                        <table style="width:100%; font-size:10px; margin-top:5px; border-collapse:collapse;">
+                            <thead>
+                                <tr style="border-bottom:1px solid #000;">
+                                    <th style="text-align:left; padding:3px 2px; width:38%;">Codigo</th>
+                                    <th style="text-align:left; padding:3px 2px; width:47%;">Descripcion</th>
+                                    <th style="text-align:right; padding:3px 2px; width:15%;">Cant</th>
+                                </tr>
+                            </thead>
+                            <tbody>
+                                <tr><td colspan="3" style="border-bottom:1px dashed #000; padding:0;"></td></tr>
+                                <t t-foreach="doc.move_ids" t-as="line">
+                                    <tr>
+                                        <td style="font-size:9px; padding:3px 2px; vertical-align:top; word-break:break-all;">
+                                            <t t-esc="line.product_id.barcode or line.product_id.default_code or ''"/>
+                                        </td>
+                                        <td style="font-size:9px; padding:3px 2px; vertical-align:top; word-break:break-word;">
+                                            <t t-esc="line.product_id.name"/>
+                                        </td>
+                                        <td style="font-size:10px; padding:3px 2px; text-align:right; vertical-align:top;">
+                                            <t t-esc="int(line.product_uom_qty)"/>
+                                        </td>
+                                    </tr>
+                                </t>
+                                <tr><td colspan="3" style="border-bottom:1px dashed #000; padding:0;"></td></tr>
+                            </tbody>
+                        </table>
+
+                        <!-- ===== PIE DEL REPORTE ===== -->
+                        <div style="font-size:9px; margin-top:8px; line-height:1.4;">
+                            <t t-if="doc.note">
+                                <div>
+                                    <span style="font-weight:bold;">NOTA:</span>
+                                    <t t-esc="doc.note"/>
+                                </div>
+                            </t>
+                            <div>
+                                TRANSFERENCIA Nro.: <t t-esc="doc.name"/>
+                            </div>
+                            <div>
+                                ELABORADO POR: <t t-esc="doc.create_uid.name or ''"/>
+                            </div>
+                            <div>
+                                <t t-set="fecha_impresion" t-value="datetime.datetime.utcnow() + datetime.timedelta(hours=-5)"/>
+                                FECHA IMPRESION: <t t-esc="fecha_impresion.strftime('%Y-%m-%d %H:%M:%S')"/>
+                            </div>
+                        </div>
+
+                        <div style="text-align:center; margin-top:15px; font-size:10px; font-weight:bold;">
+                            ELABORADO: <t t-esc="doc.create_uid.name or ''"/>
+                        </div>
+
+                    </div>
+                </main>
+            </t>
+        </template>
+    </data>
+</odoo>

@@ -1,0 +1,159 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<odoo>
+	<data>
+
+		<record model="ir.ui.view" id="hr_scheduled_transaction_tree_inputs_view">
+			<field name="name">hr.scheduled.transaction.tree</field>
+			<field name="model">hr.scheduled.transaction</field>
+			<field name="arch" type="xml">
+				<tree string="Transacciones Programadas" editable="top">
+					<field name="employee_id" readonly="processed == True"/>
+					<field name="struct_id" invisible="1"/>
+					<field name="rule_id"
+						   domain="[('category_id.code', 'in', ('INGR','OINGR','OINGRN','OINGSUB')),('struct_id','=',struct_id)]"
+						   options="{'no_create': True, 'no_open': True}"
+						   readonly="processed == True"/>
+					<field name="name"
+						   readonly="processed == True" />
+					<field name="code" readonly="processed == True"/>
+					<field name="observation"/>
+					<field name="date" readonly="processed == True"/>
+					<field name="amount" readonly="processed == True"/>
+					<field name="type" invisible="1" />
+					<field name="processed" />
+				</tree>
+			</field>
+		</record>
+
+		<record model="ir.ui.view" id="hr_scheduled_transaction_tree_outputs_view">
+			<field name="name">hr.scheduled.transaction.tree</field>
+			<field name="model">hr.scheduled.transaction</field>
+			<field name="arch" type="xml">
+				<tree string="Transacciones Programadas" editable="top">
+					<field name="employee_id"
+						   readonly="processed == True" />
+					<field name="payment_id" readonly="1" optional="hide" />
+					<field name="struct_id" invisible="1"/>
+					<field name="rule_id"
+						   domain="[('category_id.code', 'in', ('EGRE','OEGR')),('struct_id','=',struct_id)]"
+						   options="{'no_create': True, 'no_open': True}"
+						   readonly="processed == True"/>
+					<field name="name" readonly="processed == True"/>
+					<field name="code" readonly="processed == True"/>
+					<field name="observation"/>
+					<field name="date" readonly="processed == True"/>
+					<field name="amount" readonly="processed == True"/>
+					<field name="amount_pending" sum="Total Pendiente" optional="hide"/>
+					<field name="type" invisible="1" />
+					<field name="processed" />
+				</tree>
+			</field>
+		</record>
+
+		<record model="ir.ui.view" id="hr_scheduled_transaction_form_view">
+			<field name="name">hr.scheduled.transaction.form</field>
+			<field name="model">hr.scheduled.transaction</field>
+			<field name="arch" type="xml">
+				<form string="Transacción Programada">
+					<sheet>
+						<group>
+							<group>
+								<field name="employee_id"
+									   readonly="processed == True" />
+								<field name="rule_id"
+									   readonly="processed == True" />
+								<field name="name"
+									   readonly="processed == True" />
+								<field name="code"
+									   readonly="processed == True" />
+								<field name="date"
+									   readonly="processed == True" />
+							</group>
+							<group>
+								<field name="amount"
+									   readonly="processed == True" />
+								<field name="amount_pending" />
+								<field name="type" invisible="1" />
+								<field name="overtime_id" invisible="1" />
+								<field name="processed" />
+							</group>
+						</group>
+						<notebook colspan="4">
+							<page string="Líneas de Nómina">
+								<field name="payslip_line_ids" nolabel="1" />
+							</page>
+							<page string="Pagos Anticipados">
+								<field name="collection_register_ids" nolabel="1">
+									<tree>
+										<field name="payment_id" />
+										<field name="transaction_id" />
+										<field name="amount_pending" />
+										<field name="amount" />
+									</tree>
+									<form>
+										<field name="payment_id" />
+										<field name="transaction_id" />
+										<field name="amount_pending" />
+										<field name="amount" />
+									</form>
+								</field>
+							</page>
+						</notebook>
+					</sheet>
+				</form>
+			</field>
+		</record>
+
+		<record model="ir.ui.view" id="hr_scheduled_transaction_search_view">
+			<field name="name">hr.scheduled.transaction.search</field>
+			<field name="model">hr.scheduled.transaction</field>
+			<field name="arch" type="xml">
+				<search string="Transacciones Programadas">
+					<field name="employee_id" />
+					<field name="rule_id" />
+					<field name="name" />
+					<field name="code" />
+					<field name="date" />
+					<field name="amount" />
+					<field name="processed" />
+					<group name="filter_by">
+						<filter name="filter_by_processed" string="No Procesado" domain="[('processed', '=', False)]" />
+					</group>
+				</search>
+			</field>
+		</record>
+
+		<record model="ir.actions.act_window" id="action_hr_scheduled_transaction_inputs_view">
+			<field name="name">Ingresos Programados</field>
+			<field name="type">ir.actions.act_window</field>
+			<field name="res_model">hr.scheduled.transaction</field>
+			<field name="domain">[('type','=', 'input')]</field>
+			<field name="view_mode">tree,form</field>
+			<field name="context">{'search_default_filter_by_processed':1,  'default_type': 'input'}</field>
+			<field name="view_id" ref="hr_scheduled_transaction_tree_inputs_view" />
+		</record>
+
+		<menuitem id="hr_scheduled_transaction_inputs_menu"
+				  name="Ingresos"
+				  parent="hr_payroll.menu_hr_payroll_payslips"
+				  sequence='90'
+				  action="action_hr_scheduled_transaction_inputs_view" />
+
+		<record model="ir.actions.act_window" id="action_hr_scheduled_transaction_outputs_view">
+			<field name="name">Egresos Programados</field>
+			<field name="type">ir.actions.act_window</field>
+			<field name="res_model">hr.scheduled.transaction</field>
+			<field name="domain">[('type','=', 'output')]</field>
+			<field name="view_mode">tree,form</field>
+			<field name="context">{'search_default_filter_by_processed':1, 'default_type': 'output'}</field>
+			<field name="view_id" ref="hr_scheduled_transaction_tree_outputs_view" />
+		</record>
+
+		<menuitem id="hr_scheduled_transaction_outputs_menu"
+				  name="Egresos"
+				  parent="hr_payroll.menu_hr_payroll_payslips"
+				  sequence='95'
+				  action="action_hr_scheduled_transaction_outputs_view" />
+
+	</data>
+</odoo>

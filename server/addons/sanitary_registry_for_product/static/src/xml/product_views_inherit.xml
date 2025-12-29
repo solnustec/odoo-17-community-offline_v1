@@ -1,0 +1,41 @@
+<?xml version="1.0" encoding="utf-8" ?>
+<odoo>
+    <!-- Inherited view for the product form with sanitary registries -->
+    <record id="product_template_form_inherit_sanitary_registry" model="ir.ui.view">
+        <field name="name">product.template.form.sanitary.registry</field>
+        <field name="model">product.template</field>
+        <field name="inherit_id" ref="product.product_template_only_form_view"/>
+        <field name="arch" type="xml">
+            <!-- Display sanitary registries inside the "General Information" tab, excluding attachments -->
+            <xpath expr="//page[@name='general_information']" position="inside">
+                <field name="sanitary_registry_ids" context="{'default_product_id': active_id}">
+                    <tree widget="sortable" string="Sanitary Registries">
+                        <field name="sequence" widget="handle"/>
+                        <field name="sanitary_registry"
+                               decoration-info="has_attachments"/>
+                        <field name="expiration_date"/>
+                        <field name="alert_message"/>
+                        <field name="has_attachments" widget="boolean_button" readonly="1"
+                               options="{'terminology': 'icon'}"/>
+
+                    </tree>
+                     <form string="Sanitary Registry">
+                        <group>
+                            <field name="sanitary_registry"/>
+                            <field name="expiration_date"/>
+                            <field name="alert_message" readonly="1"/>
+                            <field name="attachment_ids" widget="many2many_binary" options="{'no_create': True}" />
+
+
+                        </group>
+    </form>
+                </field>
+            </xpath>
+
+            <!-- Add the alert message just after the product name -->
+            <xpath expr="//div[@class='oe_title']" position="after">
+                <field name="alert_message_html" widget="html" readonly="1"/>
+            </xpath>
+        </field>
+    </record>
+</odoo>

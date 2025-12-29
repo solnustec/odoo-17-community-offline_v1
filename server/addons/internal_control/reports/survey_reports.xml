@@ -1,0 +1,113 @@
+<?xml version="1.0" encoding="utf-8"?>
+<odoo>
+    <data>
+        <!-- Reporte de Items Revisados -->
+        <record id="action_report_survey_revised_items" model="ir.actions.report">
+            <field name="name">Reporte Items Revisados</field>
+            <field name="model">survey.revised.items.summary</field>
+            <field name="report_type">qweb-pdf</field>
+            <field name="report_name">internal_control.report_survey_revised_items</field>
+            <field name="report_file">internal_control.report_survey_revised_items</field>
+            <field name="print_report_name">'Reporte_Items_Revisados_%s' % (object.survey_id.title.replace(' ', '_').replace('/', '_'))</field>
+            <field name="binding_model_id" ref="model_survey_revised_items_summary"/>
+            <field name="binding_type">report</field>
+        </record>
+
+        <!-- Reporte de Items Revisados por Campaña -->
+        <record id="action_report_survey_revised_items_campaign" model="ir.actions.report">
+            <field name="name">Reporte Items Revisados por Campaña</field>
+            <field name="model">survey.revised.items.summary</field>
+            <field name="report_type">qweb-pdf</field>
+            <field name="report_name">internal_control.report_survey_revised_items_campaign</field>
+            <field name="report_file">internal_control.report_survey_revised_items_campaign</field>
+            <field name="print_report_name">'Reporte_Items_Revisados_Campaña_%s' % (object.survey_id.title.replace(' ', '_').replace('/', '_'))</field>
+            <field name="binding_model_id" ref="model_survey_revised_items_summary"/>
+            <field name="binding_type">report</field>
+        </record>
+
+        <!-- Reporte de Cumplimiento -->
+        <record id="action_report_survey_compliance" model="ir.actions.report">
+            <field name="name">Reporte Cumplimiento</field>
+            <field name="model">survey.compliance</field>
+            <field name="report_type">qweb-pdf</field>
+            <field name="report_name">internal_control.report_survey_compliance</field>
+            <field name="report_file">internal_control.report_survey_compliance</field>
+            <field name="print_report_name">'Reporte_Cumplimiento_%s' % (object.survey_id.title.replace(' ', '_').replace('/', '_'))</field>
+            <field name="binding_model_id" ref="model_survey_compliance"/>
+            <field name="binding_type">report</field>
+        </record>
+
+        <!-- Reporte de Cumplimiento Agrupado -->
+        <record id="action_report_survey_compliance_summary" model="ir.actions.report">
+            <field name="name">Reporte Cumplimiento Agrupado</field>
+            <field name="model">survey.compliance.summary</field>
+            <field name="report_type">qweb-pdf</field>
+            <field name="report_name">internal_control.report_survey_compliance_summary</field>
+            <field name="report_file">internal_control.report_survey_compliance_summary</field>
+            <field name="print_report_name">'Reporte_Cumplimiento_General'</field>
+            <field name="binding_model_id" ref="model_survey_compliance_summary"/>
+            <field name="binding_type">report</field>
+        </record>
+
+        <!-- Reporte de Cumplimiento por Campaña -->
+        <record id="action_report_survey_compliance_campaign" model="ir.actions.report">
+            <field name="name">Reporte Cumplimiento por Campaña</field>
+            <field name="model">survey.compliance.summary</field>
+            <field name="report_type">qweb-pdf</field>
+            <field name="report_name">internal_control.report_survey_compliance_campaign</field>
+            <field name="report_file">internal_control.report_survey_compliance_campaign</field>
+            <field name="print_report_name">'Reporte_Cumplimiento_Campaña_%s' % (object.survey_id.title.replace(' ', '_').replace('/', '_'))</field>
+            <field name="binding_model_id" ref="model_survey_compliance_summary"/>
+            <field name="binding_type">report</field>
+        </record>
+
+        <!-- Reporte de Satisfacción -->
+        <record id="action_report_survey_satisfaction" model="ir.actions.report">
+            <field name="name">Reporte Satisfacción</field>
+            <field name="model">survey.satisfaction.summary</field>
+            <field name="report_type">qweb-pdf</field>
+            <field name="report_name">internal_control.report_survey_satisfaction</field>
+            <field name="report_file">internal_control.report_survey_satisfaction</field>
+            <field name="print_report_name">'Reporte_Satisfaccion_%s' % (object.survey_id.title.replace(' ', '_').replace('/', '_'))</field>
+            <field name="binding_model_id" ref="model_survey_satisfaction_summary"/>
+            <field name="binding_type">report</field>
+        </record>
+
+        <!-- Reporte de Satisfacción por Campaña -->
+        <record id="action_report_survey_satisfaction_campaign" model="ir.actions.report">
+            <field name="name">Reporte Satisfacción por Campaña</field>
+            <field name="model">survey.satisfaction.summary</field>
+            <field name="report_type">qweb-pdf</field>
+            <field name="report_name">internal_control.report_survey_satisfaction_campaign</field>
+            <field name="report_file">internal_control.report_survey_satisfaction_campaign</field>
+            <field name="print_report_name">'Reporte_Satisfaccion_Campaña_%s' % (object.survey_id.title.replace(' ', '_').replace('/', '_'))</field>
+            <field name="binding_model_id" ref="model_survey_satisfaction_summary"/>
+            <field name="binding_type">report</field>
+        </record>
+
+        <!-- Reporte de Participación -->
+        <record id="action_report_survey_participation" model="ir.actions.report">
+            <field name="name">Reporte Participación</field>
+            <field name="model">survey.participation.summary</field>
+            <field name="report_type">qweb-pdf</field>
+            <field name="report_name">internal_control.report_survey_participation</field>
+            <field name="report_file">internal_control.report_survey_participation</field>
+            <field name="print_report_name">'Reporte_Participacion_%s' % (object.survey_id.title.replace(' ', '_').replace('/', '_'))</field>
+            <field name="binding_model_id" ref="model_survey_participation_summary"/>
+            <field name="binding_type">report</field>
+        </record>
+
+        <!-- Reporte de Participación por Campaña -->
+        <record id="action_report_survey_participation_campaign" model="ir.actions.report">
+            <field name="name">Reporte Participación por Campaña</field>
+            <field name="model">survey.participation.summary</field>
+            <field name="report_type">qweb-pdf</field>
+            <field name="report_name">internal_control.report_survey_participation_campaign</field>
+            <field name="report_file">internal_control.report_survey_participation_campaign</field>
+            <field name="print_report_name">'Reporte_Participacion_Campaña_%s' % (object.survey_id.title.replace(' ', '_').replace('/', '_'))</field>
+            <field name="binding_model_id" ref="model_survey_participation_summary"/>
+            <field name="binding_type">report</field>
+        </record>
+
+    </data>
+</odoo> 

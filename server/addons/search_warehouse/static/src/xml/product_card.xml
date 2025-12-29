@@ -1,0 +1,44 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<templates id="template" xml:space="preserve">
+
+    <!-- Popup propio: contenido simple con imagen -->
+    <t t-name="pos_product_image_popup.PosImagePopup" owl="1">
+        <div class="modal-dialog modal-xl modal-dialog-centered">
+            <div class="modal-content">
+                <div class="modal-header">
+                    <h3 class="modal-title"><t t-esc="props.title or 'Imagen del Producto'"/></h3>
+                    <button type="button" class="btn-close"
+                            aria-label="Close"
+                            t-on-click="() => props.close({confirmed: false})"/>
+                </div>
+                <div class="modal-body p-0" style="text-align:center; background-color:#f8f9fa;">
+                    <img t-att-src="props.imgUrl"
+                         class="product-popup-image"
+                         alt="Imagen del producto"/>
+                </div>
+                <div class="modal-footer">
+                    <button class="btn btn-primary btn-lg"
+                            t-on-click="() => props.close({confirmed: true})">
+                        <i class="fa fa-times me-2"></i>
+                        <t t-esc="props.confirmText or 'Cerrar'"/>
+                    </button>
+                </div>
+            </div>
+        </div>
+    </t>
+
+    <!-- Parche visual sobre ProductCard: icono de ampliar solo si hay imagen -->
+    <t t-inherit="point_of_sale.ProductCard" t-inherit-mode="extension">
+        <xpath expr="//article" position="inside">
+            <div t-if="props.imageUrl"
+                 class="product-image-expand-tag"
+                 t-on-click.stop="onImageExpandClick">
+                <i class="fa fa-search-plus"
+                   role="img"
+                   aria-label="Ampliar imagen"
+                   title="Ampliar imagen"/>
+            </div>
+        </xpath>
+    </t>
+
+</templates>

@@ -1,0 +1,27 @@
+<odoo>
+  <data>
+    <!--
+    COMENTADO TEMPORALMENTE: Hereda de gamification.goal_definition_form_view
+    que puede no existir en bases de datos restauradas.
+
+    <record id="view_goal_definition_form_inherit_domain_selector" model="ir.ui.view">
+      <field name="name">gamification.goal.definition.form.inherit.domain.selector</field>
+      <field name="model">gamification.goal.definition</field>
+      <field name="inherit_id" ref="gamification.goal_definition_form_view"/>
+      <field name="arch" type="xml">
+        <xpath expr="//group[@name='compute_details']/field[@name='domain']" position="before">
+            <field name="x_model_technical_name" invisible="1"/>
+        </xpath>
+        <xpath expr="//group[@name='compute_details']/field[@name='domain']" position="replace">
+            <field name="domain"
+                   widget="domain"
+                   options="{'model': 'x_model_technical_name'}"
+                   class="oe_inline"
+                   invisible="computation_mode not in ('sum', 'count')"
+                   required="computation_mode in ('sum', 'count')"/>
+        </xpath>
+      </field>
+    </record>
+    -->
+  </data>
+</odoo>

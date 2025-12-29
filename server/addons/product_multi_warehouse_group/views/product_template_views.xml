@@ -1,0 +1,30 @@
+<odoo>
+    <record id="view_product_template_form_inherit" model="ir.ui.view">
+        <field name="name">product.template.form.inherit.warehouse.group</field>
+        <field name="model">product.template</field>
+        <field name="inherit_id" ref="product.product_template_only_form_view"/>
+        <field name="arch" type="xml">
+            <!-- Reemplaza el grupo de operaciones para añadir los checkboxes -->
+            <xpath expr="//group[@name='operations']" position="replace">
+                <group string="Operaciones" name="operations">
+                    <!-- Etiqueta para las rutas -->
+                    <label for="route_ids"/>
+                    <div>
+                        <!-- Campo de checkboxes para las rutas -->
+                        <field name="route_ids" class="mb-0" widget="many2many_tags" can_create="True"
+                               can_write="True"/>
+                        <button id="stock.view_diagram_button" string="Ver diagrama" type="action" name="472"
+                                icon="oi-arrow-right" class="btn btn-link pt-0"
+                                context="{'default_product_tmpl_id': id}"/>
+                    </div>
+                </group>
+            </xpath>
+            <!-- Añadimos el campo warehouse_group_id en la pestaña de inventario -->
+            <xpath expr="//group[@name='operations']" position="after">
+                <group string="Grupo">
+                    <field name="warehouse_group_id"/>
+                </group>
+            </xpath>
+        </field>
+    </record>
+</odoo>

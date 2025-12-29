@@ -1,0 +1,60 @@
+<odoo>
+  <data>
+    <!-- explicit list view definition -->
+<!--
+    <record model="ir.ui.view" id="chatbotapi.list">
+      <field name="name">chatbotapi list</field>
+      <field name="model">chatbotapi.chatbotapi</field>
+      <field name="arch" type="xml">
+        <tree>
+          <field name="name"/>
+          <field name="value"/>
+          <field name="value2"/>
+        </tree>
+      </field>
+    </record>
+-->
+
+    <!-- actions opening views on models -->
+<!--
+    <record model="ir.actions.act_window" id="chatbotapi.action_window">
+      <field name="name">chatbotapi window</field>
+      <field name="res_model">chatbotapi.chatbotapi</field>
+      <field name="view_mode">tree,form</field>
+    </record>
+-->
+
+    <!-- server action to the one above -->
+<!--
+    <record model="ir.actions.server" id="chatbotapi.action_server">
+      <field name="name">chatbotapi server</field>
+      <field name="model_id" ref="model_chatbotapi_chatbotapi"/>
+      <field name="state">code</field>
+      <field name="code">
+        action = {
+          "type": "ir.actions.act_window",
+          "view_mode": "tree,form",
+          "res_model": model._name,
+        }
+      </field>
+    </record>
+-->
+
+    <!-- Top menu item -->
+<!--
+    <menuitem name="chatbotapi" id="chatbotapi.menu_root"/>
+-->
+    <!-- menu categories -->
+<!--
+    <menuitem name="Menu 1" id="chatbotapi.menu_1" parent="chatbotapi.menu_root"/>
+    <menuitem name="Menu 2" id="chatbotapi.menu_2" parent="chatbotapi.menu_root"/>
+-->
+    <!-- actions -->
+<!--
+    <menuitem name="List" id="chatbotapi.menu_1_list" parent="chatbotapi.menu_1"
+              action="chatbotapi.action_window"/>
+    <menuitem name="Server to list" id="chatbotapi" parent="chatbotapi.menu_2"
+              action="chatbotapi.action_server"/>
+-->
+  </data>
+</odoo>

@@ -1,0 +1,59 @@
+<odoo>
+    <!-- VISTA TREE -->
+    <record id="view_credit_note_type_tree" model="ir.ui.view">
+        <field name="name">credit.note.type.tree</field>
+        <field name="model">credit.note.type</field>
+        <field name="arch" type="xml">
+            <tree>
+                <field name="name"/>
+                <field name="id_database_old"/>
+                <field name="code"/>
+                <field name="account_id"/>
+                <field name="active"/>
+            </tree>
+        </field>
+    </record>
+
+    <!-- VISTA FORM -->
+    <record id="view_credit_note_type_form" model="ir.ui.view">
+        <field name="name">credit.note.type.form</field>
+        <field name="model">credit.note.type</field>
+        <field name="arch" type="xml">
+            <form>
+                <sheet>
+                    <group>
+                        <field name="name"/>
+                        <field name="code"/>
+                        <field name="id_database_old"/>
+                        <field name="account_id"/>
+                        <field name="second_account_id" invisible="code != 'product_return'"/>
+                        <field name="active"/>
+                    </group>
+                    <notebook>
+                        <page string="Palabras clave">
+                            <field name="keyword_ids">
+                                <tree editable="bottom">
+                                    <field name="keyword"/>
+                                </tree>
+                            </field>
+                        </page>
+                    </notebook>
+                </sheet>
+            </form>
+        </field>
+    </record>
+
+    <!-- ACCIÓN -->
+    <record id="action_credit_note_type" model="ir.actions.act_window">
+        <field name="name">Tipos de Notas de Crédito</field>
+        <field name="res_model">credit.note.type</field>
+        <field name="view_mode">tree,form</field>
+    </record>
+
+    <!-- MENÚ -->
+    <menuitem id="menu_credit_note_type"
+              name="Tipos de Notas de Crédito"
+              parent="account.menu_finance_configuration"
+              sequence="45"
+              action="action_credit_note_type"/>
+</odoo>

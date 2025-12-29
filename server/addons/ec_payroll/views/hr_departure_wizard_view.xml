@@ -1,0 +1,18 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<odoo>
+    <data>
+        <record model="ir.ui.view" id="ec_payroll_hr_departure_wizard_extend">
+            <field name="name">hr.departure.wizard.inherit.extense</field>
+            <field name="model">hr.departure.wizard</field>
+            <field name="inherit_id" ref="hr.hr_departure_wizard_view_form" />
+            <field name="arch" type="xml">
+                <xpath expr="//group[@id='action']" position="after">
+                    <group>
+                        <field name="is_on_the_blacklist"/>
+                        <field name="note_for_on_the_blacklist"/>
+                    </group>
+                </xpath>
+            </field>
+        </record>
+    </data>
+</odoo>

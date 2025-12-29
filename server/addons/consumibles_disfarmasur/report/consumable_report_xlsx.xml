@@ -1,0 +1,11 @@
+<odoo>
+    <report
+        id="consumable_report_xlsx"
+        model="allocations.consumable.intake"
+        string="Reporte de Costos de Consumibles (XLSX)"
+        report_type="xlsx"
+        name="allocations_consumable_products.consumable_report_xlsx"
+        file="allocations_consumable_products.consumable_report_xlsx"
+        print_report_name="'Reporte_Consumibles_%s' % (object.display_name)"
+    />
+</odoo>

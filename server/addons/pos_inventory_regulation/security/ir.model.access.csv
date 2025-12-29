@@ -1,0 +1,3 @@
+id,name,model_id:id,group_id:id,perm_read,perm_write,perm_create,perm_unlink
+inventory_regulation,access.inventory.schedule,model_inventory_schedule,base.group_user,1,1,1,1
+inventory_regulation_schedule_detail,access.inventory.schedule.detail,model_inventory_schedule_detail,base.group_user,1,1,1,1

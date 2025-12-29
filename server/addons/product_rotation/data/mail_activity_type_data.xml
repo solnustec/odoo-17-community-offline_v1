@@ -1,0 +1,19 @@
+<?xml version="1.0" encoding="utf-8"?>
+<odoo>
+    <data noupdate="1">
+        <!-- ======================= TIPO DE ACTIVIDAD ======================= -->
+        <record id="mail_activity_type_rotation_review" model="mail.activity.type">
+            <field name="name">Revision de Rotacion</field>
+            <field name="summary">Revisar productos sin rotacion</field>
+            <field name="icon">fa-cubes</field>
+            <field name="delay_count">1</field>
+            <field name="delay_unit">days</field>
+            <field name="delay_from">previous_activity</field>
+            <field name="res_model">product.rotation.daily</field>
+            <field name="category">default</field>
+            <field name="decoration_type">warning</field>
+            <field name="default_user_id" eval="False"/>
+            <field name="keep_done">False</field>
+        </record>
+    </data>
+</odoo>

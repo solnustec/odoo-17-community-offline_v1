@@ -1,0 +1,90 @@
+<templates xml:space="preserve">
+    <t t-name="point_of_sale.ProductCard" t-inherit="point_of_sale.ProductCard" t-inherit-mode="extension">
+        <xpath expr="//span[hasclass('price-tag')]" position="replace">
+            <div class="py-1">
+                <!-- Precio -->
+                <div class="text-center fs-5 pb-2">
+                    <span t-if="props.price" class="price-tag text-primary fw-bolder" t-esc="props.price"/>
+                </div>
+
+                <!-- Stock + Desc -->
+                <t t-set="product" t-value="this.env.services.pos.db.product_by_id[props.productId] or {}"/>
+                <div class="row g-2 text-center mb-2">
+                    <div class="col-6">
+                        <div class="badge-stock">
+                            Stock: <t t-esc="product.pos_stock_available"/>
+                        </div>
+                    </div>
+                    <div class="col-6">
+                        <div class="badge-discount">
+                            <t t-esc="'Desc. ' + (product.discount || 0) + '%'"/>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Stock por recibir (solo mostrar si es mayor a 0) -->
+                <t t-if="product.pos_stock_incoming and product.pos_stock_incoming > 0">
+                    <div class="row g-2 text-center mb-2">
+                        <div class="col-12">
+                            <div class="badge-incoming-stock">
+                                Por recibir: <t t-esc="product.pos_stock_incoming"/>
+                            </div>
+                        </div>
+                    </div>
+                </t>
+
+
+                <!-- Promo + UOM -->
+                <div class="row g-2 text-center mb-2">
+                    <div class="col-6">
+                        <div class="badge-promo-active">
+                            <div class="badge-uom">
+                                <t t-esc="product.uom_po_id[1] or 'Unidad x 1'"/>
+                            </div>
+
+                        </div>
+                    </div>
+                    <div class="col-6 badge-promo">
+                        <t t-esc="(product.free_stock || '')"/>
+
+                    </div>
+                </div>
+
+
+                <!-- Laboratory -->
+                <div class="row g-2 text-center mb-2">
+                    <div class="label-laboratory">
+                        <t t-esc="product.laboratory_id[1] or ''"/>
+                    </div>
+                </div>
+
+                <!-- Barcode -->
+                <div class="row mt-2">
+                    <div
+                        class="col-12 text-center bg-light text-muted rounded border d-flex justify-content-center align-items-center gap-2">
+                        <t t-set="barcode" t-value="product.pos_barcode or 'S/C'" />
+
+                        <input type="text"
+                            t-att-id="'barcode-' + props.productId"
+                            class="form-control-plaintext text-center m-0"
+                            readonly="readonly"
+                            t-att-value="barcode"
+                            style="cursor: pointer; width: auto; max-width: 150px;"
+                            title="Haz clic para copiar"
+                            t-attf-onclick="event.stopPropagation();
+                                            const input = this;
+                                            const original = input.value;
+                                            navigator.clipboard.writeText(original).then(() => {
+                                                input.value = '¡Codigo Copiado!';
+                                                setTimeout(() => { input.value = original; }, 1000);
+                                            });
+            " />
+                    </div>
+                </div>
+
+
+
+            </div>
+        </xpath>
+    </t>
+</templates>

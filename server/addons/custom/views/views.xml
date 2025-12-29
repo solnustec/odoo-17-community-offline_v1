@@ -1,0 +1,78 @@
+<odoo>
+    <data>
+        <!-- explicit list view definition -->
+
+        <record model="ir.ui.view" id="custom.field_list">
+            <field name="name">Campos list</field>
+            <field name="model">custom.field</field>
+            <field name="arch" type="xml">
+                <tree string="Campo personalizado">
+                    <field name="name"/>
+                    <field name="code_field"/>
+                    <field name="model_id"/>
+                    <field name="category_id"/>
+                    <field name="field_type"/>
+                    <field name="field_visibility"/>
+                    <field name="active"/>
+                    <field name="required"/>
+                    <field name="selection_options"/>
+                    <field name="regex_validation"/>
+                </tree>
+            </field>
+        </record>
+
+        <!--        Vista form del modelo custom.field-->
+        <record model="ir.ui.view" id="custom.field_form">
+            <field name="name">Campos list</field>
+            <field name="model">custom.field</field>
+            <field name="arch" type="xml">
+                <form>
+                    <group>
+                        <field name="name"/>
+                        <field name="code_field"/>
+                        <field name="model_id"/>
+                        <field name="category_id"/>
+                        <field name="field_type"/>
+                        <field name="field_visibility"/>
+                        <field name="active"/>
+                        <field name="required"/>
+                        <field name="selection_options"/>
+                        <field name="regex_validation"/>
+                    </group>
+                </form>
+            </field>
+        </record>
+
+
+        <!-- actions opening views on models -->
+
+        <record model="ir.actions.act_window" id="custom.action_field_window">
+            <field name="name">Campos personalizados</field>
+            <field name="res_model">custom.field</field>
+            <field name="view_mode">tree,form</field>
+        </record>
+        <!--        menu categorias-->
+        <record model="ir.actions.act_window" id="custom.action_category_window">
+            <field name="name">Categorias</field>
+            <field name="res_model">custom.category</field>
+            <field name="view_mode">tree,form</field>
+        </record>
+
+
+        <!-- Top menu item -->
+
+        <menuitem name="Adm. Campos" id="custom.menu_root" web_icon="custom,static/description/icon.png" groups="base.group_system"/>
+
+        <!-- menu categories -->
+
+        <menuitem name="Campos Personalizados" id="custom.menu_1" parent="custom.menu_root"/>
+
+        <!-- actions -->
+
+        <menuitem name="Lista de Campos" id="custom.menu_1_field_list" parent="custom.menu_1"
+                  action="custom.action_field_window"/>
+        <menuitem name="Categorias" id="custom.menu_1_category_list" parent="custom.menu_1"
+                  action="custom.action_category_window"/>
+
+    </data>
+</odoo>

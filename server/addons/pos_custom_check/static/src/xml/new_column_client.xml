@@ -1,0 +1,11 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<templates id="template_partnerline_ext" xml:space="preserve">
+    <!-- Inserta el TD antes de la última celda (acciones) -->
+    <t t-inherit="point_of_sale.PartnerLine" t-inherit-mode="extension">
+        <xpath expr="//td[2]" position="before">
+            <td class="py-2" t-att-title="(props.partner and props.partner.vat) ? props.partner.vat : ''">
+                <t t-esc="(props.partner and props.partner.vat) ? props.partner.vat : '-'"/>
+            </td>
+        </xpath>
+    </t>
+</templates>

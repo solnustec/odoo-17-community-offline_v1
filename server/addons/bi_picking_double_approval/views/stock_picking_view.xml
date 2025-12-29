@@ -1,0 +1,37 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<odoo>
+    <record id="view_picking_form_inherit_approval" model="ir.ui.view">
+        <field name="name">view.picking.form.inherit.approval</field>
+        <field name="model">stock.picking</field>
+        <field name="inherit_id" ref="stock.view_picking_form"/>
+        <field name="arch" type="xml">
+            <field name="state" position="before">
+                <field name="approval_required" invisible="1"/>
+            </field>
+            <field name="origin" position="after">
+                <field name="reject_reason" readonly="1" invisible="state not in ('rejected')"/>
+            </field>
+            <xpath expr="//header/button[3]" position="replace">
+                <button name="button_validate" invisible="state in ('draft', 'confirmed', 'done', 'cancel', 'waiting_approval', 'rejected')" string="Validar" type="object" class="oe_highlight" groups="stock.group_stock_user" data-hotkey="v"/>
+            </xpath>
+            <xpath expr="//header/button[4]" position="replace">
+                <button name="button_validate" invisible="state in ('waiting', 'assigned', 'done', 'cancel', 'waiting_approval', 'rejected')" string="Validar" type="object" class="oe_highlight" groups="stock.group_stock_user" data-hotkey="v"/>
+            </xpath>
+            <xpath expr="//header/button[@name='button_validate']" position="before">
+	            <button name="action_approve" string="Aprobar" type="object" invisible="state not in ('waiting_approval')" groups="bi_picking_double_approval.group_stock_picking_approver" class="oe_highlight"/>
+                <button name="action_reject" string="Rechazar" type="object" invisible="state not in ('waiting_approval')" groups="bi_picking_double_approval.group_stock_picking_approver"/>
+	        </xpath>
+            <xpath expr="//notebook/page[@name='note']" position="after">
+                <page string="Información" name="approval" invisible="not is_approved">
+                    <group>
+                        <group>
+                            <field name="is_approved" invisible="1"/>
+                            <field name="approved_by_id" readonly="1"/>
+                            <field name="approved_date" readonly="1"/>
+                        </group>
+                    </group>
+                </page>
+            </xpath>
+        </field>
+    </record>
+</odoo>

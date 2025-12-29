@@ -1,0 +1,49 @@
+<?xml version="1.0" encoding="utf-8"?>
+<odoo>
+    <data>
+        <record id="view_product_sync_tree_view" model="ir.ui.view">
+            <field name="name">product.sync.tree</field>
+            <field name="model">product.sync</field>
+            <field name="arch" type="xml">
+                <tree>
+                    <field name="product_id"/>
+                    <field name="new" readonly="1"/>
+                    <field name="downgrade" readonly="1"/>
+                    <field name="upgrade" readonly="1"/>
+                    <field name="status"/>
+                    <field name="sync_date"/>
+                </tree>
+            </field>
+        </record>
+        <record id="view_product_sync_form_view" model="ir.ui.view">
+            <field name="name">product.sync.form</field>
+            <field name="model">product.sync</field>
+            <field name="arch" type="xml">
+                <form>
+                    <group>
+                        <field name="product_id"/>
+                        <field name="new"/>
+                        <field name="id_database_old"/>
+                        <field name="downgrade"/>
+                        <field name="status"/>
+                        <field name="error_message"/>
+                        <field name="sync_date"/>
+                    </group>
+                </form>
+            </field>
+        </record>
+
+        <record id="action_product_sync" model="ir.actions.act_window">
+            <field name="name">Sync Products</field>
+            <field name="res_model">product.sync</field>
+            <field name="view_mode">tree,form</field>
+            <field name="view_id" ref="view_product_sync_tree_view"/>
+        </record>
+        <menuitem
+                id="menu_product_sync"
+                name="Sync Products"
+                groups="base.group_no_one"
+                parent="purchase.menu_purchase_root"
+                action="action_product_sync"/>
+    </data>
+</odoo>

@@ -1,0 +1,80 @@
+<odoo>
+  <!--
+  COMENTADO TEMPORALMENTE: Estas vistas heredan de gamification module
+  que puede no existir en bases de datos restauradas.
+
+  <record id="view_badge_user_kanban_no_open_for_group" model="ir.ui.view">
+    <field name="name">gamification.badge.user.kanban.no_open.for.group</field>
+    <field name="model">gamification.badge.user</field>
+    <field name="inherit_id" ref="gamification.badge_user_kanban_view"/>
+    <field name="arch" type="xml">
+      <xpath expr="//kanban" position="attributes">
+        <attribute name="action"/>
+        <attribute name="type"/>
+      </xpath>
+      <xpath expr="//div[contains(@class,'oe_kanban_global_click')]" position="attributes">
+        <attribute name="class" remove="oe_kanban_global_click"/>
+      </xpath>
+      <xpath expr="//a[@type='open']" position="attributes">
+        <attribute name="type"/>
+      </xpath>
+    </field>
+  </record>
+  -->
+
+  <!-- ========== VISTA LISTA (TREE) PERSONALIZADA DE OTORGAMIENTOS ========== -->
+  <record id="view_badge_user_tree_all" model="ir.ui.view">
+    <field name="name">gamification.badge.user.tree.all</field>
+    <field name="model">gamification.badge.user</field>
+    <field name="arch" type="xml">
+      <tree string="Insignias otorgadas" create="false" delete="false" edit="false">
+        <field name="badge_id"/>
+        <field name="user_id"/>
+        <field name="sender_id"/>
+        <field name="challenge_id"/>
+        <field name="comment"/>
+        <field name="create_date"/>
+      </tree>
+    </field>
+  </record>
+
+  <!-- ========== ACCION (GLOBAL): TODAS LAS INSIGNIAS OTORGADAS ========== -->
+  <record id="action_badge_user_all" model="ir.actions.act_window">
+    <field name="groups_id" eval="[(6, 0, [ref('gamification_custom.group_gamification_manager')])]"/>
+    <field name="name">Insignias otorgadas</field>
+    <field name="res_model">gamification.badge.user</field>
+    <field name="view_mode">kanban,tree,form</field>
+    <field name="view_id" ref="gamification_custom.view_badge_user_tree_all"/>
+    <field name="context">{}</field>
+  </record>
+
+  <!-- ========== ACCION (FILTRADA): OTORGAMIENTOS DE LA INSIGNIA ACTUAL ========== -->
+  <record id="action_badge_user_for_current_badge" model="ir.actions.act_window">
+    <field name="groups_id" eval="[(6, 0, [ref('gamification_custom.group_gamification_manager')])]"/>
+    <field name="name">Lista de insignias otorgadas</field>
+    <field name="res_model">gamification.badge.user</field>
+    <field name="view_mode">kanban,tree,form</field>
+    <field name="domain">[('badge_id', '=', active_id)]</field>
+    <field name="view_id" ref="gamification_custom.view_badge_user_tree_all"/>
+    <field name="context">{}</field>
+  </record>
+
+  <!--
+  COMENTADO TEMPORALMENTE: Hereda de gamification.badge_form_view
+
+  <record id="view_badge_form_inherit_btn_grants_all" model="ir.ui.view">
+    <field name="name">gamification.badge.form.inherit.btn.grants.all</field>
+    <field name="model">gamification.badge</field>
+    <field name="inherit_id" ref="gamification.badge_form_view"/>
+    <field name="arch" type="xml">
+      <xpath expr="//header" position="inside">
+        <button type="action"
+                name="%(gamification_custom.action_badge_user_for_current_badge)d"
+                class="oe_stat_button"
+                icon="fa-list"
+                string="Insignias otorgadas"/>
+      </xpath>
+    </field>
+  </record>
+  -->
+</odoo>

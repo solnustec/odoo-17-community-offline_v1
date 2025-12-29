@@ -1,0 +1,7 @@
+<odoo>
+    <menuitem id="menu_sale_order_from_pos"
+              name="Órdenes de entrega"
+              parent="point_of_sale.menu_point_root"
+              action="pos_sale_order.action_sale_order_from_pos"
+    />
+</odoo>

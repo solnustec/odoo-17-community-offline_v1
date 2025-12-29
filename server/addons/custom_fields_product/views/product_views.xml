@@ -1,0 +1,130 @@
+<odoo>
+    <record id="view_product_template_form_inherit" model="ir.ui.view">
+        <field name="name">product.template.form.inherit</field>
+        <field name="model">product.template</field>
+        <field name="inherit_id" ref="product.product_template_only_form_view"/>
+        <field name="arch" type="xml">
+             <xpath expr="//group[@name='description']" position="after">
+                <group string="Texto para imágenes e-commerce" colspan="2">
+                    <field name="image_alt"/>
+                    <field name="image_refer_text"/>
+                </group>
+            </xpath>
+            <xpath expr="//field[@name='product_tag_ids']" position="after">
+                <field name="alternate_product_ids" widget="many2many_tags"/>
+            </xpath>
+            <xpath expr="//notebook" position="inside">
+                <page string="Identificación del Producto">
+                    <group>
+                        <group>
+                            <field name="id_database_old"/>
+                            <field name="sale_uom_ecommerce"/>
+                        </group>
+                        <group>
+                            <field name="generic_name"/>
+                            <field name="brand_id"/>
+                            <field name="manufacturer_id"/>
+                        </group>
+<!--                        <group>-->
+<!--                            <field name="barcode1"/>-->
+<!--                            <field name="barcode2"/>-->
+<!--                            <field name="barcode3"/>-->
+<!--                            <field name="barcode4"/>-->
+<!--                            <field name="barcode5"/>-->
+<!--                        </group>-->
+                    </group>
+                </page>
+                <page string="Clasificación">
+                    <group>
+                        <field name="therapeutic_classification_ids" widget="many2many_tags"/>
+                        <field name="tags"/>
+                    </group>
+                </page>
+                <page string="Características y Usos">
+                    <group>
+                        <group>
+                            <field name="indications"/>
+                            <field name="laboratory_id"/>
+                            <field name="contraindications"/>
+                            <field name="side_effects_ids" widget="many2many_tags"/>
+                        </group>
+                        <group>
+                            <field name="requires_recipe"/>
+                            <field name="active_principle_concentrations_ids">
+                                <tree editable="bottom">
+                                    <field name="active_principle_id"/>
+                                    <field name="concentration"/>
+                                </tree>
+                            </field>
+                            <field name="health_record"/>
+                            <field name="substances"/>
+                        </group>
+                    </group>
+                </page>
+                <page string="Presentación y Embalaje">
+                    <group>
+                        <group>
+                            <field name="pharmaceutical_form"/>
+                            <field name="presentation_ids" widget="many2many_tags"/>
+                            <field name="packaging_type_id"/>
+                        </group>
+                        <group>
+                            <field name="units_per_packaging"/>
+                            <field name="unit_dimensions"/>
+                            <field name="box_dimensions"/>
+                        </group>
+                    </group>
+                </page>
+                <page string="Logística y Almacenamiento">
+                    <group>
+                        <group>
+                            <field name="life_span"/>
+                            <field name="manufacture_date"/>
+                            <field name="expiration_date"/>
+                        </group>
+                        <group>
+                            <field name="lot_number"/>
+                            <field name="min_stock"/>
+                            <field name="max_stock"/>
+                        </group>
+                        <group>
+                            <field name="safety_stock"/>
+                            <field name="lead_time"/>
+                            <field name="reorder_point"/>
+                        </group>
+                        <group>
+                            <field name="boxes_per_pallet"/>
+                            <field name="pallets_per_container"/>
+                            <field name="warehouse_location"/>
+                        </group>
+                        <group>
+                            <field name="packaging_unit"/>
+                            <field name="total_units"/>
+                            <field name="suppliers"/>
+                        </group>
+                        <group>
+                            <field name="storage_requirements"/>
+                            <field name="recommended_storage"/>
+                            <field name="shipping_method"/>
+                        </group>
+                    </group>
+                </page>
+                <page string="Documentación y Control">
+                    <group>
+                        <group>
+                            <field name="attached_documentation"/>
+                            <field name="return_policy"/>
+                        </group>
+                        <group>
+                            <field name="technical_sheet"/>
+                            <field name="add_image"/>
+                        </group>
+                    </group>
+                </page>
+            </xpath>
+            <xpath expr="//field[@name='taxes_id']" position="before">
+                <field name="price_with_uom_ecommerce" invisible="not sale_uom_ecommerce"/>
+            </xpath>
+        </field>
+    </record>
+</odoo>

@@ -1,0 +1,9 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<templates id="template" xml:space="preserve">
+<!--    ocultando el boton de informacion del aprtene-->
+    <t t-name="PartnerDetailsEditEC" t-inherit="point_of_sale.PartnerListScreen" t-inherit-mode="extension" owl="1">
+        <xpath expr="//div[contains(@class, 'button more-info')]/a[@t-att-href='partnerLink']" position="replace">
+            <div></div>
+        </xpath>
+    </t>
+</templates>

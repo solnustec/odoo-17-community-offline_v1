@@ -1,0 +1,16 @@
+<?xml version="1.0" encoding="utf-8" ?>
+<odoo>
+    <data noupdate="1">
+        <record id="ir_cron_sanitary_registry_expiration_alert" model="ir.cron">
+            <field name="name">Sanitary Registry Expiration Alert</field>
+            <field name="model_id" ref="model_sanitary_registry"/>
+            <field name="state">code</field>
+            <field name="code">model.create_expiration_alert_activities()</field>
+            <field name="interval_number">1</field>
+            <field name="interval_type">days</field>
+            <field name="numbercall">-1</field> <!-- run indefinitely -->
+            <field name="active">True</field>
+            <field name="user_id" ref="base.user_root"/>
+        </record>
+    </data>
+</odoo>

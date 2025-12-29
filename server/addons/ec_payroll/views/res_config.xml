@@ -1,0 +1,175 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<odoo>
+	<data>
+
+		<record model="ir.ui.view"
+			id="hr_payroll_config_settings_anticipo_form_view">
+			<field name="name">res.config.settings.anticipo.form</field>
+			<field name="model">res.config.settings</field>
+			<field name="inherit_id" ref="hr_payroll.res_config_settings_view_form" />
+			<field name="arch" type="xml">
+				<xpath expr="//block[@id='hr_payroll_accountant']" position="after">
+					<div class="o_row">
+						<group string="Configuracion de Anticipos">
+
+							<field name="journal_chque_anticipo" readonly="False" />
+							<field name="journal_trans_anticipo" readonly="False"  />
+						</group>
+
+					</div>
+					<div class="o_row">
+
+						<group string="Configuracion de Información de Pagos">
+							<field name="journal_salary" readonly="False" />
+							<field name="account_employee_cxc" readonly="False"  />
+							<field name="sri_forma_pago" readonly="False"  />
+						</group>
+					</div>
+
+				</xpath>
+			</field>
+		</record>
+
+
+		<record model="ir.ui.view"
+			id="hr_payroll_config_settings_form_view">
+			<field name="name">res.config.settings.form</field>
+			<field name="model">res.config.settings</field>
+			<field name="inherit_id"
+				ref="hr_payroll.res_config_settings_view_form" />
+			<field name="arch" type="xml">
+				<xpath expr="//block[@id='hr_payroll_accountant']" position="inside">
+					<div class="o_row">
+						<group string="Cuentas Contables">
+<!--							<field name="salarios_account_id"-->
+<!--								domain="[('internal_type', '=', 'payable')]" readonly="False"/>-->
+							<field name="salarios_account_id"  readonly="False"/>
+							<field name="expense_account_id" readonly="False"/>
+							<field name="tax_expense_ids"
+								widget="many2many_tags" readonly="False"/>
+						</group>
+					</div>
+				</xpath>
+				<xpath expr="//block[@id='hr_payroll_accountant']" position="after">
+					 <h2>Nómina Ecuador</h2>
+					<div class="row mt16 o_settings_container" id="hr_payroll_ec">
+						<div class="col-lg-6 col-12 o_setting_box">
+							<group string="Días para cálculos de Décimo Cuarto">
+								<div class="o_row">
+									<group col="2">
+										<field name="region_decimos" readonly="False"/>
+										<field name="costa_mes_d14" readonly="False"/>
+										<field name="costa_dia_d14" readonly="False"/>
+										<field name="sierra_mes_d14" readonly="False"/>
+										<field name="sierra_dia_d14" readonly="False"/>
+									</group>
+								</div>
+							</group>
+
+
+
+							
+                                <group string="Reglas Décimo Tercer Sueldo">
+									<div class="o_row">
+									<group col="2">
+										<field name="struct_thirteenth_pay" readonly="False"/>
+									
+									</group>
+								</div>
+								</group>
+                         
+
+                           
+                                    <group string="Reglas Décimo Cuarto Sueldo">
+									<div class="o_row">
+									<group col="2">
+										<field name="struct_fourteenth_pay" readonly="False"/>
+										<field name="month_start_fourteenth" readonly="False"/>
+										<field name="day_start_fourteenth" readonly="False"/>
+										<field name="month_end_fourteenth" readonly="False"/>
+										<field name="day_end_fourteenth" readonly="False"/>
+									</group>
+								</div>
+								</group>
+                            
+
+
+							<div class="o_row">
+								<group string="Reglas de Horas Extras/Suplementarias/Nocturnas">
+									<field name="category_transaction_hour_suple_id" readonly="False"/>
+									<field name="category_transaction_hour_extra_id" readonly="False"/>
+									<field name="category_transaction_hour_night_id" readonly="False"/>
+								</group>
+							</div>
+							<div class="o_row">
+								<group string="Regla Solicitud de Egresos">
+									<field name="egress_porcent_max" readonly="False"/>
+									<field name="egress_num_max_quota" readonly="False"/>
+								</group>
+							</div>
+							<div class="o_row">
+								<group string="Reglas de Liquidaciones de Personal">
+									<field name="rule_thirteenth_id" readonly="False"/>
+									<field name="rule_fourteenth_id" readonly="False"/>
+									<field name="rule_vacation_id" readonly="False"/>
+									<field name="rule_iess_employee_id" readonly="False"/>
+									<field name="rule_fondos_reserva_id" readonly="False"/>
+									<field name="rule_sueldo_id" readonly="False"/>
+								</group>
+							</div>
+							<div class="o_row">
+								<group string="Reglas de Vacaciones">
+									<field name="rule_vacation" readonly="False"/>
+									<field name="rule_pay_vacation" readonly="False"/>
+									<field name="struct_enjoyd_id" readonly="False"/>
+								</group>
+							</div>
+							<div class="o_row">
+								<group string="Tipos de Asistencias para Vacaciones y Subsidios">
+									<field name="work_entry_type" readonly="False"/>
+									<field name="vacations_entry_type" readonly="False"/>
+									<field name="maternity_entry_type" readonly="False"/>
+									<field name="disease_entry_type" readonly="False"/>
+								</group>
+							</div>
+							<div class="o_row">
+								<group string="Reglas de Estructuras">
+									<field name="structure_type_id" readonly="False"/>
+								</group>
+							</div>
+						</div>
+					</div>
+				</xpath>
+			</field>
+		</record>
+
+
+		<record id="hr_fiscalyear_config_tree_view" model="ir.ui.view">
+            <field name="name">hr.fiscalyear.config.tree</field>
+            <field name="model">hr.fiscalyear.config</field>
+            <field name="arch" type="xml">
+                <tree string="S.B.U." editable="top">
+                    <field name="fiscalyear_id" />
+                    <field colspan="2" name="sbu"/>
+                    <field colspan="2" name="basic_food"/>
+                </tree>
+            </field>
+        </record>
+
+		<record model="ir.actions.act_window" id="action_hr_fiscalyear_config_tree_view">
+			<field name="name">Tabla Sueldos Básicos</field>
+			<field name="type">ir.actions.act_window</field>
+			<field name="res_model">hr.fiscalyear.config</field>
+			<!-- <field name="view_type">form</field> -->
+			<field name="view_mode">tree</field>
+			<field name="view_id" ref="hr_fiscalyear_config_tree_view" />
+		</record>
+
+		<menuitem id="hr_fiscalyear_config_menu" name="Tabla Salarios Básicos"
+			action="action_hr_fiscalyear_config_tree_view" 
+			parent="hr_work_entry_contract_enterprise.menu_hr_payroll_configuration"
+			/>
+
+
+	</data>
+</odoo>

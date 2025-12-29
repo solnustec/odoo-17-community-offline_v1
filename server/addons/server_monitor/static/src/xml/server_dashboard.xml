@@ -1,0 +1,298 @@
+<?xml version="1.0" encoding="utf-8"?>
+<template xml:space="preserve" owl="1">
+    <t t-name="server_monitor.ServerDashboard" class="overflow-auto  h-100">
+        <div class="o_server_monitor overflow-auto h-100">
+
+            <!--            <t t-else="">-->
+            <!-- Header -->
+            <t t-if="state.stats">
+                <div class=" bg-white text-primary p-1">
+                    <div class="row align-items-center">
+                        <div class="col-md-5">
+                            <h3 class="mb-0">
+                                <i class="fa fa-server"/>
+                                Monitor del Servidor -
+                                <t t-esc="state.stats.hostname"/>
+                            </h3>
+                            <small class="text-muted">
+                                <t t-esc="state.stats.system"/>
+                                <t t-esc="state.stats.release"/>
+                                |
+                                <i class="fa fa-hourglass-half"/>
+                                <t t-esc="state.stats.uptime"/>
+                            </small>
+                        </div>
+                        <div class="col-3">
+                            <t t-if="state.loading">
+<!--                    <i class="fa fa-spinner fa-spin fa-3x text-primary"/>-->
+                                <p class="mt-3">Actualizando métricas del servidor...</p>
+                            </t>
+
+                        </div>
+                        <div class="col-md-4 text-right">
+                            <div class="o_load_avg">
+                                <small>Load Average:</small>
+                                <br/>
+                                <strong>
+                                    <t t-esc="state.stats.load_avg[0]"/>,
+                                    <t t-esc="state.stats.load_avg[1]"/>,
+                                    <t t-esc="state.stats.load_avg[2]"/>
+                                </strong>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Main Metrics Grid -->
+                <div class="o_server_metrics p-2">
+                    <div class="row">
+                        <!-- CPU Card -->
+                        <div class="col-lg-4 col-md-6">
+                            <div class="card  shadow-sm">
+                                <div class="card-header bg-primary text-white">
+                                    <h5 class="mb-0">
+                                        <i class="fa fa-microchip"/>
+                                        CPU
+                                    </h5>
+                                </div>
+                                <div class="card-body">
+                                    <div class="o_metric_value">
+                                        <span class="o_value_large"><t t-esc="state.stats.cpu_percent"/>%</span>
+                                    </div>
+                                    <div class="progress o_metric_progress">
+                                        <div class="progress-bar bg-primary"
+                                             role="progressbar"
+                                             t-attf-style="width: {{state.stats.cpu_percent}}%"
+                                             t-attf-aria-valuenow="{{state.stats.cpu_percent}}"
+                                             aria-valuemin="0"
+                                             aria-valuemax="100">
+                                        </div>
+                                    </div>
+                                    <div class="row">
+                                        <div class="col-12 inline-block">
+                                            <div class="text-muted mt-2">
+                                            <small>
+                                                <i class="fa fa-cogs"/>
+                                                <t t-esc="state.stats.cpu_count"/>
+                                                cores
+<!--                                                <br/>-->
+                                                <i class="fa fa-tachometer"/>
+                                                <t t-esc="state.stats.cpu_freq"/>
+                                                MHz
+                                            </small>
+                                        </div>
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+
+                        <!-- Memory Card -->
+                        <div class="col-lg-4 col-md-6">
+                            <div class="card  shadow-sm">
+                                <div class="card-header bg-success text-white">
+                                    <h5 class="mb-0">
+                                        <i class="fa fa-memory"/>
+                                        RAM
+                                    </h5>
+                                </div>
+                                <div class="card-body">
+                                    <div class="o_metric_value">
+                                        <span class="o_value_large"><t t-esc="state.stats.mem_percent"/>%</span>
+                                    </div>
+                                    <div class="progress o_metric_progress">
+                                        <div class="progress-bar bg-success"
+                                             role="progressbar"
+                                             t-attf-style="width: {{state.stats.mem_percent}}%"
+                                             t-attf-aria-valuenow="{{state.stats.mem_percent}}"
+                                             aria-valuemin="0"
+                                             aria-valuemax="100">
+                                        </div>
+                                    </div>
+                                    <div class="text-muted mt-2">
+                                        <small>
+                                            <i class="fa fa-info-circle"/>
+                                            <t t-esc="state.stats.mem_used"/>
+                                            GB /
+                                            <t t-esc="state.stats.mem_total"/>
+                                            GB
+                                        </small>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+
+
+
+                        <!-- Disk Card -->
+                        <div class="col-lg-4 col-md-6">
+                            <div class="card  shadow-sm">
+                                <div class="card-header bg-warning text-white">
+                                    <h5 class="mb-0">
+                                        <i class="fa fa-hdd-o"/>
+                                        Disco
+                                    </h5>
+                                </div>
+                                <div class="card-body">
+                                    <div class="o_metric_value">
+                                        <span class="o_value_large"><t t-esc="state.stats.disk_percent"/>%</span>
+                                    </div>
+                                    <div class="progress o_metric_progress">
+                                        <div class="progress-bar bg-warning"
+                                             role="progressbar"
+                                             t-attf-style="width: {{state.stats.disk_percent}}%"
+                                             t-attf-aria-valuenow="{{state.stats.disk_percent}}"
+                                             aria-valuemin="0"
+                                             aria-valuemax="100">
+                                        </div>
+                                    </div>
+                                    <div class="text-muted mt-2">
+                                        <small>
+                                            <i class="fa fa-info-circle"/>
+                                            <t t-esc="state.stats.disk_used"/>
+                                            GB /
+                                            <t t-esc="state.stats.disk_total"/>
+                                            GB
+                                        </small>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+                <div class="container-fluid p-2">
+                <div class="row px-2">
+                    <!-- System Details -->
+                    <div class="col-6 ">
+                        <div class="card shadow-sm">
+                        <div class="card-header bg-secondary text-white">
+                            <h5 class="mb-0">
+                                <i class="fa fa-info-circle"/>
+                                Detalles del Sistema
+                            </h5>
+                        </div>
+                            <div class="card-body">
+                            <div class="row">
+                                <div class="col-md-6">
+                                    <table class="table table-sm table-borderless">
+                                        <tbody>
+                                            <tr>
+                                                <td><strong><i class="fa fa-desktop"/> Hostname:</strong></td>
+                                                <td><t t-esc="state.stats.hostname"/></td>
+                                            </tr>
+                                            <tr>
+                                                <td><strong><i class="fa fa-linux"/> Sistema:</strong></td>
+                                                <td><t t-esc="state.stats.system"/>
+                                                    <t t-esc="state.stats.release"/></td>
+                                            </tr>
+                                            <tr>
+                                                <td><strong><i class="fa fa-clock-o"/> Uptime:</strong></td>
+                                                <td><t t-esc="state.stats.uptime"/></td>
+                                            </tr>
+                                            <tr>
+                                                <td><strong><i class="fa fa-microchip"/> CPU Cores:</strong></td>
+                                                <td><t t-esc="state.stats.cpu_count"/></td>
+                                            </tr>
+                                            <tr>
+                                                <td><strong><i class="fa fa-tachometer"/> CPU Frecuencia:</strong></td>
+                                                <td><t t-esc="state.stats.cpu_freq"/>
+                                                    MHz</td>
+                                            </tr>
+                                        </tbody>
+                                    </table>
+                                </div>
+                                <div class="col-md-6">
+                                    <table class="table table-sm table-borderless">
+                                        <tbody>
+                                            <tr>
+                                                <td><strong><i class="fa fa-line-chart"/> Load Average (1m):</strong></td>
+                                                <td><t t-esc="state.stats.load_avg[0]"/></td>
+                                            </tr>
+                                            <tr>
+                                                <td><strong><i class="fa fa-line-chart"/> Load Average (5m):</strong></td>
+                                                <td><t t-esc="state.stats.load_avg[1]"/></td>
+                                            </tr>
+                                            <tr>
+                                                <td><strong><i class="fa fa-line-chart"/> Load Average (15m):</strong></td>
+                                                <td><t t-esc="state.stats.load_avg[2]"/></td>
+                                            </tr>
+                                            <tr>
+                                                <td><strong><i class="fa fa-memory"/> RAM Total:</strong></td>
+                                                <td><t t-esc="state.stats.mem_total"/>
+                                                    GB</td>
+                                            </tr>
+                                            <tr>
+                                                <td><strong><i class="fa fa-exchange"/> SWAP Total:</strong></td>
+                                                <td><t t-esc="state.stats.swap_total"/>
+                                                    GB</td>
+                                            </tr>
+                                        </tbody>
+                                    </table>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                    </div>
+                    <div class="col-6 p-1">
+                        <div class="card shadow-sm">
+                        <div class="card-header bg-white text-dark">
+                            <h5 class="mb-0">
+                                <i class="fa fa-list"/>
+                                Top 15 Procesos (por CPU)
+                            </h5>
+                        </div>
+                            <div class="card-body p-0">
+                            <div class="table-responsive">
+                                <table class="table table-hover table-striped mb-0 o_process_table">
+                                    <thead class="thead-light">
+                                        <tr>
+                                            <th>PID</th>
+                                            <th>Usuario</th>
+                                            <th>Proceso</th>
+                                            <th class="text-right">CPU %</th>
+                                            <th class="text-right">RAM %</th>
+                                            <th class="text-right">Memoria (MB)</th>
+                                        </tr>
+                                    </thead>
+                                    <tbody>
+                                        <t t-foreach="state.stats.top_processes" t-as="proc" t-key="proc.pid">
+                                            <tr>
+                                                <td><strong><t t-esc="proc.pid"/></strong></td>
+                                                <td><t t-esc="proc.username"/></td>
+                                                <td class="o_process_name">
+                                                    <i class="fa fa-cog text-muted"/>
+                                                    <t t-esc="proc.name"/>
+                                                </td>
+                                                <td class="text-right">
+                                                    <span t-attf-class="badge badge-{{proc.cpu_percent > 50 ? 'danger' : (proc.cpu_percent > 20 ? 'warning' : 'success')}}">
+                                                        <t t-esc="proc.cpu_percent"/>%
+                                                    </span>
+                                                </td>
+                                                <td class="text-right">
+                                                    <span t-attf-class="badge badge-{{proc.memory_percent > 10 ? 'danger' : (proc.memory_percent > 5 ? 'warning' : 'info')}}">
+                                                        <t t-esc="proc.memory_percent"/>%
+                                                    </span>
+                                                </td>
+                                                <td class="text-right">
+                                                    <t t-esc="proc.memory_mb"/>
+                                                    MB
+                                                </td>
+                                            </tr>
+                                        </t>
+                                    </tbody>
+                                </table>
+                            </div>
+                        </div>
+                    </div>
+                    </div>
+
+
+                </div>
+            </div>
+            </t>
+
+
+        </div>
+    </t>
+</template>
+

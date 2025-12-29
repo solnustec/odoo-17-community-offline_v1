@@ -1,0 +1,42 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<odoo>
+    <data>
+    
+    	<record id="payroll_analysis_report_pivot_view" model="ir.ui.view">
+			<field name="name">hr.payslip.line.pivot</field>
+			<field name="model">hr.payslip.line</field>
+			<field name="arch" type="xml">
+				 <pivot string="Análisis">
+					<field name="employee_id" type="row" />
+					<field name="date_from" type="col" />
+					<field name="category_id" type="col" />				
+					<field name="total" type="measure" />
+				</pivot>
+			</field>
+		</record>
+    
+    	<record model="ir.actions.act_window" id="action_reporte_analytical_payroll_view">
+			<field name="name">Informe de Líneas de Nómina</field>
+			<field name="type">ir.actions.act_window</field>
+			<field name="res_model">hr.payslip.line</field>
+			<!-- <field name="view_type">form</field> -->
+			<field name="view_mode">pivot</field>
+			<!-- <field name="context">{}</field> -->
+			<field name="view_id" ref="payroll_analysis_report_pivot_view" />
+		</record>
+		
+		<record id="action_payroll_analysis_report_pivot_view" model="ir.actions.act_window.view">
+            <field eval="120" name="sequence"/>
+            <field name="view_mode">pivot</field>
+            <field name="view_id" ref="payroll_analysis_report_pivot_view"/>
+            <field name="act_window_id" ref="action_reporte_analytical_payroll_view"/>
+        </record>
+
+    	<menuitem id="payroll_analytical_pivot_view" name="Informes" parent="hr_payroll.menu_hr_payroll_report"
+    				groups="hr_payroll.group_hr_payroll_manager,hr_payroll.group_hr_payroll_user"/>
+
+    	<menuitem id="payroll_lineal" name="Líneas de Nómina" parent="hr_payroll.menu_hr_payroll_report"
+    				action="action_reporte_analytical_payroll_view"/>
+    	
+    </data>
+</odoo>

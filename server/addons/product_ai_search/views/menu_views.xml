@@ -1,0 +1,60 @@
+<?xml version="1.0" encoding="utf-8"?>
+<odoo>
+    <!-- Menú principal en el menú Ventas -->
+    <menuitem id="menu_product_ai_search_main"
+              name="🔍 Búsqueda IA"
+              parent="sale.sale_menu_root"
+              sequence="50"
+              groups="base.group_user"/>
+
+    <!-- Menú principal en Configuración también -->
+    <menuitem id="menu_product_ai_search_root"
+              name="Búsqueda IA Productos"
+              parent="base.menu_administration"
+              sequence="100"
+              groups="base.group_system"/>
+
+    <!-- Submenú de Prueba de Búsqueda (en el menú Ventas) -->
+    <menuitem id="menu_product_ai_search_test_main"
+              name="🔍 Probar Búsqueda"
+              parent="menu_product_ai_search_main"
+              action="action_product_ai_search_test"
+              sequence="10"/>
+
+    <!-- Submenú de Configuração (en el menú Ventas) -->
+    <menuitem id="menu_product_ai_search_config_main"
+              name="⚙️ Configuração"
+              parent="menu_product_ai_search_main"
+              action="action_product_ai_search_config"
+              sequence="20"
+              groups="base.group_system"/>
+
+    <!-- Submenú do Indexador (en el menú Ventas) -->
+    <menuitem id="menu_product_ai_search_indexer_main"
+              name="🤖 Indexador de Produtos"
+              parent="menu_product_ai_search_main"
+              action="action_product_ai_search_indexer"
+              sequence="15"
+              groups="base.group_system"/>
+
+    <!-- Submenú de Prueba de Búsqueda (en Configuración) -->
+    <menuitem id="menu_product_ai_search_test"
+              name="Prueba de Búsqueda"
+              parent="menu_product_ai_search_root"
+              action="action_product_ai_search_test"
+              sequence="10"/>
+
+    <!-- Submenú do Indexador (en Configuración) -->
+    <menuitem id="menu_product_ai_search_indexer"
+              name="Indexador de Produtos"
+              parent="menu_product_ai_search_root"
+              action="action_product_ai_search_indexer"
+              sequence="15"/>
+
+    <!-- Submenú de Configuração (en Configuración) -->
+    <menuitem id="menu_product_ai_search_config"
+              name="Configuração"
+              parent="menu_product_ai_search_root"
+              action="action_product_ai_search_config"
+              sequence="20"/>
+</odoo>

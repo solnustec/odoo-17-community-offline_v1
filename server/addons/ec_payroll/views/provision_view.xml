@@ -1,0 +1,31 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<odoo>
+    <data>
+
+        <record model="ir.ui.view" id="cen_hr_provision_employee_tree_view">
+            <field name="name">cen.hr.provision.employee.tree.view</field>
+            <field name="model">payroll.provision</field>
+            <field name="priority">0</field>
+            <field name="arch" type="xml">
+                <tree string="Provisiones de Empleados">
+                    <field name="name"  />
+                    <field name="year" />
+                    <field name="month"/>
+                </tree>
+            </field>
+        </record>
+
+        <record model="ir.actions.act_window" id="cen_action_hr_provision_employee">
+            <field name="name">Provisiones de Empleados</field>
+            <field name="res_model">payroll.provision</field>
+            <field name="view_mode">tree,form</field>
+        </record>
+
+
+        <!--<menuitem id="cen_provision_employee_menu"
+                  name="Provisiones"
+                  parent="hr_work_entry_contract_enterprise.menu_hr_payroll_configuration"
+                  action="cen_action_hr_provision_employee"
+                  sequence='10'/>-->
+    </data>
+</odoo>

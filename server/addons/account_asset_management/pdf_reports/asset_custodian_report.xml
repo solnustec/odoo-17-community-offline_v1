@@ -1,0 +1,31 @@
+<?xml version="1.0" encoding="utf-8"?>
+<odoo>
+    <data>
+
+        <!-- Definición del formato de papel -->
+        <record id="report_asset_custodian_paperformat" model="report.paperformat">
+            <field name="name">Reporte de Activos por Custodio</field>
+            <field name="default" eval="False"/>
+            <field name="format">A4</field>
+            <field name="orientation">Portrait</field>
+            <field name="margin_top">10</field>
+            <field name="margin_bottom">10</field>
+            <field name="margin_left">10</field>
+            <field name="margin_right">10</field>
+        </record>
+
+        <!-- Acción del Reporte -->
+        <record id="action_report_asset_custodian" model="ir.actions.report">
+            <field name="name">Reporte de Activos por Custodio</field>
+            <field name="model">account.asset</field>
+            <field name="report_type">qweb-pdf</field>
+            <field name="report_name">account_asset_management.report_asset_custodian</field>
+            <field name="report_file">account_asset_management.report_asset_custodian</field>
+            <field name="paperformat_id" ref="report_asset_custodian_paperformat"/>
+            <field name="print_report_name">'Activos_por_Custodio_%s' % (object.asset_custodian_id.name or '')</field>
+            <field name="binding_model_id" ref="account_asset_management.model_account_asset"/>
+            <field name="binding_type">report</field>
+        </record>
+
+    </data>
+</odoo>

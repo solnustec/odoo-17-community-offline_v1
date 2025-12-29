@@ -1,0 +1,9 @@
+<odoo>
+    <record id="seq_guia_remision" model="ir.sequence">
+        <field name="name">Guía de Remisión</field>
+        <field name="code">stock.picking</field>
+        <field name="prefix">GR/</field>
+        <field name="padding">9</field>
+        <field name="company_id" eval="False"/>
+    </record>
+</odoo>

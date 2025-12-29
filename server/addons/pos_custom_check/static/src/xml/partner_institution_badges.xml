@@ -1,0 +1,18 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<templates id="template_partner_institution_badges" xml:space="preserve">
+    <!-- Añade badges de instituciones al lado del nombre del cliente -->
+    <t t-inherit="point_of_sale.PartnerLine" t-inherit-mode="extension">
+        <xpath expr="//tr/td[1]" position="inside">
+            <span t-if="props.partner.has_discount_institution"
+                  class="badge bg-success ms-2 institution-badge-discount"
+                  title="Descuento Institucional">
+                <i class="fa fa-percent me-1"/>Dto.
+            </span>
+            <span t-if="props.partner.has_credit_institution"
+                  class="badge bg-primary ms-2 institution-badge-credit"
+                  title="Crédito Institucional">
+                <i class="fa fa-university me-1"/>Créd.
+            </span>
+        </xpath>
+    </t>
+</templates>

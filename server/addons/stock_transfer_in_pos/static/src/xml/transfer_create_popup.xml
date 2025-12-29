@@ -1,0 +1,83 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!--This template is used for creating transfer popup-->
+<template id="template" xml:space="preserve">
+    <t t-name="CreateTransferPopup" owl="1">
+        <div class="popup popup-text popup-med stock-transfer-popup"
+             style="width:100%;">
+                    <h2 class="p-3">Transferencias</h2>
+            <br/>
+            <center>
+                <br/>
+                <tr style="width:50%;height:30px" id="source_tr"
+                    t-ref="source_tr">
+                    <td style="width:200px">
+                        <label for="location" class="control-label">Almacén Origen:</label>
+                    </td>
+                    <td style="padding-bottom: 5%;">
+                        <RecordSelectorReadonly
+                            resModel="'stock.warehouse'"
+                            resId="state.selectedWO"
+                            domain="[['company_id', '=', state.company_id]]"
+                            update.bind="onUpdateSelectedWO"
+                            placeholder="'Seleccione un almacén'"
+                            readonly="true"/>
+                    </td>
+                </tr>
+                <tr style="width:75%;height:30px" id="dest_tr" t-ref="dest_tr">
+                    <td style="width:200px">
+                        <label for="location" class="control-label">Almacén Destino:</label>
+                    </td>
+                    <td style="padding-bottom: 5%;">
+                        <RecordSelectorReadonly
+                            resModel="'stock.warehouse'"
+                            resId="state.selectedWD"
+                            domain="[['company_id', '=', state.company_id]]"
+                            update.bind="onUpdateSelectedWD"
+                            placeholder="'Seleccione un almacén'"/>
+                    </td>
+                    <br/>
+                </tr>
+                <tr style="width:75%;height:30px">
+                    <td style="width:200px">
+                        <label for="location"
+                               class="control-label">Tipo de transferencia:</label>
+                    </td>
+                    <td style="padding-bottom: 5%;">
+                        <select id="type_transfer" class="form-control link-style"
+                                style="width:400px;height:35px;border-radius:5px;"
+                                t-ref="type_transfer">
+                            <option value="0">Normal</option>
+                            <option value="1">Express</option>
+                        </select>
+                    </td>
+                    <br/>
+                </tr>
+                <tr style="width:75%;height:60px">
+                    <td style="width:200px">
+                        <label for="type_transfer" class="control-label">Nota:</label>
+                    </td>
+                    <td style="padding-bottom: 5%;">
+                        <textarea id="type_transfer"
+                                  class="form-control link-style"
+                                  style="width:400px;height:50px;border-radius:5px;"
+                                  t-ref="note">
+                        </textarea>
+                    </td>
+                    <br/>
+                </tr>
+            </center>
+            <br/>
+            <div class="footer pb-3">
+                <button class="button cancel btn btn-lg btn-secondary"
+                        t-on-click="Create">
+                      Create
+                </button>
+                <button class="button cancel btn btn-lg btn-secondary"
+                        style="margin-left: 1rem;"
+                        t-on-click="cancel">
+                   Cancel
+                </button>
+            </div>
+        </div>
+    </t>
+</template>

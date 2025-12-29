@@ -1,0 +1,131 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!--This template is used for creating transfer popup-->
+<template id="template" xml:space="preserve">
+    <t t-name="CreateRegulationPopup" owl="1">
+        <div t-ref="modalContainer" class="popup  popup-med"
+             style="min-width: 95%!important; min-height: 70%!important; overflow-y: scroll!important; position: fixed!important; z-index: -1!important;"
+        >
+            <h2 class="pt-2 pb-1">Regulación de Inventario</h2>
+            <div class="row px-3">
+                <div class="col-4" style="text-align: left!important">
+                    <label for="warehouse_name" class="form-label">Sucursal:</label>
+                    <input type="text" class="form-control"
+                           id="warehouse_id"
+                           t-att-value="props.warehouse_name" readonly="readonly"/>
+                </div>
+                <div class="col-8">
+                    <div class="mb-1">
+                        <input t-att-hidden="true" t-att-value="props.inventory_schedule_id"
+                               t-att-id="inventory_schedule_detail_id"/>
+                        <label for="laboratory" class="form-label">Laboratorio:</label>
+
+                        <select id="laboratory" class="form-control"
+                                t-ref="laboratory"
+                                t-on-change="_clickPicking">
+                            <option value="" selected="selected">Selecciona un laboratorio</option>
+                            <t t-foreach="props.laboratories || ''"
+                               t-as="laboratory" t-key="laboratory.id">
+                                <option t-att-value="laboratory.id"
+                                        t-att-id-old="laboratory.id_database_old or 0"
+                                        t-att-data-type="laboratory.id">
+                                    <t t-esc="laboratory.name"/>
+                                </option>
+                            </t>
+                        </select>
+                    </div>
+                </div>
+
+                <div class="col-12 mt-3">
+                    <t t-if="state.products.length > 0">
+                        <table class="table ">
+                        <thead class="bg-primary text-white fw-bold">
+                            <tr>
+<!--                                <th scope="col">-->
+                                <!--                                    Nro.-->
+                                <!--                                </th>-->
+                                <th scope="col">Código de barras</th>
+                                <th scope="col">Producto</th>
+                                <th scope="col" rowspan="2">U/C</th>
+                                <th scope="col">Costo</th>
+                                <th scope="col">Stock</th>
+                                <th scope="col">Pendiente</th>
+                                <th scope="col" style="width: 100px;">Conteo</th>
+                                <th scope="col">Sobrante</th>
+                                <th scope="col">Faltante</th>
+
+                            </tr>
+                        </thead>
+
+                            <tbody style="text-align: center;">
+                        <tr t-foreach="state.products" t-as="product" t-key="product.product_id">
+<!--                            <td style="width: 50px!important;">-->
+                            <!--                                <t t-esc="product.product_id"/>-->
+                            <!--                            </td>-->
+                            <td style="width: 100px!important;">
+                                <t t-esc="product.default_code || 'N/D'"/>
+                            </td>
+                            <td style="width: 100px!important;">
+                                <p>
+                                    <t t-esc="product.product_name"/>
+                                </p>
+                            </td>
+                            <td style="width: 100px!important;">
+                                <t t-esc="product.uom_name"/>
+                            </td>
+                            <td style="width: 100px!important;">
+                                <t t-esc="product.standard_price.toFixed(2)"/>
+                            </td>
+                            <td style="width: 100px!important;">
+                                <input type="number" class="form-control form-control-sm"
+                                       t-att-value="product.available_quantity"
+                                       t-att-id="product.product_id + '-stock'" readonly="readonly"/>
+                            </td>
+                            <td style="width: 50px!important;">
+                                <input type="number" class="form-control form-control-sm" t-att-value="0"
+                                       t-att-id="product.product_id + '-pendiente'" readonly="readonly"/>
+                            </td>
+                            <td class="bg-white" style="width: 50px!important;">
+                                <input type="number" class="form-control form-control-sm"
+                                       t-att-id="product.product_id + '-conteo'"
+                                       t-att-min="0"
+                                       t-on-input="_stockCount"
+                                />
+                                <input type="hidden" t-model="state.product_stock_data.product_id_old"
+                                       t-att-value="product.id_database_old"/>
+                            </td>
+                            <td style="width: 50px!important;">
+                                <input type="number" class="form-control form-control-sm"
+                                       t-att-id="product.product_id + '-sobrante'"
+                                       t-model="state.product_stock_data.stock_over" readonly="readonly"/>
+                            </td>
+                            <td style="width: 50px!important;">
+                                <input type="number" class="form-control form-control-sm"
+                                       t-att-id="product.product_id + '-faltante'"
+                                       t-model="state.product_stock_data.stock_missing" readonly="readonly"/>
+                            </td>
+                        </tr>
+                    </tbody>
+
+                    </table>
+                    </t>
+                    <t t-else="">
+                        <div class="alert alert-info" role="alert">
+                            Selecciona un laboratorio para mostrar los productos disponibles
+                        </div>
+                    </t>
+                </div>
+                </div>
+            <div class="footer pb-3 px-4" style="text-align: left!important">
+                <button class="button cancel btn btn-lg btn-sm btn-primary"
+                        t-on-click="Create">
+                      Guardar / Enviar
+                </button>
+                <button class="button cancel btn btn-lg btn-sm btn-secondary"
+                        style="margin-left: 1rem;"
+                        t-on-click="cancel">
+                   Cancelar
+                </button>
+            </div>
+        </div>
+    </t>
+</template>

@@ -1,0 +1,66 @@
+<?xml version="1.0" encoding="utf-8"?>
+<odoo>
+    <data noupdate="1">
+
+        <!-- Cron principal: Procesamiento de cola de reabastecimiento (cada 1 minuto) -->
+        <record id="ir_cron_process_replenishment_queue" model="ir.cron">
+            <field name="name">Reabastecimiento: Procesador de Cola (4-Capas)</field>
+            <field name="model_id" ref="model_replenishment_queue_processor"/>
+            <field name="state">code</field>
+            <field name="code">model.cron_process_replenishment_queue(batch_size=2500, time_limit=55)</field>
+            <field name="interval_number">1</field>
+            <field name="interval_type">minutes</field>
+            <field name="numbercall">-1</field>
+            <field name="doall" eval="False"/>
+            <field name="active" eval="True"/>
+            <field name="priority">1</field>
+        </record>
+
+        <!-- Cron de gestión de particiones del Event Log (cada día a las 2:00 AM) -->
+        <record id="ir_cron_manage_event_log_partitions" model="ir.cron">
+            <field name="name">Reabastecimiento: Gestión de Particiones Event Log</field>
+            <field name="model_id" ref="model_product_sale_event_log"/>
+            <field name="state">code</field>
+            <field name="code">model.cron_manage_partitions()</field>
+            <field name="interval_number">1</field>
+            <field name="interval_type">days</field>
+            <field name="numbercall">-1</field>
+            <field name="doall" eval="False"/>
+            <field name="active" eval="True"/>
+            <field name="priority">100</field>
+        </record>
+
+        <!-- Cron de limpieza de datos antiguos (cada día a las 3:00 AM) -->
+        <record id="ir_cron_cleanup_old_replenishment_data" model="ir.cron">
+            <field name="name">Reabastecimiento: Limpieza de Datos Antiguos</field>
+            <field name="model_id" ref="model_replenishment_queue_processor"/>
+            <field name="state">code</field>
+            <field name="code">model.cleanup_old_data(daily_stats_days=90, dead_letter_days=90, event_log_days=90)</field>
+            <field name="interval_number">1</field>
+            <field name="interval_type">days</field>
+            <field name="numbercall">-1</field>
+            <field name="doall" eval="False"/>
+            <field name="active" eval="True"/>
+            <field name="priority">150</field>
+        </record>
+
+        <!-- Cron para reprocesar dead letters (cada 4 horas) -->
+        <!-- NOTA: Desactivado por defecto, activar manualmente si se necesita reprocesamiento automático -->
+        <record id="ir_cron_reprocess_dead_letters" model="ir.cron">
+            <field name="name">Reabastecimiento: Reprocesar Dead Letters</field>
+            <field name="model_id" ref="model_product_replenishment_dead_letter"/>
+            <field name="state">code</field>
+            <field name="code">
+records = model.search([('state', '=', 'pending'), ('error_type', 'in', ['max_retries', 'database_error'])], limit=100)
+records.action_reprocess()
+            </field>
+            <field name="interval_number">4</field>
+            <field name="interval_type">hours</field>
+            <field name="numbercall">-1</field>
+            <field name="doall" eval="False"/>
+            <field name="active" eval="False"/>
+            <field name="priority">200</field>
+        </record>
+
+    </data>
+</odoo>

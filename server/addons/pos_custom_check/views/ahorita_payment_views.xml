@@ -1,0 +1,48 @@
+<odoo>
+    <!-- Form View for Ahorita Post -->
+    <record id="view_ahorita_post_form" model="ir.ui.view">
+        <field name="name">ahorita.post.form</field>
+        <field name="model">ahorita.post</field>
+        <field name="arch" type="xml">
+            <form string="Registro Ahorita Post">
+                <sheet>
+                    <group>
+                        <field name="datetime_created" readonly="1"/>
+                        <field name="order_id_name" readonly="1"/>
+                        <field name="transactionId" readonly="1"/>
+                        <field name="deeplink" placeholder="URL del Deeplink"/>
+                        <field name="status_payment" placeholder="Estado del pago"/>
+                        <field name="data_text" readonly="1" widget="text"/>
+                    </group>
+                </sheet>
+            </form>
+        </field>
+    </record>
+
+    <!-- Tree View for Ahorita Post -->
+    <record id="view_ahorita_post_tree" model="ir.ui.view">
+        <field name="name">ahorita.post.tree</field>
+        <field name="model">ahorita.post</field>
+        <field name="arch" type="xml">
+            <tree string="Registros Ahorita Post">
+                <field name="datetime_created"/>
+                <field name="deeplink"/>
+                <field name="status_payment" placeholder="Estado del pago"/>
+            </tree>
+        </field>
+    </record>
+
+    <!-- Action for Ahorita Post -->
+    <record id="action_ahorita_post" model="ir.actions.act_window">
+        <field name="name">Registros Ahorita Post</field>
+        <field name="res_model">ahorita.post</field>
+        <field name="view_mode">tree,form</field>
+    </record>
+
+    <!-- Menu Item (puedes cambiar el parent donde lo necesites) -->
+    <menuitem
+            id="menu_ahorita_post"
+            name="Registros Ahorita Post"
+            parent="point_of_sale.menu_point_config_product"
+            action="action_ahorita_post"/>
+</odoo>

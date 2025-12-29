@@ -1,0 +1,4 @@
+id,name,model_id:id,group_id:id,perm_read,perm_write,perm_create,perm_unlink
+access_import_sri_credit_note_txt_wizard_user,access.import.sri.credit.note.txt.wizard.user,model_import_sri_credit_note_txt_wizard,base.group_user,1,1,1,1
+credit_note_type_user,credit_note_type_user,model_credit_note_type,base.group_user,1,1,1,1
+credit_note_type_keyword_user,credit_note_type_keyword_user,model_credit_note_type_keyword,base.group_user,1,1,1,1

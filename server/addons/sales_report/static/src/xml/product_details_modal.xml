@@ -1,0 +1,517 @@
+<?xml version="1.0" encoding="utf-8"?>
+<template xml:space="preserve" owl="1">
+    <t t-name="sales_report.ProductDetailsModal">
+        <div t-if="props.isOpen" id="modal" class="modal fade show" style="display: block; overflow-y: auto;"
+             tabindex="-1"
+             role="dialog">
+            <div class="modal-dialog modal-xl" role="document" style="font-size: 0.83rem;min-width:95%!important" >
+                <div class="modal-content">
+                    <div class="modal-header">
+                        <h5 class="modal-title">
+                            <span><t class="text-muted" t-esc="state.selectedProduct.name"/></span>
+                            <span class="text-primary mx-3"><t t-esc="props.ProductDetails.uom_po_id"/></span>
+                        </h5>
+                        <t t-if="state.is_purchase_admin">
+
+
+                        <button class="btn btn-outline-primary mx-2" t-on-click="copySelectedProductName"
+                                title="Copiar resumen al portapapeles">
+                            <i class="fa fa-copy"/>
+                        </button>
+                            <button class="btn btn-outline-warning mx-2"
+                                    t-on-click="() => this.onProductNotAvailableForSupplier(props.productId)">Dar de baja el Producto <i
+                                    class="fa fa-trash"/></button>
+                        </t>
+                        <button type="button" class="btn-close" t-on-click="close" data-bs-dismiss="modal"
+                                aria-label="Close"/>
+
+                    </div>
+                    <div class="modal-body container-fluid px-4" style="overflow-y: hidden;">
+                        <t t-if="state.is_purchase_admin">
+                        <div class="row">
+                            <div class="col-6 d-flex align-items-center">
+                                <input type="text" id="productName" class="form-control"
+                                       t-att-value="state.selectedProduct.name"
+                                       placeholder="Nombre del producto"
+                                       t-on-input="(ev) => this.onNameChange(ev)"/>
+
+                            </div>
+                            <div class="col-6">
+                                <!-- Selectores de Marca y Laboratorio -->
+                                <div class="d-flex align-items-center mx-3">
+                                    <div class="me-3">
+                                        <label for="productLaboratory" class="form-label small mb-1">Laboratorio</label>
+                                        <select id="productLaboratory" class="form-select form-select-sm"
+                                                t-on-change="(ev) => this.onLaboratoryChange(ev)"
+                                                t-att-value="state.selectedProduct.laboratory_id" style="width: 150px;">
+                                            <t t-if="state.selectedProduct.laboratory_id and state.selectedProduct.laboratory_name">
+                                                <option t-att-value="state.selectedProduct.laboratory_id"
+                                                        t-esc="state.selectedProduct.laboratory_name"/>
+                                            </t>
+                                            <option value=""
+                                                    t-if="!state.selectedProduct.laboratory_id">Seleccionar</option>
+                                            <t t-foreach="props.laboratories or []" t-as="laboratory"
+                                               t-key="laboratory.id">
+                                                <option t-att-value="laboratory.id" t-esc="laboratory.name"/>
+                                            </t>
+                                        </select>
+                                    </div>
+                                    <div class="me-3">
+                                        <label for="productBrand" class="form-label small mb-1">Marca</label>
+                                        <select id="productBrand" class="form-select form-select-sm"
+                                                t-on-change="(ev) => this.onBrandChange(ev)"
+                                                t-att-value="state.selectedProduct.brand_id" style="width: 150px;">
+                                            <t t-if="state.selectedProduct.brand_id and state.selectedProduct.brand_name">
+                                                <option t-att-value="state.selectedProduct.brand_id"
+                                                        t-esc="state.selectedProduct.brand_name"/>
+                                            </t>
+                                            <option value="" t-if="!state.selectedProduct.brand_id">Seleccionar</option>
+                                            <t t-foreach="props.brands or []" t-as="brand" t-key="brand.id">
+                                                <option t-att-value="brand.id" t-esc="brand.name"/>
+                                            </t>
+                                        </select>
+                                    </div>
+
+                                    <div class="col-auto mt-2">
+                                    <button type="button"
+                                            class="btn btn-primary position-relative"
+                                            t-on-click="addToCart">
+                                        Agregar al carrito <i class="fa fa-shopping-cart"/>
+                                    </button>
+                            </div>
+
+                                </div>
+                            </div>
+
+                        </div>
+                        </t>
+
+
+                        <div class="row  justify-content-between">
+                            <!-- Seção: INFORMACIÓN -->
+                            <t t-if="state.is_purchase_admin">
+                            <div class="col-3 border-end">
+                                <div class="row ">
+                                    <div class="col-12 mb-4">
+                                        <div class="row">
+                                            <div class="col-12 mb-4 mt-2">
+
+                                                <div class="row">
+                                                    <div class="col-6">
+                                                        <div class="mb-3">
+                                                        <label for="IVAPrice"
+                                                               class="o_field_widget o_field_float">PVP Imp. Incl. (<t
+                                                                t-esc="state.selectedProduct.taxer_amount"/>)%</label>
+                                                            <input type="text" id="IVAPrice"
+                                                                   class="o_input o_readonly_modifier text-muted"
+                                                                   t-model="state.selectedProduct.price_with_tax"
+                                                                   readonly="1"
+                                                            />
+                                                        </div>
+                                                    </div>
+                                                    <div class="col-6">
+                                                        <div class="mb-3">
+                                                            <label class="fw-bold o_form_label_readonly">PVP sin Impuestos
+                                                                <input
+                                                                        class="o_input o_monetary"
+                                                                        autocomplete="off"
+                                                                        t-on-input="(ev) => this.onListPriceChange(ev)"
+                                                                        type="number" step="0.01"
+                                                                        t-model="state.selectedProduct.list_price"/>
+                                                            </label>
+                                                            <!--                                                            <label for="pvp"-->
+                                                            <!--                                                                   class="fw-bold">PVP sin impuestos</label>-->
+                                                            <!--                                                            <input type="number" id="pvp" class="form-control"-->
+                                                            <!--                                                                   t-model="state.selectedProduct.list_price"/>-->
+                                                        </div>
+                                                    </div>
+
+                                                    <div class="col-6">
+                                                        <label class="o_form_label">Costo Prom. $ <input type="text"
+                                                                                                         class="o_input text-muted"
+                                                                                                         t-att-value="state.selectedProduct.avg_standard_price || '0'"
+                                                                                                         readonly="1"/></label>
+                                                    </div>
+                                                    <div class="col-6">
+                                                        <label class="o_form_label">Total Ventas  $ <input type="text"
+                                                                                                           class="o_input text-muted"
+                                                                                                           t-att-value="props.ProductDetails.amount_total || '0'"
+                                                                                                           readonly="1"/></label>
+                                                    </div>
+                                                    <!--                                                    <div class="col-6">-->
+                                                    <!--                                                        <label class="form-label">Costo IVA</label>-->
+                                                    <!--                                                        <span id="costoIVA" class="form-control">-->
+                                                    <!--                                                            <t t-esc="state.selectedProduct.standard_price_taxer"-->
+                                                    <!--                                                               readonly="1"/>-->
+                                                    <!--                                                        </span>-->
+                                                    <!--                                                    </div>-->
+                                                </div>
+                                                <div class="row">
+                                                    <div class="col-6 mt-2">
+                                                        <label for="priceWithDiscount" class="form-label text-success">Pvp Desc.</label>
+                                                        <input type="number" id="priceWithDiscount"
+                                                               class="form-control border-success"
+                                                               t-model="state.selectedProduct.price_with_discount"
+                                                               readonly="1"/>
+                                                    </div>
+                                                    <div class="col-6 mt-2">
+                                                        <label for="discountPromotion" class="fw-bold text-primary">Utilidad (%) <input
+                                                                type="text" class="o_input text-muted"
+                                                                t-att-value="state.selectedProduct.utility_percentage"
+                                                                readonly="1"/></label>
+                                                        <!--                                                        <t t-if="state.selectedProduct.utility_percentage === '0'">-->
+                                                        <!--                                                            <input type="text" id="discountPromotion"-->
+                                                        <!--                                                                   class="form-control"-->
+                                                        <!--                                                                   t-att-value="'No se puede realizar el cálculo, ya que el costo es 0.'"-->
+                                                        <!--                                                                   readonly="readonly"/>-->
+                                                        <!--                                                        </t>-->
+                                                        <!--                                                        <t t-else="">-->
+                                                        <!--                                                            <input type="number" id="discountPromotion"-->
+                                                        <!--                                                                   class="form-control"-->
+                                                        <!--                                                                   t-att-value="state.selectedProduct.utility_percentage"-->
+                                                        <!--                                                                   readonly="readonly"/>-->
+
+                                                        <!--                                                        </t>-->
+                                                    </div>
+                                                </div>
+
+
+                                            </div>
+                                        </div>
+
+                                    </div>
+                                </div>
+                            </div>
+                            </t>
+
+                            <!-- Seção: PROMOCION -->
+                            <div class="col-9">
+                                <div class="row p-1 ">
+                                    <div class="col-4 mb-0 ">
+                                        <h4>
+                                            <strong class="form-label fw-bold">Promoción de Descuento:</strong>
+                                        </h4>
+
+                                        <div class="row mt-1 text-success">
+                                            <div class="col-6">
+                                                <label for="discountPromotion">(%) de Descuento</label>
+                                                <input type="number" min="0" max="100" id="discountPromotion"
+                                                       class="o_input text-success"
+                                                       required="1"
+                                                       t-model="state.selectedProduct.discount_percentage"
+                                                       t-on-input="(ev) => this.onDiscountPromotionChange(ev)"/>
+                                            </div>
+                                            <div class="col-6">
+                                                <div class="form-check">
+                                                    <input type="checkbox" id="mandatoryPromotion"
+                                                           class="form-check-input mt-1 text-success"
+                                                           t-att-checked="state.selectedProduct.program_mandatory"
+                                                           t-att-value="state.selectedProduct.program_mandatory"
+                                                           t-on-change="(ev) => this.onMandatoryPromotionChange(ev)"/>
+                                                    <label class="form-check-label mt-1 mx-1"
+                                                           for="mandatoryPromotion">
+                                                        Obligatorio?
+                                                    </label>
+                                                </div>
+
+                                                <div class="form-check">
+                                                    <input type="checkbox" id="loyaltyCard"
+                                                           class="form-check-input mt-1"
+                                                           t-att-checked="state.selectedProduct.loyalty_card"
+                                                           t-att-value="state.selectedProduct.loyalty_card"
+                                                           t-on-change="(ev) => this.onChangeLoyaltyCard(ev)"/>
+                                                    <label class="form-check-label mt-1 mx-1"
+                                                           for="loyaltyCard">
+                                                        Acumulable?
+                                                    </label>
+                                                </div>
+                                            </div>
+                                        </div>
+
+                                        <div class="row mt-1 text-success">
+                                            <div class="col-6">
+                                                <label for="discountTemporaryPromotion">(%) de Descuento Temporal</label>
+                                                <input type="number" min="0" max="100" id="discountTemporaryPromotion"
+                                                       class="o_input text-success"
+                                                       required="1"
+                                                       t-model="state.selectedProduct.temporary_discount_percentage"
+                                                       t-on-input="(ev) => this.onDiscountTemporaryPromotionChange(ev)"/>
+                                            </div>
+                                        </div>
+
+                                        <div class="row text-success mt-2">
+                                            <div class="col-6 text-success">
+                                                <label for="startDiscountPromotion">Fecha de Inicio</label>
+                                                <input type="date" id="startDiscountPromotion" class="o_input text-success"
+                                                       t-att-value="state.selectedProduct.loyalty_program_discount_date_from"
+                                                       t-model="state.selectedProduct.loyalty_program_discount_date_from"
+                                                       t-on-change="(ev) => this.onStartDateDiscountPromotionChange(ev)"/>
+                                            </div>
+                                            <div class="col-6 text-success">
+                                                <label for="endDiscountPromotion">Fecha de Finalización</label>
+                                                <input type="date" id="endDiscountPromotion" class="o_input text-success"
+                                                       t-att-value="state.selectedProduct.loyalty_program_discount_date_to"
+                                                       t-model="state.selectedProduct.loyalty_program_discount_date_to"
+                                                       t-on-change="(ev) => this.onEndDateDiscountPromotionChange(ev)"/>
+                                            </div>
+                                        </div>
+
+
+
+                                    </div>
+                                    <div class="col-4 mb-1">
+                                        <h4>
+                                            <strong class="form-label fw-bold">Promoción de Producto gratis:
+                                            </strong>
+                                        </h4>
+                                        <div class="row">
+                                            <div class="col-6">
+                                                <label for="startProductPromotion">Fecha de Inicio</label>
+                                                <input type="date" id="startProductPromotion" class="o_input"
+                                                       t-att-value="state.selectedProduct.loyalty_program_product_date_from"
+                                                       t-model="state.selectedProduct.loyalty_program_product_date_from"
+                                                       t-on-change="(ev) => this.onStartDateProductPromotionChange(ev)"/>
+                                            </div>
+                                            <div class="col-6">
+                                                <label for="endProductPromotion">Fecha de Finalización</label>
+                                                <input type="date" id="endProductPromotion" class="o_input"
+                                                       t-att-value="state.selectedProduct.loyalty_program_product_date_to"
+                                                       t-model="state.selectedProduct.loyalty_program_product_date_to"
+                                                       t-on-change="(ev) => this.onEndDateProductPromotionChange(ev)"/>
+                                            </div>
+                                        </div>
+
+                                        <div class="row mt-3">
+                                            <div class="col-6">
+                                                <label for="quantityPromotion" class="o_form_label">Base</label>
+                                                <input type="number" class="o_input" title="Base"
+                                                       t-att-value="state.selectedProduct.product_reward_required_points"
+                                                       t-on-input="(ev) => this.onRewardProductChangeRequiredPoints(ev)"/>
+                                            </div>
+                                            <div class="col-6">
+                                                <label for="quantityPromotion" class="o_form_label">Promoción</label>
+                                                <input type="number" id="quantityPromotion" class="o_input"
+                                                       t-att-value="state.selectedProduct.product_reward_qty"
+                                                       t-on-input="(ev) => this.onRewardQuantityChange(ev)"/>
+                                            </div>
+
+
+                                        </div>
+                                        <div class="row">
+<!--                                            <div class="col-6 mt-2">-->
+                                            <!--                                                <input type="checkbox"-->
+                                            <!--                                                       id="mandatoryPromotion"-->
+                                            <!--                                                       class="form-check-input"-->
+                                            <!--                                                       t-att-checked="state.selectedProduct.mandatory_reward"-->
+                                            <!--                                                       t-on-change="(ev) => this.onMandatoryRewardChange(ev)"/>-->
+                                            <!--                                                <label class="form-check-label"-->
+                                            <!--                                                       for="mandatoryPromotion">-->
+                                            <!--                                                     Acumulable-->
+                                            <!--                                                </label>-->
+                                            <!--                                            </div>-->
+                                            <div class="col-6">
+                                                <t t-if="state.selectedProduct.loyalty_reward_program_id">
+                                                    <button type="button" class="btn btn-secondary mt-2"
+                                                            t-on-click="openPromotionProgram">
+                                                        Ver promoción
+                                                        <i class="fa fa-external-link"/>
+                                                    </button>
+                                                </t>
+                                            </div>
+                                            <div class="col-12   pt-2">
+                                        <textarea class="form-control" rows="2"
+                                                  t-att-value="state.selectedProduct.program_note or ''"
+                                                  t-on-input="(ev) => this.onChangeProgramNote(ev)"
+                                                  placeholder="Nota para el Punto de Venta"/>
+                                    </div>
+                                        </div>
+
+                                    </div>
+                                    <!--                                    <div class="col-12   pt-1">-->
+                                    <!--                                        <textarea class="form-control" rows="2"-->
+                                    <!--                                                  t-att-value="state.selectedProduct.program_note or ''"-->
+                                    <!--                                                  t-on-input="(ev) => this.onChangeProgramNote(ev)"-->
+                                    <!--                                                  placeholder="Nota"/>-->
+                                    <!--                                    </div>-->
+                                    <div class="col-4">
+                                        <div class="row  text-primary">
+                                            <h4>
+                                                <strong class="form-label fw-bold ">Promoción de Cupones:</strong>
+                                            </h4>
+                                            <div class="col-8 text-info">
+                                                <label for="discountCoupon">(%) Descuento del Cupón</label>
+                                                <input type="number" min="0" max="100" id="discountCoupon"
+                                                       class="o_input text-info"
+                                                       required="1"
+                                                       t-model="state.selectedProduct.coupon_discount_percentage"
+                                                       t-on-input="(ev) => this.onDiscountCouponChange(ev)"/>
+                                            </div>
+
+                                        </div>
+
+
+                                        <div class="row text-info mt-2">
+                                            <div class="col-6 text-info">
+                                                <label for="startDiscountCouponPromotion">Fecha de Inicio</label>
+                                                <input type="date" id="startDiscountCouponPromotion" class="o_input text-info"
+                                                       t-att-value="state.selectedProduct.coupon_loyalty_program_discount_date_from"
+                                                       t-model="state.selectedProduct.coupon_loyalty_program_discount_date_from"
+                                                       t-on-change="(ev) => this.onStartDateDiscountCouponPromotionChange(ev)"/>
+                                            </div>
+                                            <div class="col-6 text-info">
+                                                <label for="endDiscountCouponPromotion">Fecha de Finalización</label>
+                                                <input type="date" id="endDiscountCouponPromotion" class="o_input text-info"
+                                                       t-att-value="state.selectedProduct.coupon_loyalty_program_discount_date_to"
+                                                       t-model="state.selectedProduct.coupon_loyalty_program_discount_date_to"
+                                                       t-on-change="(ev) => this.onEndDateDiscountCouponPromotionChange(ev)"/>
+                                            </div>
+                                        </div>
+
+                                        <div class="row">
+                                            <div class="col-12 mt-2 text-info">
+                                                <t t-foreach="state.selectedProduct.coupons" t-as="coupon"
+                                                   t-key="coupon.value">
+                                                    <div class="form-check form-check-inline">
+                                                        <input class="form-check-input" t-att-checked="coupon.selected"
+                                                               t-on-change="(ev) => this.onChangeCoupon(ev)"
+                                                               type="radio"
+                                                               t-att-value="coupon.value"
+                                                               name="flexRadioDefault" id="coupon.title"/>
+                                                        <label class="form-check-label" for="coupon.title">
+                                                            <span t-esc="coupon.value"/>
+                                                            -
+                                                            <span t-esc="coupon.title"/>
+                                                      </label>
+                                                    </div>
+                                                </t>
+                                            </div>
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                        <div class="row">
+
+
+                            <!-- Scrollable Table Body - Infinite scroll implementation -->
+                            <t t-if="state.is_purchase_admin">
+                            <div style="height: 180px; overflow-y: auto;"
+                                 t-on-scroll="(ev) => this.onPurchaseHistoryScroll(ev)">
+                                    <table class="table table-borderless table-sm align-middle table-hover mb-0 ">
+                                        <thead class="table-light">
+                                            <tr class="fw-bold">
+                                                <th>Fecha</th>
+                                                <th>Desc</th>
+                                                <th>PVF</th>
+                                                <th>Precio Unit.</th>
+                                                <th>Cant. Pagada</th>
+                                                <th>Prod. Gratis</th>
+                                                <th>Total Unid.</th>
+                                                <th>Proveedor</th>
+                                                <th>Orden</th>
+                                                <th>Factura</th>
+                                            </tr>
+                                        </thead>
+                                        <tbody>
+                                            <tr t-foreach="props.lastPurchases" t-as="purchase"
+                                                t-key="purchase_index">
+                                                <td t-esc="purchase.date_order"/>
+                                                <td t-esc="purchase.discount"/>
+                                                <td t-esc="purchase.pvf"/>
+                                                <td>
+                                                    <t t-esc="purchase.price_unit"/>
+                                                </td>
+                                                <td t-esc="purchase.paid_quantity"/>
+                                                <td t-esc="purchase.free_product_qty"/>
+                                                <td t-esc="purchase.product_qty"/>
+                                                <td t-esc="purchase.supplier"/>
+                                                <td>
+                                                    <a t-if="purchase.order_id" href="#"
+                                                       t-on-click="() => this.openPurchaseOrder(purchase.order_id)">
+                                                        <t t-esc="purchase.order_name or 'Orden'"/>
+                                                    </a>
+                                                    <t t-if="!purchase.order_id">—</t>
+                                                </td>
+                                                <td>
+                                                    <a t-if="purchase.invoice_id" href="#"
+                                                       t-on-click="() => this.openVendorBill(purchase.invoice_id)">
+                                                        <t t-esc="purchase.invoice_name or 'Factura'"/>
+                                                    </a>
+                                                    <t t-if="!purchase.invoice_id">—</t>
+                                                </td>
+                                            </tr>
+                                        </tbody>
+                                    </table>
+
+                                <!-- Loading indicator as table row - Shows during infinite scroll -->
+                                <t t-if="state.isLoadingMore">
+                                        <div class="d-flex justify-content-center align-items-center py-3 bg-light border-top">
+                                            <div class="d-flex align-items-center">
+                                                <div class="spinner-border spinner-border-sm me-2" role="status">
+                                                    <span class="visually-hidden">Cargando...</span>
+                                                </div>
+                                                <span class="text-muted small">Cargando más registros...</span>
+                                            </div>
+                                        </div>
+                                    </t>
+                                <t t-elif="!state.hasMorePurchases and props.lastPurchases.length > 0">
+                                        <div class="d-flex justify-content-center align-items-center py-3 bg-light border-top">
+                                            <div class="text-muted small">
+                                                <i class="fa fa-check-circle me-1"/>
+                                                No hay más registros disponibles
+                                            </div>
+                                        </div>
+                                    </t>
+                                </div>
+                                <!--                            </div>-->
+                            </t>
+                        </div>
+                    </div>
+                    <div class="modal-footer">
+                        <t t-if="state.selected_provider_id">
+                            <td class="text-center">
+                                <t t-set="cartItem"
+                                   t-value="state.cart.find(i => i.id === state.selectedProduct.id)"/>
+                                <t t-if="cartItem">
+                                    <button type="button" class="btn btn-danger btn-sm ms-3 me-2"
+                                            t-on-click="() => this.removeCart(cartItem)">
+                                        <i class="fa-solid fa-xmark"/>
+                                    </button>
+                                </t>
+                                <t t-set="cartItem" t-value="state.cart.find(i => i.id === product.id)"/>
+                                <button type="button" class="btn btn-secondary position-relative"
+                                        t-on-click="() => this.openCartModal(this.state.selectedProduct)">
+                                    <i class="fa fa-shopping-cart"/>
+                                    <t t-if="cartItem">
+                                        <span class="position-absolute top-0 start-100 translate-middle badge rounded-pill bg-danger">
+                                            <t t-esc="cartItem.quantity"/>
+                                            <span class="visually-hidden">Items del carrito</span>
+                                        </span>
+                                    </t>
+                                </button>
+                            </td>
+                        </t>
+
+                        <div class="">
+                            <t t-if="state.is_purchase_admin">
+                            <button type="button" class="btn btn-secondary mx-2" t-on-click="openStock">Stock
+                            </button>
+                                <button type="button" class="btn btn-secondary mx-2"
+                                        t-on-click="openMovementHistory">
+                                Historial de Movimientos
+                            </button>
+                            </t>
+                            <button type="button" class="btn btn-secondary mx-2" t-on-click="close">
+                                Cerrar
+                            </button>
+                            <button type="button" class="btn btn-primary mx-1" t-on-click="saveProductChanges">
+                                Actualizar información del producto
+                            </button>
+                        </div>
+
+                    </div>
+                </div>
+            </div>
+        </div>
+    </t>
+</template>

@@ -1,0 +1,207 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<odoo>
+	<data>
+		<record model="ir.ui.view" id="hr_impuesto_renta_referencia_tree_view">
+			<field name="name">hr.impuesto.renta.referencia.tree</field>
+			<field name="model">hr.impuesto.renta.referencia</field>
+			<field name="priority">0</field>
+			<field name="arch" type="xml">
+				<tree string="Impuesto a la Renta Empleados" editable="top">
+					<field name="fiscalyear_id"  />
+					<field name="percentage" />
+					<field name="desde" />
+					<field name="hasta" />
+					<field name="impuesto_fraccion" />
+				</tree>
+			</field>
+		</record>
+
+		<record model="ir.ui.view" id="hr_impuesto_renta_deducible_tree_view">
+			<field name="name">hr.impuesto.renta.deducible.tree</field>
+			<field name="model">hr.tabla.ir.deducible</field>
+			<field name="priority">0</field>
+			<field name="arch" type="xml">
+				<tree string="Impuesto a la Renta Empleados" editable="top">
+					<field name="fiscalyear_id"  />
+					<field name="tipo_gasto" />
+					<field name="code_report"/>
+					<field name="porcentaje" />
+					<field name="monto_maximo" />
+				</tree>
+			</field>
+		</record>
+
+
+		<record model="ir.ui.view" id="hr_ir_deducible_employee_tree_view">
+			<field name="name">hr.ir.deducible.employee.tree.view</field>
+			<field name="model">hr.deducible.employee</field>
+			<field name="priority">0</field>
+			<field name="arch" type="xml">
+				<tree string="Proyección de Gastos Personales">
+					<field name="employee_id"  />
+					<field name="fiscalyear_id"  />
+				</tree>
+			</field>
+		</record>
+
+
+		<record model="ir.ui.view" id="hr_ir_deducible_empleado_tree_view">
+			<field name="name">hr.ir.deducible.emplelado.tree</field>
+			<field name="model">hr.tabla.ir.deducible.empleado</field>
+			<field name="priority">0</field>
+			<field name="arch" type="xml">
+				<tree string="Montos Deducibles por Empleado (IR)" editable="top">
+					<field name="employee_id"  />
+					<field name="fiscalyear_id"  />
+					<field name="tipo_gasto" />
+					<field name="monto_deducir" />
+				</tree>
+			</field>
+		</record>
+
+
+		<record model="ir.ui.view" id="hr_tabla_ir_empleado_form_view">
+			<field name="name">hr.tabla.ir.deducible.empleado.form</field>
+			<field name="model">hr.tabla.ir.deducible.empleado</field>
+			<field name="type">form</field>
+			<field name="arch" type="xml">
+				<form string="Deducibles">
+					<field name="employee_id"  />
+					<field name="fiscalyear_id"  />
+					<field name="tipo_gasto" />
+					<field name="monto_deducir" />
+				</form>
+			</field>
+		</record>
+
+
+
+		<record model="ir.ui.view" id="hr_impuesto_renta_referencia_form_view">
+			<field name="name">hr.impuesto.renta.referencia.form</field>
+			<field name="model">hr.impuesto.renta.referencia</field>
+			<field name="type">form</field>
+			<field name="arch" type="xml">
+				<form string="Impuesto a la Renta Empleados">
+					<field name="fiscalyear_id" widget="selection" />
+					<field name="percentage" />
+					<field name="desde" />
+					<field name="hasta" />
+					<field name="impuesto_fraccion" />
+				</form>
+			</field>
+		</record>
+
+		<record model="ir.ui.view" id="hr_tabla_ir_form_view">
+			<field name="name">hr.tabla.ir.deducible.form</field>
+			<field name="model">hr.tabla.ir.deducible</field>
+			<field name="type">form</field>
+			<field name="arch" type="xml">
+				<form string="Deducibles">
+					<field name="fiscalyear_id"  />
+					<field name="tipo_gasto" />
+					<field name="code_report"/>
+					<field name="monto_maximo" />
+				</form>
+			</field>
+		</record>
+
+		<record model="ir.ui.view" id="hr_impuesto_renta_referencia_search_view">
+			<field name="name">hr.impuesto.renta.referencia.form</field>
+			<field name="model">hr.impuesto.renta.referencia</field>
+			<field name="type">search</field>
+			<field name="arch" type="xml">
+				<search string="Impuesto a la Renta Empleados">
+					<field name="fiscalyear_id" widget="selection" />
+					<field name="percentage" />
+					<field name="desde" />
+					<field name="hasta" />
+					<field name="impuesto_fraccion" />
+				</search>
+			</field>
+		</record>
+
+		<record model="ir.actions.act_window" id="action_hr_impuesto_renta_referencia_tree_view">
+			<field name="name">Tabla Referencial Impuesto a la Renta</field>
+			<!-- <field name="type">ir.actions.act_window</field> -->
+			<field name="res_model">hr.impuesto.renta.referencia</field>
+			<!-- <field name="view_type">form</field> -->
+			<field name="view_mode">tree,form</field>
+			<field name="view_id" ref="hr_impuesto_renta_referencia_tree_view" />
+		</record>
+
+		<record model="ir.ui.view" id="hr_ir_cargas_trabajadores_tree_view">
+			<field name="name">hr.ir.cargas.trabajadores.tree</field>
+			<field name="model">hr.ir.cargas.trabajadores</field>
+			<field name="priority">0</field>
+			<field name="arch" type="xml">
+				<tree string="Deducciones por número de cargas" editable="bottom">
+					<field name="numerocargas"  />
+					<field name="numerocanastas"  />
+					<field name="gastosdeducible" />
+					<field name="rebajamaxima" />
+				</tree>
+			</field>
+		</record>
+
+		<!-- Deducibles -->
+		<record model="ir.actions.act_window" id="action_hr_impuesto_renta_deducible_tree_view">
+			<field name="name">Montos Deducibles (IR)</field>
+			<field name="res_model">hr.tabla.ir.deducible</field>
+			<field name="view_mode">tree,form</field>
+			<field name="view_id" ref="hr_impuesto_renta_deducible_tree_view" />
+		</record>
+
+
+
+		<!-- ACCIONES -->
+
+		<record model="ir.actions.act_window" id="action_hr_deducible_employee">
+			<field name="name">Proyección de Gastos Personales</field>
+			<field name="res_model">hr.deducible.employee</field>
+			<field name="view_mode">tree,form</field>
+		</record>
+
+
+		<record model="ir.actions.act_window" id="action_hr_impuesto_renta_empleado_tree_view">
+			<field name="name">Lineas Montos Deducibles por Empleado (IR)</field>
+			<field name="res_model">hr.tabla.ir.deducible.empleado</field>
+			<field name="view_mode">tree,form</field>
+			<field name="view_id" ref="hr_ir_deducible_empleado_tree_view" />
+		</record>
+
+		<record model="ir.actions.act_window" id="action_hr_ir_cargas_trabajadores_tree_view">
+			<field name="name">Deducciones por número cargas</field>
+			<field name="res_model">hr.ir.cargas.trabajadores</field>
+			<field name="view_mode">tree</field>
+			<field name="view_id" ref="hr_ir_cargas_trabajadores_tree_view" />
+		</record>
+
+		<!-- MENUS -->
+
+		<menuitem id="hr_impuesto_renta_referencia_menu" name="Tabla Referencial Impuesto a la Renta"
+				  action="action_hr_impuesto_renta_referencia_tree_view"
+				  parent="hr_work_entry_contract_enterprise.menu_hr_payroll_configuration"
+		/>
+
+		<menuitem id="hr_impuesto_renta_deducible" name="Montos Deducibles (IR)"
+				  action="action_hr_impuesto_renta_deducible_tree_view"
+				  parent="hr_work_entry_contract_enterprise.menu_hr_payroll_configuration"
+		/>
+
+		<menuitem id="hr_deducible_employee" name="Proyección de Gastos Personales"
+				  action="action_hr_deducible_employee"
+				  parent="hr_work_entry_contract_enterprise.menu_hr_payroll_configuration"
+		/>
+		<menuitem id="hr_impuesto_renta_empleado" name="Lineas Montos Deducibles por Empleado (IR)"
+				  action="action_hr_impuesto_renta_empleado_tree_view"
+				  parent="hr_work_entry_contract_enterprise.menu_hr_payroll_configuration"
+		/>
+
+		<menuitem id="hr_impuesto_renta_cargas_empleado" name="Deducibles por número de Cargas"
+				  action="action_hr_ir_cargas_trabajadores_tree_view"
+				  parent="hr_work_entry_contract_enterprise.menu_hr_payroll_configuration"
+		/>
+
+
+	</data>
+</odoo>

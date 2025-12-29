@@ -1,0 +1,116 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<odoo>
+    <record id="view_survey_campaign_tree" model="ir.ui.view">
+        <field name="name">in.survey.campaign.tree</field>
+        <field name="model">in.survey.campaign</field>
+        <field name="arch" type="xml">
+            <tree>
+                <field name="name" string="Nombre de la Campaña"/>
+                <field name="survey_id"/>
+                <field name="department_id" options="{'no_create': True}"/>
+                <field name="date_start"/>
+                <field name="date_end"/>
+                <field name="state"/>
+            </tree>
+        </field>
+    </record>
+
+    <record id="view_survey_campaign_form" model="ir.ui.view">
+        <field name="name">in.survey.campaign.form</field>
+        <field name="model">in.survey.campaign</field>
+        <field name="arch" type="xml">
+            <form>
+                <header>
+                    <button name="action_confirm" type="object" string="Confirmar" class="btn-primary" invisible="state != 'draft'"/>
+                </header>
+                <sheet>
+                    <group>
+                        <field name="name" string="Nombre de la Campaña" placeholder="Ej: Encuesta de Satisfacción Q1 2024 - Departamento IT"/>
+                        <field name="survey_id"/>
+                        <field name="department_id" options="{'no_create': True}" readonly="is_department_locked"/>
+
+                        <field name="date_start"/>
+                        <field name="date_end"/>
+                        <field name="state"/>
+                        
+                        <!-- Campos de control para bloqueo (invisibles) -->
+                        <field name="is_department_locked" invisible="1"/>
+                        <field name="is_jobs_locked" invisible="1"/>
+                        <field name="is_employees_locked" invisible="1"/>
+                    </group>
+                    <group string="Filtros de Empleados">
+                        <field name="job_ids" widget="many2many_tags" 
+                               placeholder="Seleccione cargos específicos (opcional)"
+                               readonly="is_jobs_locked"/>
+                        <field name="employee_ids" widget="many2many_tags" 
+                               placeholder="Seleccione empleados específicos (opcional)"
+                               readonly="is_employees_locked"/>
+                    </group>
+                    <notebook>
+                        <page string="Asignaciones">
+                            <field name="assignment_ids" context="{'default_campaign_id': id}">
+                                <tree editable="bottom">
+                                    <field name="employee_id" domain="[('department_id', '=', parent.department_id)]"/>
+                                    <field name="state"/>
+                                    <field name="user_input_id"/>
+                                </tree>
+                            </field>
+                        </page>
+                    </notebook>
+                </sheet>
+            </form>
+        </field>
+    </record>
+
+    <record id="view_survey_campaign_assignment_tree" model="ir.ui.view">
+        <field name="name">in.survey.campaign.assignment.tree</field>
+        <field name="model">in.survey.campaign.assignment</field>
+        <field name="arch" type="xml">
+            <tree create="false">
+                <field name="campaign_id"/>
+                <field name="employee_id"/>
+                <field name="state"/>
+                <field name="user_input_id"/>
+            </tree>
+        </field>
+    </record>
+
+    <record id="view_survey_campaign_assignment_form" model="ir.ui.view">
+        <field name="name">in.survey.campaign.assignment.form</field>
+        <field name="model">in.survey.campaign.assignment</field>
+        <field name="arch" type="xml">
+            <form create="false">
+                <header>
+                    <button name="action_open_survey" type="object" string="Responder encuesta" class="btn-primary" invisible="state != 'pending'"/>
+                </header>
+                <div class="alert alert-info" invisible="state != 'pending'" style="margin: 10px 0; display: inline-block;">
+                    <i class="fa fa-info-circle"></i>
+                    <strong> Por favor, empieza o completa la encuesta</strong>
+                    <br/>
+                    <small>Haz clic en el botón "Responder encuesta" para comenzar</small>
+                </div>
+                <sheet>
+                    <group>
+                        <field name="campaign_id" readonly="1"/>
+                        <field name="employee_id" readonly="1"/>
+                        <field name="state" readonly="1"/>
+                        <field name="user_input_id" readonly="1"/>
+                        <field name="_is_survey_manager" invisible="1"/>
+                    </group>
+                </sheet>
+            </form>
+        </field>
+    </record>
+
+    <!-- Menú para empleados ver sus asignaciones -->
+    <record id="action_my_survey_assignments" model="ir.actions.act_window">
+        <field name="name">Mis Encuestas Asignadas</field>
+        <field name="res_model">in.survey.campaign.assignment</field>
+        <field name="view_mode">tree,form</field>
+        <field name="view_id" ref="view_survey_campaign_assignment_tree"/>
+        <field name="domain">[('employee_id.user_id', '=', uid)]</field>
+        <field name="context">{'search_default_my_assignments': 1}</field>
+        <field name="display_name">Mis Encuestas Asignadas</field>
+    </record>
+
+</odoo>

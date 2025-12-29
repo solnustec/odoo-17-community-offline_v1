@@ -1,0 +1,25 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<templates id="template" xml:space="preserve">
+    <t t-name="point_of_sale.FilterProductsTemplate" t-inherit="point_of_sale.ProductsWidget"
+       t-inherit-mode="extension">
+        <xpath expr="//div[contains(@class, 'products-widget-control')]" position="replace">
+            <div class="bg-white p-1">
+                <Input
+                        tModel="[pos, 'searchProductWord']"
+                        class="ui.isSmall ? 'p-2 ml-auto w-100' : 'p-2 ml-auto w-100'"
+                        isSmall="ui.isSmall"
+                        placeholder="'Search products...'"
+                        icon="{type: 'fa', value: 'fa-search'}"
+                        debounceMillis="200"
+                        t-on-keyup="onSearchInputKeyUp"
+                />
+            </div>
+        </xpath>
+
+        <xpath expr="//div[contains(@class, 'search-more-button')]" position="replace">
+            <div t-if="searchWord" class="search-more-button d-flex justify-content-center">
+                    <button class="btn btn-primary btn-lg" t-on-click="onPressEnterKey">Search more</button>
+                </div>
+        </xpath>
+    </t>
+</templates>

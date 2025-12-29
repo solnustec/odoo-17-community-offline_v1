@@ -1,0 +1,8 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<t t-name="PartnerListScreen" t-inherit="point_of_sale.PartnerListScreen" t-inherit-mode="extension"
+    owl="1">
+
+    <!-- Eliminar el encabezado de la columna Balance -->
+    <xpath expr="//th[contains(text(), 'Balance')]" position="replace" />
+
+</t>

@@ -1,0 +1,37 @@
+<?xml version="1.0" encoding="utf-8"?>
+<odoo>
+    <!-- Categoría de grupos de acceso del Servicio de Asistencia -->
+    <record id="module_category_helpdesk" model="ir.module.category">
+        <field name="name">Soporte técnico</field>
+        <field name="description">Grupos de acceso del Soporte técnico</field>
+        <field name="sequence">20</field>
+    </record>
+
+    <!-- Grupo: Empleados (anteriormente helpdesk_user) -->
+    <record id="helpdesk_employee" model="res.groups">
+        <field name="name">Empleados</field>
+        <field name="category_id" ref="odoo_website_helpdesk.module_category_helpdesk"/>
+    </record>
+
+    <!-- Grupo: Usuarios asignados para resolver tickets -->
+    <record id="helpdesk_assigned_user" model="res.groups">
+        <field name="name">Usuarios asignados</field>
+        <field name="category_id" ref="odoo_website_helpdesk.module_category_helpdesk"/>
+    </record>
+
+    <!-- Grupo: Administrador del Servicio de Asistencia -->
+    <record id="helpdesk_manager" model="res.groups">
+        <field name="name">Administrador</field>
+        <field name="category_id" ref="odoo_website_helpdesk.module_category_helpdesk"/>
+    </record>
+
+    <!-- Grupo: Mostrar Categoría -->
+    <record id="group_show_category" model="res.groups">
+        <field name="name">Mostrar categoría</field>
+    </record>
+
+    <!-- Grupo: Mostrar Subcategoría -->
+    <record id="group_show_subcategory" model="res.groups">
+        <field name="name">Mostrar subcategoría</field>
+    </record>
+</odoo>

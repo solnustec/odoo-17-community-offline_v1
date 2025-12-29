@@ -1,0 +1,31 @@
+<?xml version="1.0" encoding="utf-8" ?>
+<!--
+    Copyright 2019 ForgeFlow, S.L.
+    Copyright 2020 CorporateHub (https://corporatehub.eu)
+    License AGPL-3.0 or later (https://www.gnu.org/licenses/agpl).
+-->
+<odoo noupdate="1">
+    <record id="sample_statement_map" model="account.statement.import.sheet.mapping">
+        <field name="name">Otros Bancos y/o Cooperativas</field>
+        <field name="footer_lines_skip_count">0</field>
+        <field name="header_lines_skip_count">1</field>
+
+        <field name="float_thousands_sep">comma</field>
+        <field name="float_decimal_sep">dot</field>
+        <field name="delimiter">semicolon</field>
+        <field name="quotechar">"</field>
+
+        <field name="timestamp_format">%m/%d/%y</field>
+        <field name="timestamp_column">FECHA</field>
+
+        <field name="amount_type">distinct_credit_debit</field>
+        <field name="amount_debit_column">DEBITO</field>
+        <field name="amount_credit_column">CREDITO</field>
+        <field name="amount_inverse_sign">True</field>
+
+        <field name="balance_column">SALDO</field>
+        <field name="description_column">REFERENCIA</field>
+        <field name="reference_column">DESCRIPCION</field>
+
+    </record>
+</odoo>

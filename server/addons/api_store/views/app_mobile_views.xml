@@ -1,0 +1,44 @@
+<?xml version="1.0" encoding="utf-8"?>
+<odoo>
+    <!-- Menu Action -->
+    <record id="menu_app_mobile_action_banners" model="ir.actions.act_window">
+        <field name="name">Banners de publicidad</field>
+        <field name="res_model">api_store.banner</field>
+        <field name="view_mode">tree,form</field>
+    </record>
+    <!--    Banner tree view-->
+    <record id="view_api_store_banner_tree" model="ir.ui.view">
+        <field name="name">api_store.banner.tree</field>
+        <field name="model">api_store.banner</field>
+        <field name="arch" type="xml">
+            <tree string="Banners de publicidad">
+                <field name="name"/>
+                <field name="image"  widget="image"/>
+                <field name="enabled"/>
+                <field name="s3_image_url"/>
+            </tree>
+        </field>
+    </record>
+    <!--    Banner form view-->
+    <record id="view_product_form_with_image" model="ir.ui.view">
+        <field name="name">product.form.with.image</field>
+        <field name="model">api_store.banner</field>
+        <field name="arch" type="xml">
+            <form>
+                <sheet>
+                    <group>
+                        <field name="name"/>
+                        <field name="enabled"/>
+                        <field name="url"/>
+                        <field name="s3_image_url"/>
+                    </group>
+                    <group>
+                        <field name="image" widget="image" width="250" height="250"
+                               options="{'preview_image': 'image'}"/>
+                    </group>
+                </sheet>
+            </form>
+        </field>
+    </record>
+
+</odoo>

@@ -1,0 +1,47 @@
+<odoo>
+    <!-- Acción -->
+    <record id="action_promotions_by_day" model="ir.actions.act_window">
+        <field name="name">Promociones por Día</field>
+        <field name="res_model">promotions_by_day.promotions_by_day</field>
+        <field name="view_mode">tree,form</field>
+    </record>
+
+    <!-- Vista Tree -->
+    <record id="view_promotions_by_day_tree" model="ir.ui.view">
+        <field name="name">promotions.by.day.tree</field>
+        <field name="model">promotions_by_day.promotions_by_day</field>
+        <field name="arch" type="xml">
+            <tree string="Promociones por Día">
+                <field name="name"/>
+                <field name="weekday"/>
+                <field name="discount_percent"/>
+                <field name="active"/>
+            </tree>
+        </field>
+    </record>
+
+    <!-- Vista Form -->
+    <record id="view_promotions_by_day_form" model="ir.ui.view">
+        <field name="name">promotions.by.day.form</field>
+        <field name="model">promotions_by_day.promotions_by_day</field>
+        <field name="arch" type="xml">
+            <form string="Promoción por Día">
+                <sheet>
+                    <group>
+                        <field name="name"/>
+                        <field name="weekday"/>
+                        <field name="discount_percent"/>
+                        <field name="active"/>
+                    </group>
+                </sheet>
+            </form>
+        </field>
+    </record>
+
+    <!-- Menú en el mismo grupo que Configuración Pagos Digitales -->
+    <menuitem id="menu_promotions_by_day"
+              name="Promociones por Día"
+              parent="point_of_sale.menu_point_config_product"
+              action="action_promotions_by_day"
+              sequence="20"/>
+</odoo>

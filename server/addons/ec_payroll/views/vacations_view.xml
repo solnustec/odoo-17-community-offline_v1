@@ -1,0 +1,110 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<odoo>
+	<data>
+
+		<record model="ir.ui.view" id="request_vacationns_tree_view">
+			<field name="name">request.vacations.tree</field>
+			<field name="model">hr.request.vacations</field>
+			<field name="arch" type="xml">
+				<tree string="Solicitud de Vacaciones">
+					<field name="number" />
+					<field name="employee_id" />
+					<field name="date_start" />
+					<field name="date_end" />
+					<field name="state" />
+				</tree>
+			</field>
+		</record>
+
+		<record model="ir.ui.view" id="request_vacations_form_view">
+			<field name="name">request.vacations.form</field>
+			<field name="model">hr.request.vacations</field>
+			<field name="arch" type="xml">
+				<form string="Solicitud de Vacaciones">
+
+					<header>
+						<button name="action_to_calculate" type="object" 
+							string="Calcular Vacaciones" invisible="state != 'draft'" class="oe_highlight" />
+						<button name="action_to_send" type="object" 
+							string="Enviar" invisible="state != 'draft'" class="oe_highlight" />
+						<button name="action_done" type="object" string="Aprobar"
+							invisible="state != 'send'" class="oe_highlight" />
+						<button name="action_draft" type="object"
+							string="Regresar a Borrador" invisible="state not in ('send', 'done')" class="oe_highlight" />
+
+						<field name="state" widget="statusbar" />
+					</header>
+
+					<sheet>
+						<div class="oe_title">
+							<h1>
+								<label for="number" string="Número de Préstamo"
+									invisible="number != False" />
+								<field name="number" />
+							</h1>
+						</div>
+						<group>
+							<group>
+								<field name="employee_id" options="{'no_create': True, 'no_open': True}"/>
+								<field name="contract_id" domain="[('employee_id','=',employee_id)]" options="{'no_create': True, 'no_open': True}"/>
+								<field name="date_contract_start" />
+								<field name="date_start" />
+								<field name="days_vacations"/>
+								<field name="days_legal_to_pay"/>
+								
+
+							</group>
+
+
+							<group>
+								<field name="date_trx"/>
+								<field name="pay_type" />
+								<field name="date_complete_year"/>
+								<field name="date_end" />
+								<field name="month_for_vacations"/>
+
+							</group>
+
+						</group>
+
+
+					</sheet>
+
+					<sheet>
+						
+						<group>
+								
+							<field name="salary_acum"/>
+							<field name="other_inputs"/>
+							<field name="amount_total"/>
+						</group>
+
+
+					</sheet>
+
+				</form>
+			</field>
+		</record>
+
+
+	
+
+		<record model="ir.actions.act_window"
+			id="action_request_vacations_view">
+			<field name="name">Solicitud de Vacaciones</field>
+			<field name="type">ir.actions.act_window</field>
+			<field name="res_model">hr.request.vacations</field>
+			<!-- <field name="view_type">form</field> -->
+			<field name="view_mode">tree,form</field>
+			<field name="view_id" ref="request_vacationns_tree_view" />
+		</record>
+
+
+		<menuitem id="request_vacations_menu"
+				  name="Vacaciones"
+				  parent="hr_payroll.menu_hr_payroll_payslips"
+				  sequence='115'
+				  action="action_request_vacations_view" />
+
+	</data>
+</odoo>

@@ -1,0 +1,17 @@
+<?xml version="1.0" encoding="utf-8"?>
+<odoo>
+    <!-- Plantilla QWeb -->
+    <template id="report_cash_summary" t-name="pos_close_session.report_cash_summary">
+        <p>HOla</p>
+    </template>
+
+    <!-- Definición del reporte -->
+    <record id="action_report_cash_summary" model="ir.actions.report">
+        <field name="name">Reporte de Cierre de Caja</field>
+        <field name="model">pos.order.dashboard</field>
+        <field name="report_type">qweb-pdf</field>
+        <field name="report_name">pos_close_session.report_cash_summary</field>
+        <field name="report_file">pos_close_session.report_cash_summary</field>
+        <field name="print_report_name">'CierreCaja_%s' % (object.cashier_employee or 'SinCajero')</field>
+    </record>
+</odoo>

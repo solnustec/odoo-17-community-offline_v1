@@ -1,0 +1,13 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<templates xml:space="preserve">
+    <t name="custom_website_loyalty.product_availability" t-inherit="website_sale_stock.product_availability" t-inherit-mode="extension">
+        <xpath expr="//div[contains(@id,'already_in_cart_message')]" position="after">
+            <div id="max_qty_warning"
+                 class="alert alert-warning mt-2 d-none"
+                 role="alert">
+                No es posible agregar más unidades: no hay más stock disponible para este producto.
+            </div>
+        </xpath>
+    </t>
+</templates>
+

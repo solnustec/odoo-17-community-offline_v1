@@ -1,0 +1,64 @@
+<odoo>
+    <data noupdate="1">
+        <record id="asset_class_electrodomesticos" model="asset.class">
+            <field name="name">ELECTRODOMESTICOS</field>
+        </record>
+        <record id="asset_class_equipo_de_oficina" model="asset.class">
+            <field name="name">EQUIPO DE OFICINA</field>
+        </record>
+        <record id="asset_class_equipos_de_computacion" model="asset.class">
+            <field name="name">EQUIPOS DE COMPUTACION</field>
+        </record>
+        <record id="asset_class_gasto_seguridad_y_vigilancia" model="asset.class">
+            <field name="name">GASTO SEGURIDAD Y VIGILANCIA</field>
+        </record>
+        <record id="asset_class_herramientas" model="asset.class">
+            <field name="name">HERRAMIENTAS</field>
+        </record>
+        <record id="asset_class_instalacion_y_adecuacion_de_local" model="asset.class">
+            <field name="name">INSTALACION Y ADECUACION DE LOCAL</field>
+        </record>
+        <record id="asset_class_maquinaria_y_equipo" model="asset.class">
+            <field name="name">MAQUINARIA Y EQUIPO</field>
+        </record>
+        <record id="asset_class_movilizacion" model="asset.class">
+            <field name="name">MOVILIZACION</field>
+        </record>
+        <record id="asset_class_muebleria_basica" model="asset.class">
+            <field name="name">MUEBLERIA BASICA</field>
+        </record>
+        <record id="asset_class_muebleria_fisica" model="asset.class">
+            <field name="name">MUEBLERIA FISICA</field>
+        </record>
+        <record id="asset_class_muebles_y_enseres" model="asset.class">
+            <field name="name">MUEBLES Y ENSERES</field>
+        </record>
+        <record id="asset_class_otros_suministros" model="asset.class">
+            <field name="name">OTROS SUMINISTROS</field>
+        </record>
+        <record id="asset_class_suministros_de_computacion" model="asset.class">
+            <field name="name">SUMINISTROS DE COMPUTACION</field>
+        </record>
+        <record id="asset_class_suministros_de_control" model="asset.class">
+            <field name="name">SUMINISTROS DE CONTROL</field>
+        </record>
+        <record id="asset_class_suministros_de_locales" model="asset.class">
+            <field name="name">SUMINISTROS DE LOCALES</field>
+        </record>
+        <record id="asset_class_suministros_de_oficina" model="asset.class">
+            <field name="name">SUMINISTROS DE OFICINA</field>
+        </record>
+        <record id="asset_class_utiles_de_aseo" model="asset.class">
+            <field name="name">UTILES DE ASEO</field>
+        </record>
+        <record id="asset_class_utiles_de_limpieza" model="asset.class">
+            <field name="name">UTILES DE LIMPIEZA</field>
+        </record>
+        <record id="asset_class_utiles_de_oficina" model="asset.class">
+            <field name="name">UTILES DE OFICINA</field>
+        </record>
+        <record id="asset_class_vehiculo" model="asset.class">
+            <field name="name">VEHICULO</field>
+        </record>
+    </data>
+</odoo>

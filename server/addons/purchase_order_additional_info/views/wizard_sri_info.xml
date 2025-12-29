@@ -1,0 +1,21 @@
+<?xml version="1.0" encoding="utf-8"?>
+<odoo>
+    <record id="sri_get_information_view_form" model="ir.ui.view">
+        <field name="name">account.move.sri.get.information.form</field>
+        <field name="model">account.move</field>
+        <field name="inherit_id" ref="l10n_latam_invoice_document.view_move_form"/>
+        <field name="arch" type="xml">
+<!--            <xpath expr="//group[@id='header_left_group']" position="inside">-->
+            <header position="inside">
+                <button name="sri_get_information"
+                        string="Autocompletar desde el SRI"
+                        class="btn btn-secondary"
+                        type="object"
+                        widget="sri_get_information"
+                        invisible="not (move_type == 'in_invoice' or move_type == 'in_refund')"
+                />
+            </header>
+<!--            </xpath>-->
+        </field>
+    </record>
+</odoo>

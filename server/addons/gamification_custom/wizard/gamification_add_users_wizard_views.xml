@@ -1,0 +1,92 @@
+<?xml version="1.0" encoding="utf-8"?>
+<odoo>
+    <!-- Wizard Form View -->
+    <record id="view_gamification_add_users_wizard_form" model="ir.ui.view">
+        <field name="name">gamification.add.users.wizard.form</field>
+        <field name="model">gamification.add.users.wizard</field>
+        <field name="arch" type="xml">
+            <form string="Agregar Usuarios a Gamificación">
+                <sheet>
+                    <div class="oe_title">
+                        <h1>Agregar Usuarios al Grupo de Gamificación</h1>
+                    </div>
+
+                    <group>
+                        <group string="Tipo de Selección">
+                            <field name="selection_type" widget="radio" nolabel="1"/>
+                        </group>
+                        <group string="Resumen">
+                            <div class="o_row">
+                                <label for="preview_count" string="Usuarios a agregar:"/>
+                                <field name="preview_count" readonly="1" class="oe_inline fw-bold text-primary"/>
+                            </div>
+                            <div class="o_row">
+                                <label for="already_in_group_count" string="Ya en el grupo:"/>
+                                <field name="already_in_group_count" readonly="1" class="oe_inline fw-bold text-success"/>
+                            </div>
+                        </group>
+                    </group>
+
+                    <group invisible="selection_type != 'by_department'" string="Seleccionar Departamentos">
+                        <field name="department_ids" widget="many2many_tags" nolabel="1"
+                               placeholder="Seleccione uno o más departamentos..."
+                               options="{'no_create': True, 'color_field': 'color'}"/>
+                    </group>
+
+                    <group invisible="selection_type != 'manual'" string="Seleccionar Usuarios">
+                        <field name="user_ids" widget="many2many_tags" nolabel="1"
+                               placeholder="Seleccione uno o más usuarios..."
+                               options="{'no_create': True}"/>
+                    </group>
+
+                    <notebook invisible="preview_count == 0">
+                        <page string="Vista Previa de Usuarios" name="preview">
+                            <field name="preview_user_ids" readonly="1" nolabel="1">
+                                <tree string="Usuarios" create="false" delete="false" edit="false">
+                                    <field name="name" string="Nombre"/>
+                                    <field name="login" string="Usuario"/>
+                                    <field name="employee_id" string="Empleado"/>
+                                    <field name="company_id" string="Compañía" groups="base.group_multi_company" optional="show"/>
+                                </tree>
+                            </field>
+                        </page>
+                    </notebook>
+                </sheet>
+
+                <footer>
+                    <button name="action_add_users"
+                            string="Agregar al Grupo"
+                            type="object"
+                            class="btn-primary"
+                            invisible="preview_count == 0 or preview_count == already_in_group_count"
+                            icon="fa-users"/>
+                    <button name="action_view_users_in_group"
+                            string="Ver Usuarios en el Grupo"
+                            type="object"
+                            class="btn-secondary"
+                            icon="fa-eye"/>
+                    <button string="Cancelar"
+                            class="btn-secondary"
+                            special="cancel"/>
+                </footer>
+            </form>
+        </field>
+    </record>
+
+    <!-- Action to open wizard -->
+    <record id="action_gamification_add_users_wizard" model="ir.actions.act_window">
+        <field name="name">Agregar Usuarios a Gamificación</field>
+        <field name="res_model">gamification.add.users.wizard</field>
+        <field name="view_mode">form</field>
+        <field name="view_id" ref="view_gamification_add_users_wizard_form"/>
+        <field name="target">new</field>
+    </record>
+
+    <!-- Menu item for the wizard (only for managers) -->
+    <menuitem id="menu_gamification_add_users"
+              name="Agregar Usuarios al Grupo"
+              parent="menu_gamification_custom_root"
+              action="action_gamification_add_users_wizard"
+              sequence="100"
+              groups="gamification_custom.group_gamification_manager"/>
+</odoo>

@@ -1,0 +1,188 @@
+<?xml version="1.0" encoding="utf-8"?>
+<odoo>
+    <record id="employee_shift_changes_tree_view" model="ir.ui.view">
+        <field name="name">employee.shift.changes.tree</field>
+        <field name="model">employee.shift.changes</field>
+        <field name="arch" type="xml">
+            <tree sample="1" multi_edit="1">
+                <field name="is_final_validator" column_invisible="1" readonly="1"/>
+                <field name="name" readonly="1"/>
+                <field name="employee_id" readonly="1"/>
+                <field name="user_id" readonly="1" optional="hide"/>
+                <field name="state" readonly="1"/>
+                <field name="coordinador_approve" readonly="1" optional="hide"/>
+                <field name="type_change" readonly="1" optional="hide"/>
+                <field name="is_validate" readonly="is_final_validator == False"/>
+                <field name="date_from" readonly="1"/>
+                <field name="date_to" readonly="1"/>
+                <field name="note" readonly="1" optional="hide"/>
+                <field name="sustitute_employee_id" readonly="1" optional="hide"/>
+                <field name="total_days" readonly="1" optional="hide"/>
+                <field name="reason_for_the_exception" readonly="1" optional="hide"/>
+                <field name="max_hours_supplementary"
+                       readonly="1"
+                       optional="hide"
+                       groups="employee_shift_scheduling_app.group_validators_entry_works_zonal_admin,
+                       employee_shift_scheduling_app.group_validators_entry_works_admin"/>
+                <field name="max_hours_extraordinary"
+                       readonly="1"
+                       optional="hide"
+                       groups="employee_shift_scheduling_app.group_validators_entry_works_zonal_admin,
+                       employee_shift_scheduling_app.group_validators_entry_works_admin"/>
+                <field name="type_periode" readonly="1" optional="hide"/>
+                <field name="ranges" readonly="1" optional="hide"/>
+                <field name="resource_calendar_id" readonly="1" optional="hide"/>
+            </tree>
+        </field>
+    </record>
+    <record id="employee_shift_changes_form_view" model="ir.ui.view">
+            <field name="name">employee.shift.changes.form</field>
+            <field name="model">employee.shift.changes</field>
+            <field name="arch" type="xml">
+                <form>
+                    <header>
+                        <field name="is_final_validator" invisible="1" readonly="1"/>
+                        <field name="is_zonal_farm_group" invisible="1" readonly="1"/>
+                        <field name="is_zonal_cord_group" invisible="1" readonly="1"/>
+                        <button name="action_approve" invisible="state in ['approve', 'draft']"
+                                string="Validar" type="object" class="oe_highlight"
+                                groups="employee_shift_scheduling_app.group_validators_entry_works_admin"/>
+                        <button name="action_appr_zonal" invisible="state in ['approve', 'draft', 'approv-zonal', 'cancel']"
+                                string="Aprobar" type="object" class="oe_highlight"
+                                groups="employee_shift_scheduling_app.group_validators_entry_works_zonal_admin,
+                                employee_shift_scheduling_app.group_validators_entry_works_admin"/>
+                        <button name="action_cancel" invisible="state in ['process', 'draft', 'cancel']"
+                                string="Cancelar" type="object" class="oe_highlight"
+                                groups="employee_shift_scheduling_app.group_validators_entry_works_admin"/>
+                        <button name="action_process" invisible="state in ['process', 'approve', 'cancel', 'approv-zonal']"
+                                string="Procesar" type="object" class="oe_highlight"
+                                groups="employee_shift_scheduling_app.group_validators_entry_works_zonal_super,
+                                employee_shift_scheduling_app.group_validators_entry_works_zonal_admin"/>
+                        <field name="state" widget="statusbar" readonly="1"/>
+                    </header>
+                    <sheet>
+                        <div class="oe_title">
+                            <h1><field name="name" placeholder="Name" readonly="1"/></h1><br/>
+                        </div>
+                        <group>
+                            <group>
+                                <field name="employee_id" required="1"
+                                       readonly="(state != 'draft' and state in ['approv-zonal', 'approve', 'cancel'] and is_zonal_cord_group) or (state != 'draft' and is_zonal_farm_group)"
+                                       options="{'no_open': True, 'no_create': True}" string="Empleado"/>
+                                <field name="type_periode" string="Tipo de Horario"
+                                       readonly="(state != 'draft' and state in ['approv-zonal', 'approve', 'cancel'] and is_zonal_cord_group) or (state != 'draft' and is_zonal_farm_group)"/>
+                                <field name="date_from"
+                                       readonly="(state != 'draft' and state in ['approv-zonal', 'approve', 'cancel'] and is_zonal_cord_group) or (state != 'draft' and is_zonal_farm_group)" />
+                                <field name="resource_calendar_id"
+                                       required="type_periode == 'resource'"
+                                       invisible="type_periode == 'personalize'"
+                                       readonly="(state != 'draft' and state in ['approv-zonal', 'approve', 'cancel'] and is_zonal_cord_group) or (state != 'draft' and is_zonal_farm_group)"
+                                       options="{'no_open': True}" />
+                                <field name="ranges"
+                                       required="1"
+                                       readonly="(state != 'draft' and state in ['approv-zonal', 'approve', 'cancel'] and is_zonal_cord_group) or (state != 'draft' and is_zonal_farm_group)"
+                                       widget="one2many_tags"
+                                       invisible="type_periode == 'resource'" />
+
+                           </group>
+                           <group>
+                                <field name="user_id" readonly="1" required="1" options="{'no_open': True, 'no_create': True}" context="{'default_user_id': uid}"/>
+                                <field name="company_id" readonly="1" options="{'no_open': True, 'no_create': True}" string="Empresa"/>
+                               <field name="date_to"
+                                      readonly="(state != 'draft' and state in ['approv-zonal', 'approve', 'cancel'] and is_zonal_cord_group) or (state != 'draft' and is_zonal_farm_group)"/>
+                               <field name="max_hours_supplementary"
+                                      readonly="1"
+                                      groups="employee_shift_scheduling_app.group_validators_entry_works_zonal_admin,employee_shift_scheduling_app.group_validators_entry_works_admin"/>
+                               <field name="max_hours_extraordinary"
+                                      readonly="1"
+                                      groups="employee_shift_scheduling_app.group_validators_entry_works_zonal_admin,employee_shift_scheduling_app.group_validators_entry_works_admin"/>
+                               <field name="messages"
+                                      readonly="1"
+                                      groups="employee_shift_scheduling_app.group_validators_entry_works_zonal_admin,employee_shift_scheduling_app.group_validators_entry_works_admin"/>
+                            </group>
+                        </group>
+                        <notebook>
+                            <page string="Nota de Cambio de Turno">
+                                <field name="note"
+                                       readonly="(state != 'draft' and state in ['approv-zonal', 'approve', 'cancel'] and is_zonal_cord_group) or (state != 'draft' and is_zonal_farm_group)"/>
+                            </page>
+                            <page string="Excepciones">
+                                <group>
+                                    <group>
+                                         <field name="sustitute_employee_id"
+                                                readonly="(state != 'draft' and state in ['approv-zonal', 'approve', 'cancel'] and is_zonal_cord_group) or (state != 'draft' and is_zonal_farm_group)"
+                                                options="{'no_open': True, 'no_create': True}"/>
+                                    </group>
+                                    <group>
+                                        <field name="total_days"/>
+                                        <field name="reason_for_the_exception"
+                                               readonly="(state != 'draft' and state in ['approv-zonal', 'approve', 'cancel'] and is_zonal_cord_group) or (state != 'draft' and is_zonal_farm_group)"/>
+                                    </group>
+                                </group>
+                            </page>
+                        </notebook>
+                    </sheet>
+                    <div class="oe_chatter">
+						<field name="message_follower_ids" widget="mail_followers" groups="base.group_user"/>
+						<field name="activity_ids" widget="mail_activity"/>
+						<field name="message_ids" widget="mail_thread"/>
+					</div>
+                </form>
+            </field>
+        </record>
+    <record id="employee_shift_changes_search_view" model="ir.ui.view">
+        <field name="name">employee.shift.changes.search</field>
+        <field name="model">employee.shift.changes</field>
+        <field name="arch" type="xml">
+            <search>
+                <field name="name" string="Nombre"/>
+                <field name="employee_id" string="Empleado"/>
+                <field name="user_id" string="Responsable"/>
+                <field name="departament_for_employee_id" string="Departamento"/>
+                <field name="state" string="Estado"/>
+                <group expand="0" string="Group By">
+                    <filter name="archived" string="Archivado" domain="[('active', '=', False)]"/>
+                    <filter string="Empleado" name="employee_id" context="{'group_by':'employee_id'}"/>
+                    <filter string="Estado" name="state" context="{'group_by':'state'}"/>
+                </group>
+            </search>
+        </field>
+    </record>
+    <record id="action_employee_shift_changes" model="ir.actions.act_window">
+        <field name="name">Excepciones y cambios de horario</field>
+        <field name="type">ir.actions.act_window</field>
+        <field name="res_model">employee.shift.changes</field>
+        <field name="view_mode">tree,kanban,search,form</field>
+        <field name="view_ids" eval="[(5, 0, 0),
+        (0, 0, {'view_mode': 'tree', 'view_id': ref('employee_shift_changes_tree_view')}),
+        (0, 0, {'view_mode': 'form', 'view_id': ref('employee_shift_changes_form_view')}),
+    ]"/>
+    </record>
+    <menuitem id="main_menu_employee_shift_changes"
+              name="Excepciones"
+              parent="main_menu_employee_shift"
+              action="action_employee_shift_changes"
+              sequence="6"
+              groups="employee_shift_scheduling_app.group_validators_entry_works_admin"/>
+
+
+
+    <record id="employee_shift_changes_periode_form_view" model="ir.ui.view">
+        <field name="name">employee.shift.changes.periode.view</field>
+        <field name="model">employee.shift.changes.periode</field>
+        <field name="arch" type="xml">
+            <form>
+                <group>
+                    <group>
+                        <field name="name" invisible="1"/>
+                        <field name="shift_change" invisible="1"/>
+                        <field name="date_from" />
+                        <field name="date_to" />
+                    </group>
+                </group>
+            </form>
+        </field>
+    </record>
+
+
+    </odoo>

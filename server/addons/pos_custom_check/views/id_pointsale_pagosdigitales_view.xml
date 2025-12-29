@@ -1,0 +1,20 @@
+<?xml version="1.0" encoding="utf-8"?>
+<odoo>
+    <data>
+        <record id="stock_warehouse_view_digital_payments" model="ir.ui.view">
+            <field name="name">stock.warehouse.digitalpayments</field>
+            <field name="model">stock.warehouse</field>
+            <field name="inherit_id" ref="stock.view_warehouse"/>
+            <field name="arch" type="xml">
+                <xpath expr="//page[@name='technical_info']" position="after">
+                    <page name="warehouse_config_digital_payments" string="Configuraciones para Pagos Digitales"
+                          colspan="2">
+                        <group>
+                            <field name="id_digital_payment"/>
+                        </group>
+                    </page>
+                </xpath>
+            </field>
+        </record>
+    </data>
+</odoo>

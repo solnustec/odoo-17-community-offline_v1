@@ -1,0 +1,37 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<odoo>
+    <!-- Reporte de items revisados por campaña: usa plantilla base -->
+    <template id="report_survey_revised_items_campaign">
+        <t t-call="internal_control.survey_base_template">
+            <t t-set="report_title" t-value="'Reporte de Items Revisados por Campaña'"/>
+            <t t-set="content_title" t-value="'Resultados de Items Revisados:'"/>
+            <t t-set="report_type" t-value="'revised_items_campaign'"/>
+        </t>
+    </template>
+
+    <!-- Template específico para el contenido de items revisados por campaña -->
+    <template id="survey_revised_items_campaign_content">
+        <t t-set="secciones_reales" t-value="docs.filtered(lambda x: not x.page_name.startswith('Campaña:') and not x.page_name.startswith('Participante:'))"/>
+        
+        <div style="padding: 20px; margin-top: 15px; font-size: 11px;">
+            <t t-if="secciones_reales">
+                <t t-call="internal_control.survey_revised_items_table"/>
+            </t>
+            <t t-else="">
+                <t t-call="internal_control.survey_no_data_message"/>
+            </t>
+            
+            <!-- Información por Campaña -->
+            <t t-call="internal_control.survey_campaign_info_standard_table"/>
+            
+            <!-- Tabla de participantes -->
+            <t t-call="internal_control.survey_participants_unified_table"/>
+            
+            <!-- Resumen de Items Revisados -->
+            <t t-call="internal_control.survey_revised_items_summary_table"/>
+            
+            <!-- Matriz de Riesgo (Componente reutilizable) -->
+            <t t-call="internal_control.survey_risk_matrix"/>
+        </div>
+    </template>
+</odoo> 

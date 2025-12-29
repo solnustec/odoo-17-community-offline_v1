@@ -1,0 +1,77 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<odoo>
+    <!--
+        Vista para gestión centralizada de asignación de empleados a POS.
+
+        Funcionalidades:
+        - Vista de lista especializada para gestión de asignaciones
+        - Acción masiva para reasignar múltiples empleados
+        - Menú en configuración de POS
+    -->
+
+    <!-- Vista tree de empleados con información de POS -->
+    <record id="hr_employee_view_tree_pos" model="ir.ui.view">
+        <field name="name">hr.employee.tree.pos.assignment</field>
+        <field name="model">hr.employee</field>
+        <field name="arch" type="xml">
+            <tree string="Asignación de Empleados a POS"
+                  decoration-muted="not user_id"
+                  decoration-info="user_id and department_id">
+                <field name="name"/>
+                <field name="department_id"/>
+                <field name="user_id"/>
+                <field name="job_id" optional="hide"/>
+                <field name="work_email" optional="hide"/>
+                <field name="work_phone" optional="hide"/>
+            </tree>
+        </field>
+    </record>
+
+    <!-- Acción del servidor para reasignar POS masivamente -->
+    <record id="action_reassign_pos_batch" model="ir.actions.server">
+        <field name="name">Reasignar POS según Departamento</field>
+        <field name="model_id" ref="hr.model_hr_employee"/>
+        <field name="binding_model_id" ref="hr.model_hr_employee"/>
+        <field name="binding_view_types">list</field>
+        <field name="state">code</field>
+        <field name="code">
+if records:
+    action = records.action_reassign_pos()
+        </field>
+    </record>
+
+    <!-- Vista de acción para gestión centralizada -->
+    <record id="action_hr_employee_pos_assignment" model="ir.actions.act_window">
+        <field name="name">Asignación de Empleados a POS</field>
+        <field name="res_model">hr.employee</field>
+        <field name="view_mode">tree,form</field>
+        <field name="view_id" ref="hr_employee_view_tree_pos"/>
+        <field name="domain">[('user_id', '!=', False)]</field>
+        <field name="context">{'search_default_group_by_department': 1}</field>
+        <field name="help" type="html">
+            <p class="o_view_nocontent_smiling_face">
+                Gestión centralizada de asignación de empleados a Puntos de Venta
+            </p>
+            <p>
+                <strong>Para la migración inicial:</strong>
+            </p>
+            <ol>
+                <li>Asegúrese de que cada POS tenga asignado su departamento (Punto de Venta → Configuración → Departamento)</li>
+                <li>Seleccione los empleados que desea sincronizar</li>
+                <li>Use la acción "Reasignar POS según Departamento"</li>
+            </ol>
+            <p class="text-muted">
+                Una vez configurado, los cambios de departamento en empleados
+                sincronizarán automáticamente las asignaciones de POS.
+            </p>
+        </field>
+    </record>
+
+    <!-- Menú para acceso a gestión de POS -->
+    <menuitem id="menu_hr_employee_pos_assignment"
+              name="Asignación Empleados"
+              parent="point_of_sale.menu_point_config_product"
+              action="action_hr_employee_pos_assignment"
+              sequence="50"
+              groups="point_of_sale.group_pos_manager"/>
+</odoo>

@@ -1,0 +1,269 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<odoo>
+	<data>
+
+		<!-- Payslips Lines Views -->
+
+		<record model="ir.ui.view"
+			id="hr_payslip_line_hr_liquidation_form_view">
+			<field name="name">hr.payslip.line.form</field>
+			<field name="model">hr.payslip.line</field>
+			<field name="priority">30</field>
+			<field name="arch" type="xml">
+				<form string="Línea de Nómina">
+					<sheet>
+						<group>
+							<group>
+								<field name="slip_id" />
+								<field name="name" />
+								<field name="date_from" />
+								<field name="date_to" />
+								<field name="salary_rule_id" />
+							</group>
+							<group>
+								<field name="days_worked" />
+								<field name="quantity" />
+								<field name="rate" />
+								<field name="amount" />
+								<field name="total" />
+							</group>
+						</group>
+					</sheet>
+				</form>
+			</field>
+		</record>
+
+		<record model="ir.ui.view"
+			id="hr_payslip_line_hr_liquidation_tree_view">
+			<field name="name">hr.payslip.line.tree</field>
+			<field name="model">hr.payslip.line</field>
+			<field name="priority">30</field>
+			<field name="arch" type="xml">
+				<tree string="Líneas de Nómina">
+					<field name="slip_id" />
+					<field name="date_from" />
+					<field name="date_to" />
+					<field name="days_worked" sum="Dias Trabajados" />
+					<field name="name" />
+					<field name="quantity" />
+					<field name="rate" />
+					<field name="amount" />
+					<field name="total" />
+				</tree>
+			</field>
+		</record>
+
+		<record model="ir.ui.view" id="hr_hr_liquidation_tree_view">
+			<field name="name">hr.liquidation.tree</field>
+			<field name="model">hr.liquidation</field>
+			<field name="arch" type="xml">
+				<tree string="Liquidación de Personal">
+					<field name="number" />
+					<field name="employee_id" />
+					<field name="category_id" />
+					<field name="date" />
+					<field name="date_start_contract" />
+					<field name="date_end_contract" />
+					<field name="state" />
+					<field name="total" />
+				</tree>
+			</field>
+		</record>
+
+		<record model="ir.ui.view" id="hr_hr_liquidation_form_view">
+			<field name="name">hr.liquidation.form</field>
+			<field name="model">hr.liquidation</field>
+			<field name="arch" type="xml">
+				<form string="Liquidation de Personal">
+					<header>
+						<button name="action_confirm" type="object"
+							string="Confirmar" invisible="state != 'draft'" class="oe_highlight" />
+						<button name="action_open" type="object" string="Aprobar"
+							invisible="state != 'confirm'" class="oe_highlight" />
+						<button name="action_draft" type="object"
+							string="Regresar a Borrador" invisible="state not in ('confirm', 'open')"/>
+						<button name="create_payment" type="object"
+							string="Crear Pago" invisible="state != 'open'" class="oe_highlight" />
+						<field name="state" widget="statusbar" />
+					</header>
+					<sheet>
+						<div class="oe_button_box" name="button_box">
+							<field name="payment_ids" invisible="1" />
+							<button type="object" name="action_view_payment"
+								invisible="payment_count &lt;= 0"
+								class="oe_stat_button" icon="fa-money"
+								groups="base.group_user,account.group_account_manager,account.group_account_user,account.group_account_invoice">
+								<field name="payment_count" widget="statinfo"
+									string="Pago" />
+							</button>
+						</div>
+						<div class="oe_title">
+							<h1>
+								<field name="number" />
+							</h1>
+						</div>
+						<group string="Datos Principales">
+							<group>
+								<field name="category_id" widget="selection" />
+								<field name="employee_id" />
+								<field name="last_remuneration" />
+								<field name="last_payslip_id" force_save="1" />
+							</group>
+							<group>
+								<field name="date" />
+								<field name="date_start_contract" />
+								<field name="date_end_contract" />
+								<button name="get_lines" invisible="state != 'draft'" colspan="2"
+									string="Obtener Líneas para Cálculo" type="object"
+									icon="fa-gear" />
+							</group>
+						</group>
+						<group string="Aplicación" col="6">
+							<field name="aged_policy" />
+							<field name="percentage_compensation" />
+							<field name="percentage_eviction" />
+						</group>
+						<group>
+							<group string="Valores">
+								<field name="sbu_applicable" />
+								<field name="total_compensation" />
+								<field name="total_eviction" />
+								<field name="total" />
+							</group>
+							<group string="Cálculo de Tiempos">
+								<group>
+									<field name="total_days" />
+									<field name="aged_years" />
+								</group>
+								<group>
+									<field name="aged_years_completed" />
+									<field name="aged_month" />
+								</group>
+							</group>
+						</group>
+						<notebook colspan="4">
+							<page string="Líneas de Liquidación">
+								<field name="line_ids">
+									<tree>
+										<field name="type" />
+										<field name="name" />
+										<field name="provision_amount" />
+										<field name="amount" sum="Total" />
+										<field name="difference" />
+									</tree>
+									<form>
+										<group>
+											<field name="type" readonly="1" force_save="1" />
+											<field name="name" />
+											<field name="rule_id" invisible="0" readonly="1" force_save="1"/>
+											<field name="transaction_id" invisible="0" readonly="1" force_save="1"/>
+											<field name="account_id"
+												invisible="rule_id != False"/>
+											<field name="provision_amount" />
+											<field name="amount" />
+											<field name="difference" />
+										</group>
+										<notebook colspan="4">
+											<page string="Líneas de Nómina">
+												<field name="payslip_line_ids" nolabel="1" colspan="4"
+													context="{'form_view_ref': 'ec_payroll.hr_payslip_line_hr_liquidation_form_view', 'tree_view_ref': 'ec_payroll.hr_payslip_line_hr_liquidation_tree_view'}" />
+											</page>
+										</notebook>
+									</form>
+								</field>
+							</page>
+							<page string="Contabilidad">
+								<group>
+									<group>
+										<field name="account_id" />
+										<field name="account_analytic_id" />
+									</group>
+									<group>
+										<field name="move_id" />
+									</group>
+								</group>
+							</page>
+							<page string="Contratos">
+								<field name="contract_ids" nolabel="1" readonly="1"
+									force_save="1">
+									<tree>
+										<field name="employee_id" />
+										<field name="structure_type_id" />
+										<field name="job_id" />
+										<field name="department_id" />
+										<field name="analytic_account_id" />
+										<field name="date_start" />
+										<field name="date_end" />
+										<field name="wage" />
+									</tree>
+								</field>
+							</page>
+							<page string="Observaciones">
+								<field name="note" colspan="4" nolabel="1" />
+							</page>
+						</notebook>
+					</sheet>
+					<footer>
+
+					</footer>
+					<div class="oe_chatter">
+						<field name="message_follower_ids" widget="mail_followers" />
+						<field name="activity_ids" widget="mail_activity" />
+						<field name="message_ids" widget="mail_thread" />
+					</div>
+				</form>
+			</field>
+		</record>
+
+		<record model="ir.ui.view"
+			id="hr_hr_liquidation_search_view">
+			<field name="name">hr.liquidation.search</field>
+			<field name="model">hr.liquidation</field>
+			<field name="arch" type="xml">
+				<search string="Liquidación de Personal">
+					<field name="employee_id" />
+					<field name="category_id" />
+					<field name="number" />
+					<field name="date" />
+					<field name="date_start_contract" />
+					<field name="date_end_contract" />
+					<field name="total" />
+					<filter name="state_done" string="Por Pagar"
+						domain="[('state','=','open')]" />
+				</search>
+			</field>
+		</record>
+
+		<record model="ir.actions.act_window"
+			id="action_hr_hr_liquidation_tree_view">
+			<field name="name">Liquidación de Personal</field>
+			<field name="type">ir.actions.act_window</field>
+			<field name="res_model">hr.liquidation</field>
+			<!-- <field name="view_type">form</field> -->
+			<field name="view_mode">tree,form</field>
+			<field name="view_id" ref="hr_hr_liquidation_tree_view" />
+		</record>
+
+		<record model="ir.actions.act_window"
+			id="action_hr_hr_liquidation_tree_account_view">
+			<field name="name">Liquidación de Personal</field>
+			<field name="type">ir.actions.act_window</field>
+			<field name="res_model">hr.liquidation</field>
+			<!-- <field name="view_type">form</field> -->
+			<field name="view_mode">tree,form</field>
+			<field name="context">{'search_default_state_done': 1}</field>
+			<field name="view_id" ref="hr_hr_liquidation_tree_view" />
+		</record>
+
+		<menuitem id="hr_hr_liquidation_menu"
+				  name="Liquidación de Personal"
+				  parent="hr_payroll.menu_hr_payroll_payslips"
+				  sequence='125'
+				  action="action_hr_hr_liquidation_tree_view" />
+
+		<menuitem id="hr_hr_liquidation_account_menu"
+			name="Liquidación de Personal" parent="ec_payroll.hr_account_menu"
+			action="action_hr_hr_liquidation_tree_account_view" />
+
+	</data>
+</odoo>

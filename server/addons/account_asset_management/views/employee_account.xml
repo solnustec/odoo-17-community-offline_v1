@@ -1,0 +1,208 @@
+<?xml version="1.0" encoding="utf-8"?>
+<odoo>
+    <data>
+
+        <!-- ================= VISTA TREE PARA ACTIVOS DEL EMPLEADO ================= -->
+        <record id="view_employee_assets_tree" model="ir.ui.view">
+            <field name="name">employee.assets.tree</field>
+            <field name="model">hr.employee</field>
+            <field name="arch" type="xml">
+                <tree string="Mis Activos" create="false" edit="false" delete="false">
+                    <field name="name"/>
+                    <field name="department_id"/>
+                    <field name="job_id"/>
+                </tree>
+            </field>
+        </record>
+
+        <!-- ================= VISTA FORM PARA ACTIVOS DEL EMPLEADO ================= -->
+        <record id="view_employee_assets_form" model="ir.ui.view">
+            <field name="name">employee.assets.form</field>
+            <field name="model">hr.employee</field>
+            <field name="priority">140</field>
+            <field name="arch" type="xml">
+                <form string="Mis Activos" create="false" edit="false" delete="false">
+                    <sheet>
+                        <div class="oe_button_box" name="button_box">
+                        </div>
+
+                        <field name="image_1920" widget="image" class="oe_avatar"
+                               options="{'preview_image': 'image_128'}"/>
+
+                        <div class="oe_title">
+                            <h1>
+                                <field name="name" readonly="1"/>
+                            </h1>
+                            <h3>
+                                <field name="job_id" readonly="1"/>
+                            </h3>
+                        </div>
+
+                        <group>
+                            <group>
+                                <field name="department_id" readonly="1"/>
+                                <field name="work_email" readonly="1"/>
+                            </group>
+                            <group>
+                                <field name="work_phone" readonly="1"/>
+                                <field name="company_id" readonly="1"/>
+                            </group>
+                        </group>
+
+                        <notebook>
+                            <page string="Mis Activos Asignados">
+
+                                <!-- ================= Asignaciones Actuales ================= -->
+                                <group col="1">
+                                    <group string="Asignaciones Iniciales" colspan="4">
+                                        <field name="asset_assignment_ids" readonly="1">
+                                            <tree>
+                                                <field name="asset_id"/>
+                                                <field name="assign_date"/>
+                                                <field name="signed_by_custodian"
+                                                       widget="boolean_button"
+                                                       options="{'terminology': 'Firmado'}"/>
+                                                <field name="state"/>
+                                                <button name="action_sign_assignment"
+                                                        string="Firmar"
+                                                        type="object"
+                                                        class="btn btn-primary btn-sm"
+                                                        attrs="{'invisible': [('signed_by_custodian','=',True)]}"
+                                                        icon="fa-edit"/>
+                                            </tree>
+                                            <form>
+                                                <group>
+                                                    <field name="asset_id" readonly="1"/>
+                                                    <field name="assign_date" readonly="1"/>
+                                                    <field name="signed_by_custodian" readonly="1"
+                                                           widget="boolean_button"
+                                                           options="{'terminology': 'Firmado'}"/>
+                                                    <field name="state" readonly="1"/>
+                                                </group>
+                                                <footer>
+                                                    <button name="action_sign_assignment"
+                                                            string="Firmar Asignación"
+                                                            type="object"
+                                                            class="btn btn-success"
+                                                            attrs="{'invisible': [('signed_by_custodian','=',True)]}"/>
+                                                    <button string="Cancelar" class="btn-secondary" special="cancel"/>
+                                                </footer>
+                                            </form>
+                                        </field>
+                                    </group>
+                                </group>
+
+                                <!-- ================= Transferencias como Custodio Saliente ================= -->
+                                <group col="1">
+                                    <group string="Transferencias Realizadas (Como Custodio Anterior)" colspan="4">
+                                        <field name="asset_transfer_from_ids" readonly="1">
+                                            <tree>
+                                                <field name="asset_id"/>
+                                                <field name="transfer_date"/>
+                                                <field name="custodian_to_id"/>
+                                                <field name="signed_by_from"
+                                                       widget="boolean_button"
+                                                       options="{'terminology': 'Firmado'}"/>
+                                                <button name="action_sign_transfer"
+                                                        string="Firmar"
+                                                        type="object"
+                                                        class="btn btn-primary btn-sm"
+                                                        attrs="{'invisible': [('signed_by_from','=',True)]}"
+                                                        icon="fa-edit"/>
+                                            </tree>
+                                            <form>
+                                                <group>
+                                                    <field name="asset_id" readonly="1"/>
+                                                    <field name="transfer_date" readonly="1"/>
+                                                    <field name="custodian_to_id" readonly="1"/>
+                                                    <field name="signed_by_from" readonly="1"
+                                                           widget="boolean_button"
+                                                           options="{'terminology': 'Firmado'}"/>
+                                                </group>
+                                                <footer>
+                                                    <button name="action_sign_transfer"
+                                                            string="Firmar Transferencia"
+                                                            type="object"
+                                                            class="btn btn-success"
+                                                            attrs="{'invisible': [('signed_by_from','=',True)]}"/>
+                                                    <button string="Cancelar" class="btn-secondary" special="cancel"/>
+                                                </footer>
+                                            </form>
+                                        </field>
+                                    </group>
+                                </group>
+
+                                <!-- ================= Transferencias como Custodio Entrante ================= -->
+                                <group col="1">
+                                    <group string="Transferencias Recibidas (Como Custodio Nuevo)" colspan="4">
+                                        <field name="asset_transfer_to_ids" readonly="1">
+                                            <tree>
+                                                <field name="asset_id"/>
+                                                <field name="transfer_date"/>
+                                                <field name="custodian_from_id"/>
+                                                <field name="signed_by_to"
+                                                       widget="boolean_button"
+                                                       options="{'terminology': 'Firmado'}"/>
+                                                <button name="action_sign_transfer"
+                                                        string="Firmar"
+                                                        type="object"
+                                                        class="btn btn-primary btn-sm"
+                                                        attrs="{'invisible': [('signed_by_to','=',True)]}"
+                                                        icon="fa-edit"/>
+                                            </tree>
+                                            <form>
+                                                <group>
+                                                    <field name="asset_id" readonly="1"/>
+                                                    <field name="transfer_date" readonly="1"/>
+                                                    <field name="custodian_from_id" readonly="1"/>
+                                                    <field name="signed_by_to" readonly="1"
+                                                           widget="boolean_button"
+                                                           options="{'terminology': 'Firmado'}"/>
+                                                </group>
+                                                <footer>
+                                                    <button name="action_sign_transfer"
+                                                            string="Firmar Transferencia"
+                                                            type="object"
+                                                            class="btn btn-success"
+                                                            attrs="{'invisible': [('signed_by_to','=',True)]}"/>
+                                                    <button string="Cancelar" class="btn-secondary" special="cancel"/>
+                                                </footer>
+                                            </form>
+                                        </field>
+                                    </group>
+                                </group>
+
+                            </page>
+                        </notebook>
+                    </sheet>
+                </form>
+            </field>
+        </record>
+
+        <!-- ================= ACCIÓN PARA VISTA DE ACTIVOS DEL EMPLEADO ================= -->
+        <record id="action_employee_assets_view" model="ir.actions.act_window">
+            <field name="name">Mis Activos</field>
+            <field name="res_model">hr.employee</field>
+            <field name="view_mode">tree,form</field>
+            <field name="view_ids" eval="[(5, 0, 0),
+                                          (0, 0, {'view_mode': 'tree', 'view_id': ref('view_employee_assets_tree')}),
+                                          (0, 0, {'view_mode': 'form', 'view_id': ref('view_employee_assets_form')})]"/>
+            <field name="domain">[('user_id', '=', uid)]</field>
+            <field name="context">{
+                'default_user_id': uid,
+                'search_default_user_id': uid
+                }
+            </field>
+            <field name="limit">1</field>
+            <field name="target">current</field>
+        </record>
+
+        <!-- ================= ELEMENTO DE MENÚ ================= -->
+        <menuitem id="menu_employee_assets"
+                  name="Mis Activos"
+                  parent="hr.menu_hr_root"
+                  action="action_employee_assets_view"
+                  sequence="50"/>
+
+    </data>
+</odoo>

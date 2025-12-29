@@ -1,0 +1,10 @@
+<?xml version="1.0" encoding="utf-8"?>
+<odoo>
+    <!-- Menú raíz visible para usuarios y administradores de gamificación -->
+    <menuitem id="menu_gamification_custom_root"
+              name="Metas"
+              sequence="10"
+              web_icon="gamification_custom,static/description/icon.png"
+              groups="gamification_custom.group_gamification_user,gamification_custom.group_gamification_manager"
+    />
+</odoo>

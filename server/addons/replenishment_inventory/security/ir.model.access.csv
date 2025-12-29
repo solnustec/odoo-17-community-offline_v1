@@ -1,0 +1,8 @@
+id,name,model_id:id,group_id:id,perm_read,perm_write,perm_create,perm_unlink
+access_stock_rule_replenishment,stock.rule.replenishment,model_stock_rule_replenishment,base.group_user,1,1,1,1
+access_product_replenishment_queue,product.replenishment.queue,model_product_replenishment_queue,base.group_user,1,1,1,1
+access_product_replenishment_dead_letter,product.replenishment.dead.letter,model_product_replenishment_dead_letter,base.group_user,1,1,1,1
+access_product_sales_stats_daily,product.sales.stats.daily,model_product_sales_stats_daily,base.group_user,1,1,1,1
+access_product_sales_stats_rolling,product.sales.stats.rolling,model_product_sales_stats_rolling,base.group_user,1,1,1,1
+access_product_sale_event_log,product.sale.event.log,model_product_sale_event_log,base.group_user,1,1,1,1
+access_replenishment_migration_wizard,replenishment.migration.wizard,model_replenishment_migration_wizard,base.group_user,1,1,1,1

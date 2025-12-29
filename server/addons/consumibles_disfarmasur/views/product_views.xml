@@ -1,0 +1,213 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<odoo>
+
+    <!-- ================================================= -->
+    <!-- TIPO DE PRODUCTO -->
+    <!-- ================================================= -->
+
+    <record id="view_consumibles_product_type_tree" model="ir.ui.view">
+        <field name="name">consumibles.product.type.tree</field>
+        <field name="model">consumibles.product.type</field>
+        <field name="arch" type="xml">
+            <tree>
+                <field name="name"/>
+                <field name="active"/>
+            </tree>
+        </field>
+    </record>
+
+    <record id="view_consumibles_product_type_form" model="ir.ui.view">
+        <field name="name">consumibles.product.type.form</field>
+        <field name="model">consumibles.product.type</field>
+        <field name="arch" type="xml">
+            <form>
+                <sheet>
+                    <group>
+                        <field name="name"/>
+                        <field name="active"/>
+                        <field name="description"/>
+                    </group>
+                </sheet>
+            </form>
+        </field>
+    </record>
+
+    <record id="action_consumibles_product_type" model="ir.actions.act_window">
+        <field name="name">Tipos de Producto</field>
+        <field name="res_model">consumibles.product.type</field>
+        <field name="view_mode">tree,form</field>
+    </record>
+
+    <!-- ================================================= -->
+    <!-- LABORATORIOS -->
+    <!-- ================================================= -->
+
+    <record id="view_consumibles_product_laboratory_tree" model="ir.ui.view">
+        <field name="name">consumibles.product.laboratory.tree</field>
+        <field name="model">consumibles.product.laboratory</field>
+        <field name="arch" type="xml">
+            <tree>
+                <field name="name"/>
+                <field name="active"/>
+            </tree>
+        </field>
+    </record>
+
+    <record id="view_consumibles_product_laboratory_form" model="ir.ui.view">
+        <field name="name">consumibles.product.laboratory.form</field>
+        <field name="model">consumibles.product.laboratory</field>
+        <field name="arch" type="xml">
+            <form>
+                <sheet>
+                    <group>
+                        <field name="name"/>
+                        <field name="active"/>
+                        <field name="description"/>
+                    </group>
+                </sheet>
+            </form>
+        </field>
+    </record>
+
+    <record id="action_consumibles_product_laboratory" model="ir.actions.act_window">
+        <field name="name">Laboratorios</field>
+        <field name="res_model">consumibles.product.laboratory</field>
+        <field name="view_mode">tree,form</field>
+    </record>
+
+    <!-- ================================================= -->
+    <!-- HISTORIAL DE COSTOS - TREE VIEW -->
+    <!-- ================================================= -->
+
+    <record id="view_consumibles_product_cost_history_tree" model="ir.ui.view">
+        <field name="name">consumibles.product.cost.history.tree</field>
+        <field name="model">consumibles.product.cost.history</field>
+        <field name="arch" type="xml">
+            <tree string="Historial de Costos">
+                <field name="date"/>
+                <field name="invoice_number"/>
+                <field name="product_type_id"/>
+                <field name="qty"/>
+                <field name="cost"/>
+                <field name="total"/>
+            </tree>
+        </field>
+    </record>
+
+
+    <!-- ================================================= -->
+    <!-- ACCIÓN: HISTORIAL DE COSTOS (FUNCIONAL) -->
+    <!-- ================================================= -->
+
+    <record id="action_consumibles_product_cost_history" model="ir.actions.act_window">
+        <field name="name">Historial de Costos</field>
+        <field name="res_model">consumibles.product.cost.history</field>
+        <field name="view_mode">tree,form</field>
+        <field name="domain">[('product_id','=', active_id)]</field>
+    </record>
+
+    <!-- ================================================= -->
+    <!-- PRODUCTOS CONSUMIBLES -->
+    <!-- ================================================= -->
+
+    <record id="view_consumibles_product_template_tree" model="ir.ui.view">
+        <field name="name">consumibles.product.template.tree</field>
+        <field name="model">consumibles.product.template</field>
+        <field name="arch" type="xml">
+            <tree>
+                <field name="name"/>
+                <field name="laboratory_id"/>
+                <field name="active"/>
+            </tree>
+        </field>
+    </record>
+
+    <record id="view_consumibles_product_template_form" model="ir.ui.view">
+        <field name="name">consumibles.product.template.form</field>
+        <field name="model">consumibles.product.template</field>
+        <field name="arch" type="xml">
+            <form string="Producto Consumible">
+                <sheet>
+
+                    <!-- BOTÓN HISTORIAL (100% válido) -->
+                    <div class="oe_button_box" name="button_box">
+                        <button
+                                type="action"
+                                name="%(action_consumibles_product_cost_history)d"
+                                class="oe_stat_button"
+                                icon="fa-history">
+                            <span class="o_stat_text">Historial de Costos</span>
+                        </button>
+                    </div>
+
+                    <group>
+                        <field name="name"/>
+                        <field name="laboratory_id"/>
+                        <field name="active"/>
+                    </group>
+
+                    <notebook>
+
+                        <page string="Tipos y Stock">
+                            <field name="type_line_ids">
+                                <tree editable="bottom">
+                                    <field name="product_type_id"/>
+                                    <field name="stock_qty"/>
+                                    <field name="active"/>
+                                </tree>
+                            </field>
+                        </page>
+
+                        <page string="Historial de Costos">
+                            <field name="cost_history_ids" readonly="1">
+                                <tree>
+                                    <field name="date"/>
+                                    <field name="invoice_number"/>
+                                    <field name="product_type_id"/>
+                                    <field name="qty"/>
+                                    <field name="cost"/>
+                                    <field name="total"/>
+                                </tree>
+                            </field>
+                        </page>
+
+                    </notebook>
+
+                </sheet>
+            </form>
+        </field>
+    </record>
+
+    <record id="action_consumibles_product_template" model="ir.actions.act_window">
+        <field name="name">Productos</field>
+        <field name="res_model">consumibles.product.template</field>
+        <field name="view_mode">tree,form</field>
+    </record>
+
+    <!-- ================================================= -->
+    <!-- MENÚS -->
+    <!-- ================================================= -->
+
+    <menuitem id="menu_custom_product_root"
+              name="Mov.Productos"
+              sequence="10"/>
+
+    <menuitem id="menu_consumibles_product_template"
+              name="Productos"
+              parent="menu_custom_product_root"
+              action="action_consumibles_product_template"
+              sequence="5"/>
+
+    <menuitem id="menu_consumibles_product_type"
+              name="Tipos de Producto"
+              parent="menu_custom_product_root"
+              action="action_consumibles_product_type"
+              sequence="10"/>
+
+    <menuitem id="menu_consumibles_product_laboratory"
+              name="Laboratorios"
+              parent="menu_custom_product_root"
+              action="action_consumibles_product_laboratory"
+              sequence="20"/>
+
+</odoo>

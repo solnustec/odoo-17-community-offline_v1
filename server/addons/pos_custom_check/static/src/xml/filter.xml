@@ -1,0 +1,41 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<templates id="template" xml:space="preserve">
+    <t t-name="point_of_sale.FilterProductsTemplate" t-inherit="point_of_sale.ProductsWidget"
+       t-inherit-mode="extension">
+        <xpath expr="//div[contains(@class, 'products-widget-control')]" position="before">
+            <!-- Selector de marcas -->
+<!--            <div class="row bg-white p-2">-->
+<!--                <div class="col-md-6">-->
+<!--                    <select-->
+<!--                            class="form-control"-->
+<!--                            t-on-click="onBrandClick"-->
+<!--                            t-on-change="onBrandChange"-->
+<!--                    >-->
+<!--                        <option value="">Seleccionar Marca</option>-->
+<!--                        <t t-if="state.brands and state.brands.length > 0">-->
+<!--                            <t t-foreach="state.brands" t-as="brand" t-key="brand.id">-->
+<!--                                <option t-att-value="brand.id" t-esc="brand.name"/>-->
+<!--                            </t>-->
+<!--                        </t>-->
+<!--                    </select>-->
+<!--                </div>-->
+<!--                <div class="col-md-6">-->
+<!--                    <select-->
+<!--                            class="form-control"-->
+<!--                            t-on-click="onLaboratoryClick"-->
+<!--                            t-on-change="onLaboratoryChange"-->
+<!--                    >-->
+<!--                        <option value="">Seleccionar Laboratorio</option>-->
+<!--                        <t t-if="state.laboratories and state.laboratories.length > 0">-->
+<!--                            <t t-foreach="state.laboratories" t-as="laboratory" t-key="laboratory.id">-->
+<!--                                <option t-att-value="laboratory.id" t-esc="laboratory.name"/>-->
+<!--                            </t>-->
+<!--                        </t>-->
+<!--                    </select>-->
+<!--                </div>-->
+<!--            </div>-->
+        </xpath>
+
+        
+    </t>
+</templates>

@@ -1,0 +1,20 @@
+<odoo>
+    <data>
+
+        <!-- Acción de menú para las devoluciones de venta -->
+        <record id="action_sale_order_return" model="ir.actions.act_window">
+            <field name="name">Crear Devolución</field>
+            <field name="res_model">sale.order</field>  <!-- Cambiado 'sale.return' por 'sale.order' -->
+            <field name="view_mode">form</field>
+            <field name="target">new</field>  <!-- Abrir en una ventana emergente -->
+        </record>
+
+        <record id="menu_pos_orders_devoluciones" model="ir.ui.menu">
+            <field name="name">Devoluciones</field>
+            <field name="parent_id" ref="point_of_sale.menu_point_of_sale"/>
+            <field name="action" ref="action_sale_order_return"/>
+            <field name="sequence" eval="10"/>
+        </record>
+
+    </data>
+</odoo>

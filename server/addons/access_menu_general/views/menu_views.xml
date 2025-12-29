@@ -1,0 +1,204 @@
+<odoo>
+    <data>
+
+        <menuitem name="Discuss"
+                  id="mail.menu_root_discuss"
+                  action="mail.action_discuss"
+                  web_icon="mail,static/description/icon.png"
+                  groups="access_menu_general.system_access_discuss"
+                  sequence="5"/>
+
+        <menuitem id="calendar.mail_menu_calendar"
+                  name="Calendar"
+                  sequence="10"
+                  web_icon="calendar,static/description/icon.png"
+                  groups="access_menu_general.system_access_calendar"/>
+
+        <menuitem name="Adm. Campos"
+                  id="custom.menu_root"
+                  web_icon="custom,static/description/icon.png"
+                  groups="access_menu_general.system_access_adm_campos"/>
+
+        <menuitem name="WhatsApp"
+                  id="pragtech_whatsapp_base.menu_whatsapp_root"
+                  sequence="10"
+                  groups="access_menu_general.system_access_whatsapp"/>
+
+        <menuitem name="Contacts"
+                  id="contacts.menu_contacts"
+                  sequence="20"
+                  web_icon="contacts,static/description/icon.png"
+                  groups="access_menu_general.system_access_contacts"/>
+
+        <menuitem id="payroll_other_discounts.hr_payroll_discount_report_menu"
+                  name="Abonos y Descuentos"
+                  action="payroll_other_discounts.hr_payroll_discount_action"
+                  sequence="20"
+                  web_icon="payroll_other_discounts,static/src/img/icon.png"
+                  groups="access_menu_general.system_access_abonos_descuentos"/>
+
+        <menuitem id="crm.crm_menu_root"
+                  name="CRM"
+                  web_icon="crm,static/description/icon.png"
+                  groups="access_menu_general.system_access_crm"
+                  sequence="25"/>
+
+        <menuitem id="sale_management.sale_menu_root"
+                  name="Sales"
+                  web_icon="sale_management,static/description/icon.png"
+                  sequence="30"
+                  groups="access_menu_general.system_access_sales"/>
+
+        <menuitem id="spreadsheet_dashboard.spreadsheet_dashboard_menu_root"
+                  name="Dashboards"
+                  action="spreadsheet_dashboard.ir_actions_dashboard_action"
+                  web_icon="spreadsheet_dashboard,static/description/icon.png"
+                  sequence="37"
+                  groups="access_menu_general.system_access_dashboards"/>
+
+        <menuitem id="point_of_sale.menu_point_root"
+                  name="Point of Sale"
+                  web_icon="point_of_sale,static/description/icon.png"
+                  sequence="50"
+                  groups="access_menu_general.system_access_pos"/>
+
+        <menuitem name="Accounting"
+                  id="account_accountant.menu_accounting"
+                  web_icon="account_accountant,static/description/icon.png"
+                  sequence="60"
+                  groups="access_menu_general.system_access_accounting"/>
+
+        <menuitem name="Website"
+                  id="website.menu_website_configuration"
+                  sequence="95"
+                  web_icon="website,static/description/icon.png"
+                  groups="access_menu_general.system_access_website"/>
+
+        <menuitem name="Email Marketing"
+                  id="mass_mailing.mass_mailing_menu_root"
+                  sequence="115"
+                  web_icon="mass_mailing,static/description/icon.png"
+                  groups="access_menu_general.system_access_email_marketing"/>
+
+        <menuitem id="document_knowledge.menu_document_root"
+                  name="Knowledge"
+                  web_icon="document_knowledge,static/description/icon.png"
+                  sequence="116"
+                  groups="access_menu_general.system_access_knowledge"/>
+
+        <menuitem id="formio.menu_formio_root"
+                  name="Forms"
+                  sequence="127"
+                  web_icon="formio,static/description/icon.png"
+                  groups="access_menu_general.system_access_forms"/>
+
+        <menuitem name="Purchase"
+                  id="purchase.menu_purchase_root"
+                  web_icon="purchase,static/description/icon.png"
+                  sequence="135"
+                  groups="access_menu_general.system_access_purchase"/>
+
+        <menuitem name="Inventory"
+                  id="stock.menu_stock_root"
+                  sequence="140"
+                  web_icon="stock,static/description/icon.png"
+                  groups="access_menu_general.system_access_inventory"/>
+
+        <menuitem id="hr.menu_hr_root"
+                  name="Employees"
+                  web_icon="hr,static/description/icon.png"
+                  sequence="185"
+                  groups="access_menu_general.system_access_employees"/>
+
+        <menuitem id="hr_payroll.menu_hr_payroll_root"
+                  name="Payroll"
+                  sequence="190"
+                  web_icon="hr_payroll,static/description/icon.png"
+                  groups="access_menu_general.system_access_payroll"/>
+
+        <menuitem id="hr_attendance.menu_hr_attendance_root"
+                  name="Attendances"
+                  sequence="205"
+                  web_icon="hr_attendance,static/description/icon.png"
+                  groups="access_menu_general.system_access_attendances"/>
+
+        <menuitem name="Recruitment"
+                  id="hr_recruitment.menu_hr_recruitment_root"
+                  web_icon="hr_recruitment,static/description/icon.png"
+                  sequence="210"
+                  groups="access_menu_general.system_access_recruitment"/>
+
+        <menuitem name="Fleet"
+                  id="fleet.menu_root"
+                  sequence="220"
+                  web_icon="fleet,static/description/icon.png"
+                  groups="access_menu_general.system_access_fleet"/>
+
+        <menuitem name="Time Off"
+                  id="hr_holidays.menu_hr_holidays_root"
+                  sequence="225"
+                  web_icon="hr_holidays,static/description/icon.png"
+                  groups="access_menu_general.system_access_time_off"/>
+
+        <menuitem id="utm.menu_link_tracker_root"
+                  name="Link Tracker"
+                  sequence="270"
+                  web_icon="utm,static/description/icon.png"
+                  groups="access_menu_general.system_access_link_tracker"/>
+
+        <menuitem id="base.menu_management"
+                  name="Apps"
+                  sequence="500"
+                  web_icon="base,static/description/modules.png"
+                  groups="access_menu_general.system_access_apps"/>
+
+        <menuitem name="Settings"
+                  id="base.menu_administration"
+                  web_icon="base,static/description/settings.png"
+                  sequence="550"
+                  groups="access_menu_general.system_access_settings"/>
+
+        <menuitem name="Surveys"
+                  id="survey.menu_surveys"
+                  sequence="130"
+                  groups="access_menu_general.system_access_surveys"
+                  web_icon="survey,static/description/icon.png"
+
+        />
+
+        <menuitem id="hr_timesheet.timesheet_menu_root"
+                  name="Timesheets"
+                  sequence="75"
+                  groups="access_menu_general.system_access_timesheets"
+                  web_icon="hr_timesheet,static/description/icon_timesheet.png"
+        />
+
+        <menuitem
+                name="Project"
+                id="project.menu_main_pm"
+                groups="access_menu_general.system_access_project"
+                web_icon="project,static/description/icon.png"
+                sequence="70"
+        />
+        <menuitem
+                id="project_todo.menu_todo_todos"
+                name="To-do"
+                action="project_todo.project_task_preload_action_todo"
+                web_icon="project_todo,static/description/icon.png"
+                groups="access_menu_general.system_access_project_todo"
+        />
+
+<!--        <menuitem-->
+<!--                id="menu_helpdesk"-->
+<!--                name="Soporte Técnico"-->
+<!--                web_icon="odoo_website_helpdesk,static/description/icon.png"-->
+<!--                sequence="1"-->
+<!--        />-->
+
+
+    </data>
+</odoo>
+
+
+
+

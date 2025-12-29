@@ -1,0 +1,9 @@
+id,name,model_id:id,group_id:id,perm_read,perm_write,perm_create,perm_unlink
+access_product_warehouse_sale_summary_user,access.product.warehouse.sale.summary.user,model_product_warehouse_sale_summary,base.group_user,1,1,1,1
+access_product_warehouse_sale_summary_admin,access.product.warehouse.sale.summary.admin,model_product_warehouse_sale_summary,base.group_system,1,1,1,1
+access_sale_summary_admin,access.sales.summary.error,model_sales_summary_error,base.group_system,1,1,1,1
+access_loyalty_sync_admin,access.loyalty.sync,model_loyalty_sync,base.group_system,1,1,1,1
+access_loyalty_sync_user,access.loyalty.sync,model_loyalty_sync,base.group_user,1,1,1,1
+access_product_sync_admin,access.product.sync,model_product_sync,base.group_system,1,1,1,1
+access_api_monitor_admin,access.api.monitor,model_api_monitor,base.group_system,1,1,1,1
+access_api_monitor_log_admin,access.api.monitor.log,model_api_monitor_log,base.group_system,1,1,1,1

@@ -1,0 +1,32 @@
+<?xml version="1.0" encoding="utf-8"?>
+<odoo>
+    <data>
+        <record id="product_template_form_view_inherit_asset" model="ir.ui.view">
+            <field name="name">product.template.form.inherit.asset.tabs</field>
+            <field name="model">product.template</field>
+            <field name="inherit_id" ref="product.product_template_form_view"/>
+            <field name="priority">20</field>
+            <field name="arch" type="xml">
+                <xpath expr="//sheet/notebook/page[1]" position="after">
+
+                    <!-- Pestaña Activos/Bienes -->
+                    <page string="Activos/Bienes" invisible="type != 'activos_bienes'">
+                        <group>
+                            <!-- Información básica general -->
+                            <group string="Información Básica">
+                                <field name="class_id"/>
+                                <field name="subclass_id"/>
+                                <field name="asset_brand_id"/>
+                                <field name="asset_model"/>
+                                <field name="asset_serial"/>
+                                <field name="asset_material"/>
+                                <field name="asset_color"/>
+                                <field name="asset_specification"/>
+                            </group>
+                        </group>
+                    </page>
+                </xpath>
+            </field>
+        </record>
+    </data>
+</odoo>

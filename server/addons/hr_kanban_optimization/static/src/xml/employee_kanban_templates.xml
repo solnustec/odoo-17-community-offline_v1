@@ -1,0 +1,43 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<templates xml:space="preserve">
+
+    <!-- ===================================================================== -->
+    <!-- LazyImage Component Template                                          -->
+    <!-- ===================================================================== -->
+    <t t-name="hr_kanban_optimization.LazyImage" owl="1">
+        <div t-ref="imageContainer"
+             t-att-class="containerClasses"
+             t-att-style="props.hasImage ? '' : 'background-color: ' + placeholderColor">
+
+            <!-- Loading spinner -->
+            <t t-if="state.isLoading">
+                <div class="o_lazy_image_spinner">
+                    <i class="fa fa-spinner fa-spin"/>
+                </div>
+            </t>
+
+            <!-- Loaded image -->
+            <t t-elif="state.isLoaded and state.imageData">
+                <img t-att-src="imageSrc"
+                     t-att-alt="props.employeeName"
+                     class="o_lazy_image_img"
+                     loading="lazy"/>
+            </t>
+
+            <!-- Placeholder with initials (no image or error) -->
+            <t t-elif="state.isLoaded and !state.imageData">
+                <div class="o_lazy_image_placeholder">
+                    <span class="o_lazy_image_initials" t-esc="initials"/>
+                </div>
+            </t>
+
+            <!-- Initial placeholder before visibility check -->
+            <t t-else="">
+                <div class="o_lazy_image_placeholder">
+                    <span class="o_lazy_image_initials" t-esc="initials"/>
+                </div>
+            </t>
+        </div>
+    </t>
+
+</templates>

@@ -1,0 +1,18 @@
+<odoo>
+    <data>
+        <record id="view_warehouse_form_inherited" model="ir.ui.view">
+            <field name="name">stock.warehouse.form.inherited</field>
+            <field name="model">stock.warehouse</field>
+            <field name="inherit_id" ref="stock.view_warehouse"/>
+            <field name="arch" type="xml">
+                <xpath expr="//group[@name='group_resupply']" position="after">
+                    <group string="Id base actual">
+                        <field name="external_id" placeholder="Enter external ID"/>
+                    </group>
+                </xpath>
+            </field>
+        </record>
+
+
+    </data>
+</odoo>

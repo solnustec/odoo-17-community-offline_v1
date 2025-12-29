@@ -1,0 +1,15 @@
+<?xml version="1.0" encoding="utf-8"?>
+<odoo>
+    <data>
+
+        <record id="cron_update_app_payments" model="ir.cron">
+            <field name="name">Actualizar pagos desde la App Movil</field>
+            <field name="model_id" ref="model_payment_transaction"/>
+            <field name="state">code</field>
+            <field name="code">model.get_payment_status_by_app_mobile()</field>
+            <field name="interval_number">1</field>
+            <field name="interval_type">minutes</field>
+            <field name="numbercall">-1</field>
+        </record>
+    </data>
+</odoo>

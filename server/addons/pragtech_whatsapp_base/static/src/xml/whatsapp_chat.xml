@@ -1,0 +1,632 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<templates xml:space="preserve">
+  <t t-name="pragtech_whatsapp_base.whatsappChatTemplate" t-inherit-mode="primary">
+    <xpath expr="." position="inside">
+      <link rel="stylesheet" type="text/css" href="/pragtech_whatsapp_base/static/src/css/whatsapp.css"/>
+    </xpath>
+
+      <div class="whatsapp-chat-container">
+      <!-- Lista de chats -->
+          <div class="chat-list-container">
+        <div class="chat-list-header p-3 border-bottom">
+          <div class="input-group rounded">
+            <input type="search" class="form-control" placeholder="Buscar" aria-label="Buscar"
+                   t-model="state.searchQuery"/>
+
+              <span class="input-group-text border-0">
+              <i class="fa fa-search"/>
+            </span>
+          </div>
+        </div>
+
+              <div class="chat-list">
+                  <ul class="list-unstyled mb-0">
+            <t t-foreach="this.filteredConversations" t-as="chat"
+               t-key="chat.chatId + '_' + (chat.lastMessageTime || 'no-time')">
+                <li class="p-2 border-bottom chat-item"
+                    t-att-class="{'active bg-light': chat.chatId === state.selectedChatId}"
+                    t-on-click="() => this.selectChat(chat.chatId)">
+                  <div class="d-flex justify-content-between align-items-center">
+                    <div class="d-flex flex-column">
+                      <h6 class="mb-0">
+                          <t t-esc="chat.displayName or chat.chatId"/>
+                          <t t-if="chat.pinned">
+                            <i class="fa fa-thumb-tack text-primary ms-1" title="Fijado"></i>
+                          </t>
+                          <!-- DOT DE ESTADO -->
+                          <span t-if="chat and chat.chatId and this.get_color_state(chat.chatId)"
+                                class="rounded-circle ms-2"
+                                t-att-style="'display:inline-block;width:10px;height:10px;background-color:' + this.get_color_state(chat.chatId) + ';'"/>
+                        </h6>
+                        <p class="text-muted small mb-0 text-truncate" style="max-width: 150px;"
+                           t-esc="chat.message_body"/>
+                    </div>
+                      <div class="d-flex flex-column align-items-end">
+                      <small class="text-muted" t-esc="formatDate(chat.lastMessageTime)"/>
+                          <span t-if="chat.unreadCount > 0"
+                                class="badge bg-primary rounded-pill text-white">
+                        <t t-esc="chat.unreadCount"/>
+                      </span>
+                          <!--                          <button class="btn btn-sm btn-light mt-1"-->
+                          <!--                                  t-on-click.stop="() => this.togglePinChat(chat.chatId)"-->
+                          <!--                                  title="Fijar/Desfijar chat">-->
+                          <!--                          <i class="fa fa-thumb-tack"></i>-->
+                          <!--                        </button>-->
+                    </div>
+                  </div>
+                </li>
+
+                <!--              <li class="p-2 border-bottom chat-item"-->
+                <!--                  t-att-class="{'active bg-light': chat.chatId === state.selectedChatId}"-->
+                <!--                  t-on-click="() => this.selectChat(chat.chatId)">-->
+                <!--                <div class="d-flex justify-content-between align-items-center">-->
+                <!--                  <div class="d-flex flex-column">-->
+                <!--                    <h6 class="mb-0" t-esc="chat.displayName or chat.chatId"/>-->
+
+
+                <!--                      <p class="text-muted small mb-0 text-truncate" style="max-width: 150px;"-->
+                <!--                         t-esc="chat.message_body"/>-->
+                <!--                      <t t-if="hasPendingOrders(chat.chatId)">-->
+                <!--                          <span class="badge rounded-circle orders-badge"-->
+                <!--                                t-att-style="'background-color: ' + getOrderColor(chat.chatId) + ';'">-->
+                <!--                                - -->
+                <!--                          </span>-->
+                <!--                      </t>-->
+                <!--                      &lt;!&ndash;                      <t t-if="hasCotizarReceta(chat.chatId)">&ndash;&gt;-->
+                <!--                      &lt;!&ndash;                        <span class="badge rounded-circle orders-badge"&ndash;&gt;-->
+                <!--                      &lt;!&ndash;                              t-att-style="'background-color: get_color_state(chat);'">&ndash;&gt;-->
+                <!--                      &lt;!&ndash;                              - &ndash;&gt;-->
+                <!--                      &lt;!&ndash;                        </span>&ndash;&gt;-->
+                <!--                      &lt;!&ndash;                    </t>&ndash;&gt;-->
+                <!--                      <t t-if="chat and chat.chatId and hasCotizarReceta(chat.chatId)">-->
+                <!--                          <span class="badge rounded-circle orders-badge"-->
+                <!--                                t-att-style="get_color_state(chat.chatId) ? 'background-color: ' + get_color_state(chat.chatId) : ''"> - </span>-->
+                <!--                        </t>-->
+
+
+                <!--                      <t t-if="chat.has_pending_orders" class="text-warning">-->
+                <!--                      <small>-->
+                <!--                        <i class="fa fa-exclamation-circle me-1"/>-->
+                <!--                          <t t-esc="chat.pending_orders_count"/>-->
+                <!--                          orden(es) pendiente(s)-->
+                <!--                      </small>-->
+                <!--                    </t>-->
+                <!--                  </div>-->
+                <!--                    <div class="d-flex flex-column align-items-end">-->
+                <!--                    <small class="text-muted" t-esc="formatDate(chat.lastMessageTime)"/>-->
+                <!--                        <span t-if="chat.unreadCount > 0" class="badge bg-primary rounded-pill text-white">-->
+                <!--                      <t t-esc="chat.unreadCount"/>-->
+                <!--                    </span>-->
+                <!--                  </div>-->
+                <!--                </div>-->
+                <!--              </li>-->
+            </t>
+          </ul>
+                  <div t-if="state.is_loading_conversations" class="text-center py-3">
+            <div class="spinner-border text-primary" role="status"/>
+          </div>
+        </div>
+      </div>
+          <!-- Área de mensajes y chat input -->
+          <div class="chat-messages-container">
+      <!-- Encabezado -->
+              <div class="chat-header p-3 border-bottom">
+                  <div class="d-flex align-items-center w-100">
+                    <div class="flex-grow-1 d-flex align-items-center">
+                      <t t-if="state.selectedChatId">
+                        <h6 class="mb-0 me-2" t-esc="state.selectedChatName"/>
+                          <button class="btn btn-sm btn-outline-secondary"
+                                  t-on-click="copyChatNumber"
+                                  title="Copiar número del usuario">
+                          <i class="fa fa-copy"/>
+                        </button>
+                          <button t-if="state.selectedChatId"
+                                  class="btn btn-sm btn-outline-secondary"
+                                  t-on-click="openEditContactName"
+                                  title="Renombrar contacto">
+                            <i class="fa fa-pencil"/>
+                        </button>
+                      </t>
+                        <t t-else="">
+                        <h6 class="mb-0 text-muted">Seleccione un chat</h6>
+                      </t>
+                    </div>
+                      <div class="d-flex align-items-center gap-2">
+                        <button t-if="state.selectedChatId"
+                                class="btn btn-sm"
+                                t-att-class="state.conversations.find(c => c.chatId === state.selectedChatId)?.pinned ? 'btn-primary' : 'btn-outline-secondary'"
+                                t-on-click="() => this.togglePinChat(state.selectedChatId)"
+                                title="Fijar/Desfijar chat">
+                          <i class="fa fa-thumb-tack"></i>
+                        </button>
+
+
+                          <button t-if="state.selectedChatId and state.orders.length > 0"
+                                  class="btn btn-primary btn-sm"
+                                  t-on-click="openOrders">
+                        Ver Órdenes
+                      </button>
+                    </div>
+                  </div>
+                </div>
+
+
+              <!-- Contenedor de mensajes -->
+              <div class="messages-scroll-container" t-on-scroll="setupScrollListener">
+          <!-- Si no hay chat seleccionado, se muestra el mensaje de aviso -->
+                  <t t-if="!state.selectedChatId">
+            <div class="text-center py-3">
+              <small class="text-muted">Seleccione un chat para ver los mensajes</small>
+            </div>
+          </t>
+                  <!-- Si hay un chat seleccionado, se muestran los mensajes -->
+                  <t t-else="">
+            <div t-if="state.isLoadingOldMessages" class="load-older-messages">
+              <div class="d-flex align-items-center justify-content-center py-2 bg-white">
+                <div class="spinner-border spinner-border-sm text-primary me-2"/>
+                  <small>Cargando mensajes anteriores...</small>
+              </div>
+            </div>
+
+                      <div t-if="state.error.message" class="alert alert-danger m-3">
+              <span t-esc="state.error.message"/>
+                          <button type="button" class="btn-close" t-on-click="() => state.error = { message: null }"/>
+            </div>
+
+                      <div id="chat-messages" class="px-3">
+              <t t-foreach="state.messages" t-as="msg"
+                 t-key="msg.id + '_' + (msg.timestamp || msg.time || Date.now()) + '_' + msg_index">
+                <div class="message-wrapper mb-3 animated" t-att-class="msg.fromMe ? 'text-end' : 'text-start'">
+                    <t t-if="msg.type === 'text' || msg.type === 'interactive'">
+                    <div class="message-content d-inline-block" t-att-class="msg.fromMe ? 'ms-auto' : 'me-auto'">
+                          <div class="d-flex flex-column"
+                               t-att-class="msg.fromMe ? 'align-items-end' : 'align-items-start'">
+                              <small class="text-muted mb-1" t-if="!msg.fromMe">
+                                  <t t-esc="msg.senderName"/>
+                              </small>
+                              <p class="small p-2 mb-1 rounded-3 shadow-sm"
+                                 t-att-class="msg.fromMe ? 'bg-primary text-white' : 'bg-light text-dark'"
+                                 t-esc="this.renderPlainMarkdown(msg.message_body)"
+                                 style="white-space: pre-wrap; text-align: left;"
+                              />
+                              <small class="text-muted" t-esc="formatDate(msg.time)"/>
+                          </div>
+                      </div>
+                  </t>
+                    <t t-if="msg.type === 'document'">
+                    <div class="document-message p-3 rounded bg-light">
+                      <div class="d-flex align-items-center">
+                        <i class="fa fa-file-pdf fa-2x text-danger me-2"/>
+                          <div class="flex-grow-1">
+                          <p class="mb-0 text-truncate" t-esc="msg.message_body || 'Documento'"/>
+                              <small class="text-muted" t-esc="formatDate(msg.time)"/>
+                        </div>
+                          <a t-att-href="msg.document_url" t-att-download="msg.document_name"
+                             class="btn btn-sm btn-light ms-2">
+  <i class="fa fa-download"/>
+</a>
+
+
+                      </div>
+                    </div>
+                  </t>
+
+
+                    <t t-if="msg.type === 'image'">
+    <div class="message-content d-inline-block">
+        <div class="media-container">
+            <img
+                    t-att-src="msg.attachment_data ? 'data:' + (msg.mime_type || 'image/jpeg') + ';base64,' + msg.attachment_data : msg.image_url"
+                    class="img-fluid rounded media-preview cursor-pointer"
+                    alt="Imagen"
+                    t-att-data-bs-target="'#imageModal_' + msg.id"
+                    data-bs-toggle="modal"
+                    style="cursor: pointer;"
+            />
+            <div class="media-actions">
+                <a
+                        t-att-href="msg.attachment_data ? 'data:' + (msg.mime_type || 'image/jpeg') + ';base64,' + msg.attachment_data : msg.image_url"
+                        download="imagen"
+                        class="btn btn-sm btn-light">
+                    <i class="fa fa-download"/>
+                </a>
+            </div>
+        </div>
+        <small class="text-muted d-block mt-1" t-esc="formatDate(msg.time)"/>
+    </div>
+
+                        <!-- Modal para mostrar imagen en tamaño completo -->
+                        <div class="modal fade" t-att-id="'imageModal_' + msg.id" tabindex="-1" aria-hidden="true">
+        <div class="modal-dialog modal-xl modal-dialog-centered">
+            <div class="modal-content bg-transparent border-0">
+                <div class="modal-header border-0 pb-0">
+                    <button type="button" class="btn-close btn-close-white ms-auto" data-bs-dismiss="modal"
+                            aria-label="Close"></button>
+                </div>
+                <div class="modal-body p-0 text-center">
+                    <img
+                            t-att-src="msg.attachment_data ? 'data:' + (msg.mime_type || 'image/jpeg') + ';base64,' + msg.attachment_data : msg.image_url"
+                            class="img-fluid rounded"
+                            alt="Imagen en tamaño completo"
+                            style="max-height: 90vh; max-width: 100%;"
+                    />
+                </div>
+                <div class="modal-footer border-0 justify-content-center pt-2">
+                    <a
+                            t-att-href="msg.attachment_data ? 'data:' + (msg.mime_type || 'image/jpeg') + ';base64,' + msg.attachment_data : msg.image_url"
+                            download="imagen"
+                            class="btn btn-primary">
+                        <i class="fa fa-download me-2"/>Descargar
+                    </a>
+                    <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">
+                        Cerrar
+                    </button>
+                </div>
+            </div>
+        </div>
+    </div>
+</t>
+
+                    <t t-if="msg.type === 'video'">
+                    <div class="message-content d-inline-block">
+                      <div class="media-container">
+                        <video t-if="msg.attachment_data"
+                               t-att-src="'data:video/mp4;base64,' + (msg.attachment_data.startsWith('data:') ? msg.attachment_data.split(',')[1] : msg.attachment_data)"
+                               controls="true"
+                               class="media-preview"/>
+                          <video t-elif="msg.msg_image"
+                                 t-att-src="'data:video/mp4;base64,' + (msg.msg_image.startsWith('data:') ? msg.msg_image.split(',')[1] : msg.msg_image)"
+                                 controls="true"
+                                 class="media-preview"/>
+                          <div class="media-actions">
+                          <a t-if="msg.attachment_data"
+                             t-att-href="'data:video/mp4;base64,' + (msg.attachment_data.startsWith('data:') ? msg.attachment_data.split(',')[1] : msg.attachment_data)"
+                             download="video.mp4"
+                             class="btn btn-sm btn-light">
+                            <i class="fa fa-download"/>
+                          </a>
+                              <a t-elif="msg.msg_image"
+                                 t-att-href="'data:video/mp4;base64,' + (msg.msg_image.startsWith('data:') ? msg.msg_image.split(',')[1] : msg.msg_image)"
+                                 download="video.mp4"
+                                 class="btn btn-sm btn-light">
+                            <i class="fa fa-download"/>
+                          </a>
+                        </div>
+                      </div>
+                        <small class="text-muted d-block mt-1" t-esc="formatDate(msg.time)"/>
+                    </div>
+                  </t>
+                    <!-- Ubicación en bubble (igual estilo que texto) -->
+                    <t t-if="msg.location_latitude and msg.location_longitude">
+                      <div class="message-content d-inline-block" t-att-class="msg.fromMe ? 'ms-auto' : 'me-auto'">
+                        <div class="d-flex flex-column"
+                             t-att-class="msg.fromMe ? 'align-items-end' : 'align-items-start'">
+                          <small class="text-muted mb-1" t-if="!msg.fromMe">
+                            <t t-esc="msg.senderName"/>
+                          </small>
+
+                            <!-- Contenedor “bubble” -->
+                            <div class="p-2 mb-1 rounded-3 shadow-sm"
+                                 t-att-class="msg.fromMe ? 'bg-primary text-white' : 'bg-light text-dark'">
+
+                            <!-- Miniatura de mapa estático (OSM, sin API key) -->
+                                <a t-att-href="'https://www.google.com/maps/?q=' + msg.location_latitude + ',' + msg.location_longitude"
+                                   target="_blank" class="text-decoration-none">
+                                    Ver ubicación en Google Maps
+                                </a>
+                            </div>
+
+                            <!-- Hora/fecha como el resto -->
+                            <small class="text-muted" t-esc="formatDate(msg.time)"/>
+                        </div>
+                      </div>
+                    </t>
+
+                    <!-- Agregar soporte para stickers después del bloque de video -->
+                    <t t-if="msg.type === 'sticker'">
+                    <div class="message-content d-inline-block">
+                      <div class="media-container">
+                        <img
+                                loading="lazy"
+                                t-att-src="msg.sticker_url"
+                                t-att-class="'img-fluid rounded media-preview sticker-preview ' + (msg.animated ? 'animated' : '')"
+                                alt="Sticker"/>
+                          <div class="media-actions">
+                          <a
+                                  t-att-href="msg.sticker_url"
+                                  download="sticker.webp"
+                                  class="btn btn-sm btn-light">
+                            <i class="fa fa-download"/>
+                          </a>
+                        </div>
+                      </div>
+                        <small class="text-muted d-block mt-1" t-esc="formatDate(msg.time)"/>
+                    </div>
+                  </t>
+                    <t t-if="msg.type === 'audio'">
+                    <div class="audio-message p-2 rounded"
+                         t-att-class="msg.fromMe ? 'bg-primary text-white ms-auto' : 'bg-light'">
+                      <div class="d-flex align-items-center">
+                        <div class="audio-player-container">
+                          <video controls="controls" class="me-2" style="height: 40px;">
+                            <source
+                                    t-att-src="msg.audio_url"
+                                    type="audio/mpeg"/>
+                              <source
+                                      t-att-src="msg.audio_url"
+                                      type="audio/mpeg"/>
+                              Tu navegador no soporta el elemento de audio.
+                          </video>
+                            <small class="text-muted" t-esc="formatDate(msg.time)"/>
+                        </div>
+                      </div>
+                    </div>
+                  </t>
+                </div>
+              </t>
+            </div>
+          </t>
+        </div>
+
+              <!-- Chat input solo se muestra si hay chat seleccionado -->
+              <t t-if="state.selectedChatId">
+<div class="chat-input p-3 border-top">
+    <!-- Popup de respuestas rápidas -->
+    <div t-if="state.showQuick and state.quickSuggestions.length"
+         class="quick-replies-dropdown shadow rounded bg-white border"
+         style="position:absolute; bottom:70px; left:16px; width: 420px; max-height: 260px; overflow:auto; z-index: 1050;"
+         t-on-mousedown="(ev) => ev.preventDefault()">
+  <ul class="list-group list-group-flush">
+    <t t-foreach="state.quickSuggestions" t-as="qr" t-key="qr.id">
+      <li class="list-group-item d-flex flex-column"
+          t-att-class="qr_index === state.quickIndex ? 'active' : ''"
+          style="cursor:pointer;"
+          t-on-click="() => this._applyQuickReply(qr)">
+        <div class="d-flex justify-content-between align-items-center">
+          <strong>/<t t-esc="qr.shortcut"/></strong>
+        </div>
+          <small class="text-muted text-truncate" t-esc="qr.message"/>
+      </li>
+    </t>
+  </ul>
+</div>
+
+    <div t-if="state.selectedFile" class="mb-2">
+        <div class="d-flex align-items-center justify-content-between bg-light p-2 rounded">
+            <div class="d-flex align-items-center">
+                <t t-if="state.selectedFile.type.startsWith('image/')">
+                    <img t-att-src="state.selectedFileUrl" class="img-thumbnail me-2"
+                         style="width: 40px; height: 40px;"/>
+                </t>
+                <span class="text-truncate" style="max-width: 200px;" t-esc="state.selectedFile.name"/>
+            </div>
+            <button t-on-click="clearSelectedFile" class="btn btn-sm btn-link text-danger">
+                <i class="fa fa-times"/>
+            </button>
+        </div>
+    </div>
+    <t t-if="(!state.isRecording) and (!state.audioBlob)">
+        <div class="input-group">
+            <div class="btn-group me-2">
+                <button t-on-click="openImageSelector" class="btn btn-light" title="Enviar imagen">
+                    <i class="fa fa-image"/>
+                </button>
+                <button t-on-click="openFileSelector" class="btn btn-light" title="Enviar archivo">
+                    <i class="fa fa-paperclip"/>
+                </button>
+                <button t-on-click="startRecording" class="btn btn-light" title="Grabar audio">
+                    <i class="fa fa-microphone"/>
+                </button>
+            </div>
+            <textarea t-model="state.newMessage"
+                      class="form-control"
+                      placeholder="Escribe un mensaje..."
+                      rows="1"
+                      style="resize: none;"
+                      t-on-input="updateNewMessage"
+                      t-on-keydown="onKeypress"/>
+            <button t-on-click="sendMessage"
+                    class="btn btn-primary"
+                    t-att-disabled="state.isSendingMessage or (!state.newMessage and !state.selectedFile and !state.audioBlob)">
+                <i class="fa fa-paper-plane"/>
+            </button>
+        </div>
+    </t>
+    <t t-if="state.isRecording">
+        <div class="input-group">
+            <span class="input-group-text bg-danger text-white">
+                <i class="fa fa-microphone me-2"/>
+                <t t-esc="formatTime(state.recordingTime)"/>
+            </span>
+            <button
+                    t-on-click="stopRecording"
+                    class="btn btn-light border"
+                    type="button"
+                    title="Detener grabación"
+            >
+                <i class="fa fa-stop"/>
+            </button>
+        </div>
+    </t>
+    <t t-if="state.audioBlob and (!state.isRecording)">
+        <div class="input-group-text w-100 bg-light">
+            <div class="d-flex align-items-center justify-content-between w-100">
+                <audio controls="true" class="me-2" style="height: 40px;">
+                    <source t-att-src="state.audioUrl" type="audio/mp3"/>
+                </audio>
+                <div class="btn-group">
+                    <button
+                            t-on-click="sendMessage"
+                            class="btn btn-success btn-sm"
+                            type="button"
+                            title="Enviar audio"
+                    >
+                        <i class="fa fa-paper-plane"/>
+                    </button>
+                    <button
+                            t-on-click="cancelAudio"
+                            class="btn btn-danger btn-sm"
+                            type="button"
+                            title="Cancelar"
+                    >
+                        <i class="fa fa-trash"/>
+                    </button>
+                </div>
+            </div>
+        </div>
+    </t>
+
+</div>
+</t>
+        </div>
+
+          <!-- Modal de órdenes -->
+          <t t-if="state.showOrders">
+<div class="orders-overlay">
+    <div class="orders-overlay-content">
+        <div class="d-flex justify-content-between align-items-center mb-3">
+            <h5>Órdenes Pendientes</h5>
+            <button t-on-click="closeOrders" class="btn btn-sm btn-link">
+                <i class="fa fa-times"/>
+            </button>
+        </div>
+        <div class="orders-list">
+            <t t-foreach="state.orders" t-as="order" t-key="order.id">
+                <div class="order-card mb-3 p-3 bg-light rounded shadow-sm">
+                    <div class="d-flex justify-content-between align-items-center mb-2">
+                        <h6 class="mb-0">Orden #
+                            <t t-esc="order.sale_order_name || order.id"/>
+                        </h6>
+                        <span t-if="order.sale_order_id" class="badge bg-success">Vinculada a Odoo</span>
+                    </div>
+                    <p>
+                        <strong>Cliente:</strong>
+                        <t t-esc="order.nombres_completo"/>
+                    </p>
+                    <p>
+                        <strong>Documento:</strong>
+                        <t t-esc="order.documento"/>
+                    </p>
+                    <p>
+                        <strong>Dirección:</strong>
+                        <t t-esc="order.direccion_factura"/>
+                    </p>
+                    <p>
+                        <strong>Email:</strong>
+                        <t t-esc="order.email"/>
+                    </p>
+                    <p>
+                        <strong>Dirección envío:</strong>
+                        <t t-esc="order.direccion_url"/>
+                    </p>
+                    <p>
+                        <strong>Celular:</strong>
+                        <t t-esc="order.number"/>
+                    </p>
+                    <p>
+                        <strong>Tipo de Envío:</strong>
+                        <t t-esc="order.tipo_envio"/>
+                    </p>
+                    <p>
+                        <strong>Tipo de Pago:</strong>
+                        <t t-esc="order.tipo_pago"/>
+                    </p>
+
+                    <div class="order-items mt-3">
+                        <h6>Productos:</h6>
+                        <table class="table table-sm">
+                            <thead>
+                                <tr>
+                                    <th>Producto</th>
+                                    <th>Cantidad</th>
+                                    <th>Precio</th>
+                                    <th>Subtotal</th>
+                                </tr>
+                            </thead>
+                            <tbody>
+                                <t t-foreach="order.items" t-as="item" t-key="item.id">
+                                    <tr>
+                                        <td>
+                                            <t t-esc="item.name"/>
+                                        </td>
+                                        <td>
+                                            <t t-esc="item.quantity"/>
+                                        </td>
+                                        <td>$
+                                            <t t-esc="item.price"/>
+                                        </td>
+                                        <td>$
+                                            <t t-esc="item.subtotal"/>
+                                        </td>
+                                    </tr>
+                                </t>
+                            </tbody>
+                        </table>
+                    </div>
+
+                    <div class="order-totals mt-3">
+                        <div class="d-flex justify-content-between">
+                            <span>
+                                <strong>Subtotal:</strong>
+                            </span>
+                            <span>$
+                                <t t-esc="order.subtotal || order.total"/>
+                            </span>
+                        </div>
+                        <t t-if="order.tax">
+                            <div class="d-flex justify-content-between">
+                                <span>
+                                    <strong>Impuestos:</strong>
+                                </span>
+                                <span>$
+                                    <t t-esc="order.tax"/>
+                                </span>
+                            </div>
+                        </t>
+                        <div class="d-flex justify-content-between">
+                            <span>
+                                <strong>Total:</strong>
+                            </span>
+                            <span class="fw-bold">$
+                                <t t-esc="order.total"/>
+                            </span>
+                        </div>
+                    </div>
+
+                </div>
+            </t>
+        </div>
+    </div>
+</div>
+</t>
+        </div>
+      <t t-if="state.showEditName">
+  <div class="modal fade show" style="display:block; background: rgba(0,0,0,0.4);">
+    <div class="modal-dialog modal-sm modal-dialog-centered">
+      <div class="modal-content">
+        <div class="modal-header">
+          <h6 class="modal-title">Guardar nombre</h6>
+            <button type="button" class="btn-close" t-on-click="cancelEditContactName"></button>
+        </div>
+          <div class="modal-body">
+          <input type="text"
+                 class="form-control"
+                 placeholder="Nombre del contacto"
+                 t-model="state.tempCustomName"/>
+              <small class="text-muted d-block mt-2">
+            Este nombre se mostrará en la lista y encabezado del chat.
+          </small>
+        </div>
+          <div class="modal-footer">
+          <button class="btn btn-light" t-on-click="cancelEditContactName">Cancelar</button>
+              <button class="btn btn-primary" t-on-click="saveContactName"
+                      t-att-disabled="!state.tempCustomName?.trim()">Guardar</button>
+        </div>
+      </div>
+    </div>
+  </div>
+</t>
+        </t>
+
+
+        </templates>

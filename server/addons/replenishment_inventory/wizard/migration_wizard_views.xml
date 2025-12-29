@@ -1,0 +1,74 @@
+<?xml version="1.0" encoding="utf-8"?>
+<odoo>
+
+    <!-- ================================================================== -->
+    <!-- WIZARD DE MIGRACIÓN                                                -->
+    <!-- ================================================================== -->
+
+    <record id="view_migration_wizard_form" model="ir.ui.view">
+        <field name="name">replenishment.migration.wizard.form</field>
+        <field name="model">replenishment.migration.wizard</field>
+        <field name="arch" type="xml">
+            <form string="Migración de Datos">
+                <group invisible="state != 'draft'">
+                    <group string="Estado Actual del Sistema">
+                        <field name="daily_stats_count" string="Registros Daily Stats"/>
+                        <field name="rolling_stats_count" string="Registros Rolling Stats"/>
+                        <field name="queue_count" string="Eventos en Cola"/>
+                    </group>
+                </group>
+
+                <group invisible="state != 'draft'">
+                    <group string="Configuración">
+                        <field name="action_type" widget="radio"/>
+                    </group>
+                    <group string="Parámetros" invisible="action_type != 'migrate'">
+                        <field name="days_back"/>
+                        <field name="batch_size"/>
+                    </group>
+                </group>
+
+                <group invisible="state != 'draft'" class="text-muted">
+                    <div colspan="2">
+                        <p><strong>Descripción de acciones:</strong></p>
+                        <ul>
+                            <li><strong>Migrar Datos Históricos:</strong> Pobla las tablas daily_stats y rolling_stats con datos de product.warehouse.sale.summary</li>
+                            <li><strong>Recalcular Rolling Stats:</strong> Recalcula mean/stddev/cv para todos los registros existentes. Usar después de cambios en la lógica de cálculo.</li>
+                            <li><strong>Recalcular MAX/MIN:</strong> Calcula MAX/MIN usando las reglas de reabastecimiento y actualiza todos los orderpoints. Ejecutar después de migrar.</li>
+                            <li><strong>Verificar Migración:</strong> Compara los datos migrados con los originales para detectar discrepancias</li>
+                            <li><strong>Limpiar y Reiniciar:</strong> ⚠️ ELIMINA todos los datos de las tablas de estadísticas. Usar solo en desarrollo.</li>
+                        </ul>
+                    </div>
+                </group>
+
+                <group invisible="state != 'done'">
+                    <field name="result_text" nolabel="1" readonly="1" class="font-monospace"/>
+                </group>
+
+                <field name="state" invisible="1"/>
+
+                <footer>
+                    <button name="action_execute" string="Ejecutar" type="object" class="btn-primary" invisible="state != 'draft'"
+                            confirm="¿Está seguro de ejecutar esta acción? La migración puede tardar varios minutos dependiendo del volumen de datos."/>
+                    <button name="action_reset" string="Nueva Ejecución" type="object" class="btn-secondary" invisible="state != 'done'"/>
+                    <button string="Cerrar" class="btn-secondary" special="cancel"/>
+                </footer>
+            </form>
+        </field>
+    </record>
+
+    <record id="action_migration_wizard" model="ir.actions.act_window">
+        <field name="name">Migración de Datos</field>
+        <field name="res_model">replenishment.migration.wizard</field>
+        <field name="view_mode">form</field>
+        <field name="target">new</field>
+    </record>
+
+    <!-- Agregar al menú de monitoreo -->
+    <menuitem id="menu_migration_wizard"
+              name="Migración de Datos"
+              parent="replenishment_inventory.menu_replenishment_monitoring"
+              action="action_migration_wizard"
+              sequence="50"/>
+
+</odoo>

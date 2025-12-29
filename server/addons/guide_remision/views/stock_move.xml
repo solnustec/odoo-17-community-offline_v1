@@ -1,0 +1,26 @@
+<odoo>
+    <record id="view_stock_picking_form_inherit_bulto" model="ir.ui.view">
+        <field name="name">stock.picking.form.inherit.bulto</field>
+        <field name="model">stock.picking</field>
+        <field name="inherit_id" ref="stock.view_picking_form"/>
+        <field name="arch" type="xml">
+
+            <xpath expr="//field[@name='origin']" position="after">
+                <field name="type_transfer" string="Tipo de transferencia"/>
+                <field name="key_transfer" string="Llave de la transferencia" readonly="true"/>
+                <field name="amount_total" string="Total de la Transferencia" readonly="1"/>
+            </xpath>
+
+            <xpath expr="//field[@name='move_ids_without_package']/tree" position="inside">
+                <field name="bulto" string="Bulto" options="{'width': '150px'}" optional="hide"/>
+                <field name="stock_product" string="Stock disponible" readonly="1" class="o_stock_warning"/>
+                <field name="total_line" string="Total" readonly="1"/>
+            </xpath>
+
+            <xpath expr="//button[@name='action_confirm']" position="attributes">
+                <attribute name="invisible">True</attribute>
+            </xpath>
+
+        </field>
+    </record>
+</odoo>

@@ -1,0 +1,13 @@
+.helpdesk {
+    margin-top: 3%;
+    margin-bottom: 2%;
+}
+
+.ticket_box {
+    height: 32rem;
+    overflow-y: auto;
+}
+
+.chart-container.card-shadow {
+    height: 32rem;
+}

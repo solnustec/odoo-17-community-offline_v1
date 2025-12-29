@@ -1,0 +1,38 @@
+<?xml version="1.0" encoding="utf-8"?>
+<odoo>
+    <record id="menu_nuvei_transactions_action" model="ir.actions.act_window">
+        <field name="name">Transacciones Nuvei</field>
+        <field name="res_model">nuvei.transaction</field>
+        <field name="view_mode">tree,form</field>
+    </record>
+
+    <record id="view_payment_nuvei_transacction_tree" model="ir.ui.view">
+        <field name="name">pragtech_whatsapp_base.nuvei.transaction.tree</field>
+        <field name="model">nuvei.transaction</field>
+        <field name="arch" type="xml">
+            <tree string="Transacciones Nuvei">
+                <field name="transaction_id"/>
+                <field name="order_description"/>
+                <field name="amount"/>
+                <field name="dev_reference"/>
+                <field name="status"/>
+                <field name="paid_date"/>
+
+            </tree>
+        </field>
+    </record>
+
+
+    <menuitem id="menu_app_mobile_settings_nuvei"
+              name="Nuvei"
+              parent="website.menu_website_global_configuration"
+              sequence="60">
+        <!--        submenu-->
+        <menuitem id="menu_ecommerce_payment_nuvei_transactions"
+                  name="Transacciones Nuvei"
+                  action="pragtech_whatsapp_base.menu_nuvei_transactions_action"
+                  sequence="10"
+        />
+
+    </menuitem>
+</odoo>

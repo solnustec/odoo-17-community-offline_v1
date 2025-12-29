@@ -1,0 +1,54 @@
+<?xml version="1.0" encoding="utf-8"?>
+<odoo>
+    <!-- Vista Pivot -->
+    <record id="view_employee_work_entry_projection_pivot" model="ir.ui.view">
+        <field name="name">employee.work.entry.projection.pivot</field>
+        <field name="model">employee.work.entry.projection</field>
+        <field name="arch" type="xml">
+            <pivot string="Proyección de Horas Extras">
+                <field name="employee_id" type="row"/>
+                <field name="start_date" interval="month" type="col"/>
+                <field name="normal_hours" type="measure"/>
+                <field name="extra_hours" type="measure"/>
+                <field name="total_hours" type="measure"/>
+                <field name="hour_value" type="measure"/>
+                <field name="total_value" type="measure"/>
+                <field name="overtime_type" type="row"/>
+            </pivot>
+        </field>
+    </record>
+
+    <!-- Vista Formulario -->
+    <record id="view_employee_work_entry_projection_form" model="ir.ui.view">
+        <field name="name">employee.work.entry.projection.form</field>
+        <field name="model">employee.work.entry.projection</field>
+        <field name="arch" type="xml">
+            <form string="Configurar Proyección">
+                <group>
+                    <field name="employee_id" widget="many2many_tags_avatar"/>
+                    <field name="start_date"/>
+                    <field name="end_date"/>
+                </group>
+                <footer>
+                    <button name="generate_projection" string="Generar Reporte" type="object" class="btn-primary"/>
+                    <button string="Cancelar" class="btn-secondary" special="cancel"/>
+                </footer>
+            </form>
+        </field>
+    </record>
+
+    <!-- Acción de Ventana -->
+    <record id="action_employee_work_entry_projection" model="ir.actions.act_window">
+        <field name="name">Proyección de Horas Extras</field>
+        <field name="res_model">employee.work.entry.projection</field>
+        <field name="view_mode">form</field>
+        <field name="target">new</field>
+        <field name="view_id" ref="view_employee_work_entry_projection_form"/>
+    </record>
+
+    <!-- Menú -->
+    <menuitem id="menu_employee_work_entry_projection"
+              name="Proyección de Horas Extras"
+              parent="hr_payroll.menu_hr_payroll_report"
+              action="action_employee_work_entry_projection"/>
+</odoo>

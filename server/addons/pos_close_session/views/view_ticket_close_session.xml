@@ -1,0 +1,192 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<odoo>
+    <record id="paperformat_pos_ticket_80x297" model="report.paperformat">
+        <field name="name">Ticket 80 x 297 mm</field>
+        <field name="default" eval="False" />
+        <field name="format">custom</field>
+        <field name="page_height">297</field>
+        <field name="page_width">80</field>
+        <field name="orientation">Portrait</field>
+    </record>
+
+    <template id="report_user_ticket">
+        <t t-call="web.basic_layout">
+            <!-- current record -->
+            <t t-set="doc" t-value="docs[0]" />
+            <!-- JSON of bills/coins -->
+            <t t-set="bvals" t-value="json.loads(doc.values or '{}')" />
+            <!-- convenience vars -->
+            <t t-set="counted" t-value="bvals.get('btotal',0) + bvals.get('mtotal',0)" />
+            <t t-set="delta" t-value="bvals.get('total_ef', 0) - sale_cash" />
+
+            <div
+                style="
+            width: 80mm;
+            font-family: monospace;
+            font-size: 12px;
+            line-height: 1.4;
+          ">
+                <!-- Header -->
+                <div style="text-align:center; margin-bottom:4px;">
+                    <strong>FARMACIAS CUXIBAMBA</strong>
+                    <br />
+                    <small>CIERRE DE CAJA</small>
+                </div>
+                <hr />
+
+                <!-- Session & User Info -->
+                <table style="width:100%; margin-bottom:6px; font-size:15px; line-height:2;">
+                    <tr>
+                        <td>Fecha:</td>
+                        <td style="text-align:right;">
+                            <t t-esc="doc.pos_session_id.start_at.strftime('%Y-%m-%d %H:%M')" />
+                        </td>
+                    </tr>
+                    <tr>
+                        <td>Cierre:</td>
+                        <td style="text-align:right;">
+                            <t t-esc="doc.pos_session_id.stop_at.strftime('%Y-%m-%d %H:%M')" />
+                        </td>
+                    </tr>
+                    <tr>
+                        <td>Usuario:</td>
+                        <td style="text-align:right;">
+                            <t t-esc="doc.employee" />
+                        </td>
+                    </tr>
+                    <tr>
+                        <td>Apertura:</td>
+                        <td style="text-align:right;"> $<t
+                                t-esc="float(doc.pos_session_id.cash_register_balance_start or 0.0)" />
+                        </td>
+                    </tr>
+                </table>
+                <hr />
+
+                <!-- Bills & Coins Breakdown -->
+                <tr style="border-bottom:1.5px solid #000;">
+                    <strong>Conteo de Efectivo</strong>
+                    <table
+                        style="width:100%; border-collapse:collapse; font-size:15px; line-height:2;">
+                        <thead>
+                            <tr>
+                                <th style="text-align:left;   padding:2px 0;">Denom.</th>
+                                <th style="text-align:center; padding:2px 0;">Cant</th>
+                                <th style="text-align:right;  padding:2px 0;">Valor</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            <t t-set="denoms"
+                                t-value="[
+                        ('$100','b100',100),('$50','b50',50),('$20','b20',20),
+                        ('$10','b10',10),('$5','b5',5),('$1','b1',1),
+                        ('$1','m100',1),('50¢','m50',0.5),('25¢','m25',0.25),
+                        ('10¢','m10',0.1),('5¢','m5',0.05),('1¢','m1',0.01)
+                        ]" />
+                            <t t-foreach="denoms" t-as="d">
+                                <tr style="border-bottom: 1px solid #000;">
+                                    <td style="padding:3px 0;">
+                                        <t t-esc="d[0]" />
+                                    </td>
+                                    <td style="text-align:center; padding:2px 0;">
+                                        <t t-esc="bvals.get(d[1],0)" />
+                                    </td>
+                                    <td style="text-align:right; padding:2px 0;"> $<t
+                                            t-esc="'%.2f' % (bvals.get(d[1],0) * d[2])" />
+                                    </td>
+                                </tr>
+                            </t>
+                        </tbody>
+                        <tfoot>
+                            <tr>
+                                <td style="padding:10px 0;">
+                                    <strong>Total</strong>
+                                </td>
+                                <td colspan="2" style="text-align:right; padding:2px 0;">
+                                    <strong>$<t t-esc="'%.2f' % counted" /></strong>
+                                </td>
+                            </tr>
+                        </tfoot>
+                    </table>
+                    <hr />
+                </tr>
+
+                <!-- Payments Summary -->
+                <table
+                    style="width:100%; border-collapse:collapse; font-size:15px; line-height:1.4;">
+                    <!-- Section header -->
+                    <tr>
+                        <td colspan="2" style="padding:8px 0;">
+                            <strong>Resumen de Pagos</strong>
+                        </td>
+                    </tr>
+                    <!-- Data rows -->
+                    <tr style="border-bottom:1px solid #000;">
+                        <td style="padding:4px 0;">Efectivo Venta</td>
+                        <td style="padding:4px 0; text-align:right;">$<t t-esc="sale_cash" /></td>
+                    </tr>
+                    <tr style="border-bottom:1px solid #000;">
+                        <td style="padding:4px 0;">Tarjeta</td>
+                        <td style="padding:4px 0; text-align:right;">$<t t-esc="sale_card" /></td>
+                    </tr>
+                    <tr style="border-bottom:1px solid #000;">
+                        <td style="padding:4px 0;">Cheque/Transf.</td>
+                        <td style="padding:4px 0; text-align:right;">$<t t-esc="sale_check_transfer" /></td>
+                    </tr>
+                    <tr style="border-bottom:1px solid #000;">
+                        <td style="padding:4px 0;">Crédito</td>
+                        <td style="padding:4px 0; text-align:right;">$<t t-esc="sale_credit" /></td>
+                    </tr>
+                    <!-- Total -->
+                    <tr>
+                        <td style="padding:6px 0;">
+                            <strong>Total General</strong>
+                        </td>
+                        <td style="padding:6px 0; text-align:right;">
+                            <strong> $<t
+                                    t-esc="'%.2f' % (sale_cash + sale_card + sale_check_transfer + sale_credit)" />
+                            </strong>
+                        </td>
+                    </tr>
+                </table>
+                <hr />
+
+                <!-- Difference -->
+                <table
+                    style="width:100%; border-collapse:collapse; font-size:15px; line-height:1.4; margin-top:4px;">
+                    <tr>
+                        <td colspan="2" style="padding:6px 0;">
+                            <strong>Diferencia</strong>
+                        </td>
+                    </tr>
+                    <tr style="border-bottom:1px solid #000;">
+                        <td style="padding:4px 0;">Sobrante</td>
+                        <td style="padding:4px 0; text-align:right;"> $<t
+                                t-esc="delta &gt; 0 and '%.2f' % delta or '0.00'" />
+                        </td>
+                    </tr>
+                    <tr style="border-bottom:1px solid #000;">
+                        <td style="padding:4px 0;">Faltante</td>
+                        <td style="padding:4px 0; text-align:right;"> $<t
+                                t-esc="delta &lt;= 0 and '%.2f' % abs(delta) or '0.00'" />
+                        </td>
+                    </tr>
+                </table>
+
+                <hr style="margin-top:8px;" />
+
+
+            </div>
+        </t>
+    </template>
+
+    <record id="action_report_user_ticket" model="ir.actions.report">
+        <field name="name">Ticket Cierre Usuario</field>
+        <field name="model">pos.close.session.user.ticket</field>
+        <field name="report_type">qweb-pdf</field>
+        <field name="report_name">pos_close_session.report_user_ticket</field>
+        <field name="report_file">pos_close_session.report_user_ticket</field>
+        <field name="print_report_name">'Ticket_Cierre_Sesion_%s' % (object.employee)</field>
+        <field name="paperformat_id" ref="pos_close_session.paperformat_pos_ticket_80x297" />
+    </record>
+</odoo>

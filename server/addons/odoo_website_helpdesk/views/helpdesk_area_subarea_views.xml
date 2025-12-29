@@ -1,0 +1,79 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<odoo>
+    <!-- Vista árbol para Áreas -->
+    <record id="helpdesk_area_view_tree" model="ir.ui.view">
+        <field name="name">helpdesk.area.view.tree</field>
+        <field name="model">helpdesk.area</field>
+        <field name="arch" type="xml">
+            <tree string="Áreas" editable="bottom">
+                <field name="name"/>
+                <field name="subarea_ids" widget="many2many_tags"/>
+            </tree>
+        </field>
+    </record>
+
+    <!-- Vista formulario para Áreas -->
+    <record id="helpdesk_area_view_form" model="ir.ui.view">
+        <field name="name">helpdesk.area.view.form</field>
+        <field name="model">helpdesk.area</field>
+        <field name="arch" type="xml">
+            <form>
+                <sheet>
+                    <group>
+                        <field name="name"/>
+                    </group>
+                    <notebook>
+                        <page string="Subáreas">
+                            <field name="subarea_ids">
+                                <tree editable="bottom">
+                                    <field name="name"/>
+                                </tree>
+                            </field>
+                        </page>
+                    </notebook>
+                </sheet>
+            </form>
+        </field>
+    </record>
+
+    <!-- Vista árbol para Subáreas -->
+    <record id="helpdesk_subarea_view_tree" model="ir.ui.view">
+        <field name="name">helpdesk.subarea.view.tree</field>
+        <field name="model">helpdesk.subarea</field>
+        <field name="arch" type="xml">
+            <tree string="Subáreas" editable="bottom">
+                <field name="name"/>
+                <field name="area_id"/>
+            </tree>
+        </field>
+    </record>
+
+    <!-- Vista formulario para Subáreas -->
+    <record id="helpdesk_subarea_view_form" model="ir.ui.view">
+        <field name="name">helpdesk.subarea.view.form</field>
+        <field name="model">helpdesk.subarea</field>
+        <field name="arch" type="xml">
+            <form>
+                <sheet>
+                    <group>
+                        <field name="name"/>
+                        <field name="area_id"/>
+                    </group>
+                </sheet>
+            </form>
+        </field>
+    </record>
+
+    <!-- Acciones para los modelos -->
+    <record id="action_helpdesk_area" model="ir.actions.act_window">
+        <field name="name">Áreas</field>
+        <field name="res_model">helpdesk.area</field>
+        <field name="view_mode">tree,form</field>
+    </record>
+
+    <record id="action_helpdesk_subarea" model="ir.actions.act_window">
+        <field name="name">Subáreas</field>
+        <field name="res_model">helpdesk.subarea</field>
+        <field name="view_mode">tree,form</field>
+    </record>
+</odoo>

@@ -1,0 +1,55 @@
+<odoo>
+    <!-- Vista de formulario para JSON Storage -->
+    <record id="view_json_pos_close_session_form" model="ir.ui.view">
+        <field name="name">json.pos.close.session.form</field>
+        <field name="model">json.pos.close.session</field>
+        <field name="arch" type="xml">
+            <form string="Cierre de Caja" readonly="1">
+                <sheet>
+                    <group>
+                        <group>
+                            <field name="json_data" widget="monospaced" placeholder="JSON Data" readonly="false"/>
+                            <field name="pos_session_id" readonly="false"/>
+                            <field name="pos_config_id" readonly="false"/>
+                            <field name="id_point_of_sale" readonly="false"/>
+                            <field name="create_date" readonly="false"/>
+                            <field name="sync_date" readonly="false"/>
+                            <field name="db_key" readonly="false"/>
+                            <field name="sent" readonly="false"/>
+                        </group>
+                    </group>
+                </sheet>
+            </form>
+        </field>
+    </record>
+
+    <!-- Vista de árbol para JSON Storage -->
+    <record id="view_json_pos_session_close_tree" model="ir.ui.view">
+        <field name="name">json.pos.close.session.tree</field>
+        <field name="model">json.pos.close.session</field>
+        <field name="arch" type="xml">
+            <tree string="Cierre de sessión">
+                <field name="pos_session_id"/>
+                <field name="pos_config_id"/>
+                <field name="id_point_of_sale"/>
+                <field name="create_date"/>
+                <field name="db_key"/>
+                <field name="create_date"/>
+                <field name="sent"/>
+            </tree>
+        </field>
+    </record>
+
+    <!-- Acción para JSON Storage -->
+    <record id="action_json_pos_session_close" model="ir.actions.act_window">
+        <field name="name">Cierre de caja</field>
+        <field name="res_model">json.pos.close.session</field>
+        <field name="view_mode">tree,form</field>
+    </record>
+
+    <!-- Menú para JSON Storage -->
+    <menuitem id="menu_json_pos_session_close"
+              name="Cierre de Caja"
+              parent="point_of_sale.menu_point_config_product"
+              action="action_json_pos_session_close"/>
+</odoo>

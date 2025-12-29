@@ -1,0 +1,16 @@
+<!-- <?xml version="1.0" encoding="utf-8"?>-->
+<odoo>
+    <record id="loyalty_program_view_form_inherit_app_mobile_sale_loyalty" model="ir.ui.view">
+        <field name="name">loyalty.program.view.form.inherit.api.store.program.loyalty</field>
+        <field name="model">loyalty.program</field>
+        <field name="inherit_id" ref="loyalty.loyalty_program_view_form"/>
+        <field name="arch" type="xml">
+            <xpath expr="//div[@id='o_loyalty_program_availabilities']//span" position="inside">
+                <!--                <span class="d-inline-flex text-break">-->
+                <field name="app_ok" invisible="program_type not in ['loyalty']"/>
+                <label for="app_ok" invisible="program_type not in ['loyalty']"/>
+                <!--                </span>-->
+            </xpath>
+        </field>
+    </record>
+</odoo>

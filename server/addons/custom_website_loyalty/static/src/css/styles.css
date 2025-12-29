@@ -1,0 +1,23 @@
+.price-discount{
+    text-decoration: line-through;
+    font-size: 14px;
+    color: rgba(33, 37, 41, 0.7) !important;
+    margin-right: 8px;
+}
+
+.o_cart_product > div:first-child {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    width: 64px;
+}
+
+.oe_subdescription{
+    min-height: calc(0.825rem * 2);
+    overflow: hidden;
+    display: -webkit-box;
+    text-overflow: ellipsis;
+    -webkit-line-clamp: 2;
+    -webkit-box-orient: vertical;
+    line-height: 1.1;
+}

@@ -1,0 +1,24 @@
+<odoo>
+    <data noupdate="1">
+         <record model="ir.module.category" id="work_entry_validators">
+            <field name="name">Grupo Excepciones</field>
+            <field name="description">Valida las horas extras de las entradas de trabajo</field>
+            <field name="sequence">20</field>
+        </record>
+        <record id="group_validators_entry_works_admin" model="res.groups">
+            <field name="name">Jefe Departamental</field>
+            <field name="category_id" ref="work_entry_validators"/>
+            <field name="users" eval="[(4, ref('base.user_root')), (4, ref('base.user_admin'))]"/>
+        </record>
+        <record id="group_validators_entry_works_zonal_admin" model="res.groups">
+            <field name="name">Coordinador de Zonal</field>
+            <field name="category_id" ref="work_entry_validators"/>
+            <field name="users" eval="[(4, ref('base.user_root')), (4, ref('base.user_admin'))]"/>
+        </record>
+        <record id="group_validators_entry_works_zonal_super" model="res.groups">
+            <field name="name">Coordinador de Farmacia</field>
+            <field name="category_id" ref="work_entry_validators"/>
+            <field name="users" eval="[(4, ref('base.user_root')), (4, ref('base.user_admin'))]"/>
+        </record>
+    </data>
+</odoo>

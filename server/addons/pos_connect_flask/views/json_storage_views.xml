@@ -1,0 +1,57 @@
+<odoo>
+    <!-- Vista de formulario para JSON Storage -->
+    <record id="view_json_storage_form" model="ir.ui.view">
+        <field name="name">json.storage.form</field>
+        <field name="model">json.storage</field>
+        <field name="arch" type="xml">
+            <form string="Registro de Facturas">
+                <sheet>
+                    <group>
+                        <field name="json_data" widget="monospaced" placeholder="JSON Data"/>
+                        <field name="pos_order" readonly="1"/>
+                        <field name="employee" readonly="1"/>
+                        <field name="create_date" readonly="1"/>
+                        <field name="id_point_of_sale"/>
+                        <field name="client_invoice"/>
+                        <field name="id_database_old_invoice_client"/>
+                        <field name="sync_date"/>
+                        <field name="db_key"/>
+                        <field name="sent"/>
+                        <field name="is_access_key"/>
+                    </group>
+                </sheet>
+            </form>
+        </field>
+    </record>
+
+    <!-- Vista de árbol para JSON Storage -->
+    <record id="view_json_storage_tree" model="ir.ui.view">
+        <field name="name">json.storage.tree</field>
+        <field name="model">json.storage</field>
+        <field name="arch" type="xml">
+            <tree string="Registro de Facturas">
+                <field name="employee" readonly="1"/>
+                <field name="pos_order"/>
+                <field name="create_date" readonly="1"/>
+                <field name="id_point_of_sale"/>
+                <field name="client_invoice"/>
+                <field name="sync_date"/>
+                <field name="db_key"/>
+                <field name="sent"/>
+            </tree>
+        </field>
+    </record>
+
+    <!-- Acción para JSON Storage -->
+    <record id="action_json_storage" model="ir.actions.act_window">
+        <field name="name">Registro de Facturas</field>
+        <field name="res_model">json.storage</field>
+        <field name="view_mode">tree,form</field>
+    </record>
+
+    <!-- Menú para JSON Storage -->
+    <menuitem id="menu_json_storage"
+              name="Registro de Facturas"
+              parent="point_of_sale.menu_point_config_product"
+              action="action_json_storage"/>
+</odoo>

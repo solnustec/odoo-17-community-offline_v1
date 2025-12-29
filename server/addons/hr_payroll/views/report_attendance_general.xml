@@ -1,0 +1,48 @@
+<?xml version="1.0"?>
+<odoo>
+    <data>
+        <record id="bulk_leaves_debit_form_view" model="ir.ui.view">
+            <field name="name">report.attendance.general.bulk</field>
+            <field name="model">report.attendance.general</field>
+            <field name="arch" type="xml">
+                <form>
+                    <group string="Fechas">
+                        <group>
+                            <field name="date_from" string="Desde" required="1"/>
+                        </group>
+                        <group>
+                            <field name="date_to" string="Hasta" required="1"/>
+                        </group>
+                        <separator string="Empleados"/>
+                        <field name="employee_ids" widget="many2many_tags_avatar" required="1" options='{"no_create": True, "no_quick_create": True, "no_open": True}' domain="[('contract_ids', '!=', False), ('contract_id.state', '=', 'open')]"/>
+
+                    </group>
+
+                    <newline/>
+                    <separator colspan="6"/>
+                    <footer>
+                        <button name="download_xlsx_report" string="Generar Excel" type="object" class="oe_highlight"/>
+                        <button name="download_pdf_report" string="Generar PDF" type="object" class="oe_highlight"/>
+                        <button special="cancel" class="oe_highlight" string="Cancel"/>
+                    </footer>
+                </form>
+            </field>
+        </record>
+        <record id="action_report_attendances_general" model="ir.actions.act_window">
+            <field name="name">Reporte General de Asistencia</field>
+            <field name="type">ir.actions.act_window</field>
+            <field name="res_model">report.attendance.general</field>
+            <field name="view_mode">form</field>
+            <field name="target">new</field>
+        </record>
+
+
+
+        <menuitem id="menu_report_attendances_general"
+                  name="Reporte General de Asistencia"
+                  parent="menu_hr_payroll_report"
+                  action="action_report_attendances_general"
+                  groups="hr.group_hr_user"
+                  sequence="3"/>
+    </data>
+</odoo>

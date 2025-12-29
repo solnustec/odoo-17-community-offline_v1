@@ -1,0 +1,21 @@
+<odoo>
+    <data>
+        <record id="view_hr_popup_liquidations_form" model="ir.ui.view">
+            <field name="name">hr.popup.liquidations.form</field>
+            <field name="model">hr.popup.liquidations</field>
+            <field name="arch" type="xml">
+                <form>
+                    <group>
+                        <h3>Alerta: Rol de Pagos no Encontrado</h3>
+                        <h5>¿Desea generar un Rol de Pagos para la liquidación?</h5>
+                    </group>
+                    <footer>
+                        <button string="Generar y continuar con el Rol de Pagos" class="btn-warning" type="object" name="continue_and_generate"/>
+                        <button string="Continuar sin generar el Rol de Pagos" class="btn-secondary" type="object" name="continue_process"/>
+                        <button string="Cancelar" class="btn-primary" special="cancel"/>
+                    </footer>
+                </form>
+            </field>
+        </record>
+    </data>
+</odoo>

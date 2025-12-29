@@ -1,0 +1,46 @@
+<?xml version="1.0" encoding="utf-8"?>
+<odoo>
+        <record id="res_config_settings_view_form" model="ir.ui.view">
+            <field name="name">res.config.settings.view.form.inherit.hr.shift</field>
+            <field name="model">res.config.settings</field>
+            <field name="priority" eval="50"/>
+            <field name="inherit_id" ref="hr_contract.res_config_settings_view_form"/>
+            <field name="arch" type="xml">
+                <xpath expr="//form" position="inside">
+                    <app data-string="Excepciones" string="Excepciones" name="employee_shift_scheduling_app">
+                        <block title="Ajustes Generales" id="employee_shift_settings">
+                            <setting string="Correo Saliente Para Excepciones/Horarios" id="settings_exception_employee_email"
+                                title="Correo Saliente para excepciones/horarios">
+                                <field name="email_that_sender" class="w-25"/>
+                            </setting>
+                            <setting string="Activar envío de correos (Excepciones/Horarios)" id="settings_enable_email"
+                                title="Activar envío de correos (Excepciones/Horarios)">
+                                <field name="enable_email" class="w-25"/>
+                            </setting>
+                            <setting string="Número base de horas en Jornada" id="settings_shift_hours_employee"
+                                title="Número base de horas en Jornada">
+                                <field name="max_hours_for_shift" class="w-25"/>
+                            </setting>
+                            <setting string="Número base de horas en Lactancia" id="settings_max_hours_for_lactance"
+                                title="Número base de horas en Lactancia">
+                                <field name="max_hours_for_lactance" class="w-25"/>
+                            </setting>
+                            <setting string="Tiempo permitido de tolerancia para marcaciones"
+                                     id="settings_range_of_tolerance"
+                                     title="Tiempo permitido de tolerancia para marcaciones">
+                                <field name="range_of_tolerance" widget="float_time" class="w-25" />
+                            </setting>
+                        </block>
+                    </app>
+                </xpath>
+            </field>
+        </record>
+
+        <record id="action_shift_settings" model="ir.actions.act_window">
+            <field name="name">Ajustes</field>
+            <field name="res_model">res.config.settings</field>
+            <field name="view_mode">form</field>
+            <field name="target">inline</field>
+            <field name="context">{'module' : 'employee_shift_scheduling_app', 'bin_size': False}</field>
+        </record>
+</odoo>

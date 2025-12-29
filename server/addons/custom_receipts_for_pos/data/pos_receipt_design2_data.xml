@@ -1,0 +1,162 @@
+<?xml version="1.0" encoding="utf-8"?>
+<odoo>
+    <!-- Examples for receipt design: which can be used or modified -->
+    <record id="pos_receipt_design2_demo" model="pos.receipt">
+        <field name="name">Design 2</field>
+        <field name="design_receipt">
+            <![CDATA[
+        <div class="pos-receipt line-height-compact" style="line-height: 1.5; font-size: 12px;family:'arial', monospace;">
+            <p style="text-align:center; font-weight:bold; line-height: 1.5; font-size: 12px;">FARMACIAS CUXIBAMBA FARMACUX CIA. LTDA.</p>
+
+            <div style="text-align:center; font-weight:bold; font-size: 14px; line-height: 1.5;">
+                <t t-if="props.data.headerData.company.name">
+                    <div style="text-transform: uppercase; font-size: 14px; line-height: 1.5;">SUCURSAL: <t t-esc="props.data.sucursal" /></div>
+                    <div style="font-size: 14px; line-height: 1.5;">RUC: 1191751422001</div>
+                    <div t-if="props.data.headerData.company.email" t-esc="props.data.headerData.company.email" style="font-size: 15px; line-height: 1.5;" />
+                    <t t-if="props.data.is_refund_order">
+                        <div style="font-size: 14px; line-height: 1.5;">NOTA DE CRÉDITO NRO:</div>
+                    </t>
+                    <t t-else="">
+                        <div style="font-size: 14px; line-height: 1.5; text-align:center; word-wrap: break-word;">
+                            <span>CLAVE DE ACCESO Y AUTORIZACION:</span><br/>
+                            <div style="width: 230px; margin: 0 auto; font-size: 13px; text-align:center; word-break: break-all; overflow-wrap: break-word; white-space: normal;">
+                                <t t-esc="props.data.sri_authorization"/>
+                            </div>
+                        </div>
+                        <div t-esc="props.data.invoice_name" />
+                    </t>
+                    <div style="font-size: 14px; line-height: 1.5;">CONTRIBUYENTE ESPECIAL NAC-DGERCG13-00236</div>
+                </t>
+            </div>
+            <br/>
+            <div style="text-align:start; margin-left: 5%; font-size: 14px; line-height: 1.3;">
+                <t t-if="props.data.partner.name">
+                    <div>CLIENTE: <t t-esc="props.data.partner.name"/></div>
+                </t>
+                <t t-if="props.data.partner.address">
+                    <div>DIRECCION: <t t-esc="props.data.partner.address"/></div>
+                </t>
+                <t t-if="props.data.partner.phone">
+                    <div>TELEF: <t t-esc="props.data.partner.phone"/></div>
+                </t>
+                <t t-if="props.data.partner.vat">
+                    <div>CI/RUC: <t t-esc="props.data.partner.vat"/></div>
+                </t>
+                <t t-if="props.data.partner.email">
+                    <div>EMAIL: <t t-esc="props.data.partner.email"/></div>
+                </t>
+                <t>
+                    <div>FECHA: <t t-esc="props.data.date"/></div>
+                </t>
+            </div>
+            <br/>
+            <t t-if="props.receipt.headerData.header">
+                <div style="text-align:center; font-size: 14px; line-height: 1.5;">
+                    <t t-esc="props.receipt.headerData.header" />
+                </div>
+            </t>
+
+            <div style="margin-left: 5%; font-size: 14px; line-height: 1.5;">
+                <table class='receipt-orderlines' style="border-style:double; border-left:none; border-right:none; border-bottom:none; width:100%;">
+                    <colgroup>
+                        <col width='60%' />
+                        <col width='10%' />
+                        <col width='10%' />
+                        <col width='20%' />
+                    </colgroup>
+                    <tr style="border-bottom:1px dashed black; font-size: 14px; line-height: 1.5;">
+                        <th style="text-align:left;">Producto</th>
+                        <th style="text-align:right;">Cant</th>
+                        <th style="text-align:right;">P.U.</th>
+                        <th style="text-align:right;">TOTAL</th>
+                    </tr>
+                    <t t-if="props.order and props.order.length and props.order[0] and props.order[0].pos and props.order[0].pos.mainScreen and props.order[0].pos.mainScreen.props and props.order[0].pos.mainScreen.props.order and props.order[0].pos.mainScreen.props.order.orderlines and props.order[0].pos.mainScreen.props.order.orderlines.length">
+                        <tr t-foreach="props.orderlines" t-as="orderline" t-key="orderline_index">
+                            <td style="font-size: 14px; line-height: 1.6;"><t t-esc="orderline.productName"/></td>
+                            <td style="text-align:right; font-size: 14px; line-height: 1.6;"><t t-esc="orderline.qty"/></td>
+                            <td style="text-align:right; font-size: 14px; line-height: 1.6;"><t t-esc="orderline.unitPrice"/></td>
+                            <td style="text-align:right; font-size: 14px; line-height: 1.6;"><t t-esc="orderline.price"/></td>
+                        </tr>
+                    </t>
+                    <t t-else="">
+                        <t t-if="props.orderlines and props.orderlines.length">
+                            <tr t-foreach="props.orderlines" t-as="orderline" t-key="orderline_index">
+                                <td style="font-size: 14px; line-height: 1.7;"><t t-esc="orderline.productName"/></td>
+                                <td style="text-align:right; font-size: 14px; line-height: 1.6;"><t t-esc="orderline.qty"/></td>
+                                <td style="text-align:right; font-size: 14px; line-height: 1.6;"><t t-esc="orderline.unitPrice"/></td>
+                                <td style="text-align:right; font-size: 14px; line-height: 1.6;"><t t-esc="orderline.price"/></td>
+                            </tr>
+                        </t>
+                    </t>
+                </table>
+            </div>
+
+            <div style="padding-top:4px; font-size: 14px; line-height: 1.5;text-align: end;">
+                <div>VALOR BRUTO: <span t-esc="props.formatCurrency(props.data.total_brute_order)" /></div>
+                <div>DESCUENTOS: <span t-esc='props.formatCurrency(props.data.total_discount)' /></div>
+                <t t-set='taxincluded' t-value='Math.abs(props.receipt.amount_total - props.receipt.total_with_tax) &lt;= 0.000001' />
+                <t t-if='!taxincluded'>
+                    <div>SUBTOTAL: <span t-esc='props.formatCurrency(props.data.total_without_tax)'/></div>
+                    <t t-foreach='props.data.tax_details' t-as='tax' t-key="tax.tax.id">
+                        <div>TARIFA <t t-esc='tax.tax.amount'></t>%: <span t-esc='props.formatCurrency(Math.abs(tax.base))'/></div>
+                    </t>
+                </t>
+                <div>TOTAL: <span t-esc='props.formatCurrency(Math.abs(props.data.amount_total))'/></div>
+            </div>
+
+            <t t-foreach='props.paymentlines' t-as='line' t-key="line_index">
+                <div style="border-top:1px dashed; font-size: 14px; line-height: 1.5;text-align: end;">
+                    <span><t t-esc='line.name' /></span>
+                    <span t-esc='props.formatCurrency(Math.abs(line.amount))'/>
+                </div>
+            </t>
+
+            <div style="font-size: 14px; line-height: 1.5;text-align: end;">
+                CAMBIO: <span t-esc='props.formatCurrency(props.receipt.change)' />
+            </div>
+
+            <t t-if='taxincluded'>
+                <t t-foreach='props.receipt.tax_details' t-as='tax' t-key="index_receipt_tax_details">
+                    <div style="font-size: 14px; line-height: 1.5;">
+                        <span><t t-esc='tax.name' /></span>
+                        <span t-esc='props.formatCurrency(Math.abs(tax.amount))'/>
+                    </div>
+                </t>
+                <div style="font-size: 14px; line-height: 1.5;">
+                    TOTAL IMPUESTO: <span t-esc='props.formatCurrency(Math.abs(props.receipt.total_tax))'/>
+                </div>
+            </t>
+
+            <t t-if="props.data.invoice_note">
+                <div style="border-top: 1px dashed black; padding-top:2px; font-size: 14px; line-height: 1.5;">
+                    <strong>Nota:</strong> <span t-esc="props.data.invoice_note"/>
+                </div>
+            </t>
+            <br/>
+            <div t-if='props.receipt.footer_html' style="text-align:center; font-size: 14px; line-height: 1.5;">
+                <t t-raw='props.receipt.footer_html'/>
+            </div>
+            <div t-if='!props.receipt.footer_html and props.receipt.footer' style="text-align:center; font-size: 14px; line-height: 1.5;">
+                <t t-esc='props.receipt.footer'/>
+            </div>
+
+            <br/>
+            <div style="text-align:center; font-size: 14px; line-height: 1.5;">
+                <div>LA SALUD NO TIENE PRECIO PERO SI DESCUENTO</div>
+                <div>*FARMACIAS CUXIBAMBA PREMIA TU FIDELIDAD*</div>
+            </div>
+
+            <div style="text-align:center; font-size: 14px; text-transform: uppercase; line-height: 1.5;">
+                <div t-if="props.data.cashier" class="cashier">
+                    <div>Atendido por: <t t-esc="props.data.cashier" /></div>
+                </div>
+            </div>
+
+            <div style="text-align:center; font-size: 14px; text-transform: uppercase; line-height: 1.5;">
+                <p style="text-align:center; font-size: 14px; line-height: 1.2;">Busque su Doc: www.farmaciascuxibamba.com.ec</p>
+            </div>
+        </div>
+
+]]></field>
+    </record>
+</odoo>

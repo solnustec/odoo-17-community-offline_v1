@@ -1,0 +1,231 @@
+.stock-status-green {
+    color: #229954;
+
+}
+
+.stock-status-orange {
+    color: #d4ac0d;
+}
+
+.stock-status-red {
+    color: #e74c3c;
+}
+
+.product-selected {
+    background-color: #f1f0d1;
+    color: #000000 !important;
+}
+
+.fade-transition {
+    transition: opacity 0.3s ease-in-out;
+}
+
+.hidden {
+    opacity: 0;
+}
+
+.visible {
+    opacity: 1;
+}
+
+.not-sales{
+    color: #ec7063;
+}
+
+/* Estilos específicos para el modal minimizable del carrito */
+.cart-modal .modal-dialog.cart-modal-sm {
+    max-width: 400px;
+    margin: 1rem auto;
+}
+
+.cart-modal .modal-dialog.cart-modal-sm .modal-header {
+    padding: 0.75rem 1rem;
+    border-bottom: 1px solid #dee2e6;
+}
+
+.cart-modal .modal-dialog.cart-modal-sm .modal-title {
+    font-size: 1rem;
+    margin: 0;
+    white-space: nowrap;
+    overflow: hidden;
+    text-overflow: ellipsis;
+    max-width: 250px;
+}
+
+.cart-modal .modal-dialog.cart-modal-sm .btn-sm {
+    padding: 0.25rem 0.5rem;
+    font-size: 0.875rem;
+}
+
+/* Transición suave para el cambio de tamaño del modal del carrito */
+.cart-modal .modal-dialog {
+    transition: all 0.3s ease-in-out;
+}
+
+/* Estilo específico para el botón de minimizar del carrito */
+.cart-modal .btn-outline-secondary:hover {
+    background-color: #6c757d;
+    border-color: #6c757d;
+    color: white;
+}
+
+/* Estilos para backdrop completo de todos los modales */
+.modal.show {
+    background: rgba(0,0,0,0.5) !important;
+    position: fixed !important;
+    top: 0 !important;
+    left: 0 !important;
+    width: 100vw !important;
+    height: 100vh !important;
+    z-index: 1050 !important;
+}
+
+/* Estilos específicos para modal del carrito minimizado sin bloqueo de fondo */
+.cart-modal.modal.show {
+    background: rgba(0,0,0,0.5);
+}
+
+.cart-modal.modal.show[style*="background: rgba(0,0,0,0)"] {
+    background: rgba(0,0,0,0) !important;
+    pointer-events: none;
+}
+
+.cart-modal.modal.show[style*="background: rgba(0,0,0,0)"] .modal-content {
+    pointer-events: auto;
+    box-shadow: 0 4px 12px rgba(0,0,0,0.4);
+    border: 1px solid #dee2e6;
+}
+
+/* Posicionamiento específico del modal del carrito minimizado */
+.cart-modal .modal-dialog.cart-modal-sm {
+    position: fixed;
+    top: 20px;
+    right: 20px;
+    z-index: 1055;
+    margin: 0;
+}
+
+
+
+
+/* Estilos para el tooltip de imagen del producto */
+.product-image-tooltip {
+    position: absolute;
+    z-index: 9999;
+    pointer-events: none;
+    opacity: 0;
+    transition: opacity 0.3s ease-in-out;
+}
+
+.product-image-tooltip.show {
+    opacity: 1;
+}
+
+.tooltip-content {
+    position: relative;
+    background: white;
+    border: 2px solid #007bff;
+    border-radius: 8px;
+    padding: 8px;
+    box-shadow: 0 4px 12px rgba(0, 0, 0, 0.15);
+    max-width: 150px;
+}
+
+.tooltip-image {
+    width: 100px;
+    height: 100px;
+    object-fit: cover;
+    border-radius: 4px;
+    display: block;
+}
+
+.tooltip-arrow {
+    position: absolute;
+    width: 0;
+    height: 0;
+    border: 8px solid transparent;
+}
+
+/* Posicionamiento del tooltip */
+.product-image-tooltip.position-top .tooltip-arrow {
+    bottom: -16px;
+    left: 50%;
+    transform: translateX(-50%);
+    border-top-color: #007bff;
+}
+
+.product-image-tooltip.position-bottom .tooltip-arrow {
+    top: -16px;
+    left: 50%;
+    transform: translateX(-50%);
+    border-bottom-color: #007bff;
+}
+
+.product-image-tooltip.position-left .tooltip-arrow {
+    right: -16px;
+    top: 50%;
+    transform: translateY(-50%);
+    border-left-color: #007bff;
+}
+
+.product-image-tooltip.position-right .tooltip-arrow {
+    left: -16px;
+    top: 50%;
+    transform: translateY(-50%);
+    border-right-color: #007bff;
+}
+
+/* Estilo para la celda del producto cuando tiene hover */
+.product-name-cell:hover {
+    background-color: #f8f9fa;
+    border-radius: 4px;
+}
+
+/* Estilos para el botón de limpiar carrito en el encabezado */
+.table thead th .btn-outline-danger {
+    border-color: #dc3545;
+    color: #dc3545;
+    transition: all 0.2s ease;
+}
+
+.table thead th .btn-outline-danger:hover {
+    background-color: #dc3545;
+    border-color: #dc3545;
+    color: white;
+}
+
+/* Responsive para tooltip en dispositivos móviles */
+@media (max-width: 768px) {
+    .tooltip-content {
+        max-width: 150px;
+    }
+    
+    .tooltip-image {
+        width: 130px;
+        height: 130px;
+    }
+    
+    .product-name-cell:hover {
+        background-color: transparent;
+    }
+}
+
+@media (max-width: 1366px) and (min-width: 768px) {
+    .dashboard_for_report_sales{
+        font-size: 10px !important;
+    }
+    .table.table-sm {
+        font-size: 10px !important;
+    }
+
+    .o_web_client.o_touch_device .btn, .o_web_client.o_touch_device .btn .btn-sm {
+        font-size: 0.875rem;
+        padding: 1px 5px;
+    }
+    .modal{
+        font-size: 12px !important;
+        font-weight: 500 !important;
+        max-height: 100% !important;
+    }
+
+}

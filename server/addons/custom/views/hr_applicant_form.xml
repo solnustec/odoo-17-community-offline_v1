@@ -1,0 +1,27 @@
+<?xml version="1.0" encoding="utf-8"?>
+<odoo>
+    <record id="view_hr_applicant_form_custom_tab" model="ir.ui.view">
+        <field name="name">hr.hr_applicant_view_form</field>
+        <field name="model">hr.applicant</field>
+        <field name="inherit_id" ref="hr_recruitment_skills.hr_applicant_view_form"/>
+        <field name="arch" type="xml">
+            <xpath expr="//group" position="after">
+                <group string="Información Extra del postulante">
+                    <field name="generic_field_value_ids">
+
+                    </field>
+                </group>
+            </xpath>
+            <field name="generic_field_value_ids" position="replace">
+                <field name="generic_field_value_ids" string="">
+                    <tree editable="top">
+                        <field name="field_id" />
+                        <field name="display_value" string="Detalle" widget="applicant_char"/>
+                        <field name="file_attachment_ids" widget="many2many_binary" string="Archivos"/>
+                    </tree>
+                </field>
+
+            </field>
+        </field>
+    </record>
+</odoo>

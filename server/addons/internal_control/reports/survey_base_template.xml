@@ -1,0 +1,940 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<odoo>
+    <!-- Template base para reportes de encuestas -->
+    <template id="survey_base_template">
+        <t t-call="web.basic_layout">
+            <!-- CSS personalizado para controlar márgenes de página y tamaño de letra -->
+            <style>
+                @page {
+                    margin-top: 10mm;
+                    margin-bottom: 10mm;
+                    margin-left: 15mm;
+                    margin-right: 15mm;
+                }
+                .page {
+                    margin: 0;
+                    padding: 0;
+                    font-size: 11px !important;
+                }
+                .page * {
+                    font-size: 11px !important;
+                }
+                h1, h2, h3, h4, h5, h6 {
+                    font-size: 11px !important;
+                }
+                p, span, div, td, th {
+                    font-size: 11px !important;
+                }
+            </style>
+            <t t-if="docs and len(docs) > 0">
+                <t t-set="doc" t-value="docs[0]"/>
+                <t t-set="company" t-value="env.company"/>
+
+                <!-- PORTADA REUTILIZABLE -->
+                <div class="page" style="width: 100%; min-height: 100vh; font-family: 'Segoe UI', Arial, sans-serif; background-color: transparent; margin: 0; padding: 40px; page-break-after: always;">
+                    <div style="width: 100%; max-width: 800px; margin: 300px auto 0 auto; background-color: #fff; border-radius: 8px; box-shadow: 0 2px 10px rgba(0,0,0,0.08); padding: 20px;">
+                        <!-- Encabezado -->
+                        <div style="display: flex; justify-content: space-between; align-items: center; background-color: #F5F5F5; padding: 10px 20px; border-radius: 6px;">
+                            <!-- Logo alineado a la izquierda -->
+                            <div style="display: flex; align-items: center;">
+                                <img t-att-src="'https://farmaciascuxibamba.com.ec/web/image/res.company/%s/logo' % company.id"
+                                     style="height: 40px; max-width: 150px; object-fit: contain;" alt="Logo"/>
+                            </div>
+
+                            <!-- Título del reporte alineado a la derecha -->
+                            <!-- <div style="font-size: 14px; font-weight: bold; color: #333; white-space: nowrap;">
+                                <t t-out="report_title or 'REPORTE'"/>
+                            </div> -->
+                        </div>
+
+                        <!-- Divisor -->
+                        <div style="height: 6px; background: linear-gradient(to right, #ffd700 15%, #004aad 15%); margin: 0 0 20px 0;"></div>
+
+                        <!-- Información del reporte -->
+                        <div style="text-align: center; margin: 20px 0;">
+                            <h2 style="margin: 0 0 15px 0; font-size: 24px; font-weight: bold; color: #333;">
+                                <t t-out="report_title or 'Reporte'"/>
+                            </h2>
+                            <p style="color: #555; margin: 0;">
+                                Generado el: <t t-out="context_timestamp(datetime.datetime.now()).strftime('%d/%m/%Y %H:%M')"/>
+                            </p>
+                        </div>
+
+                        <!-- Información de la encuesta -->
+                        <div style="background-color: #f8f9fa; padding: 15px; border-radius: 5px; margin: 20px 0;">
+                            <h4 style="margin-top: 0; color: #333; font-weight: bold;">Información de la Encuesta:</h4>
+                            <div style="width: 100%;">
+                                <div style="margin-bottom: 8px;">
+                                    <span style="color: #555; font-weight: 600; display: inline-block; width: 120px;">Encuesta:</span>
+                                    <span style="color: #004aad;"><t t-out="doc.survey_id.title"/></span>
+                                </div>
+                                <div style="margin-bottom: 8px;">
+                                    <span style="color: #555; font-weight: 600; display: inline-block; width: 120px;">Categoría:</span>
+                                    <span style="color: #004aad;"><t t-out="doc.survey_id.category_id.name or 'N/A'"/></span>
+                                </div>
+                                <t t-if="doc.survey_id.department_id">
+                                    <div style="margin-bottom: 8px;">
+                                        <span style="color: #555; font-weight: 600; display: inline-block; width: 120px;">Departamento:</span>
+                                        <span style="color: #004aad;"><t t-out="doc.survey_id.department_id.name"/></span>
+                                    </div>
+                                </t>
+                                <t t-else="">
+                                    <div style="margin-bottom: 8px;">
+                                        <span style="color: #555; font-weight: 600; display: inline-block; width: 120px;">Departamento:</span>
+                                        <span style="color: #004aad;">N/A</span>
+                                    </div>
+                                </t>
+                                <div style="margin-bottom: 8px;">
+                                    <span style="color: #555; font-weight: 600; display: inline-block; width: 120px;">Fecha:</span>
+                                    <span style="color: #004aad;"><t t-out="context_timestamp(datetime.datetime.now()).strftime('%d/%m/%Y %H:%M')"/></span>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- CONTENIDO PRINCIPAL -->
+                <div class="page" style="margin: 0; padding: 20px; font-family: 'Segoe UI', Arial, sans-serif; background-color: transparent;">
+                    <div style="width: 100%; max-width: 800px; margin: 0 auto; background-color: #fff; border-radius: 8px; box-shadow: 0 2px 10px rgba(0,0,0,0.08); padding: 20px;">
+                        <!-- Encabezado del contenido -->
+                        <div style="display: flex; justify-content: space-between; align-items: center; background-color: #F5F5F5; padding: 10px 20px; border-radius: 6px;">
+                            <!-- Logo alineado a la izquierda -->
+                            <div style="display: flex; align-items: center;">
+                                <img t-att-src="'https://farmaciascuxibamba.com.ec/web/image/res.company/%s/logo' % company.id"
+                                     style="height: 40px; max-width: 150px; object-fit: contain;" alt="Logo"/>
+                            </div>
+
+                            <!-- Título del contenido alineado a la derecha -->
+                            <!-- <div style="font-size: 14px; font-weight: bold; color: #333; white-space: nowrap;">
+                                <t t-out="content_title or 'RESULTADOS'"/>
+                            </div> -->
+                        </div>
+
+                        <!-- Divisor -->
+                        <div style="height: 6px; background: linear-gradient(to right, #ffd700 15%, #004aad 15%); margin: 0 0 20px 0;"></div>
+                        
+                        <!-- TABLA DE PERSONAS ASIGNADAS REUTILIZABLE -->
+                        <t t-if="assigned_info and len(assigned_info) > 0">
+                            <div style="margin-bottom: 30px;">
+                                <h4 style="margin-bottom: 15px; font-weight: bold; color: #333;">Personas Asignadas:</h4>
+                                <table style="width: 100%; border-collapse: collapse; margin-bottom: 20px;">
+                                    <thead>
+                                        <tr style="background-color: #f8f9fa; border: 1px solid #ddd;">
+                                                                    <th style="border: 1px solid #ddd; padding: 12px; text-align: center; font-weight: bold; vertical-align: middle;">Nombre</th>
+                        <th style="border: 1px solid #ddd; padding: 12px; text-align: center; font-weight: bold; vertical-align: middle;">Cargo</th>
+                        <th style="border: 1px solid #ddd; padding: 12px; text-align: center; font-weight: bold; vertical-align: middle;">Departamento</th>
+                                        </tr>
+                                    </thead>
+                                    <tbody>
+                                        <t t-foreach="assigned_info" t-as="person">
+                                            <tr>
+                                                <td style="border: 1px solid #ddd; padding: 12px;"><t t-out="person['name']"/></td>
+                                                <td style="border: 1px solid #ddd; padding: 12px;"><t t-out="person['job'] or '-'"/></td>
+                                                <td style="border: 1px solid #ddd; padding: 12px;"><t t-out="person['department'] or '-'"/></td>
+                                            </tr>
+                                        </t>
+                                    </tbody>
+                                </table>
+                            </div>
+                        </t>
+                        
+                        <!-- CONTENIDO ESPECÍFICO DEL REPORTE -->
+                        <div style="padding: 20px; margin-top: 15px;">
+                            <t t-if="report_type == 'compliance'">
+                                <t t-call="internal_control.survey_compliance_content"/>
+                            </t>
+                            <t t-elif="report_type == 'compliance_campaign'">
+                                <t t-call="internal_control.survey_compliance_campaign_content"/>
+                            </t>
+                            <t t-elif="report_type == 'satisfaction'">
+                                <t t-call="internal_control.survey_satisfaction_content"/>
+                            </t>
+                            <t t-elif="report_type == 'revised_items'">
+                                <t t-call="internal_control.survey_revised_items_content"/>
+                            </t>
+                            <t t-elif="report_type == 'participation'">
+                                <t t-call="internal_control.survey_participation_content"/>
+                            </t>
+                            <t t-elif="report_type == 'satisfaction_campaign'">
+                                <t t-call="internal_control.survey_satisfaction_campaign_content"/>
+                            </t>
+                            <t t-elif="report_type == 'revised_items_campaign'">
+                                <t t-call="internal_control.survey_revised_items_campaign_content"/>
+                            </t>
+                            <t t-elif="report_type == 'participation_campaign'">
+                                <t t-call="internal_control.survey_participation_campaign_content"/>
+                            </t>
+                            <t t-elif="report_type == 'compliance_summary'">
+                                <t t-call="internal_control.survey_compliance_summary_content"/>
+                            </t>
+                            <t t-elif="report_type == 'export_metrics'">
+                                <t t-call="internal_control.export_metrics_content"/>
+                            </t>
+                            <t t-elif="report_type == 'export_metrics_group_by'">
+                                <t t-call="internal_control.export_metrics_group_by_content"/>
+                            </t>
+                            <t t-else="">
+                                <t t-call="internal_control.survey_content_template"/>
+                            </t>
+                        </div>
+                    </div>
+                </div>
+            </t>
+        </t>
+    </template>
+
+    <!-- Template para el contenido específico (será sobrescrito por cada reporte) -->
+    <template id="survey_content_template">
+        <!-- Este template será sobrescrito por cada reporte específico -->
+        <div style="text-align: center; padding: 40px;">
+            <p style="color: #666;">Contenido del reporte específico</p>
+        </div>
+    </template>
+
+    <!-- ===== COMPONENTES REUTILIZABLES ===== -->
+
+    <!-- Footer reutilizable -->
+    <template id="survey_footer">
+        <div style="border-top: 1px solid #ddd; margin-top: 40px; padding-top: 15px; text-align: center; font-size: 12px; color: #555;">
+            <p style="margin: 0 0 5px 0;">Reporte generado por Control Interno - Farmacias Cuxibamba</p>
+            <p style="margin: 0;">Tel: +593 96 066 2194 | www.farmaciascuxibamba.com.ec</p>
+
+        </div>
+    </template>
+
+    <!-- Tabla de información por campaña estandarizada para todas las categorías -->
+    <template id="survey_campaign_info_standard_table">
+        <t t-if="docs.filtered(lambda x: x.page_name.startswith('Campaña:'))">
+            <div style="margin-bottom: 30px;">
+                <h4 style="margin-bottom: 15px; font-weight: bold; color: #333;">Información por Campaña:</h4>
+                <table style="width: 100%; border-collapse: collapse; margin-bottom: 20px;">
+                    <thead>
+                        <tr style="background-color: #f8f9fa; border: 1px solid #ddd;">
+                            <th style="border: 1px solid #ddd; padding: 8px; text-align: center; font-weight: bold; width: 25%; vertical-align: middle;">Departamento</th>
+                            <th style="border: 1px solid #ddd; padding: 8px; text-align: center; font-weight: bold; width: 30%; vertical-align: middle;">Campaña</th>
+                            <th style="border: 1px solid #ddd; padding: 8px; text-align: center; font-weight: bold; width: 20%; vertical-align: middle;">Personas Asignadas</th>
+                            <th style="border: 1px solid #ddd; padding: 8px; text-align: center; font-weight: bold; width: 20%; vertical-align: middle;">Personas que Respondieron</th>
+                            <th style="border: 1px solid #ddd; padding: 8px; text-align: center; font-weight: bold; width: 15%; vertical-align: middle;">% Participación</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        <t t-foreach="docs.filtered(lambda x: x.page_name.startswith('Campaña:'))" t-as="item">
+                            <tr>
+                                <td style="border: 1px solid #ddd; padding: 8px;"><t t-out="item.department_id.name if item.department_id else '-'"/></td>
+                                <td style="border: 1px solid #ddd; padding: 8px;"><t t-out="item.campaign_id.name if item.campaign_id else '-'"/></td>
+                                <td style="border: 1px solid #ddd; padding: 8px; text-align: center;"><t t-out="item.total_asignados or 0"/></td>
+                                <td style="border: 1px solid #ddd; padding: 8px; text-align: center;"><t t-out="item.total_respondieron or 0"/></td>
+                                <td style="border: 1px solid #ddd; padding: 8px; text-align: center;"><t t-out="'%.1f' % (item.participation_percentage or 0.0)"/>%</td>
+                            </tr>
+                        </t>
+                    </tbody>
+                </table>
+            </div>
+        </t>
+    </template>
+
+
+    <!-- Mensaje de no datos reutilizable -->
+    <template id="survey_no_data_message">
+        <div style="background-color: #f8f9fa; border: 1px solid #ddd; padding: 15px; border-radius: 5px; margin-bottom: 20px;">
+            <h4 style="margin-top: 0; color: #333; font-weight: bold;">Información:</h4>
+            <p style="margin-bottom: 0; color: #555;">No hay datos disponibles para el reporte seleccionado.</p>
+        </div>
+    </template>
+
+    <!-- Tabla de cumplimiento reutilizable (general y por campaña) -->
+    <template id="survey_compliance_table">
+        <div style="margin-bottom: 30px;">
+            <h4 style="margin-bottom: 15px; font-weight: bold; color: #333;">Resultados de Cumplimiento:</h4>
+            <table style="width: 100%; border-collapse: collapse; margin-bottom: 20px;">
+                <thead>
+                    <tr style="background-color: #f8f9fa; border: 1px solid #ddd;">
+                        <th style="border: 1px solid #ddd; padding: 8px; text-align: center; font-weight: bold; width: 35%; vertical-align: middle;">Sección</th>
+                        <th style="border: 1px solid #ddd; padding: 8px; text-align: center; font-weight: bold; width: 12%; vertical-align: middle;">Cumple</th>
+                        <th style="border: 1px solid #ddd; padding: 8px; text-align: center; font-weight: bold; width: 12%; vertical-align: middle;">No Cumple</th>
+                        <th style="border: 1px solid #ddd; padding: 8px; text-align: center; font-weight: bold; width: 12%; vertical-align: middle;">N/A</th>
+                        <th style="border: 1px solid #ddd; padding: 8px; text-align: center; font-weight: bold; width: 12%; vertical-align: middle;">Total</th>
+                        <th style="border: 1px solid #ddd; padding: 8px; text-align: center; font-weight: bold; width: 17%; vertical-align: middle;">% Cumplimiento</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    <t t-foreach="docs.filtered(lambda x: not x.page_name.startswith('Participante:') and not x.page_name.startswith('Campaña:'))" t-as="item">
+                        <tr>
+                            <td style="border: 1px solid #ddd; padding: 8px;"><t t-out="item.page_name"/></td>
+                            <td style="border: 1px solid #ddd; padding: 8px; text-align: center;"><t t-out="item.cumple_count or 0"/></td>
+                            <td style="border: 1px solid #ddd; padding: 8px; text-align: center;"><t t-out="item.no_cumple_count or 0"/></td>
+                            <td style="border: 1px solid #ddd; padding: 8px; text-align: center;"><t t-out="item.na_count or 0"/></td>
+                            <td style="border: 1px solid #ddd; padding: 8px; text-align: center;"><t t-out="item.total_responses or 0"/></td>
+                            <td style="border: 1px solid #ddd; padding: 8px; text-align: center;"><t t-out="'%.1f' % (item.porcentaje_cumplimiento or 0.0)"/>%</td>
+                        </tr>
+                    </t>
+                </tbody>
+            </table>
+        </div>
+    </template>
+
+    <!-- Tabla de participación reutilizable (general y por campaña) -->
+    <template id="survey_participation_table">
+        <div style="margin-bottom: 30px;">
+            <h4 style="margin-bottom: 15px; font-weight: bold; color: #333;">Resultados de Participación:</h4>
+            <table style="width: 100%; border-collapse: collapse; margin-bottom: 20px;">
+                <thead>
+                    <tr style="background-color: #f8f9fa; border: 1px solid #ddd;">
+                        <th style="border: 1px solid #ddd; padding: 8px; text-align: center; font-weight: bold; width: 35%; vertical-align: middle;">Sección</th>
+                        <th style="border: 1px solid #ddd; padding: 8px; text-align: center; font-weight: bold; width: 12%; vertical-align: middle;">Sí</th>
+                        <th style="border: 1px solid #ddd; padding: 8px; text-align: center; font-weight: bold; width: 12%; vertical-align: middle;">No</th>
+                        <th style="border: 1px solid #ddd; padding: 8px; text-align: center; font-weight: bold; width: 12%; vertical-align: middle;">N/A</th>
+                        <th style="border: 1px solid #ddd; padding: 8px; text-align: center; font-weight: bold; width: 12%; vertical-align: middle;">Total</th>
+                        <th style="border: 1px solid #ddd; padding: 8px; text-align: center; font-weight: bold; width: 17%; vertical-align: middle;">% Participación</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    <t t-foreach="docs.filtered(lambda x: not x.page_name.startswith('Participante:') and not x.page_name.startswith('Campaña:'))" t-as="item">
+                        <tr>
+                            <td style="border: 1px solid #ddd; padding: 8px;"><t t-out="item.page_name"/></td>
+                            <td style="border: 1px solid #ddd; padding: 8px; text-align: center;"><t t-out="item.respuestas_si or 0"/></td>
+                            <td style="border: 1px solid #ddd; padding: 8px; text-align: center;"><t t-out="item.respuestas_no or 0"/></td>
+                            <td style="border: 1px solid #ddd; padding: 8px; text-align: center;"><t t-out="item.no_respondieron or 0"/></td>
+                            <td style="border: 1px solid #ddd; padding: 8px; text-align: center;"><t t-out="item.total_respuestas or 0"/></td>
+                            <td style="border: 1px solid #ddd; padding: 8px; text-align: center;"><t t-out="'%.1f' % (item.porcentaje_participacion or 0.0)"/>%</td>
+                        </tr>
+                    </t>
+                </tbody>
+            </table>
+        </div>
+    </template>
+
+    <!-- Tabla de items revisados reutilizable (general y por campaña) -->
+    <template id="survey_revised_items_table">
+        <div style="margin-bottom: 30px;">
+            <h4 style="margin-bottom: 15px; font-weight: bold; color: #333;">Resultados de Items Revisados:</h4>
+            <table style="width: 100%; border-collapse: collapse; margin-bottom: 20px;">
+                <thead>
+                    <tr style="background-color: #f8f9fa; border: 1px solid #ddd;">
+                        <th style="border: 1px solid #ddd; padding: 8px; text-align: center; font-weight: bold; width: 35%; vertical-align: middle;">Sección</th>
+                        <th style="border: 1px solid #ddd; padding: 8px; text-align: center; font-weight: bold; width: 12%; vertical-align: middle;">Total Revisados</th>
+                        <th style="border: 1px solid #ddd; padding: 8px; text-align: center; font-weight: bold; width: 12%; vertical-align: middle;">Sin Novedad</th>
+                        <th style="border: 1px solid #ddd; padding: 8px; text-align: center; font-weight: bold; width: 12%; vertical-align: middle;">Con Novedad</th>
+                        <th style="border: 1px solid #ddd; padding: 8px; text-align: center; font-weight: bold; width: 12%; vertical-align: middle;">Total</th>
+                        <th style="border: 1px solid #ddd; padding: 8px; text-align: center; font-weight: bold; width: 17%; vertical-align: middle;">% Cumplimiento</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    <t t-foreach="docs.filtered(lambda x: not x.page_name.startswith('Participante:') and not x.page_name.startswith('Campaña:'))" t-as="item">
+                        <tr>
+                            <td style="border: 1px solid #ddd; padding: 8px;"><t t-out="item.page_name"/></td>
+                            <td style="border: 1px solid #ddd; padding: 8px; text-align: center;"><t t-out="item.total_items_revisados or 0"/></td>
+                            <td style="border: 1px solid #ddd; padding: 8px; text-align: center;"><t t-out="item.total_items_sin_novedad or 0"/></td>
+                            <td style="border: 1px solid #ddd; padding: 8px; text-align: center;"><t t-out="(item.total_items_revisados or 0) - (item.total_items_sin_novedad or 0)"/></td>
+                            <td style="border: 1px solid #ddd; padding: 8px; text-align: center;"><t t-out="item.total_items_revisados or 0"/></td>
+                            <td style="border: 1px solid #ddd; padding: 8px; text-align: center;"><t t-out="'%.1f' % (item.porcentaje_cumplimiento or 0.0)"/>%</td>
+                        </tr>
+                    </t>
+                </tbody>
+            </table>
+        </div>
+    </template>
+
+    <!-- Tabla de resumen de cumplimiento reutilizable -->
+    <template id="survey_compliance_summary_table">
+        <div style="background-color: #ecf0f1; padding: 15px; border-radius: 5px; margin-top: 20px;">
+            <h4 style="margin-bottom: 15px; font-weight: bold; color: #333;">Resumen de Cumplimiento:</h4>
+            <t t-set="secciones" t-value="docs.filtered(lambda x: not x.page_name.startswith('Campaña:') and not x.page_name.startswith('Participante:'))"/>
+            <t t-set="total_secciones" t-value="len(secciones)"/>
+            <t t-set="total_respuestas" t-value="sum(secciones.mapped('total_responses'))"/>
+            <t t-set="total_cumple" t-value="sum(secciones.mapped('cumple_count'))"/>
+            <t t-set="total_no_cumple" t-value="sum(secciones.mapped('no_cumple_count'))"/>
+            <t t-set="total_na" t-value="sum(secciones.mapped('na_count'))"/>
+            <t t-set="promedio_cumplimiento" t-value="sum(secciones.mapped('porcentaje_cumplimiento')) / len(secciones) if secciones else 0"/>
+            
+            <table style="width: 100%; border-collapse: collapse; margin-bottom: 20px;">
+                <thead>
+                    <tr style="background-color: #f8f9fa; border: 1px solid #ddd;">
+                        <th style="border: 1px solid #ddd; padding: 8px; text-align: left; font-weight: bold; width: 50%; background-color: #fff; vertical-align: middle;">Métrica</th>
+                        <th style="border: 1px solid #ddd; padding: 8px; text-align: left; font-weight: bold; width: 50%; background-color: #fff; vertical-align: middle;">Valor</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    <tr style="border: 1px solid #ddd; background-color: #fff;">
+                        <td style="border: 1px solid #ddd; padding: 8px; font-weight: 600; color: #555; background-color: #fff;">Total Secciones</td>
+                        <td style="border: 1px solid #ddd; padding: 8px; color: #000; background-color: #fff;"><t t-out="total_secciones"/></td>
+                    </tr>
+                    <tr style="border: 1px solid #ddd; background-color: #fff;">
+                        <td style="border: 1px solid #ddd; padding: 8px; font-weight: 600; color: #555; background-color: #fff;">Total Respuestas</td>
+                        <td style="border: 1px solid #ddd; padding: 8px; color: #000; background-color: #fff;"><t t-out="total_respuestas"/></td>
+                    </tr>
+                    <tr style="border: 1px solid #ddd; background-color: #fff;">
+                        <td style="border: 1px solid #ddd; padding: 8px; font-weight: 600; color: #555; background-color: #fff;">Total Cumple</td>
+                        <td style="border: 1px solid #ddd; padding: 8px; color: #000; background-color: #fff;"><t t-out="total_cumple"/></td>
+                    </tr>
+                    <tr style="border: 1px solid #ddd; background-color: #fff;">
+                        <td style="border: 1px solid #ddd; padding: 8px; font-weight: 600; color: #555; background-color: #fff;">Total No Cumple</td>
+                        <td style="border: 1px solid #ddd; padding: 8px; color: #000; background-color: #fff;"><t t-out="total_no_cumple"/></td>
+                    </tr>
+                    <tr style="border: 1px solid #ddd; background-color: #fff;">
+                        <td style="border: 1px solid #ddd; padding: 8px; font-weight: 600; color: #555; background-color: #fff;">Total N/A</td>
+                        <td style="border: 1px solid #ddd; padding: 8px; color: #000; background-color: #fff;"><t t-out="total_na"/></td>
+                    </tr>
+                    <tr style="border: 1px solid #ddd; background-color: #fff;">
+                        <td style="border: 1px solid #ddd; padding: 8px; font-weight: 600; color: #555; background-color: #fff;">Promedio de Cumplimiento</td>
+                        <td style="border: 1px solid #ddd; padding: 8px; color: #000; background-color: #fff;"><t t-out="'%.1f' % promedio_cumplimiento"/>%</td>
+                    </tr>
+                </tbody>
+            </table>
+        </div>
+    </template>
+
+    <!-- Tabla de resumen de participación reutilizable -->
+    <template id="survey_participation_summary_table">
+        <div style="background-color: #ecf0f1; padding: 15px; border-radius: 5px; margin-top: 20px;">
+            <h4 style="margin-bottom: 15px; font-weight: bold; color: #333;">Resumen de Participación:</h4>
+            <t t-set="secciones" t-value="docs.filtered(lambda x: not x.page_name.startswith('Campaña:') and not x.page_name.startswith('Participante:'))"/>
+            <t t-set="total_si" t-value="sum(secciones.mapped('respuestas_si'))"/>
+            <t t-set="total_no" t-value="sum(secciones.mapped('respuestas_no'))"/>
+            <t t-set="total_no_respondieron" t-value="sum(secciones.mapped('no_respondieron'))"/>
+            <t t-set="total_respuestas" t-value="sum(secciones.mapped('total_respuestas'))"/>
+            <t t-set="promedio_participacion" t-value="sum(secciones.mapped('porcentaje_participacion')) / len(secciones) if secciones else 0"/>
+            
+            <table style="width: 100%; border-collapse: collapse; margin-bottom: 20px;">
+                <thead>
+                    <tr style="background-color: #f8f9fa; border: 1px solid #ddd;">
+                        <th style="border: 1px solid #ddd; padding: 8px; text-align: left; font-weight: bold; width: 50%; background-color: #fff; vertical-align: middle;">Métrica</th>
+                        <th style="border: 1px solid #ddd; padding: 8px; text-align: left; font-weight: bold; width: 50%; background-color: #fff; vertical-align: middle;">Valor</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    <tr style="border: 1px solid #ddd; background-color: #fff;">
+                        <td style="border: 1px solid #ddd; padding: 8px; font-weight: 600; color: #555; background-color: #fff;">Total Sí</td>
+                        <td style="border: 1px solid #ddd; padding: 8px; color: #000; background-color: #fff;"><t t-out="total_si"/></td>
+                    </tr>
+                    <tr style="border: 1px solid #ddd; background-color: #fff;">
+                        <td style="border: 1px solid #ddd; padding: 8px; font-weight: 600; color: #555; background-color: #fff;">Total No</td>
+                        <td style="border: 1px solid #ddd; padding: 8px; color: #000; background-color: #fff;"><t t-out="total_no"/></td>
+                    </tr>
+                    <tr style="border: 1px solid #ddd; background-color: #fff;">
+                        <td style="border: 1px solid #ddd; padding: 8px; font-weight: 600; color: #555; background-color: #fff;">Total No Respondió</td>
+                        <td style="border: 1px solid #ddd; padding: 8px; color: #000; background-color: #fff;"><t t-out="total_no_respondieron"/></td>
+                    </tr>
+                    <tr style="border: 1px solid #ddd; background-color: #fff;">
+                        <td style="border: 1px solid #ddd; padding: 8px; font-weight: 600; color: #555; background-color: #fff;">Total Respuestas</td>
+                        <td style="border: 1px solid #ddd; padding: 8px; color: #000; background-color: #fff;"><t t-out="total_respuestas"/></td>
+                    </tr>
+                    <tr style="border: 1px solid #ddd; background-color: #fff;">
+                        <td style="border: 1px solid #ddd; padding: 8px; font-weight: 600; color: #555; background-color: #fff;">Promedio % Participación</td>
+                        <td style="border: 1px solid #ddd; padding: 8px; color: #000; background-color: #fff;"><t t-out="'%.1f' % promedio_participacion"/>%</td>
+                    </tr>
+                </tbody>
+            </table>
+        </div>
+    </template>
+
+    <!-- Tabla de satisfacción reutilizable (general y por campaña) -->
+    <template id="survey_satisfaction_table">
+        <div style="margin-bottom: 30px;">
+            <h4 style="margin-bottom: 15px; font-weight: bold; color: #333;">Resultados de Satisfacción:</h4>
+            <table style="width: 100%; border-collapse: collapse; margin-bottom: 20px;">
+                <thead>
+                    <tr style="background-color: #f8f9fa; border: 1px solid #ddd;">
+                        <th style="border: 1px solid #ddd; padding: 8px; text-align: center; font-weight: bold; width: 35%; vertical-align: middle;">Sección</th>
+                        <th style="border: 1px solid #ddd; padding: 8px; text-align: center; font-weight: bold; width: 25%; vertical-align: middle;">Total</th>
+                        <th style="border: 1px solid #ddd; padding: 8px; text-align: center; font-weight: bold; width: 25%; vertical-align: middle;">Positivas</th>
+                        <th style="border: 1px solid #ddd; padding: 8px; text-align: center; font-weight: bold; width: 15%; vertical-align: middle;">% Satisfacción</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    <t t-foreach="docs.filtered(lambda x: not x.page_name.startswith('Participante:') and not x.page_name.startswith('Campaña:'))" t-as="item">
+                        <tr>
+                            <td style="border: 1px solid #ddd; padding: 8px;"><t t-out="item.page_name"/></td>
+                            <td style="border: 1px solid #ddd; padding: 8px; text-align: center;"><t t-out="item.total_encuestas or 0"/></td>
+                            <td style="border: 1px solid #ddd; padding: 8px; text-align: center;"><t t-out="item.encuestas_positivas or 0"/></td>
+                            <td style="border: 1px solid #ddd; padding: 8px; text-align: center;"><t t-out="'%.1f' % (item.porcentaje_satisfaccion or 0.0)"/>%</td>
+                        </tr>
+                    </t>
+                </tbody>
+            </table>
+        </div>
+    </template>
+
+    <!-- Tabla de resumen de satisfacción reutilizable -->
+    <template id="survey_satisfaction_summary_table">
+        <div style="background-color: #ecf0f1; padding: 15px; border-radius: 5px; margin-top: 20px;">
+            <h4 style="margin-bottom: 15px; font-weight: bold; color: #333;">Resumen de Satisfacción:</h4>
+            <t t-set="secciones" t-value="docs.filtered(lambda x: not x.page_name.startswith('Campaña:') and not x.page_name.startswith('Participante:'))"/>
+            <t t-set="total_encuestas" t-value="sum(secciones.mapped('total_encuestas'))"/>
+            <t t-set="total_positivas" t-value="sum(secciones.mapped('encuestas_positivas'))"/>
+            <!-- Calcular promedio real de satisfacción: promedio de promedios ponderado por número de encuestas -->
+            <t t-set="suma_ponderada" t-value="sum(secciones.mapped(lambda s: s.satisfaccion * s.total_encuestas))"/>
+            <t t-set="promedio_satisfaccion" t-value="suma_ponderada / total_encuestas if total_encuestas > 0 else 0"/>
+            <t t-set="promedio_porcentaje" t-value="sum(secciones.mapped('porcentaje_satisfaccion')) / len(secciones) if secciones else 0"/>
+            
+            <table style="width: 100%; border-collapse: collapse; margin-bottom: 20px;">
+                <thead>
+                    <tr style="background-color: #f8f9fa; border: 1px solid #ddd;">
+                        <th style="border: 1px solid #ddd; padding: 8px; text-align: left; font-weight: bold; width: 50%; background-color: #fff; vertical-align: middle;">Métrica</th>
+                        <th style="border: 1px solid #ddd; padding: 8px; text-align: left; font-weight: bold; width: 50%; background-color: #fff; vertical-align: middle;">Valor</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    <tr style="border: 1px solid #ddd; background-color: #fff;">
+                        <td style="border: 1px solid #ddd; padding: 8px; font-weight: 600; color: #555; background-color: #fff;">Total Encuestas</td>
+                        <td style="border: 1px solid #ddd; padding: 8px; color: #000; background-color: #fff;"><t t-out="total_encuestas"/></td>
+                    </tr>
+                    <tr style="border: 1px solid #ddd; background-color: #fff;">
+                        <td style="border: 1px solid #ddd; padding: 8px; font-weight: 600; color: #555; background-color: #fff;">Total Positivas</td>
+                        <td style="border: 1px solid #ddd; padding: 8px; color: #000; background-color: #fff;"><t t-out="total_positivas"/></td>
+                    </tr>
+                    <tr style="border: 1px solid #ddd; background-color: #fff;">
+                        <td style="border: 1px solid #ddd; padding: 8px; font-weight: 600; color: #555; background-color: #fff;">Promedio Satisfacción</td>
+                        <td style="border: 1px solid #ddd; padding: 8px; color: #000; background-color: #fff;"><t t-out="'%.2f' % promedio_satisfaccion"/></td>
+                    </tr>
+                    <tr style="border: 1px solid #ddd; background-color: #fff;">
+                        <td style="border: 1px solid #ddd; padding: 8px; font-weight: 600; color: #555; background-color: #fff;">Promedio % Satisfacción</td>
+                        <td style="border: 1px solid #ddd; padding: 8px; color: #000; background-color: #fff;"><t t-out="'%.1f' % promedio_porcentaje"/>%</td>
+                    </tr>
+                </tbody>
+            </table>
+        </div>
+    </template>
+
+    <!-- Tabla de items revisados reutilizable (general y por campaña) -->
+    <template id="survey_revised_items_table">
+        <div style="margin-bottom: 30px;">
+            <h4 style="margin-bottom: 15px; font-weight: bold; color: #333;">Resultados de Items Revisados:</h4>
+            <table style="width: 100%; border-collapse: collapse; margin-bottom: 20px;">
+                <thead>
+                    <tr style="background-color: #f8f9fa; border: 1px solid #ddd;">
+                        <th style="border: 1px solid #ddd; padding: 8px; text-align: center; font-weight: bold; width: 35%; vertical-align: middle;">Sección</th>
+                        <th style="border: 1px solid #ddd; padding: 8px; text-align: center; font-weight: bold; width: 12%; vertical-align: middle;">Total Revisados</th>
+                        <th style="border: 1px solid #ddd; padding: 8px; text-align: center; font-weight: bold; width: 12%; vertical-align: middle;">Sin Novedad</th>
+                        <th style="border: 1px solid #ddd; padding: 8px; text-align: center; font-weight: bold; width: 12%; vertical-align: middle;">Con Novedad</th>
+                        <th style="border: 1px solid #ddd; padding: 8px; text-align: center; font-weight: bold; width: 12%; vertical-align: middle;">Total</th>
+                        <th style="border: 1px solid #ddd; padding: 8px; text-align: center; font-weight: bold; width: 17%; vertical-align: middle;">% Cumplimiento</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    <t t-foreach="docs.filtered(lambda x: not x.page_name.startswith('Participante:') and not x.page_name.startswith('Campaña:'))" t-as="item">
+                        <tr>
+                            <td style="border: 1px solid #ddd; padding: 8px;"><t t-out="item.page_name"/></td>
+                            <td style="border: 1px solid #ddd; padding: 8px; text-align: center;"><t t-out="item.total_items_revisados or 0"/></td>
+                            <td style="border: 1px solid #ddd; padding: 8px; text-align: center;"><t t-out="item.total_items_sin_novedad or 0"/></td>
+                            <td style="border: 1px solid #ddd; padding: 8px; text-align: center;"><t t-out="(item.total_items_revisados or 0) - (item.total_items_sin_novedad or 0)"/></td>
+                            <td style="border: 1px solid #ddd; padding: 8px; text-align: center;"><t t-out="item.total_items_revisados or 0"/></td>
+                            <td style="border: 1px solid #ddd; padding: 8px; text-align: center;"><t t-out="'%.1f' % (item.porcentaje_cumplimiento or 0.0)"/>%</td>
+                        </tr>
+                    </t>
+                </tbody>
+            </table>
+        </div>
+    </template>
+
+    <!-- Tabla de resumen de items revisados reutilizable -->
+    <template id="survey_revised_items_summary_table">
+        <div style="background-color: #ecf0f1; padding: 15px; border-radius: 5px; margin-top: 20px;">
+            <h4 style="margin-bottom: 15px; font-weight: bold; color: #333;">Resumen de Items Revisados:</h4>
+            <t t-set="secciones" t-value="docs.filtered(lambda x: not x.page_name.startswith('Campaña:') and not x.page_name.startswith('Participante:'))"/>
+            <t t-set="total_secciones" t-value="len(secciones)"/>
+            <t t-set="total_revisados" t-value="sum(secciones.mapped('total_items_revisados'))"/>
+            <t t-set="total_sin_novedad" t-value="sum(secciones.mapped('total_items_sin_novedad'))"/>
+            <t t-set="promedio_cumplimiento" t-value="sum(secciones.mapped('porcentaje_cumplimiento')) / len(secciones) if secciones else 0"/>
+            
+            <table style="width: 100%; border-collapse: collapse; margin-bottom: 20px;">
+                <thead>
+                    <tr style="background-color: #f8f9fa; border: 1px solid #ddd;">
+                        <th style="border: 1px solid #ddd; padding: 8px; text-align: left; font-weight: bold; width: 50%; background-color: #fff; vertical-align: middle;">Métrica</th>
+                        <th style="border: 1px solid #ddd; padding: 8px; text-align: left; font-weight: bold; width: 50%; background-color: #fff; vertical-align: middle;">Valor</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    <tr style="border: 1px solid #ddd; background-color: #fff;">
+                        <td style="border: 1px solid #ddd; padding: 8px; font-weight: 600; color: #555; background-color: #fff;">Total Secciones</td>
+                        <td style="border: 1px solid #ddd; padding: 8px; color: #000; background-color: #fff;"><t t-out="total_secciones"/></td>
+                    </tr>
+                    <tr style="border: 1px solid #ddd; background-color: #fff;">
+                        <td style="border: 1px solid #ddd; padding: 8px; font-weight: 600; color: #555; background-color: #fff;">Total Items Revisados</td>
+                        <td style="border: 1px solid #ddd; padding: 8px; color: #000; background-color: #fff;"><t t-out="total_revisados"/></td>
+                    </tr>
+                    <tr style="border: 1px solid #ddd; background-color: #fff;">
+                        <td style="border: 1px solid #ddd; padding: 8px; font-weight: 600; color: #555; background-color: #fff;">Total Items Sin Novedad</td>
+                        <td style="border: 1px solid #ddd; padding: 8px; color: #000; background-color: #fff;"><t t-out="total_sin_novedad"/></td>
+                    </tr>
+                    <tr style="border: 1px solid #ddd; background-color: #fff;">
+                        <td style="border: 1px solid #ddd; padding: 8px; font-weight: 600; color: #555; background-color: #fff;">Total Items Con Novedad</td>
+                        <td style="border: 1px solid #ddd; padding: 8px; color: #000; background-color: #fff;"><t t-out="total_revisados - total_sin_novedad"/></td>
+                    </tr>
+                    <tr style="border: 1px solid #ddd; background-color: #fff;">
+                        <td style="border: 1px solid #ddd; padding: 8px; font-weight: 600; color: #555; background-color: #fff;">Promedio de Cumplimiento</td>
+                        <td style="border: 1px solid #ddd; padding: 8px; color: #000; background-color: #fff;"><t t-out="'%.1f' % promedio_cumplimiento"/>%</td>
+                    </tr>
+                </tbody>
+            </table>
+        </div>
+    </template>
+
+    <!-- ===== MATRIZ DE RIESGO ===== -->
+    
+    <!-- Template para mostrar la matriz de riesgo en reportes de cumplimiento -->
+    <template id="survey_risk_matrix">
+        <t t-if="docs and len(docs) > 0">
+            <div style="margin-top: 40px; page-break-before: always;">
+                <h3 style="color: #333; border-bottom: 2px solid #004aad; padding-bottom: 10px; margin-bottom: 20px;">
+                    📊 MATRIZ DE EVALUACIÓN DE RIESGO
+                </h3>
+                
+                <!-- Tabla de variables evaluadas (COMENTADA - disponible para uso futuro) -->
+                <!--
+                <div style="margin-bottom: 30px;">
+                    <h4 style="color: #333; margin-bottom: 15px;">1. Variables Evaluadas (Compliance)</h4>
+                    <table style="width: 100%; border-collapse: collapse; margin-bottom: 20px;">
+                        <thead>
+                            <tr style="background-color: #f8f9fa; border: 1px solid #ddd;">
+                                <th style="border: 1px solid #ddd; padding: 10px; text-align: left; font-weight: bold; width: 30%;">Variable</th>
+                                <th style="border: 1px solid #ddd; padding: 10px; text-align: center; font-weight: bold; width: 20%;">Valor</th>
+                                <th style="border: 1px solid #ddd; padding: 10px; text-align: center; font-weight: bold; width: 20%;">Escala Asignada</th>
+                                <th style="border: 1px solid #ddd; padding: 10px; text-align: left; font-weight: bold; width: 30%;">Descripción</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            <t t-foreach="docs.filtered(lambda x: not x.page_name.startswith('Participante:') and not x.page_name.startswith('Campaña:'))" t-as="item">
+                                <tr>
+                                    <td style="border: 1px solid #ddd; padding: 10px; font-weight: 600;">Cumplimiento Normativo</td>
+                                    <td style="border: 1px solid #ddd; padding: 10px; text-align: center;"><t t-out="'%.1f' % (item.porcentaje_cumplimiento or 0.0)"/>%</td>
+                                    <td style="border: 1px solid #ddd; padding: 10px; text-align: center;"><t t-out="'%.1f' % (5 - (item.porcentaje_cumplimiento or 0.0) / 20)"/></td>
+                                    <td style="border: 1px solid #ddd; padding: 10px;">Escala inversa: 100% = 1, 0% = 5</td>
+                                </tr>
+                                <tr>
+                                    <td style="border: 1px solid #ddd; padding: 10px; font-weight: 600;">Hallazgos de Auditoría</td>
+                                    <td style="border: 1px solid #ddd; padding: 10px; text-align: center;"><t t-out="item.hallazgos_auditoria or 0"/></td>
+                                    <td style="border: 1px solid #ddd; padding: 10px; text-align: center;"><t t-out="'%.1f' % min((item.hallazgos_auditoria or 0) / 2, 5)"/></td>
+                                    <td style="border: 1px solid #ddd; padding: 10px;">Normalizado: máximo 5 puntos</td>
+                                </tr>
+                                <tr>
+                                    <td style="border: 1px solid #ddd; padding: 10px; font-weight: 600;">Severidad de Incumplimiento</td>
+                                    <td style="border: 1px solid #ddd; padding: 10px; text-align: center;"><t t-out="dict(item._fields['severidad_incumplimiento'].selection).get(item.severidad_incumplimiento, 'N/A')"/></td>
+                                    <td style="border: 1px solid #ddd; padding: 10px; text-align: center;"><t t-out="item.severidad_incumplimiento or '1'"/></td>
+                                    <td style="border: 1px solid #ddd; padding: 10px;">Escala directa: 1 = mínimo, 5 = máximo</td>
+                                </tr>
+                                <tr>
+                                    <td style="border: 1px solid #ddd; padding: 10px; font-weight: 600;">Frecuencia de Incumplimiento</td>
+                                    <td style="border: 1px solid #ddd; padding: 10px; text-align: center;"><t t-out="dict(item._fields['frecuencia_incumplimiento'].selection).get(item.frecuencia_incumplimiento, 'N/A')"/></td>
+                                    <td style="border: 1px solid #ddd; padding: 10px; text-align: center;"><t t-out="{'anual': 1, 'trimestral': 3, 'mensual': 5}.get(item.frecuencia_incumplimiento, 1)"/></td>
+                                    <td style="border: 1px solid #ddd; padding: 10px;">Anual=1, Trimestral=3, Mensual=5</td>
+                                </tr>
+                            </t>
+                        </tbody>
+                    </table>
+                </div>
+                -->
+                
+                <!-- Resumen de cálculo de riesgo -->
+                <div style="margin-bottom: 30px;">
+                    <h4 style="color: #333; margin-bottom: 15px;">1. Resumen de Evaluación de Riesgo</h4>
+                    <t t-set="secciones" t-value="docs.filtered(lambda x: not x.page_name.startswith('Participante:') and not x.page_name.startswith('Campaña:'))"/>
+                    <t t-if="secciones">
+                        <t t-set="promedio_probabilidad" t-value="sum(secciones.mapped('probabilidad_riesgo')) / len(secciones)"/>
+                        <t t-set="promedio_impacto" t-value="sum(secciones.mapped('impacto_riesgo')) / len(secciones)"/>
+                        <t t-set="promedio_riesgo" t-value="sum(secciones.mapped('nivel_riesgo')) / len(secciones)"/>
+                        <t t-set="promedio_probabilidad_porcentaje" t-value="sum(secciones.mapped('probabilidad_porcentaje')) / len(secciones)"/>
+                        <t t-set="promedio_impacto_porcentaje" t-value="sum(secciones.mapped('impacto_porcentaje')) / len(secciones)"/>
+                        <t t-set="promedio_riesgo_porcentaje" t-value="sum(secciones.mapped('nivel_riesgo_porcentaje')) / len(secciones)"/>
+                        
+                        <table style="width: 100%; border-collapse: collapse; margin-bottom: 20px;">
+                            <thead>
+                                <tr style="background-color: #f8f9fa; border: 1px solid #ddd;">
+                                    <th style="border: 1px solid #ddd; padding: 10px; text-align: left; font-weight: bold; width: 25%;">Métrica</th>
+                                    <th style="border: 1px solid #ddd; padding: 10px; text-align: center; font-weight: bold; width: 25%;">Valor</th>
+                                    <th style="border: 1px solid #ddd; padding: 10px; text-align: center; font-weight: bold; width: 25%;">Clasificación</th>
+                                    <th style="border: 1px solid #ddd; padding: 10px; text-align: left; font-weight: bold; width: 25%;">Interpretación</th>
+                                </tr>
+                            </thead>
+                            <tbody>
+                                <tr>
+                                    <td style="border: 1px solid #ddd; padding: 10px; font-weight: 600;">Probabilidad (P)</td>
+                                    <td style="border: 1px solid #ddd; padding: 10px; text-align: center;"><t t-out="'%.2f' % promedio_probabilidad"/> (<t t-out="'%.1f' % promedio_probabilidad_porcentaje"/>%)</td>
+                                    <td style="border: 1px solid #ddd; padding: 10px; text-align: center;">
+                                        <t t-if="promedio_probabilidad >= 4">
+                                            <span style="background-color: #dc3545; color: white; padding: 3px 8px; border-radius: 3px; font-size: 11px;">Alta</span>
+                                        </t>
+                                        <t t-elif="promedio_probabilidad >= 2.5">
+                                            <span style="background-color: #ffc107; color: black; padding: 3px 8px; border-radius: 3px; font-size: 11px;">Media</span>
+                                        </t>
+                                        <t t-else="">
+                                            <span style="background-color: #28a745; color: white; padding: 3px 8px; border-radius: 3px; font-size: 11px;">Baja</span>
+                                        </t>
+                                    </td>
+                                    <td style="border: 1px solid #ddd; padding: 10px;">Probabilidad de ocurrencia del riesgo</td>
+                                </tr>
+                                <tr>
+                                    <td style="border: 1px solid #ddd; padding: 10px; font-weight: 600;">Impacto (I)</td>
+                                    <td style="border: 1px solid #ddd; padding: 10px; text-align: center;"><t t-out="'%.2f' % promedio_impacto"/> (<t t-out="'%.1f' % promedio_impacto_porcentaje"/>%)</td>
+                                    <td style="border: 1px solid #ddd; padding: 10px; text-align: center;">
+                                        <t t-if="promedio_impacto >= 4">
+                                            <span style="background-color: #dc3545; color: white; padding: 3px 8px; border-radius: 3px; font-size: 11px;">Alto</span>
+                                        </t>
+                                        <t t-elif="promedio_impacto >= 2.5">
+                                            <span style="background-color: #ffc107; color: black; padding: 3px 8px; border-radius: 3px; font-size: 11px;">Medio</span>
+                                        </t>
+                                        <t t-else="">
+                                            <span style="background-color: #28a745; color: white; padding: 3px 8px; border-radius: 3px; font-size: 11px;">Bajo</span>
+                                        </t>
+                                    </td>
+                                    <td style="border: 1px solid #ddd; padding: 10px;">Magnitud del impacto potencial</td>
+                                </tr>
+                                <tr>
+                                    <td style="border: 1px solid #ddd; padding: 10px; font-weight: 600;">Riesgo Total</td>
+                                    <td style="border: 1px solid #ddd; padding: 10px; text-align: center;"><t t-out="'%.2f' % promedio_riesgo"/> (<t t-out="'%.1f' % promedio_riesgo_porcentaje"/>%)</td>
+                                    <td style="border: 1px solid #ddd; padding: 10px; text-align: center;">
+                                        <t t-if="promedio_riesgo >= 20">
+                                            <span style="background-color: #dc3545; color: white; padding: 3px 8px; border-radius: 3px; font-size: 11px;">Extremo</span>
+                                        </t>
+                                        <t t-elif="promedio_riesgo >= 12">
+                                            <span style="background-color: #fd7e14; color: white; padding: 3px 8px; border-radius: 3px; font-size: 11px;">Alto</span>
+                                        </t>
+                                        <t t-elif="promedio_riesgo >= 6">
+                                            <span style="background-color: #ffc107; color: black; padding: 3px 8px; border-radius: 3px; font-size: 11px;">Moderado</span>
+                                        </t>
+                                        <t t-else="">
+                                            <span style="background-color: #28a745; color: white; padding: 3px 8px; border-radius: 3px; font-size: 11px;">Bajo</span>
+                                        </t>
+                                    </td>
+                                    <td style="border: 1px solid #ddd; padding: 10px;">Riesgo = Probabilidad × Impacto</td>
+                                </tr>
+                            </tbody>
+                        </table>
+                    </t>
+                </div>
+                
+                <!-- Matriz de calor de riesgos -->
+                <div style="margin-bottom: 30px;">
+                    <h4 style="color: #333; margin-bottom: 15px;">2. Matriz de Calor de Riesgos</h4>
+                    <div style="display: flex; justify-content: center; margin: 20px 0;">
+                        <table style="border-collapse: collapse; border: 2px solid #333;">
+                            <tr>
+                                <td style="width: 60px; height: 60px; background-color: #28a745; border: 1px solid #333; text-align: center; vertical-align: middle; color: white; font-weight: bold; font-size: 12px;">Bajo<br/>0-5<br/>(0-20%)</td>
+                                <td style="width: 60px; height: 60px; background-color: #ffc107; border: 1px solid #333; text-align: center; vertical-align: middle; color: black; font-weight: bold; font-size: 12px;">Moderado<br/>6-11<br/>(24-44%)</td>
+                                <td style="width: 60px; height: 60px; background-color: #fd7e14; border: 1px solid #333; text-align: center; vertical-align: middle; color: white; font-weight: bold; font-size: 12px;">Alto<br/>12-19<br/>(48-76%)</td>
+                                <td style="width: 60px; height: 60px; background-color: #dc3545; border: 1px solid #333; text-align: center; vertical-align: middle; color: white; font-weight: bold; font-size: 12px;">Extremo<br/>20-25<br/>(80-100%)</td>
+                            </tr>
+                        </table>
+                    </div>
+                </div>
+                
+                <!-- Acciones recomendadas -->
+                <div style="margin-bottom: 30px;">
+                    <h4 style="color: #333; margin-bottom: 15px;">3. Acciones Recomendadas</h4>
+                    <t t-if="secciones">
+                        <t t-set="promedio_riesgo" t-value="sum(secciones.mapped('nivel_riesgo')) / len(secciones)"/>
+                        
+                        <div style="background-color: #f8f9fa; border: 1px solid #ddd; border-radius: 5px; padding: 15px;">
+                            <h5 style="color: #333; margin-top: 0; margin-bottom: 10px;">Clasificación General: 
+                                <t t-if="promedio_riesgo >= 20.0">
+                                    <span style="background-color: #dc3545; color: white; padding: 3px 8px; border-radius: 3px; font-size: 12px;">Riesgo Extremo</span>
+                                </t>
+                                <t t-elif="promedio_riesgo >= 12.0">
+                                    <span style="background-color: #fd7e14; color: white; padding: 3px 8px; border-radius: 3px; font-size: 12px;">Riesgo Alto</span>
+                                </t>
+                                <t t-elif="promedio_riesgo >= 6.0">
+                                    <span style="background-color: #ffc107; color: black; padding: 3px 8px; border-radius: 3px; font-size: 12px;">Riesgo Moderado</span>
+                                </t>
+                                <t t-else="">
+                                    <span style="background-color: #28a745; color: white; padding: 3px 8px; border-radius: 3px; font-size: 12px;">Riesgo Bajo</span>
+                                </t>
+                            </h5>
+                            
+                            <div style="margin-top: 15px;">
+                                <h6 style="color: #555; margin-bottom: 8px;">Acción Recomendada:</h6>
+                                <p style="margin: 0; color: #333; line-height: 1.5;">
+                                    <t t-if="promedio_riesgo >= 20.0">
+                                        <strong>Plan de acción emergente requerido.</strong> Revisión inmediata de controles y procesos. Implementar acciones correctivas urgentes, reforzar supervisión, establecer controles adicionales y definir plazos específicos para la mejora.
+                                    </t>
+                                    <t t-elif="promedio_riesgo >= 12.0">
+                                        <strong>Plan de acción emergente requerido.</strong> Revisión inmediata de controles y procesos. Implementar acciones correctivas urgentes, reforzar supervisión, establecer controles adicionales y definir plazos específicos para la mejora.
+                                    </t>
+                                    <t t-elif="promedio_riesgo >= 6.0">
+                                        <strong>Acciones correctivas necesarias.</strong> Implementar controles adicionales. Establecer plan de mejora con fechas límite, aumentar frecuencia de monitoreo y capacitar al personal en áreas críticas.
+                                    </t>
+                                    <t t-else="">
+                                        <strong>Mantener control actual.</strong> Seguimiento rutinario. Continuar con las buenas prácticas establecidas, realizar auditorías periódicas y documentar lecciones aprendidas para mantener el alto nivel de cumplimiento.
+                                    </t>
+                                </p>
+                            </div>
+                        </div>
+                    </t>
+                </div>
+                
+                <!-- Nota metodológica (COMENTADA - disponible para uso futuro) -->
+                <!--
+                <div style="background-color: #e7f3ff; border-left: 4px solid #004aad; padding: 15px; margin-top: 20px;">
+                    <h5 style="color: #004aad; margin-top: 0; margin-bottom: 10px;">📋 Metodología de Evaluación</h5>
+                    <p style="margin: 0; color: #333; font-size: 12px;">
+                        <strong>Fórmula de Riesgo:</strong> Riesgo = Probabilidad × Impacto<br/>
+                        <strong>Probabilidad:</strong> Promedio ponderado de [Frecuencia, Número de hallazgos]<br/>
+                        <strong>Impacto:</strong> Promedio ponderado de [Cumplimiento normativo invertido, Severidad]<br/>
+                        <strong>Clasificación:</strong> 20-25 = Extremo, 12-16 = Alto, 6-10 = Moderado, 1-5 = Bajo
+                    </p>
+                </div>
+                -->
+            </div>
+        </t>
+    </template>
+
+    <!-- Template para matriz de evaluación de riesgo de items revisados -->
+    <template id="survey_risk_matrix_template">
+        <t t-if="docs.filtered(lambda x: not x.page_name.startswith('Campaña:') and not x.page_name.startswith('Participante:'))">
+            <t t-set="secciones" t-value="docs.filtered(lambda x: not x.page_name.startswith('Campaña:') and not x.page_name.startswith('Participante:'))"/>
+            
+            <div style="margin-top: 30px; border-top: 2px solid #333; padding-top: 20px;">
+                <h3 style="color: #333; margin-bottom: 20px; text-align: center;">MATRIZ DE EVALUACIÓN DE RIESGO</h3>
+                
+                <!-- Resumen de Evaluación de Riesgo -->
+                <div style="margin-bottom: 30px;">
+                    <h4 style="color: #333; margin-bottom: 15px;">1. Resumen de Evaluación de Riesgo</h4>
+                    <table style="width: 100%; border-collapse: collapse; margin-bottom: 20px;">
+                        <thead>
+                            <tr style="background-color: #f8f9fa; border: 1px solid #ddd;">
+                                <th style="border: 1px solid #ddd; padding: 10px; text-align: center; font-weight: bold;">Métrica</th>
+                                <th style="border: 1px solid #ddd; padding: 10px; text-align: center; font-weight: bold;">Valor</th>
+                                <th style="border: 1px solid #ddd; padding: 10px; text-align: center; font-weight: bold;">Clasificación</th>
+                                <th style="border: 1px solid #ddd; padding: 10px; text-align: center; font-weight: bold;">Interpretación</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            <tr>
+                                <td style="border: 1px solid #ddd; padding: 10px; text-align: center; font-weight: bold;">Probabilidad (P)</td>
+                                <td style="border: 1px solid #ddd; padding: 10px; text-align: center;">
+                                    <t t-set="promedio_probabilidad" t-value="sum(secciones.mapped('probabilidad_riesgo')) / len(secciones)"/>
+                                    <t t-out="'%.2f' % promedio_probabilidad"/> (<t t-out="'%.1f' % (promedio_probabilidad / 5.0 * 100.0)"/>%)
+                                </td>
+                                <td style="border: 1px solid #ddd; padding: 10px; text-align: center;">
+                                    <t t-if="promedio_probabilidad >= 4.0">Alta</t>
+                                    <t t-elif="promedio_probabilidad >= 2.5">Media</t>
+                                    <t t-else="">Baja</t>
+                                </td>
+                                <td style="border: 1px solid #ddd; padding: 10px; text-align: center;">Probabilidad de ocurrencia del riesgo</td>
+                            </tr>
+                            <tr>
+                                <td style="border: 1px solid #ddd; padding: 10px; text-align: center; font-weight: bold;">Impacto (I)</td>
+                                <td style="border: 1px solid #ddd; padding: 10px; text-align: center;">
+                                    <t t-set="promedio_impacto" t-value="sum(secciones.mapped('impacto_riesgo')) / len(secciones)"/>
+                                    <t t-out="'%.2f' % promedio_impacto"/> (<t t-out="'%.1f' % (promedio_impacto / 5.0 * 100.0)"/>%)
+                                </td>
+                                <td style="border: 1px solid #ddd; padding: 10px; text-align: center;">
+                                    <t t-if="promedio_impacto >= 4.0">Alto</t>
+                                    <t t-elif="promedio_impacto >= 2.5">Medio</t>
+                                    <t t-else="">Bajo</t>
+                                </td>
+                                <td style="border: 1px solid #ddd; padding: 10px; text-align: center;">Magnitud del impacto potencial</td>
+                            </tr>
+                            <tr>
+                                <td style="border: 1px solid #ddd; padding: 10px; text-align: center; font-weight: bold;">Riesgo Total</td>
+                                <td style="border: 1px solid #ddd; padding: 10px; text-align: center;">
+                                    <t t-set="promedio_riesgo" t-value="sum(secciones.mapped('nivel_riesgo')) / len(secciones)"/>
+                                    <t t-out="'%.2f' % promedio_riesgo"/> (<t t-out="'%.1f' % (promedio_riesgo / 25.0 * 100.0)"/>%)
+                                </td>
+                                <td style="border: 1px solid #ddd; padding: 10px; text-align: center;">
+                                    <t t-if="promedio_riesgo >= 20.0">Extremo</t>
+                                    <t t-elif="promedio_riesgo >= 12.0">Alto</t>
+                                    <t t-elif="promedio_riesgo >= 6.0">Moderado</t>
+                                    <t t-else="">Bajo</t>
+                                </td>
+                                <td style="border: 1px solid #ddd; padding: 10px; text-align: center;">Riesgo = Probabilidad × Impacto</td>
+                            </tr>
+                        </tbody>
+                    </table>
+                </div>
+                
+                <!-- Matriz de Calor de Riesgos -->
+                <div style="margin-bottom: 30px;">
+                    <h4 style="color: #333; margin-bottom: 15px;">2. Matriz de Calor de Riesgos</h4>
+                    <div style="display: flex; justify-content: center; margin: 20px 0;">
+                        <table style="border-collapse: collapse; border: 2px solid #333;">
+                            <tr>
+                                <td style="width: 60px; height: 60px; background-color: #28a745; border: 1px solid #333; text-align: center; vertical-align: middle; color: white; font-weight: bold; font-size: 12px;">Bajo<br/>0-5<br/>(0-20%)</td>
+                                <td style="width: 60px; height: 60px; background-color: #ffc107; border: 1px solid #333; text-align: center; vertical-align: middle; color: black; font-weight: bold; font-size: 12px;">Moderado<br/>6-11<br/>(24-44%)</td>
+                                <td style="width: 60px; height: 60px; background-color: #fd7e14; border: 1px solid #333; text-align: center; vertical-align: middle; color: white; font-weight: bold; font-size: 12px;">Alto<br/>12-19<br/>(48-76%)</td>
+                                <td style="width: 60px; height: 60px; background-color: #dc3545; border: 1px solid #333; text-align: center; vertical-align: middle; color: white; font-weight: bold; font-size: 12px;">Extremo<br/>20-25<br/>(80-100%)</td>
+                            </tr>
+                        </table>
+                    </div>
+                </div>
+                
+                <!-- Acciones recomendadas -->
+                <div style="margin-bottom: 30px;">
+                    <h4 style="color: #333; margin-bottom: 15px;">3. Acciones Recomendadas</h4>
+                    <t t-if="secciones">
+                        <t t-set="promedio_riesgo" t-value="sum(secciones.mapped('nivel_riesgo')) / len(secciones)"/>
+                        
+                        <div style="background-color: #f8f9fa; border: 1px solid #ddd; border-radius: 5px; padding: 15px;">
+                            <h5 style="color: #333; margin-top: 0; margin-bottom: 10px;">Clasificación General: 
+                                <t t-if="promedio_riesgo >= 20.0">
+                                    <span style="background-color: #dc3545; color: white; padding: 3px 8px; border-radius: 3px; font-size: 12px;">Riesgo Extremo</span>
+                                </t>
+                                <t t-elif="promedio_riesgo >= 12.0">
+                                    <span style="background-color: #fd7e14; color: white; padding: 3px 8px; border-radius: 3px; font-size: 12px;">Riesgo Alto</span>
+                                </t>
+                                <t t-elif="promedio_riesgo >= 6.0">
+                                    <span style="background-color: #ffc107; color: black; padding: 3px 8px; border-radius: 3px; font-size: 12px;">Riesgo Moderado</span>
+                                </t>
+                                <t t-else="">
+                                    <span style="background-color: #28a745; color: white; padding: 3px 8px; border-radius: 3px; font-size: 12px;">Riesgo Bajo</span>
+                                </t>
+                            </h5>
+                            
+                            <div style="margin-top: 15px;">
+                                <h6 style="color: #555; margin-bottom: 8px;">Acción Recomendada:</h6>
+                                <p style="margin: 0; color: #333; line-height: 1.5;">
+                                    <t t-if="promedio_riesgo >= 20.0">
+                                        <strong>Plan de acción emergente requerido.</strong> Revisión inmediata de controles y procesos. Implementar acciones correctivas urgentes, reforzar supervisión, establecer controles adicionales y definir plazos específicos para la mejora.
+                                    </t>
+                                    <t t-elif="promedio_riesgo >= 12.0">
+                                        <strong>Plan de acción emergente requerido.</strong> Revisión inmediata de controles y procesos. Implementar acciones correctivas urgentes, reforzar supervisión, establecer controles adicionales y definir plazos específicos para la mejora.
+                                    </t>
+                                    <t t-elif="promedio_riesgo >= 6.0">
+                                        <strong>Acciones correctivas necesarias.</strong> Implementar controles adicionales. Establecer plan de mejora con fechas límite, aumentar frecuencia de monitoreo y capacitar al personal en áreas críticas.
+                                    </t>
+                                    <t t-else="">
+                                        <strong>Mantener control actual.</strong> Seguimiento rutinario. Continuar con las buenas prácticas establecidas, realizar auditorías periódicas y documentar lecciones aprendidas para mantener el alto nivel de cumplimiento.
+                                    </t>
+                                </p>
+                            </div>
+                        </div>
+                    </t>
+                </div>
+            </div>
+        </t>
+    </template>
+
+    <!-- Tabla de participantes unificada para todas las categorías -->
+    <template id="survey_participants_unified_table">
+        <t t-if="docs.filtered(lambda x: x.page_name.startswith('Participante:'))">
+            <div style="margin-bottom: 30px;">
+                <h4 style="margin-bottom: 15px; font-weight: bold; color: #333;">Detalle de Participantes:</h4>
+                <table style="width: 100%; border-collapse: collapse; margin-bottom: 20px;">
+                    <thead>
+                        <tr style="background-color: #f8f9fa; border: 1px solid #ddd;">
+                            <th style="border: 1px solid #ddd; padding: 8px; text-align: center; font-weight: bold; width: 40%; vertical-align: middle;">Nombre</th>
+                            <th style="border: 1px solid #ddd; padding: 8px; text-align: center; font-weight: bold; width: 40%; vertical-align: middle;">Cargo</th>
+                            <th style="border: 1px solid #ddd; padding: 8px; text-align: center; font-weight: bold; width: 20%; vertical-align: middle;">Estado</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        <t t-foreach="docs.filtered(lambda x: x.page_name.startswith('Participante:'))" t-as="item">
+                            <tr>
+                                <td style="border: 1px solid #ddd; padding: 8px; text-align: center;"><t t-out="item.page_name.split(': ')[1] if ': ' in item.page_name else item.page_name"/></td>
+                                <td style="border: 1px solid #ddd; padding: 8px; text-align: center;"><t t-out="item.observations.split(' | ')[0].split(': ')[1] if ' | ' in item.observations and ': ' in item.observations.split(' | ')[0] else '-'"/></td>
+                                <td style="border: 1px solid #ddd; padding: 8px; text-align: center;">
+                                    <!-- Verificar si respondió basado en la información del registro -->
+                                    <t t-if="'Respondió' in item.observations">
+                                        <span style="background-color: #28a745; color: white; padding: 2px 6px; font-size: 11px;">Respondió</span>
+                                    </t>
+                                    <t t-else="">
+                                        <span style="background-color: #dc3545; color: white; padding: 2px 6px; font-size: 11px;">No respondió</span>
+                                    </t>
+                                </td>
+                            </tr>
+                        </t>
+                    </tbody>
+                </table>
+            </div>
+        </t>
+    </template>
+</odoo> 

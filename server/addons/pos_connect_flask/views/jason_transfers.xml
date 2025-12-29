@@ -1,0 +1,56 @@
+<odoo>
+    <!-- Vista de formulario para JSON Storage -->
+    <record id="view_json_pos_transfers_form" model="ir.ui.view">
+        <field name="name">json.pos.transfers.form</field>
+        <field name="model">json.pos.transfers</field>
+        <field name="arch" type="xml">
+            <form string="Registro Transferencias (Completadas)">
+                <sheet>
+                    <group>
+<!--                        <field name="json_data" widget="monospaced" placeholder="JSON Data"/>-->
+                        <field name="stock_picking_id" readonly="1"/>
+                        <field name="point_of_sale_series" readonly="1"/>
+                        <field name="external_id" readonly="1"/>
+                        <field name="sync_date" readonly="1"/>
+                        <field name="create_date" readonly="1"/>
+                        <field name="db_key"/>
+                        <field name="sent"/>
+                        <field name="employee"/>
+                        <field name="origin"/>
+                        <field name="destin"/>
+                    </group>
+                </sheet>
+            </form>
+        </field>
+    </record>
+
+    <!-- Vista de árbol para JSON Storage -->
+    <record id="view_json_pos_transfers_tree" model="ir.ui.view">
+        <field name="name">json.pos.transfers.tree</field>
+        <field name="model">json.pos.transfers</field>
+        <field name="arch" type="xml">
+            <tree string="Registro Transferencias (Completadas)">
+                <field name="employee" readonly="1"/>
+                <field name="stock_picking_id"/>
+                <field name="create_date" readonly="1"/>
+                <field name="external_id"/>
+                <field name="sync_date"/>
+                <field name="db_key"/>
+                <field name="sent"/>
+            </tree>
+        </field>
+    </record>
+
+    <!-- Acción para JSON Storage -->
+    <record id="action_json_transfers_storage" model="ir.actions.act_window">
+        <field name="name">Registro Transferencias (Completadas)</field>
+        <field name="res_model">json.pos.transfers</field>
+        <field name="view_mode">tree,form</field>
+    </record>
+
+    <!-- Menú para JSON Storage -->
+    <menuitem id="menu_json_transfers_storage"
+              name="Registro Transferencias (Completadas)"
+              parent="point_of_sale.menu_point_config_product"
+              action="action_json_transfers_storage"/>
+</odoo>

@@ -1,0 +1,403 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<odoo>
+	<data>
+
+<!--		<record model="ir.ui.view" id="employee_department_historytwo">
+			<field name="name">departmenthistorytwo.tree</field>
+			<field name="model">department.history</field>
+			<field name="inherit_id" ref="history_employee.employee_department_history"/>
+			<field name="arch" type="xml" >
+				<xpath expr="//tree" position="attributes">
+					<attribute name="edit">0</attribute>
+					<attribute name="delete">0</attribute>
+					<attribute name="create">0</attribute>
+				</xpath>
+				<xpath expr="//field[@name='updated_date']" position="attributes">
+					<attribute name="string">Fecha de cambio</attribute>
+				</xpath>
+				<xpath expr="//field[@name='updated_date']" position="after">
+					<field name="cargo_id"/>
+				</xpath>
+				<xpath expr="//field[@name='updated_date']" position="before">
+					<field name="departamento_id"/>
+					<field name="area_id"/>
+				</xpath>
+
+				<xpath expr="//field[@name='changed_field']" position="attributes">
+					<attribute name="invisible">True</attribute>
+				</xpath>
+				<xpath expr="//field[@name='current_value']" position="attributes">
+					<attribute name="invisible">True</attribute>
+				</xpath>
+			</field>
+		</record>-->
+
+<!--		<record model="ir.ui.view" id="employee_salary_historytwo">
+			<field name="name">salaryhistorytwo.tree</field>
+			<field name="model">salary.history</field>
+			<field name="inherit_id" ref="history_employee.employee_salary_history"/>
+			&lt;!&ndash;            <field name="view_mode">tree</field>&ndash;&gt;
+			<field name="arch" type="xml">
+				<xpath expr="//tree" position="attributes">
+					<attribute name="edit">0</attribute>
+					<attribute name="delete">0</attribute>
+					<attribute name="create">0</attribute>
+				</xpath>
+				<xpath expr="//field[@name='updated_date']" position="attributes">
+					<attribute name="string">Fecha de actualización</attribute>
+				</xpath>
+				<xpath expr="//field[@name='updated_date']" position="after">
+					<field name="contrato_id"/>
+					<field name="cargo_id"/>
+					<field name="sueldo"/>
+				</xpath>
+				<xpath expr="//field[@name='current_value']" position="attributes">
+					<attribute name="invisible">True</attribute>
+				</xpath>
+			</field>
+		</record>-->
+
+
+<!--		<record model="ir.ui.view" id="employee_contract_historytwo">
+			<field name="name">contracthistory.tree</field>
+			<field name="model">contract.history</field>
+			<field name="inherit_id" ref="history_employee.employee_contract_history"/>
+			&lt;!&ndash;            <field name="view_mode">tree</field>&ndash;&gt;
+			<field name="arch" type="xml">
+				<xpath expr="//tree" position="attributes">
+					<attribute name="editable">bottom</attribute>
+					<attribute name="string">Historial de Contratos</attribute>
+				</xpath>
+				<xpath expr="//field[@name='updated_date']" position="attributes">
+					<attribute name="string">Fecha de actualización</attribute>
+				</xpath>
+				<xpath expr="//field[@name='updated_date']" position="after">
+					<field name="tipo_documento" required="1"/>
+					<field name="observacion" required="1"/>
+					<field name="contrato_id" force_save="1" readonly="1"/>
+				</xpath>
+				<xpath expr="//field[@name='current_value']" position="attributes">
+					<attribute name="invisible">True</attribute>
+				</xpath>
+				<xpath expr="//field[@name='changed_field']" position="attributes">
+					<attribute name="invisible">True</attribute>
+				</xpath>
+			</field>
+		</record>-->
+
+
+<!--		<record model="ir.ui.view" id="view_employee_form_inherit_extension_inherit_view">-->
+<!--			<field name="name">hr.employee.inherit.form.extension</field>-->
+<!--			<field name="model">hr.employee</field>-->
+<!--			<field name="inherit_id" ref="hr_employee_service.view_employee_form_inherit_extension"/>-->
+<!--			<field name="arch" type="xml">-->
+
+<!--				<xpath expr="//group[@name='service_information']" position="attributes">-->
+<!--					<attribute name="string">Fechas de Re-Ingreso</attribute>-->
+<!--				</xpath>-->
+
+<!--				<xpath expr="//group[@name='service_information']/field[@name='service_start_date']" position="attributes">-->
+<!--					<attribute name="string">Fecha de Re-Ingreso</attribute>-->
+<!--				</xpath>-->
+
+<!--			</field>-->
+<!--		</record>-->
+<!--        <record model="ir.ui.view" id="view_employee_form_inherit_extension_inherit_view">-->
+<!--            <field name="name">hr.employee.inherit.form.extension</field>-->
+<!--            <field name="model">hr.employee</field>-->
+<!--            <field name="inherit_id" ref="hr_employee_service.view_employee_form_inherit_extension"/>-->
+<!--            <field name="arch" type="xml">-->
+
+<!--                -->
+<!--            </field>-->
+<!--        </record>-->
+
+		<record model="ir.ui.view" id="hr_employee_form_view">
+			<field name="name">hr.employee.form</field>
+			<field name="model">hr.employee</field>
+			<field name="inherit_id" ref="hr.view_employee_form" />
+			<field name="arch" type="xml">
+                <xpath expr="//page[@name='personal_information']" position="replace">
+                    <page name="personal_information" string="Información Privada" groups="hr.group_hr_user">
+                        <group>
+                            <group string="Contacto Privado">
+                                <label for="private_street" string="Dirección Privada"/>
+                                <div class="o_address_format">
+                                    <field name="private_country_id" placeholder="Country" class="o_address_country"
+                                           options="{&quot;no_open&quot;: True, &quot;no_create&quot;: True}"/>
+                                    <field name="private_state_id" class="o_address_state" placeholder="Provincia"
+                                           options="{'no_open': True, 'no_quick_create': True}"
+                                           context="{'default_country_id': private_country_id}"/>
+                                    <field name="canton" placeholder="Cantón" class="o_address_city"/>
+                                    <field name="private_city" placeholder="Ciudad" class="o_address_city"/>
+                                    <field name="private_street" placeholder="Calle..." class="o_address_street"/>
+                                    <field name="private_street2" placeholder="Calle 2..." class="o_address_street"/>
+                                    <field name="private_zip" placeholder="Código Postal" class="o_address_zip"/>
+
+                                </div>
+                                <field name="private_email" string="Correo"/>
+                                <field name="phone_landline"/>
+                                <field name="private_phone" string="Celular"/>
+                                <field name="bank_account_id" context="{'default_partner_id': work_contact_id}"
+                                       options="{'no_quick_create': True}" readonly="not id"/>
+                                <field name="lang" string="Idioma"/>
+                                <label for="km_home_work"/>
+                                <div class="o_row" name="div_km_home_work">
+                                    <field name="km_home_work" class="o_hr_narrow_field"/>
+                                    <span>Km</span>
+                                </div>
+                            </group>
+                            <group string="Datos base antigua">
+                                <field name="id_employeed_old"/>
+                            </group>
+                            <group string="Ciudadanía">
+                                <field name="country_id"
+                                       options="{&quot;no_open&quot;: True, &quot;no_create&quot;: True}"/>
+                                <field name="type_identification"/>
+                                <field name="identification_id"/>
+                                <field name="ssnid"/>
+                                <field name="passport_id"/>
+                                <field name="gender"/>
+                                <field name="birthday"/>
+                                <field name="place_of_birth"/>
+                                <field name="country_of_birth"/>
+                            </group>
+                            <group string="Disponibilidad">
+                                <field name="availability_date_to_start" class="o_availability"/>
+                                <field name="availability_to_travel" class="o_availability"/>
+                                <field name="availability_to_change_residence" class="o_availability"/>
+                                <field name="availability_for_rotating_shifts" class="o_availability"/>
+                                <field name="availability_to_work_weekends_and_holidays" class="o_availability"/>
+                            </group>
+                            <group string="Transporte">
+                                <field name="own_vehicle_availability" class="o_personal_loads"/>
+                                <field name="drivers_license_type" class="o_personal_loads"/>
+                                <field name="private_car_plate"/>
+                            </group>
+                            <group string="Estado familiar">
+                                <field name="marital"/>
+                                <field name="spouse_complete_name"
+                                       invisible="marital not in ['Casado(a)', 'Cohabitante legal']"/>
+                                <field name="spouse_birthdate" invisible="marital not in ['Casado(a)', 'Cohabitante legal']"/>
+                                <field name="children"/>
+                            </group>
+                            <group string="Contacto de Emergencia" name="emergency">
+                                <field name="emergency_contact"/>
+                                <field name="emergency_phone" class="o_force_ltr"/>
+                            </group>
+                            <group string="Educación">
+                                <field name="name_of_institution"/>
+                                <field name="graduation_year"/>
+                                <field name="study_field" invisible="1"/>
+                                <field name="study_school" invisible="1"/>
+                                <field name="education_degree_earned"/>
+                                <field name="level_of_instruction"/>
+                                <field name="no_senescyt_registration"/>
+                                <separator name="has_work_permit" string="Formación adicional"/>
+                                <field name="additional_preparation" class="o_additional_preparation"/>
+                            </group>
+                            <group string="Permiso de trabajo">
+                                <field name="visa_no"/>
+                                <field name="permit_no"/>
+                                <field name="visa_expire"/>
+                                <field name="work_permit_expiration_date"/>
+                                <field name="work_permit_name" invisible="1"/>
+                                <field name="has_work_permit" widget="work_permit_upload" filename="work_permit_name"/>
+                            </group>
+                            <group string="Referencias">
+                                <field name="references" class="o_references"/>
+                            </group>
+                            <group string="Discapacidad">
+                                <field name="disability" class="o_disability"/>
+                            </group>
+                            <group string="Sustituto de Persona con Discapacidad">
+                                <field name="disability_substitute_person" class="o_disability_substitute_person"/>
+                            </group>
+                            <group string="Hoja de Vida">
+                                <field name="curriculum_vitae" class="o_curriculum_vitae" filename='file_name_curriculum_vitae'/>
+                            </group>
+                            <group string="Redes Sociales">
+                                <field name="url_linkedin" class="o_url_linkedin"/>
+                                <field name="url_facebook" class="o_url_facebook"/>
+                            </group>
+                        </group>
+
+                    </page>
+
+<!--					<group string="Discapacidad">-->
+<!--						<field name="is_discapacitado" />-->
+<!--						<field name="discapacidad" invisible="is_discapacitado == False"/>-->
+<!--						<field name="nombre_discapacidad" invisible="1"/>-->
+
+<!--					</group>-->
+
+				</xpath>
+                <field name="pin" position="attributes">
+                    <attribute name="readonly">False</attribute>
+                </field>
+
+                <xpath expr="//page[@name='hr_settings']" position="after">
+                    <page name="files" string="Archivos">
+                        <group>
+                            <group string="Indentificación" name="active_group">
+                                <field name="card_identification" class="o_card_identification"/>
+                            </group>
+                            <group string="Memorándums" name="active_group">
+                                <field name="file_memorandum" class="o_memorandum"/>
+                            </group>
+                            <group string="Archivos Varios" name="active_group">
+                                <field name="file_extra" class="o_card_identification"/>
+                            </group>
+                        </group>
+                    </page>
+                </xpath>
+
+                <xpath expr="//field[@name='departure_date']" position="after">
+                    <field name="is_on_the_blacklist"/>
+                    <field name="note_for_on_the_blacklist"/>
+                </xpath>
+
+				<field name="address_id" position="attributes">
+					<attribute name="invisible">True</attribute>
+				</field>
+<!--				<field name="work_location" position="attributes">-->
+<!--					<attribute name="invisible">True</attribute>-->
+<!--				</field>-->
+				<field name="address_id" position="attributes">
+					<attribute name="invisible">True</attribute>
+				</field>
+<!--				<field name="private_email" position="attributes">-->
+<!--					<attribute name="invisible">True</attribute>-->
+<!--				</field>-->
+<!--				<field name="barcode" position="attributes">-->
+<!--					<attribute name="invisible">False</attribute>-->
+<!--				</field>-->
+<!--				<field name="service_hire_date" position="attributes">-->
+<!--					<attribute name="invisible">True</attribute>-->
+<!--				</field>-->
+<!--				<field name="pin" position="attributes">-->
+<!--					<attribute name="invisible">True</attribute>-->
+<!--				</field>-->
+				<field name="user_id" position="attributes">
+					<attribute name="invisible">True</attribute>
+				</field>
+				<field name="study_field" position="attributes">
+					<attribute name="invisible">True</attribute>
+				</field>
+				<field name="study_school" position="attributes">
+					<attribute name="string">Institución Educativa</attribute>
+				</field>
+				<!--<xpath expr="//page[@name='history'][last()]" position="attributes">
+					<attribute name="invisible">True</attribute>
+				</xpath>-->
+				<!--<xpath expr="//button[@name='time_sheet'][last()]" position="attributes">
+					<attribute name="invisible">True</attribute>
+				</xpath>-->
+				<xpath expr="//div/h2/field[@name='job_title']" position="attributes">
+					<attribute name="invisible">True</attribute>
+				</xpath>
+
+				<xpath expr="//group[@name='identification_group']" position="attributes">
+					<attribute name="invisible">False</attribute>
+				</xpath>
+
+				<field name="identification_id" position="replace" />
+				<field name="category_ids" position="before">
+					<div class="oe_title">
+						<label for="identification_id" class="oe_edit_only" groups="hr.group_hr_user" string="Cédula / Pasaporte"/>
+						<h1>
+							<field name="identification_id" placeholder="Cédula / Pasaporte" groups="hr.group_hr_user"/>
+						</h1>
+					</div>
+				</field>
+				<page name="public" position="after">
+					<page string="Cargas Familiares" groups="hr.group_hr_user,hr.group_hr_manager">
+						<field string="" name="family_burden_ids"
+							   context="{'form_view_ref': 'ec_payroll.hr_family_burden_form_view_employee', 'tree_view_ref': 'ec_payroll.hr_family_burden_tree_view_employee'}" />
+					</page>
+				</page>
+				<field name="bank_account_id" position="replace">
+					<field name="payment_method" required="1"/>
+					<field name="cen_bank_id" options="{'no_create': True, 'no_open': True}"
+						   invisible="payment_method != 'CUE'"/>
+					<!--<field name="cen_account_number" invisible="payment_method != 'CUE'"/>-->
+					<field name="bank_account_id" invisible="payment_method != 'CUE'"/>
+					<field name="type_account" invisible="payment_method != 'CUE'"/>
+					<field name="third_payment" invisible="1"/>
+					<field name="pay_with_check" />
+				</field>
+
+				<field name="bank_account_id" position="attributes">
+					<attribute name="context">{'hr':address_id}</attribute>
+					<attribute name="options">{'no_create':False}</attribute>
+				</field>
+
+				<field name="parent_id" position="after">
+					<field name="employee_type" required="True"/>
+					<!--<field name="horario_docente" invisible="employee_type != 'academic'"/>-->
+					<!--<field name="calificacion_docente" invisible="employee_type != 'academic'"/>-->
+				</field>
+
+
+				<field name="job_id" position="attributes">
+					<attribute name="string">Cargo</attribute>
+				</field>
+
+				<xpath expr="//group[@name='managers']" position="attributes">
+					<attribute name="string">Jefe Inmediato</attribute>
+				</xpath>
+
+				<field name="parent_id" position="attributes">
+					<attribute name="string">Jefe Inmediato</attribute>
+				</field>
+
+
+				<xpath expr="//div[@id='o_work_employee_main']" position="inside">
+                    <group string="Lactancia" invisible="gender == 'Hombre'" groups="hr.group_hr_user">
+                        <field name="is_lactation" />
+                        <field name="lactance_ids" invisible="is_lactation == False" />
+                    </group>
+                </xpath>
+
+
+
+
+				<xpath expr="//page[last()]" position="before">
+					<group string="Otra Información" groups="ec_payroll.group_hr_employee_other_inf">
+
+						<field name="address_id"  string="Dirección"/>
+						<field name="address_id"  string="Dirección Proveedor Relacionado"/>
+						<field name="user_id" string="Usuario relacionado" />
+
+					</group>
+
+				</xpath>
+
+			</field>
+		</record>
+
+		<record model="ir.ui.view" id="hr_employee_tree_view">
+			<field name="name">hr.employee.tree</field>
+			<field name="model">hr.employee</field>
+			<field name="inherit_id" ref="hr.view_employee_tree" />
+			<field name="arch" type="xml">
+				<field name="name" position="after">
+					<field name="identification_id" />
+				</field>
+			</field>
+		</record>
+
+		<record model="ir.ui.view" id="hr_employee_search_view">
+			<field name="name">hr.employee.search</field>
+			<field name="model">hr.employee</field>
+			<field name="inherit_id" ref="hr.view_employee_filter" />
+			<field name="arch" type="xml">
+				<field name="name" position="replace">
+					<field name="name" string="Empleados"
+						   filter_domain="['|','|',('work_email','ilike',self),('name','ilike',self),('identification_id', 'ilike',self)]" />
+				</field>
+			</field>
+		</record>
+
+	</data>
+</odoo>

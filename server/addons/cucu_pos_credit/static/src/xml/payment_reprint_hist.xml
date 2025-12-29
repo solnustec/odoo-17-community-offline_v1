@@ -1,0 +1,84 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<templates id="template" xml:space="preserve">
+  <t t-name="cucu_pos_credit.PaymentReprintHist" owl="1">
+        <div class="receipt-screen screen h-100 bg-100">
+            <div class="screen-content d-flex flex-column h-100">
+                <div class="top-content d-flex align-items-center p-2 border-bottom text-center">
+                    <button class="button back btn btn-lg btn-secondary" t-on-click="confirm">
+                        <i class="fa fa-angle-double-left me-2"/>
+                        <span> </span>
+                        <span>Back</span>
+                    </button>
+                </div>
+                <div class="centered-content d-grid mx-auto mt-3 border-0 overflow-hidden">
+                    <button class="button print btn btn-lg btn-primary" t-on-click="tryReprint">
+                        <i class="fa fa-print ms-2"/>
+                        Print Receipt
+                    </button>
+                    <div class="pos-receipt-container mt-2 bg-200 text-center overflow-y-auto">
+                        <div class="d-inline-block m-3 p-3 border rounded bg-view text-start overflow-hidden">
+                            <OrderReceiptReprint data="props"
+                                                 formatCurrency="env.utils.formatCurrency"/>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+  </t>
+    <t t-name="cucu_pos_credit.OrderReceiptReprint" owl="1">
+        <div class="pos-receipt">
+            <div>
+                <h4 style="font-size: 20px; text-align: center">Resumen de crédito</h4>
+                <div>
+                    <h3 style="font-size: 20px; text-align: center">Detalle</h3>
+                    <div style="font-size: 15px; text-align: center">Name: <t t-esc="props.data.order.partner_id[1]"/></div>
+                    <div style="margin-top: 1rem">
+						<table style="width:100%">
+                            <thead style="border-top:1px dashed #ddd;border-bottom: 1px dashed #ddd">
+								<tr>
+									<th class="text-left py-[2px] break-words"
+                                        style="font-weight: bold;padding: 0.3rem 0;">
+									Type
+									</th>
+                                    <th class="text-right px-1 py-[2px]" style="text-align: right;font-weight: bold;">
+									Amount
+									</th>
+                                    <th class="text-center px-1 py-[2px]" style="text-align: right;font-weight: bold;">
+									Date
+									</th>
+								</tr>
+							</thead>
+                            <tbody>
+								<t t-foreach="props.data.hist_payments" t-as="line" t-key="line.id">
+                                    <tr style="border-bottom: 1px dashed #ddd">
+                                        <td style="text-align: right;">
+											<div t-esc="line.name"/>
+										</td>
+                                        <td style="text-align: right;">
+											<div t-esc="this.formatCurrency(line.amount)"/>
+										</td>
+                                        <td style="text-align: right;">
+											<span t-esc="line.date"/>
+										</td>
+									</tr>
+								</t>
+							</tbody>
+						</table>
+						<table style="width:100%;margin-top:1rem">
+							<tr>
+								<th t-esc="'Total Crédito'" style="padding:2px 0;text-align: left;font-weight: bold;"/>
+                                <th style="padding:2px 0;text-align: right;font-weight: normal;"
+                                    t-esc="this.formatCurrency(props.data.order.amount_total || 0)"/>
+							</tr>
+                            <tr>
+								<th t-esc="'Importe adeudado'" style="padding:2px 0;text-align: left;font-weight: bold;"/>
+                                <th style="padding:2px 0;text-align: right;font-weight: normal;"
+                                    t-esc="this.formatCurrency(props.data.order.amount_residual - (props.data.order.minus || 0)  || 0)"/>
+							</tr>
+						</table>
+					</div>
+                </div>
+            </div>
+        </div>
+    </t>
+</templates>

@@ -1,0 +1,32 @@
+<?xml version="1.0" encoding="utf-8"?>
+<odoo>
+     <record id="hr_payslip_import_form_view" model="ir.ui.view">
+        <field name="name">hr.payslip.import.bulk</field>
+        <field name="model">hr.payslip.import</field>
+         <field name="arch" type="xml">
+             <form string="Importar Recibo General">
+                 <group>
+                     <group>
+                         <field name="file_to_import" widget="binary" string="Archivo a Importar" filename="file_name" options="{'accepted_file_extensions': '.xlsx'}"/>
+                         <field name="file_name" invisible="1"/>
+                     </group>
+                     <group>
+                         <field name="struct_id" string="Estructura salarial"/>
+                         <field name="is_history_payslip" string="¿Es histórico?"/>
+                     </group>
+                 </group>
+                 <footer>
+                     <button name="action_import_payslip" type="object" string="Importar" class="btn-primary"/>
+                     <button special="cancel" class="oe_highlight" string="Cancel"/>
+                 </footer>
+             </form>
+         </field>
+    </record>
+    <record id="action_import_payslip" model="ir.actions.act_window">
+        <field name="name">Importación de Recibo General</field>
+        <field name="type">ir.actions.act_window</field>
+        <field name="res_model">hr.payslip.import</field>
+        <field name="view_mode">form</field>
+        <field name="target">new</field>
+    </record>
+</odoo>

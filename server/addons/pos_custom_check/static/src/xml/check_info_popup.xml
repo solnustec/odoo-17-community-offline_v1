@@ -1,0 +1,262 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<templates id="template" xml:space="preserve">
+  <t t-name="pos_custom_check.CheckInfoPopup" owl="1">
+    <div class="popup popup-CheckInfoPopup" style="max-width: 700px;">
+      <div class="modal-header">
+        <h4 class="modal-title"><t t-esc="props.title"/></h4>
+      </div>
+
+        <div class="modal-body">
+        <!-- ================== CHEQUE / TRANSF ================== -->
+            <t t-if="state.payment_method.name == 'CHEQUE / TRANSF'">
+          <div class="container-fluid g-2">
+
+            <!-- Banco -->
+              <div class="mb-2 text-start">
+              <label for="bank_id" class="form-label mb-1 fw-bold" style="color:#004094">Banco</label>
+                  <select id="bank_id"
+                          class="form-select"
+                          name="bank_id"
+                          required="required"
+                          t-on-change="onBankChange"
+                          t-att-disabled="state.isFieldsReadonly">
+                <option value="" >Seleccione un banco</option>
+                      <t t-foreach="orderedBanks" t-as="bank" t-key="bank.id">
+                  <option t-att-value="bank.id" t-att-selected="bank.id == state.bank_id">
+                    <t t-esc="bank.name"/>
+                  </option>
+                </t>
+              </select>
+            </div>
+
+              <!-- Cliente -->
+              <div class="mb-2 text-start">
+              <label for="owner_name" class="form-label mb-1 fw-bold" style="color:#004094">Cliente</label>
+                  <input t-model="state.owner_name"
+                         id="owner_name"
+                         type="text"
+                         placeholder="Cliente"
+                         t-att-readonly="state.isFieldsReadonly"
+                         class="form-control"/>
+            </div>
+
+              <!-- Flags -->
+              <t t-set="isAdvancedBank"
+                 t-value="state.bank_name == 'DEUNA BCO PICHINCHA' or state.bank_name == 'AHORITA BANCO DE LOJA'"/>
+              <t t-set="isAdvanced" t-value="isAdvancedBank and state.enable_advanced_payments"/>
+              <t t-set="showQR" t-value="isAdvanced and state.channel !== 'canal digital'"/>
+
+              <!-- Cuenta + Cheque (dos columnas si avanzado, si no una) -->
+              <div class="row g-2 text-start">
+              <div t-attf-class="col-12 #{isAdvanced ? 'col-md-6' : ''}">
+                <label for="bank_account" class="form-label mb-1 fw-bold" style="color:#004094">Nro. Cuenta</label>
+                  <input t-model="props.array.bank_account"
+                         id="bank_account"
+                         type="text"
+                         placeholder="Nro. Cuenta"
+                         t-att-readonly="state.isFieldsReadonly"
+                         class="form-control"/>
+              </div>
+                  <div t-attf-class="col-12 #{isAdvanced ? 'col-md-6' : ''}">
+                <label for="check_number" class="form-label mb-1 fw-bold" style="color:#004094">Nro. Cheque</label>
+                      <input t-model="props.array.check_number"
+                             id="check_number"
+                             type="text"
+                             placeholder="Nro. Cheque"
+                             t-att-readonly="state.isFieldsReadonly"
+                             class="form-control"/>
+              </div>
+            </div>
+
+              <!-- AVANZADO: Fecha / Teléfono / Monto + QR -->
+              <t t-if="showQR">
+              <div class="row g-2 mt-1 text-start">
+                <div class="col-12 col-lg-7">
+                  <div class="mb-2">
+                    <label for="date" class="form-label mb-1 fw-bold" style="color:#004094">Fecha</label>
+                      <input t-model="state.date"
+                             id="date"
+                             type="date"
+                             placeholder="Fecha"
+                             t-att-readonly="state.isFieldsReadonly"
+                             class="form-control"/>
+                  </div>
+                    <t t-if="state.bank_name == 'AHORITA BANCO DE LOJA'">
+                        <div class="mb-2">
+                        <label for="phone" class="form-label mb-1 fw-bold" style="color:#004094">Nro. Teléfono</label>
+                            <input t-model="state.phone_user"
+                               id="phone"
+                               type="text"
+                               placeholder="0999999999"
+                               t-att-readonly="state.isFieldsReadonly"
+                               class="form-control"/>
+                        </div>
+                    </t>
+                    <div class="mb-2">
+                    <label for="payment_amount" class="form-label mb-1 fw-bold"
+                           style="color:#004094">Monto a Pagar</label>
+                        <input t-model="state.payment_amount"
+                               id="payment_amount"
+                               type="number"
+                               placeholder="Monto a Pagar"
+                               t-att-readonly="state.isFieldsReadonly"
+                               t-on-input="onPaymentAmountChange"
+                               class="form-control"/>
+                  </div>
+                </div>
+
+                  <!-- QR -->
+                  <div class="col-12 col-lg-5 d-flex align-items-center justify-content-center">
+                  <t t-if="state.qrCode">
+                    <img t-att-src="state.qrCode" class="img-fluid border bg-white p-1 rounded"
+                         style="max-width: 200px;"/>
+                  </t>
+                </div>
+              </div>
+
+                  <!-- Mensajes -->
+                  <t t-if="state.success_message">
+                <div t-attf-class="alert mt-2 text-center #{state.success_type === 'warning' ? 'alert-warning' : 'alert-success'}"
+                     role="alert">
+                  <t t-esc="state.success_message"/>
+                </div>
+
+                      <t t-if="state.bank_name == 'AHORITA BANCO DE LOJA' and state.qrCode">
+                  <div class="alert alert-info mt-2 text-center" role="alert">
+                    📱 Informe al cliente que debe escanear el código QR usando la cámara de su celular o una aplicación de escaneo QR.
+                  </div>
+                </t>
+
+                      <t t-if="state.bank_name == 'AHORITA BANCO DE LOJA' and state.qrCode and state.deeplink">
+                  <div class="text-center mt-1">
+                    <span t-att-title="state.deeplink"
+                          t-on-click="copyDeeplink"
+                          class="link-primary text-decoration-underline"
+                          t-esc="state.deeplink"/>
+                  </div>
+                </t>
+              </t>
+            </t>
+
+              <!-- No avanzado: solo fecha -->
+              <t t-else="">
+              <div class="mt-2 text-start">
+                <label for="date" class="form-label mb-1 fw-bold" style="color:#004094">Fecha</label>
+                  <input t-model="state.date"
+                         id="date"
+                         type="date"
+                         placeholder="Fecha"
+                         t-att-readonly="state.isFieldsReadonly"
+                         class="form-control"/>
+              </div>
+            </t>
+          </div>
+        </t>
+
+            <!-- ================== TARJETA ================== -->
+            <t t-if="state.payment_method.name == 'TARJETA'">
+          <div class="container-fluid g-2 text-start">
+            <div class="mb-2">
+              <label for="number_voucher" class="form-label mb-1 fw-bold" style="color:#004094">Nro. Voucher</label>
+                <input t-model="props.array.number_voucher"
+                       id="number_voucher"
+                       type="text"
+                       placeholder="Nro. Voucher"
+                       class="form-control"/>
+            </div>
+
+              <div class="mb-2">
+              <label for="type_card" class="form-label mb-1 fw-bold" style="color:#004094">Tipo de tarjeta</label>
+                  <select id="type_card"
+                          name="type_card"
+                          t-model="props.array.type_card"
+                          class="form-select">
+                <t t-foreach="env.services.pos.cards" t-as="card" t-key="card.id">
+                  <option t-att-value="card.id">
+                    <t t-esc="card.name_card"/>
+                  </option>
+                </t>
+              </select>
+            </div>
+
+              <div class="row g-2">
+              <div class="col-12 col-md-6">
+                <label for="number_lote" class="form-label mb-1 fw-bold" style="color:#004094">Nro. Lote</label>
+                  <input t-model="props.array.number_lote"
+                         id="number_lote"
+                         type="text"
+                         placeholder="Nro. Lote"
+                         class="form-control"/>
+              </div>
+                  <div class="col-12 col-md-6">
+                <label for="holder_card" class="form-label mb-1 fw-bold" style="color:#004094">Titular TC</label>
+                      <input t-model="props.array.holder_card"
+                             id="holder_card"
+                             type="text"
+                             placeholder="Titular Tarjeta"
+                             class="form-control"/>
+              </div>
+            </div>
+
+              <div class="mb-2 mt-2">
+              <label for="bin_tc" class="form-label mb-1 fw-bold" style="color:#004094">BIN TC</label>
+                  <input t-model="props.array.bin_tc"
+                         id="bin_tc"
+                         type="text"
+                         placeholder="BIN Tarjeta (6 primeros dígitos)"
+                         class="form-control"/>
+            </div>
+          </div>
+        </t>
+
+            <!-- ================== EFECTIVO ================== -->
+            <t t-if="state.payment_method.name == 'EFECTIVO CUX'">
+          <div class="alert alert-secondary" role="alert">Aplicar método de pago en efectivo</div>
+        </t>
+      </div>
+
+        <footer class="footer modal-footer">
+        <div class="button btn btn-lg btn-primary" t-on-click="confirm" id="confirmado">
+          <t t-esc="props.confirmText"/>
+        </div>
+
+            <t t-if="state.payment_status !== 'APPROVED' || !state.enable_advanced_payments">
+          <div class="button btn btn-lg btn-secondary" t-on-click="cancel">
+            <t t-esc="props.cancelText"/>
+          </div>
+        </t>
+
+            <!-- Acciones bancarias -->
+            <t t-if="state.bank_name == 'DEUNA BCO PICHINCHA' and state.enable_advanced_payments">
+          <t t-if="state.channel !== 'canal digital'">
+            <div t-if="!['APPROVED', 'CONFIRMADO', 'APROBADO'].includes(state.payment_status)"
+                 class="button btn btn-lg btn-info" t-on-click="send_message_user">Enviar link de pago</div>
+          </t>
+                <t t-if="state.transactionId">
+            <div class="button btn btn-lg btn-info" t-on-click="checkPaymentStatus">Validar Pago</div>
+          </t>
+        </t>
+
+            <t t-elif="state.bank_name == 'AHORITA BANCO DE LOJA' and state.enable_advanced_payments">
+           <t t-if="state.channel !== 'canal digital'">
+              <div t-if="!['APPROVED', 'CONFIRMADO', 'APROBADO'].includes(state.payment_status)"
+                   class="button btn btn-lg btn-info"
+                   t-on-click="send_message_user_ahorita">Enviar link de pago ahorita</div>
+             </t>
+                <t t-if="state.transactionId">
+            <div class="button btn btn-lg btn-info" t-on-click="checkPaymentStatusAhorita">Validar Pago ahorita</div>
+          </t>
+        </t>
+      </footer>
+
+        <!-- Overlay de carga -->
+        <div t-if="state.loading"
+             class="position-absolute top-0 start-0 w-100 h-100 d-flex align-items-center justify-content-center"
+             style="background-color: rgba(255,255,255,0.75); z-index: 9999; border-radius: 6px;">
+        <div class="spinner-border text-primary" role="status" style="width: 4rem; height: 4rem;">
+          <span class="visually-hidden">Cargando...</span>
+        </div>
+      </div>
+    </div>
+  </t>
+</templates>

@@ -1,0 +1,20 @@
+<?xml version="1.0" encoding="utf-8"?>
+<odoo>
+    <data>
+        <record id="stock.view_warehouse_tree" model="ir.ui.view">
+            <field name="name">interconnection_of_modules.stock.warehouse.tree</field>
+            <field name="model">stock.warehouse</field>
+            <field name="arch" type="xml">
+                <tree sample="1" multi_edit="1">
+                    <field name="sequence" widget="handle" readonly="1"/>
+                    <field name="name" readonly="1"/>
+                    <field name="active" column_invisible="True"/>
+                    <field name="lot_stock_id" groups="stock.group_stock_multi_locations"/>
+                    <field name="partner_id" readonly="1"/>
+                    <field name="company_id" />
+                    <field name="is_public" optional="hide" />
+                </tree>
+            </field>
+        </record>
+    </data>
+</odoo>

@@ -1,0 +1,48 @@
+/* Oculta el botón 'Share & Invite' en el kanban de encuestas */
+.o_kanban_view button[name="action_send_survey"] {
+    display: none !important;
+}
+
+/* Oculta el botón 'Empezar sesión en vivo' en el kanban de encuestas */
+.o_kanban_view button[name="action_start_session"] {
+    display: none !important;
+} 
+
+.o_kanban_view button[name="action_test_survey"] {
+    display: none !important;
+}
+
+/* action_result_survey */
+/* .o_kanban_view button[name="action_result_survey"] {
+    display: none !important;
+} */
+
+/* Ocultar botón "Volver a responder" específicamente */
+a[href*="/survey/retry/"] {
+    display: none !important;
+}
+
+/* Alternativa más específica */
+a.btn.btn-primary.btn-lg[href*="/survey/retry/"] {
+    display: none !important;
+}
+
+/* Ocultar por texto del botón (si el selector anterior no funciona) */
+a.btn.btn-primary.btn-lg:contains("Volver a responder") {
+    display: none !important;
+} 
+
+/* Ocultar div de duración promedio */
+div[name="answer_duration_avg"] {
+    display: none !important;
+}
+
+/* Alternativa más específica para el contenedor completo */
+.col-lg-1.col-sm-4.col-6.py-0.my-2:has(div[name="answer_duration_avg"]) {
+    display: none !important;
+}
+
+/* Ocultar por texto del span */
+span:contains("Duración promedio") {
+    display: none !important;
+} 

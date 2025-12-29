@@ -1,0 +1,124 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<templates id="template" xml:space="preserve">
+    <t t-name="PaymentScreenPaymentLines" t-inherit="point_of_sale.PaymentScreenPaymentLines"
+       t-inherit-mode="extension" owl="1">
+
+        <xpath expr="//div[hasclass('payment-infos')]" position="replace">
+			<div class="payment-infos d-flex align-items-center justify-content-between flex-grow-1 px-3 py-4 my-2 text-truncate cursor-pointer"
+                 t-on-click="() => this.selectLine(line)">
+                <h4 class="payment-name">
+                    <t t-if="line.payment_method.code_payment_method === 'CREDITO'">CREDITO</t>
+                    <t t-else=""><t t-esc="line.payment_method.originalName || line.payment_method.name"/></t>
+                </h4>
+                <div class="payment-amount px-3">
+                    <t t-if="line and line.payment_status and ['done', 'waitingCard', 'waiting', 'reversing', 'reversed'].includes(line.payment_status)">
+                        <h4><t t-esc="env.utils.formatCurrency(line.get_amount(), false)" /></h4>
+                    </t>
+                    <t t-else="">
+                       <h4><t t-esc="formatLineAmount(line)" /></h4>
+                    </t>
+                </div>
+            </div>
+		</xpath>
+
+        <xpath expr="//t[@t-else='']//div[hasclass('payment-infos')]" position="replace">
+			<div class="payment-infos d-flex align-items-center justify-content-between flex-grow-1 px-3 py-4 my-2 text-truncate cursor-pointer"
+                 t-on-click="() => this.selectLine(line)">
+                <h4 class="payment-name">
+                    <t t-if="line.payment_method.code_payment_method === 'CREDITO'">CREDITO</t>
+                    <t t-else=""><t t-esc="line.payment_method.originalName || line.payment_method.name"/></t>
+                </h4>
+                <div class="payment-amount px-3">
+                    <t t-if="line and line.payment_status and ['done', 'waitingCard', 'waiting', 'reversing', 'reversed'].includes(line.payment_status)">
+                        <h4><t t-esc="env.utils.formatCurrency(line.get_amount(), false)" /></h4>
+                    </t>
+                    <t t-else="">
+                       <h4><t t-esc="formatLineAmount(line)" /></h4>
+                    </t>
+                </div>
+            </div>
+		</xpath>
+        <xpath expr="//div[hasclass('payment-amount')]" position="after">
+            <t t-set="isAdvFlow"
+               t-value="( (line.payment_bank_name === 'DEUNA BCO PICHINCHA' || line.payment_bank_name === 'AHORITA BANCO DE LOJA')
+                         &amp;&amp; line.enable_advanced_payments
+                         &amp;&amp; line.channel !== 'canal digital' )"/>
+
+            <t t-if="!isAdvFlow">
+                <div class="pruebaaaa">
+                <!--                    ocultar el icono de card cuando el pago es en efectivo-->
+                    <t t-if="line.payment_method.type == 'cash'">
+                        <t t-if="env.services.pos.config.allow_check_info &amp;&amp; line.payment_method.allow_check_info">
+                            <i t-on-click="() => this._CheckInfoClicked(line.cid)"
+                               class="oe_link_icon fa fa-credit-card oe_icon line-lot-icon oe_red d-none"
+                               aria-label="Check Info"
+                               title="Check Info"
+                               style="margin-top:0;color:green"/>
+                        </t>
+                    </t>
+                    <t t-else="">
+                        <t t-if="env.services.pos.config.allow_check_info &amp;&amp; line.payment_method.allow_check_info">
+                            <i t-on-click="() => this._CheckInfoClicked(line.cid)"
+                               class="oe_link_icon fa fa-credit-card oe_icon line-lot-icon oe_red"
+                               aria-label="Check Info"
+                               title="Check Info"
+                               style="margin-top:0;color:green"/>
+                        </t>
+                    </t>
+
+                </div>
+            </t>
+		</xpath>
+
+        <xpath expr="//t[@t-else='']//div[hasclass('payment-amount')]" position="after">
+            <t t-set="isAdvFlow"
+               t-value="( (line.payment_bank_name === 'DEUNA BCO PICHINCHA' || line.payment_bank_name === 'AHORITA BANCO DE LOJA')
+                         &amp;&amp; line.enable_advanced_payments
+                         &amp;&amp; line.channel !== 'canal digital' )"/>
+            <t t-if="!isAdvFlow">
+                <div class="pruebaaaa">
+                    <t t-if="line.payment_method.type == 'cash'">
+                        <t t-if="env.services.pos.config.allow_check_info &amp;&amp; line.payment_method.allow_check_info">
+                            <i t-on-click="() => this._CheckInfoClicked(line.cid)"
+                               class="oe_link_icon fa fa-credit-card oe_icon line-lot-icon oe_red d-none"
+                               aria-label="Check Info"
+                               title="Check Info"
+                               style="margin-top:80%; color:red"/>
+                        </t>
+                    </t>
+                    <t t-else="">
+                        <t t-if="env.services.pos.config.allow_check_info &amp;&amp; line.payment_method.allow_check_info">
+                            <i t-on-click="() => this._CheckInfoClicked(line.cid)"
+                               class="oe_link_icon fa fa-credit-card oe_icon line-lot-icon oe_red d-none"
+                               aria-label="Check Info"
+                               title="Check Info"
+                               style="margin-top:80%; color:red"/>
+                        </t>
+                    </t>
+                </div>
+            </t>
+		</xpath>
+
+        <xpath expr="//t[@t-if='line.selected']//button[hasclass('delete-button')]" position="replace">
+            <t t-if="line.payment_method.name !== 'CHEQUE / TRANSF' and (!line.payment_status or !['done', 'reversed', 'waitingCard', 'waitingCapture'].includes(line.payment_status))">
+                <button class="delete-button btn btn-link mx-2 px-3"
+                        t-on-click="() => this.props.deleteLine(line.cid)"
+                        aria-label="Delete" title="Delete">
+                    <i class="fa fa-2x fa-times-circle"/>
+                </button>
+            </t>
+        </xpath>
+
+        <xpath expr="//t[@t-else='']//div[hasclass('delete-button')]" position="replace">
+            <t t-if="line.payment_method.name !== 'CHEQUE / TRANSF' and (!line.payment_status or !['done', 'reversed'].includes(line.payment_status))">
+                <div class="delete-button delete-button btn btn-link mx-2 px-3"
+                     t-on-click="() => this.props.deleteLine(line.cid)"
+                     aria-label="Delete" title="Delete">
+                    <i class="fa fa-2x fa-times-circle"/>
+                </div>
+            </t>
+        </xpath>
+
+    </t>
+
+</templates>

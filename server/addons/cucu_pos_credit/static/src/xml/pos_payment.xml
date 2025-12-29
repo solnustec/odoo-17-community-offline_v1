@@ -1,0 +1,355 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<templates id="pos_payment_template" inherit_id="point_of_sale.template" xml:space="preserve">
+
+
+	<t t-name="cucu_pos_credit.CreatePaymentButtonWidget" owl="1">
+		<div class="control-button btn btn-light rounded-0 fw-bolder" t-on-click="() => this.onClickPaymentCustom()">
+			<i class="fa fa-money"></i>
+			<span></span>
+			<span>Payment</span>
+		</div>
+	</t>
+
+
+	<t t-name="cucu_pos_credit.SeeAllInvoicesButtonWidget" owl="1">
+		<div class="control-button btn btn-light rounded-0 fw-bolder" t-on-click="() => this.onClickInvoiceCustom()">
+			<i class="fa fa-money"/>
+			<span></span>
+			<span>Crédito</span>
+		</div>
+	</t>
+
+
+	<t t-name="PartnerListScreen" t-inherit="point_of_sale.PartnerListScreen" t-inherit-mode="extension" owl="1">
+		<xpath expr="//tbody[hasclass('partner-list-contents')]" position="replace">
+			<t t-if="pos.config.allow_pos_payment">
+				<tbody class="partner-list-contents">
+					<t t-foreach="partners" t-as="partner" t-key="partner.id">
+						<PartnerLine partner="partner" selectedPartner="state.selectedPartner" detailIsShown="state.detailIsShown" isBalanceDisplayed="isBalanceDisplayed" onClickEdit.bind="editPartner" onRegisterPayment.bind="registerPayment" onClickPartner.bind="clickPartner" />
+					</t>
+				</tbody>
+			</t>
+			<t t-else="">
+				<tbody class="partner-list-contents">
+					<t t-foreach="partners" t-as="partner" t-key="partner.id">
+						<PartnerLine partner="partner" selectedPartner="state.selectedPartner" detailIsShown="state.detailIsShown" isBalanceDisplayed="isBalanceDisplayed" onClickEdit.bind="editPartner" onClickPartner.bind="clickPartner" />
+					</t>
+				</tbody>
+			</t>
+		</xpath>
+	</t>
+
+	<t t-name="PartnerListScreen" t-inherit="point_of_sale.PartnerListScreen" t-inherit-mode="extension" owl="1">
+		<xpath expr="//table//thead//tr//th[hasclass('partner-line-details','py-2')]" position="before">
+			<th class="partner-line-details py-2"></th>
+		</xpath>
+	</t>
+
+	<t t-name="PartnerLine" t-inherit="point_of_sale.PartnerLine" t-inherit-mode="extension" owl="1">
+		<xpath expr="//tr//td[@class='edit-partner-button-cell']" position="after">
+			<td t-if="pos.config.allow_pos_payment" class='partner-line-details py-2' t-att-data-id='props.partner.id' t-on-click.stop="() => props.onRegisterPayment(props.partner)">
+				<button t-if="props.partner.to_credit" class="btn btn-light border">
+					<i class="fa mr-2 fa-university"/>
+Crédito</button>
+				<div t-else="">-</div>
+			</td>
+		</xpath>
+	</t>
+	<t t-name="cucu_pos_credit.POSInvoiceScreen" owl="1">
+		<div class="partnerlist-screen screen h-100 d-flex flex-column bg-100">
+			<div class="top-content d-flex align-items-center p-2 border-bottom text-center">
+				<div class="button back btn btn-lg btn-secondary mx-2" t-on-click="back">
+					<i t-if="ui.isSmall" class="fa fa-angle-double-left"/>
+					<t t-else=""> Discard</t>
+				</div>
+			</div>
+
+			<section class="overflow-auto">
+				<table class="partner-list table table-striped w-100">
+					<thead>
+						<tr>
+							<th class="order_ref">Invoice</th>
+							<th class="receipt_ref">Cliente</th>
+							<th class="order_cstmr">Total Amount</th>
+							<th class="order_date">Due Amount</th>
+							<th class="order_state">State</th>
+							<th class="order_state">Payment State</th>
+							<th class="order_action">Action</th>
+							<th class="order_action"/>
+						</tr>
+					</thead>
+					<tbody class="posorders-list-contents">
+						<t t-foreach="props.invoices" t-as="order" t-key="order.id">
+							<POSInvoice order="order" selectedPosOrder="state.selectedPosOrder"/>
+						</t>
+					</tbody>
+				</table>
+			</section>
+		</div>
+	</t>
+
+	<t t-name="cucu_pos_credit.POSInvoice" owl="1">
+		<tr t-attf-class="partner-line {{highlight}}" t-att-data-id="props.order.id">
+			<td class='order-name' t-att-data-id='props.order.id'>
+				<t t-esc='props.order.name'/>
+			</td>
+			<td class='order-partner' t-att-data-id='props.order.id'>
+				<t t-esc='props.order.partner_id[1] or ""'/>
+			</td>
+			<td class='order-date' t-att-data-id='props.order.id'>
+				<t t-log="env"/>
+				<t t-if="pos.currency.id == props.order.currency_id[0]">
+					<t t-esc='env.utils.formatCurrency(props.order.amount_total)'/>
+				</t>
+				<t t-else="">
+					<t t-foreach="pos.poscurrency" t-as="curr" t-key="curr.id">
+
+						<t t-if="curr.id == props.order.currency_id[0]">
+							<t t-if="curr.position == 'after'">
+								<t t-esc="(props.order.amount_total).toFixed(2)"/>
+								<t t-esc="curr.symbol"/>
+							</t>
+							<t t-else="">
+								<t t-esc="curr.symbol"/>
+								<t t-esc="(props.order.amount_total).toFixed(2)"/>
+							</t>
+						</t>
+					</t>
+				</t>
+			</td>
+			<td class='order-tot' t-att-data-id='props.order.id'>
+				<t t-if="pos.currency.id == props.order.currency_id[0]">
+					<t t-esc='env.utils.formatCurrency(props.order.amount_residual)'/>
+				</t>
+				<t t-else="">
+					<t t-foreach="pos.poscurrency" t-as="curr" t-key="curr.id">
+
+						<t t-if="curr.id == props.order.currency_id[0]">
+							<t t-if="curr.position == 'after'">
+								<t t-esc="(props.order.amount_residual).toFixed(2)"/>
+								<t t-esc="curr.symbol"/>
+							</t>
+							<t t-else="">
+								<t t-esc="curr.symbol"/>
+								<t t-esc="(props.order.amount_residual).toFixed(2)"/>
+							</t>
+						</t>
+					</t>
+				</t>
+			</td>
+			<td class='order-state' t-att-data-id='props.order.id'>
+				<t t-if="props.order.state == 'draft'">Draft/New</t>
+				<t t-if="props.order.state == 'posted'">Posted</t>
+				<t t-if="props.order.state == 'cancel'">Cancelled</t>
+			</td>
+			<td class='order-payment-state' t-att-data-id='props.order.id'>
+				<t t-if="props.order.payment_state == 'not_paid'">Not Paid</t>
+				<t t-if="props.order.payment_state == 'in_payment'">In Payment</t>
+				<t t-if="props.order.payment_state == 'paid'">Paid</t>
+				<t t-if="props.order.payment_state == 'partial'">Partially Paid</t>
+				<t t-if="props.order.payment_state == 'reversed'">Reversed</t>
+				<t t-if="props.order.payment_state == 'invoicing_legacy'">Invoicing App Legacy</t>
+			</td>
+			<td>
+				<button class="btn btn-light border mr-2 btn-sm" t-on-click="() => this.onClickPosOrder(props.order)">
+					<i class="fa  mr-2  fa-university"/>
+Payment</button>
+			</td>
+			<td>
+				<button class="btn btn-light border btn-sm" t-on-click="() => this.onClickReprint(props.order)">
+					<i class="fa mr-2 fa-print"/>
+Reimprimir</button>
+			</td>
+		</tr>
+
+	</t>
+
+
+	<t t-name="cucu_pos_credit.PosInvoiceDetail" owl="1">
+		<div class="popup" style="min-width: 70%;">
+			<div class="modal-header">
+				<h4 class="modal-title">
+					Invoice Details
+				</h4>
+			</div>
+			<main class="modal-body">
+				<t t-set="order" t-value="props.order || []"/>
+				<table style='width:100%'>
+					<tr class="popup-tr">
+						<td style='width:20%; '>
+							<strong>Customer:</strong>
+						</td>
+						<td style='width:30%; ' t-if="order['partner_id']">
+							<span t-esc="order['partner_id'][1] or ''"/>
+						</td>
+						<td style='width:20%; '>
+							<strong>Amount Due:</strong>
+						</td>
+						<td style='width:30%; '>
+							<t t-if="pos.currency.id == props.order.currency_id[0]">
+								<t t-esc='env.utils.formatCurrency(props.order.amount_residual)'/>
+							</t>
+							<t t-else="">
+								<t t-foreach="pos.poscurrency" t-as="curr" t-key="curr.id">
+
+									<t t-if="curr.id == props.order.currency_id[0]">
+										<t t-if="curr.position == 'after'">
+											<t t-esc="(props.order.amount_residual).toFixed(2)"/>
+											<t t-esc="curr.symbol"/>
+										</t>
+										<t t-else="">
+											<t t-esc="curr.symbol"/>
+											<t t-esc="(props.order.amount_residual).toFixed(2)"/>
+										</t>
+									</t>
+								</t>
+							</t>
+						</td>
+					</tr>
+					<tr class="popup-tr">
+						<td style='width:20%; '>
+							<strong>Total Amount:</strong>
+						</td>
+						<td style='width:30%; '>
+							<t t-if="pos.currency.id == props.order.currency_id[0]">
+								<t t-esc='env.utils.formatCurrency(props.order.amount_total)'/>
+							</t>
+							<t t-else="">
+								<t t-foreach="pos.poscurrency" t-as="curr" t-key="curr.id">
+
+									<t t-if="curr.id == props.order.currency_id[0]">
+										<t t-if="curr.position == 'after'">
+											<t t-esc="(props.order.amount_total).toFixed(2)"/>
+											<t t-esc="curr.symbol"/>
+										</t>
+										<t t-else="">
+											<t t-esc="curr.symbol"/>
+											<t t-esc="(props.order.amount_total).toFixed(2)"/>
+										</t>
+									</t>
+								</t>
+							</t>
+						</td>
+						<td style='width:20%; '>
+							<strong>Status:</strong>
+						</td>
+						<td style='width:30%; '>
+							<t t-if="order['state'] == 'draft'">Draft/New</t>
+							<t t-if="order['state'] == 'posted'">Posted</t>
+							<t t-if="order['state'] == 'cancel'">Cancelled</t>
+						</td>
+					</tr>
+				</table>
+				<br/>
+			</main>
+
+			<footer class="footer modal-footer">
+				<div class="button confirm btn btn-lg btn-primary" id="create_customer_payment" t-on-click="register_payment">
+					Payment
+				</div>
+
+				<div class="button cancel btn btn-lg btn-primary" t-on-click="cancel">
+                    Close
+				</div>
+			</footer>
+
+		</div>
+	</t>
+
+
+	<t t-name="cucu_pos_credit.RegisterPaymentPopupWidget" owl="1">
+		<div class="popup">
+			<div class="modal-header">
+				<h4 class="modal-title">Register Payment</h4>
+			</div>
+
+			<div class="modal-body">
+				<div class="body traceback" style="font-family: 'Lato-Reg';">
+					<p style="color: #875a7b;text-align: center;font-size: 20px;">Enter Details Here</p>
+
+
+					<div style="text-align: left; margin-left: 37px;">
+						<label style="text-align:left"> Payment Journal:  </label>
+						<select id="payment_type" class='detail' name='type' style="height: 35px;width: 59%;float: right;   margin-right: 6%;">
+							<t t-foreach='pos.journals' t-as='jrn' t-key='jrn.id'>
+								<option t-att-value='jrn.id'>
+									<t t-esc='jrn.name'/>
+								</option>
+							</t>
+						</select>
+					</div>
+					<br/>
+					<div style="text-align: left; margin-left: 37px;">
+						<label style="text-align:left"> Amount:  </label>
+						<input id="entered_amount" type="number" class="input-field" name="code" style="height: 35px;width: 59%;float: right;   margin-right: 6%;"></input>
+					</div>
+					<br/>
+					<div style="text-align: left; margin-left: 37px;margin-top: 2%;">
+						<label style="text-align:left"> Payment Note:  </label>
+						<input id="entered_note" type="text" class="input-field" name="code" style="height: 35px;width: 59%;float: right;   margin-right: 6%;"></input>
+					</div>
+				</div>
+			</div>
+
+			<footer class="footer modal-footer">
+
+				<button class="button btn btn-lg btn-primary" t-on-click="register_payment">
+                    Apply
+				</button>
+
+				<button class="button cancel btn btn-lg btn-primary" id="cancel_coupon_code" t-on-click="cancel">
+					Cancel
+				</button>
+
+			</footer>
+
+		</div>
+	</t>
+
+
+	<t t-name="cucu_pos_credit.RegisterInvoicePaymentPopupWidget" owl="1">
+		<div class="popup">
+			<div class="modal-header">
+				<h4 class="modal-title">Register Payment for the Invoice and Validate</h4>
+			</div>
+
+			<div class="modal-body">
+				<p>Enter Payment Details Here</p>
+				<br/>
+				<div style="text-align: left; margin-left: 37px;">
+					<label style="text-align:left"> Payment Journal:  </label>
+					<select id="payment_type1" class='detail' name='type' style="height: 35px;width: 59%;float: right;   margin-right: 6%;">
+						<t t-foreach='pos.journals' t-as='jrn' t-key='jrn.id'>
+							<option t-att-value='jrn.id'>
+								<t t-esc='jrn.name'/>
+							</option>
+						</t>
+					</select>
+				</div>
+				<br/>
+				<div style="text-align: left; margin-left: 37px;">
+					<label style="text-align:left"> Amount:  </label>
+					<input id="entered_amount1" type="number" class="input-field" name="code" style="height: 35px;width: 59%;float: right;   margin-right: 6%;"></input>
+				</div>
+				<br/>
+				<div style="text-align: left; margin-left: 37px;margin-top: 2%;">
+					<label style="text-align:left"> Payment Note:  </label>
+					<input id="entered_note1" type="text" class="input-field" name="code" style="height: 35px;width: 59%;float: right;   margin-right: 6%;"></input>
+				</div>
+			</div>
+
+			<footer class="footer modal-footer">
+
+				<button class="button btn btn-lg btn-primary" t-on-click="register_payment">
+                    Create
+				</button>
+
+				<button class="button cancel btn btn-lg btn-primary" id="cancel_coupon_code" t-on-click="cancel">
+					Cancel
+				</button>
+
+			</footer>
+		</div>
+	</t>
+
+</templates>

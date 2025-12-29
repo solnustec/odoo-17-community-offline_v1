@@ -1,0 +1,44 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<templates id="template" xml:space="preserve">
+    <t t-name="custom_navbar_select.NavSelect" owl="1">
+        <div class="oe_status btn btn-light rounded-0">
+    <select
+            class="form-control"
+            t-on-click="loadBrands"
+            t-on-change="handleBrandSelection"
+    >
+        <t t-if="state.brands.length === 0">
+            <option>Marcas</option>
+        </t>
+        <t t-else="">
+            <t t-foreach="state.brands" t-as="brand" t-key="brand.id">
+                <option t-att-value="brand.id" t-esc="brand.name"/>
+            </t>
+        </t>
+    </select>
+</div>
+        <div class="oe_status btn btn-light rounded-0">
+    <select
+            class="form-control"
+            t-on-click="loadLaboratories"
+            t-on-change="handleLaboratorySelection"
+    >
+        <t t-if="state.laboratories.length === 0">
+            <option>Laboratorios</option>
+        </t>
+        <t t-else="">
+            <t t-foreach="state.laboratories" t-as="laboratory" t-key="laboratory.id">
+                <option t-att-value="laboratory.id" t-esc="laboratory.name"/>
+            </t>
+        </t>
+    </select>
+</div>
+
+</t>
+    <t t-name="custom_navbar_select.Navbar" t-inherit="point_of_sale.Navbar"
+       t-inherit-mode="extension" owl="1">
+        <xpath expr="//div[hasclass('status-buttons')]" position="before">
+<!--            <NavSelect/>-->
+        </xpath>
+    </t>
+</templates>

@@ -1,0 +1,24 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<odoo>
+    <menuitem id="menu_app_firebase_settings"
+              name="Firebase"
+              parent="website.menu_website_global_configuration"
+              sequence="100">
+        <menuitem id="menu_firebase_push_notification"
+                  name="Notificaciones Push Masivas"
+                  action="menu_firebase_push_notification_action"
+                  sequence="10"
+        />
+        <menuitem id="menu_firebase_push_devices"
+                  name="Dispositivos"
+                  action="menu_firebase_push_devices_action"
+                  sequence="20"
+        />
+        <menuitem id="menu_firebase_notification_messages"
+                  name="Mensajes de Notificación"
+                  action="menu_firebase_push_notification_messages_action"
+                  sequence="20"
+        />
+
+    </menuitem>
+</odoo>

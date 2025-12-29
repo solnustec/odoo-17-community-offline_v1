@@ -1,0 +1,36 @@
+<?xml version="1.0" encoding="utf-8"?>
+<odoo>
+    <data>
+        <record id="view_product_purchase_history_tree" model="ir.ui.view">
+            <field name="name">product.purchase.history.tree</field>
+            <field name="model">product.purchase.history</field>
+            <field name="arch" type="xml">
+                <tree>
+                    <field name="product_tmpl_id" string="Producto"/>
+                    <field name="purchase_order_id" string="Orden de Compra" optional="show"/>
+                    <field name="partner_id" string="Proveedor"/>
+                    <field name="quantity" string="Cantidad"/>
+                    <field name="price_unit" string="Precio Unitario"/>
+                    <field name="date_order" string="Fecha" widget="date" optional="show"/>
+                    <field name="id_purchase_old" string="Id old"  optional="show"/>
+                </tree>
+            </field>
+        </record>
+
+        <record id="action_product_purchase_history_list" model="ir.actions.act_window">
+            <field name="name">Hist. Compras</field>
+            <field name="res_model">product.purchase.history</field>
+            <field name="view_mode">tree,form</field>
+            <field name="view_id" ref="view_product_purchase_history_tree"/>
+        </record>
+        <menuitem
+                id="menu_product_purchase_history"
+                name="Hist. Compras"
+                groups="base.group_no_one"
+                parent="purchase.menu_purchase_root"
+                sequence="50"
+                action="action_product_purchase_history_list">
+
+        </menuitem>
+    </data>
+</odoo>

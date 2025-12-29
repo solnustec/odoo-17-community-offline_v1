@@ -1,0 +1,5 @@
+id,name,model_id:id,group_id:id,perm_read,perm_write,perm_create,perm_unlink
+access_pos_close_session_bills,pos.close.session.bills,model_pos_close_session_bills,base.group_user,1,1,1,1
+access_pos_close_session_user_ticket_user,pos.close.session.user.ticket user,model_pos_close_session_user_ticket,base.group_user,1,1,1,1
+access_pos_close_session_user_ticket_manager,pos.close.session.user.ticket manager,model_pos_close_session_user_ticket,point_of_sale.group_pos_manager,1,1,1,1
+

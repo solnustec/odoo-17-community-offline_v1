@@ -1,0 +1,189 @@
+<odoo>
+    <!-- Menú raíz -->
+    <menuitem id="menu_transfer_verifier_root" name="Verificación de Transferencias"
+              parent="stock.menu_stock_root" sequence="25"/>
+
+    <!-- Acción y menú para verificadores -->
+    <record id="action_transfer_verifier" model="ir.actions.act_window">
+        <field name="name">Verificador de Transferencias</field>
+        <field name="res_model">stock.transfer.verifier</field>
+        <field name="view_mode">tree,form</field>
+    </record>
+
+    <menuitem id="menu_transfer_verifier_action"
+              parent="menu_transfer_verifier_root"
+              action="action_transfer_verifier"
+              name="Verificar Transferencia"/>
+
+    <!-- Acción y menú para las líneas -->
+    <record id="action_transfer_verifier_line" model="ir.actions.act_window">
+        <field name="name">Líneas de Verificación</field>
+        <field name="res_model">stock.transfer.verifier.line</field>
+        <field name="view_mode">tree,form</field>
+    </record>
+
+    <menuitem id="menu_transfer_verifier_line_action"
+              parent="menu_transfer_verifier_root"
+              action="action_transfer_verifier_line"
+              name="Líneas de Verificación"/>
+
+    <!-- Vista tree para verificadores -->
+    <record id="view_transfer_verifier_tree" model="ir.ui.view">
+        <field name="name">stock.transfer.verifier.tree</field>
+        <field name="model">stock.transfer.verifier</field>
+        <field name="arch" type="xml">
+            <tree>
+                <field name="picking_id"/>
+                <field name="create_date"/>
+                <field name="user_id"/>
+            </tree>
+        </field>
+    </record>
+
+    <!-- Vista form para verificadores (con pestañas y botones) -->
+    <record id="view_transfer_verifier_form" model="ir.ui.view">
+        <field name="name">stock.transfer.verifier.form</field>
+        <field name="model">stock.transfer.verifier</field>
+        <field name="arch" type="xml">
+            <form string="Verificación de Transferencia">
+                <header>
+                    <button name="action_scan_barcode" type="object"
+                            string="📷 Escanear" class="btn-primary"/>
+                    <button name="action_validate_transfer" type="object"
+                            string="✅ Validar" class="btn-success"/>
+                </header>
+
+                <sheet>
+                    <!-- Cabecera con título -->
+                    <div class="oe_title">
+                        <h4>
+                            <field name="picking_id" readonly=""/>
+                        </h4>
+                        <h4>
+                            <span>Usuario: </span>
+                            <field name="user_id" readonly="1"/>
+                        </h4>
+                    </div>
+
+                    <!-- Campos principales en columnas -->
+                    <group>
+                        <group>
+<!--                            <field name="user_id" readonly="1"/>-->
+                        </group>
+                        <group>
+                            <field name="picking_id"/>
+                        </group>
+                    </group>
+
+                    <!-- Input escaneo -->
+                    <group>
+                        <field name="barcode_input" placeholder="Escanea un código..." widget="char"/>
+                    </group>
+
+                    <!-- Notebook con pestañas -->
+                    <notebook>
+                        <!-- Productos -->
+                        <page string="📦 Productos Escaneados">
+                            <field name="line_ids">
+                                <tree editable="bottom" decoration-success="result=='ok'"
+                                      decoration-danger="result=='fail'">
+                                    <field name="product_id" options="{'no_create': True}"/>
+                                    <field name="qty_entered" widget="float"/>
+                                    <field name="result"/>
+                                    <field name="allowed_product_ids" invisible="1"/>
+                                </tree>
+                            </field>
+                        </page>
+
+                        <!-- Historial -->
+                        <page string="🕑 Historial">
+                            <field name="log_ids" readonly="1">
+                                <tree>
+                                    <field name="create_date"/>
+                                    <field name="user_id"/>
+                                    <field name="tipo_accion"/>
+                                    <field name="action"/>
+                                    <field name="product_id"/>
+                                    <field name="qty"/>
+                                </tree>
+                            </field>
+                        </page>
+                    </notebook>
+
+                    <!-- Chatter -->
+                    <div class="oe_chatter">
+                        <field name="message_follower_ids" widget="mail_followers"/>
+                        <field name="activity_ids" widget="mail_activity"/>
+                        <field name="message_ids" widget="mail_thread"/>
+                    </div>
+                </sheet>
+            </form>
+        </field>
+    </record>
+
+
+    <!-- Vista tree para líneas -->
+    <record id="view_transfer_verifier_line_tree" model="ir.ui.view">
+        <field name="name">stock.transfer.verifier.line.tree</field>
+        <field name="model">stock.transfer.verifier.line</field>
+        <field name="arch" type="xml">
+            <tree>
+                <field name="product_id"/>
+                <field name="qty_entered"/>
+                <field name="result"/>
+            </tree>
+        </field>
+    </record>
+
+    <!-- Vista form para líneas -->
+    <record id="view_transfer_verifier_line_form" model="ir.ui.view">
+        <field name="name">stock.transfer.verifier.line.form</field>
+        <field name="model">stock.transfer.verifier.line</field>
+        <field name="arch" type="xml">
+            <form string="Línea de Verificación">
+                <group>
+                    <field name="verifier_id"/>
+                    <field name="product_id" readonly="1"/>
+                    <field name="qty_entered"/>
+                    <field name="qty_expected" readonly="1"/>
+                    <field name="result" readonly="1"/>
+                    <!-- 👇 Necesario para que funcione el domain -->
+                    <field name="allowed_product_ids" invisible="1"/>
+                </group>
+            </form>
+        </field>
+    </record>
+
+    <!-- Vista tree para historial -->
+    <record id="view_transfer_verifier_log_tree" model="ir.ui.view">
+        <field name="name">stock.transfer.verifier.log.tree</field>
+        <field name="model">stock.transfer.verifier.log</field>
+        <field name="arch" type="xml">
+            <tree>
+                <field name="create_date"/>
+                <field name="user_id"/>
+                <field name="action"/>
+                <field name="product_id"/>
+                <field name="qty"/>
+            </tree>
+        </field>
+    </record>
+
+    <!-- Vista form para historial -->
+    <record id="view_transfer_verifier_log_form" model="ir.ui.view">
+        <field name="name">stock.transfer.verifier.log.form</field>
+        <field name="model">stock.transfer.verifier.log</field>
+        <field name="arch" type="xml">
+            <form string="Historial">
+                <group>
+                    <field name="verifier_id"/>
+                    <field name="create_date"/>
+                    <field name="user_id"/>
+                    <field name="action"/>
+                    <field name="product_id"/>
+                    <field name="qty"/>
+                </group>
+            </form>
+        </field>
+    </record>
+</odoo>

@@ -1,0 +1,163 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<odoo>
+	<data>
+
+		<record model="ir.ui.view" id="request_egress_tree_view">
+			<field name="name">request.egress.tree</field>
+			<field name="model">request.egress</field>
+			<field name="arch" type="xml">
+				<tree string="Solicitud de Préstamo">
+					<field name="employee_id" />
+					<field name="amount" />
+					<field name="rubro_id" />
+					<field name="type_discount" />
+					<field name="state" />
+				</tree>
+			</field>
+		</record>
+
+		<record model="ir.ui.view" id="request_egress_form_view">
+			<field name="name">request.egress.form</field>
+			<field name="model">request.egress</field>
+			<field name="arch" type="xml">
+				<form string="Solicitud de Préstamo">
+					<header>
+						<button name="action_to_delivered" type="object"
+								string="Entregado" invisible="state != 'done'" class="oe_highlight" />
+						<button name="action_done" type="object" string="Aprobado"
+								class="oe_highlight" />
+						<button name="action_rejected" type="object"
+								string="Rechazado"
+								invisible="is_accountant == False or state != 'confirm'"
+								class="oe_highlight" />
+						<button name="action_draft" type="object"
+								string="Regresar a Borrador" invisible="state != 'rejected'" class="oe_highlight" />
+						<button name="action_request" type="object"
+								string="Regresar a Solicitado"
+								invisible="is_accountant == False or state != 'confirm'"/>
+						<button name="action_confirm" type="object"
+								string="Confirmar" invisible="state != 'request'" class="oe_highlight" />
+						<button name="action_draft" type="object"
+								string="Regresar a Borrador" invisible="state != 'request'" />
+						<button name="action_request" type="object"
+								string="Solicitar" invisible="state != 'draft'"/>
+						<field name="state" widget="statusbar" />
+					</header>
+					<sheet>
+						<div class="oe_button_box" name="button_box">
+							<field name="payment_ids" invisible="1" />
+						</div>
+						<div class="oe_title">
+							<h1>
+								<label for="number" string="Nueva Solicitud de Préstamo"
+									   invisible="number != False"/>
+								<field name="number" />
+								<field name="is_accountant" invisible="1" />
+							</h1>
+						</div>
+						<group>
+							<group>
+								<field name="employee_id" />
+								<field name="request_date" />
+								<field name="amount" />
+								<field name="rule_id" options="{'no_create': True}" />
+								<field name="manager_id" />
+								<field name="egress_porcent_max" groups="hr_payroll.group_hr_payroll_manager,hr_payroll.group_hr_payroll_user"/>
+								<field name="egress_num_max_quota" groups="hr_payroll.group_hr_payroll_manager,hr_payroll.group_hr_payroll_user" />
+							</group>
+							<group>
+								<field name="user_applicant_id" />
+								<field name="type_discount" />
+								<field name="fecha_cobro"
+									   invisible="type_discount != 'one_payment'"
+								       required="type_discount == 'one_payment'"/>
+								<field name="numbers_discount"
+									   invisible="type_discount != 'multi_payment'"
+									   required="type_discount == 'multi_payment'"/>
+								<field name="contract_id" invisible="1" />
+								<field name="communication" />
+								<field name="reject_reason"/>
+								<button string='Calcular Cuotas'
+										invisible="type_discount != 'multi_payment' and state in ['done', 'delivered', 'rejected']"
+										type="object" icon="fa-cog" class="oe_highlight"
+										name="generate_lines_quote" />
+							</group>
+						</group>
+						<notebook colspan="4"
+								  invisible="type_discount != 'multi_payment'">
+							<page string="Linea de Cuotas">
+								<field name="request_egress_detail_ids" nolabel="1"
+									   colspan="4">
+									<tree editable="top" create="false" delete="false">
+										<field name="date" />
+										<field name="monto" />
+										<field name="description" />
+										<field name="slip_value" />
+										<field name="net_value" />
+										<button name='%(action_wizard_request_egress_show_payslip_detail)d' type="action"
+												string="Detalle de Nomina" icon="fa-search"/>
+									</tree>
+								</field>
+							</page>
+						</notebook>
+					</sheet>
+					<div class="oe_chatter">
+						<field name="message_follower_ids" widget="mail_followers" />
+						<field name="activity_ids" widget="mail_activity"/>
+						<field name="message_ids" widget="mail_thread" />
+					</div>
+					<footer>
+					</footer>
+				</form>
+			</field>
+		</record>
+
+		<record model="ir.ui.view" id="request_egress_search_view">
+			<field name="name">request.egress.search</field>
+			<field name="model">request.egress</field>
+			<field name="arch" type="xml">
+				<search string="Solicitud de Egreso">
+					<field name="employee_id" />
+					<field name="request_date" />
+					<field name="amount" />
+					<field name="type_discount" />
+					<field name="numbers_discount" />
+					<filter name="state_done" string="Por Pagar" domain="[('state','=','done')]"/>
+				</search>
+			</field>
+		</record>
+
+		<record model="ir.actions.act_window"
+				id="action_request_egress_tree_view">
+			<field name="name">Solicitud de Préstamo</field>
+			<field name="type">ir.actions.act_window</field>
+			<field name="res_model">request.egress</field>
+			<!-- <field name="view_type">form</field> -->
+			<field name="view_mode">tree,form</field>
+			<field name="view_id" ref="request_egress_tree_view" />
+		</record>
+
+		<record model="ir.actions.act_window"
+				id="action_request_egress_tree_account_view">
+			<field name="name">Solicitud de Préstamo</field>
+			<field name="type">ir.actions.act_window</field>
+			<field name="res_model">request.egress</field>
+			<field name="domain">[('state','not in',('draft','request'))]</field>
+			<field name="view_mode">tree,form</field>
+			<field name="context">{'search_default_state_done': 0}</field>
+			<field name="view_id" ref="request_egress_tree_view" />
+		</record>
+
+		<menuitem id="request_egress_menu" name="Préstamos"
+				  parent="hr_payroll.menu_hr_payroll_payslips"
+				  sequence='105'
+				  action="action_request_egress_tree_view" />
+
+		<menuitem id="request_egress_account_talent_menu"
+				  name="Solicitud de Préstamo"
+				  parent="ec_payroll.hr_account_menu"
+				  action="action_request_egress_tree_account_view" />
+
+	</data>
+</odoo>
+		

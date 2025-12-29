@@ -1,0 +1,15 @@
+<odoo>
+    <data>
+        <record id="view_pos_order_tree_inherit_delivery" model="ir.ui.view">
+            <field name="name">pos.order.tree.inherit.delivery</field>
+            <field name="model">pos.order</field>
+            <field name="inherit_id" ref="point_of_sale.view_pos_order_tree"/>
+            <field name="arch" type="xml">
+                <xpath expr="//field[@name='partner_id']" position="after">
+                    <field name="is_delivery_order" string="Orden de entrega" widget="boolean"/>
+                </xpath>
+            </field>
+        </record>
+
+    </data>
+</odoo>

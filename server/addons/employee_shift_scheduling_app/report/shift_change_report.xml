@@ -1,0 +1,85 @@
+<?xml version="1.0" encoding="utf-8"?>
+<odoo>
+    <template id="shift_change_report_temp_doc">
+        <t t-call="web.external_layout">
+             <div class="page" style="font-size:85%">
+                <div class="oe_structure"/>
+
+                 <center>
+                     <h4><b>REPORTE DE EXCEPCIONES - <span t-field="doc.name"/> </b></h4>
+                 </center>
+                <table width="100%">
+                    <tr>
+                        <th width="20%" style="border:1px solid black;padding:5px;">Coordinador Responsable</th>
+                        <td width="30%" style="border:1px solid black;padding:5px;"><span t-field="doc.zonal_responsible.name"/> </td>
+                        <th width="20%" style="border:1px solid black;padding:5px;">Zona</th>
+                        <td width="30%" style="border:1px solid black;padding:5px;"><span t-field="doc.employee_id.department_id.parent_id.name"/></td>
+                    </tr>
+                    <tr>
+                        <th width="20%" style="border:1px solid black;padding:5px;">Empleado</th>
+                        <td width="30%" style="border:1px solid black;padding:5px;"><span t-field="doc.employee_id.name"/> </td>
+                        <th width="20%" style="border:1px solid black;padding:5px;">Total Días</th>
+                        <td width="30%" style="border:1px solid black;padding:5px;"><span t-field="doc.total_days"/> </td>
+                    </tr>
+                </table>
+                 <table width="100%" style="margin-top:25px;">
+                     <tr><td width="100%" colspan="9"><b style="font-size:130%; padding-bottom: 10px; padding-top: 10px; padding-left: 10px;">Día Laboral</b></td> </tr>
+                     <tr>
+                         <th style="border:1px solid black;padding:5px;" width="10%">Cédula</th>
+                         <th style="border:1px solid black;padding:5px;" width="16%">Nombres y apellidos</th>
+                         <th style="border:1px solid black;padding:5px;" width="12%">Fecha inicio de la excepción</th>
+                         <th style="border:1px solid black;padding:5px;" width="12%">Fecha finalización inicio de la excepción</th>
+                         <th style="border:1px solid black;padding:5px;" width="6%">Horas</th>
+                         <th style="border:1px solid black;padding:5px;" width="10%">Cédula de la persona que reemplaza</th>
+                         <th style="border:1px solid black;padding:5px;" width="16%">Nombres completos de la persona que reemplaza</th>
+                         <th style="border:1px solid black;padding:5px;" width="12%">Horario para la excepción</th>
+                         <th style="border:1px solid black;padding:5px;" width="18%">Motivo de la excepción</th>
+                     </tr>
+                     <tr>
+                         <td style="border:1px solid black;padding:5px;" width="10%">
+                             <t t-if="doc.employee_id.identification_id">
+                                 <span t-esc="doc.employee_id.identification_id"/>
+                             </t>
+                             <t t-else="">
+                                 <span t-esc="doc.employee_id.passport_id"/>
+                             </t>
+                        </td>
+                         <td style="border:1px solid black;padding:5px;" width="16%"><span t-esc="doc.employee_id.name"/></td>
+                         <td style="border:1px solid black;padding:5px;" width="12%"><span t-esc="doc.date_from.strftime('%Y/%m/%d')"/></td>
+                         <td style="border:1px solid black;padding:5px;" width="12%"><span t-esc="doc.date_to.strftime('%Y/%m/%d')"/></td>
+                         <td style="border:1px solid black;padding:5px;" width="6%"><span t-esc="doc.total_hours"/></td>
+                         <td style="border:1px solid black;padding:5px;" width="10%">
+                             <t t-if="doc.sustitute_employee_id.identification_id">
+                                <span t-esc="doc.sustitute_employee_id.identification_id"/>
+                             </t>
+                             <t t-else="">
+                                 <span t-esc="doc.sustitute_employee_id.passport_id"/>
+                             </t>
+                         </td>
+                         <td style="border:1px solid black;padding:5px;" width="16%"><span t-esc="doc.sustitute_employee_id.name"/></td>
+                         <td style="border:1px solid black;padding:5px;" width="16%">
+                             <t t-if="doc.type_periode == 'resource'">
+                                <span t-esc="doc.employee_id.resource_calendar_id.name"/>
+                             </t>
+                             <t t-else="">
+                                 <t t-foreach="doc.ranges" t-as="one_range">
+                                     <span t-esc="one_range.name"/>
+                                     <br/>
+                                 </t>
+                             </t>
+                         </td>
+                         <td style="border:1px solid black;padding:5px;" width="18%"><span t-esc="doc.reason_for_the_exception"/></td>
+                     </tr>
+                 </table>
+                <div class="oe_structure"/>
+            </div>
+        </t>
+    </template>
+    <template id="shift_change_report">
+        <t t-call="web.html_container">
+            <t t-foreach="docs" t-as="doc">
+                <t t-call="employee_shift_scheduling_app.shift_change_report_temp_doc"/>
+            </t>
+        </t>
+    </template>
+</odoo>

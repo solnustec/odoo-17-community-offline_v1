@@ -1,0 +1,16 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<templates id="template" xml:space="preserve">
+    <t t-name="point_of_sale.PaymentScreenTop" t-inherit="point_of_sale.PaymentScreenTop" t-inherit-mode="extension">
+    <xpath expr="//div[contains(@class, 'top-content')]" position="replace">
+      <div class="top-content d-flex align-items-center p-2 border-bottom text-center">
+        <div class="button back btn btn-lg btn-secondary" t-on-click="validatePaymentReturn">
+          <i class="fa fa-angle-double-left me-2"/>
+            <span class="back_text">Back</span>
+        </div>
+          <div class="top-content-center flex-grow-1">
+          <h2 class="mb-0">Payment</h2>
+        </div>
+      </div>
+    </xpath>
+  </t>
+</templates>

@@ -1,0 +1,47 @@
+<?xml version="1.0" encoding="utf-8"?>
+<odoo>
+    <data>   
+        <record model="ir.ui.view" id="bi_pos_reports">
+	        <field name="name">res.config.setting.form.extended.view</field>
+	        <field name="model">res.config.settings</field>
+	        <field name="inherit_id" ref="point_of_sale.res_config_settings_view_form"/>
+	        <field name="arch" type="xml">
+	            <xpath expr="//block[@id='pos_interface_section']" position="before">
+	                <h2 name="POS Reports">POS Payment Configuration</h2>
+	                <div class="row mt16 o_settings_container" id="pos_payment">
+	                    <div class="col-12 col-lg-6 o_setting_box" id="pos_payment_config">
+	                    	<div class="o_setting_left_pane">
+                                <field name="allow_pos_payment"/>
+                            </div>
+	                        <div class="o_setting_right_pane">
+	                            <div>
+	                                <label for="allow_pos_payment"/>
+	                            </div>
+	                        </div>
+	                    </div>
+	                    <div class="col-12 col-lg-6 o_setting_box">
+	                    	<div class="o_setting_left_pane">
+                                <field name="allow_pos_invoice"/>
+                            </div>
+	                        <div class="o_setting_right_pane">
+	                            <div>
+	                                <label for="allow_pos_invoice"/>
+	                            </div>
+	                        </div>
+	                    </div>
+						<div class="col-12 col-lg-6 o_setting_box" id="pos_payment_config">
+	                    	<div class="o_setting_left_pane">
+                                <field name="allow_all_invoices"/>
+                            </div>
+	                        <div class="o_setting_right_pane">
+	                            <div>
+	                                <label for="allow_all_invoices" string="Allow Pos All invoices"/>
+	                            </div>
+	                        </div>
+	                    </div>
+	                </div>
+	            </xpath>
+	        </field>
+	    </record>   
+	</data>
+</odoo>

@@ -1,0 +1,57 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<templates id="template" xml:space="preserve">
+    <t t-name="point_of_sale.ProductInfoPopup" t-inherit="point_of_sale.ProductInfoPopup" t-inherit-mode="extension">
+        <xpath expr="//div[@class='section-inventory-body']" position="replace">
+            <div>
+                <!-- Input de búsqueda con referencia -->
+                <input type="text"
+                       class="form-control mb-3"
+                       placeholder="Buscar Almacén"
+                       t-ref="searchWarehouse"
+                       t-model="state.searchQuery"
+                       t-on-input="filterWarehouses"/>
+            </div>
+
+            <div>
+              <label for="citySelect" class="form-label">Ciudad</label>
+              <select id="citySelect"
+                      class="form-select mb-3"
+                      t-model="state.selectedCity"
+                      t-on-change="onCityChange">
+                <option value="">-- Todas --</option>
+                <t t-foreach="state.cities" t-as="c" t-key="c.value">
+                  <option t-att-value="c.value"><t t-esc="c.label"/></option>
+                </t>
+              </select>
+            </div>
+
+
+            <div style="max-height: 400px; overflow-y: auto; border: 1px solid #ddd; padding: 10px; border-radius: 5px;">
+                <t t-if="state.filteredWarehouses.length &gt; 0">
+                    <table class="table table-striped">
+                        <thead>
+                            <tr>
+                                <th style="text-align: center;">Nombre del Almacén</th>
+                                <th style="text-align: center;">Unidades Disponibles</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            <!-- Usar ID único como t-key -->
+                            <t t-foreach="state.filteredWarehouses" t-as="warehouse" t-key="warehouse.id">
+                                <tr>
+                                    <td style="text-align: center;">
+                                        <t t-esc="warehouse.name"/>
+                                    </td>
+                                    <td style="text-align: center;">
+                                        <t t-esc="warehouse.available_quantity"/>
+                                    </td>
+                                </tr>
+                            </t>
+                        </tbody>
+                    </table>
+                </t>
+                <p t-else="">No se encuentran almacenes disponibles para este producto.</p>
+            </div>
+        </xpath>
+    </t>
+</templates>

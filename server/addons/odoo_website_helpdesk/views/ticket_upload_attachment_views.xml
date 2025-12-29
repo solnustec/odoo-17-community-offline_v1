@@ -1,0 +1,19 @@
+<odoo>
+    <record id="view_ticket_upload_attachment_form" model="ir.ui.view">
+        <field name="name">ticket.upload.attachment.form</field>
+        <field name="model">ticket.upload.attachment</field>
+        <field name="arch" type="xml">
+            <form string="Subir archivo">
+                <group>
+                    <field name="ticket_id" invisible="1"/>
+                    <field name="name"/>
+                    <field name="datas"/>
+                </group>
+                <footer>
+                    <button string="Subir" type="object" name="action_upload" class="btn-primary"/>
+                    <button string="Cancelar" special="cancel"/>
+                </footer>
+            </form>
+        </field>
+    </record>
+</odoo>

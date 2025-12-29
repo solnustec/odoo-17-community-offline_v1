@@ -1,0 +1,15 @@
+<?xml version="1.0" encoding="utf-8"?>
+<odoo>
+    <data>
+        <record id="json_storage_view_form_inherit" model="ir.ui.view">
+            <field name="name">json.storage.form.inherit</field>
+            <field name="model">json.storage</field>
+            <field name="inherit_id" ref="pos_connect_flask.view_json_storage_form"/>
+            <field name="arch" type="xml">
+                <xpath expr="//field[@name='is_access_key']" position="after">
+                    <field name="invoice_id"/>
+                </xpath>
+            </field>
+        </record>
+    </data>
+</odoo>

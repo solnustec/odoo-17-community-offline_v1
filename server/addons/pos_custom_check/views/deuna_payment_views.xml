@@ -1,0 +1,43 @@
+<odoo>
+    <record id="view_deuna_post_form" model="ir.ui.view">
+        <field name="name">deuna.post.form</field>
+        <field name="model">deuna.post</field>
+        <field name="arch" type="xml">
+            <form string="Registro Deuna Post">
+                <sheet>
+                    <group>
+                        <field name="datetime_created" readonly="1"/>
+                        <field name="order_id_name" readonly="1"/>
+                        <field name="transactionId" readonly="1"/>
+                        <field name="status_payment"/>
+                        <field name="data_text" readonly="1" widget="text" style="min-height: 200px"/>
+                    </group>
+                </sheet>
+            </form>
+        </field>
+    </record>
+
+    <record id="view_deuna_post_tree" model="ir.ui.view">
+        <field name="name">deuna.post.tree</field>
+        <field name="model">deuna.post</field>
+        <field name="arch" type="xml">
+            <tree>
+                <field name="datetime_created"/>
+                <field name="order_id_name"/>
+                <field name="transactionId"/>
+                <field name="status_payment"/>
+            </tree>
+        </field>
+    </record>
+
+    <record id="action_deuna_post" model="ir.actions.act_window">
+        <field name="name">Registros Deuna Post</field>
+        <field name="res_model">deuna.post</field>
+        <field name="view_mode">tree,form</field>
+    </record>
+
+    <menuitem id="menu_deuna_post"
+              name="Registros Deuna"
+              parent="point_of_sale.menu_point_config_product"
+              action="action_deuna_post"/>
+</odoo>

@@ -1,0 +1,48 @@
+<?xml version="1.0" encoding="utf-8"?>
+<odoo>
+    <!-- Menú principal para usuarios regulares -->
+    <menuitem id="menu_gamification_custom_dashboard"
+              name="Mis Metas"
+              parent="menu_gamification_custom_root"
+              action="gamification_custom.action_users_dashboard_server"
+              sequence="20"
+              groups="gamification_custom.group_gamification_user"
+    />
+    
+    <!-- Menús solo para administradores -->
+    <menuitem id="menu_gamification_custom_goal_definitions"
+              name="Creación de metas"
+              parent="menu_gamification_custom_root"
+              action="gamification.goal_definition_list_action"
+              sequence="30"
+              groups="gamification_custom.group_gamification_manager"
+    />
+    <menuitem id="menu_gamification_custom_challenges"
+              name="Desafios"
+              parent="menu_gamification_custom_root"
+              action="gamification_custom.action_gamification_challenge_custom"
+              sequence="40"
+              groups="gamification_custom.group_gamification_manager"
+    />
+    <menuitem id="menu_gamification_custom_goals"
+              name="Metas por usuario"
+              parent="menu_gamification_custom_root"
+              action="gamification.goal_list_action"
+              sequence="50"
+              groups="gamification_custom.group_gamification_manager"
+    />
+    <menuitem id="menu_gamification_custom_badges"
+              name="Insignias"
+              parent="menu_gamification_custom_root"
+              action="gamification.badge_list_action"
+              sequence="60"
+              groups="gamification_custom.group_gamification_manager"
+    />
+    <menuitem id="menu_gamification_custom_challenge_history"
+              name="Historial de Desafíos"
+              parent="menu_gamification_custom_root"
+              action="gamification_custom.action_gamification_challenge_history"
+              sequence="70"
+              groups="gamification_custom.group_gamification_manager"
+    />
+</odoo>

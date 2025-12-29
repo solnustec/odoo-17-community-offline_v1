@@ -1,0 +1,83 @@
+<?xml version="1.0" encoding="utf-8"?>
+<odoo>
+    <data>
+        <record id="view_expected_locations_search" model="ir.ui.view">
+            <field name="name">hr.expected.locations.search</field>
+            <field name="model">hr.expected.locations</field>
+            <field name="arch" type="xml">
+                <search>
+                    <field name="name" string="Nombre"/>
+                    <field name="reference" string="Referencia"/>
+                    <field name="last_attendance" string="Última Marcación"/>
+                    <!-- Filtro por estado -->
+                    <filter name="filter_missing"
+                            string="Faltan Marcaciones"
+                            domain="[('status', '=', 'missing')]"/>
+                    <filter name="filter_ok"
+                            string="Marcaciones OK"
+                            domain="[('status', '=', 'ok')]"/>
+                    <!-- Filtro por última marcación hoy -->
+                    <filter name="filter_today"
+                            string="Marcaciones Hoy"
+                            domain="[('last_attendance', '&gt;=', context_today().strftime('%Y-%m-%d 00:00:00')),
+                                    ('last_attendance', '&lt;', (context_today() + relativedelta(days=1)).strftime('%Y-%m-%d 00:00:00'))]"/>
+                </search>
+            </field>
+        </record>
+
+        <record id="view_expected_locations_form" model="ir.ui.view">
+            <field name="name">hr.expected.locations.form</field>
+            <field name="model">hr.expected.locations</field>
+            <field name="arch" type="xml">
+                <form string="Alerta de marcación">
+                    <sheet>
+                        <group>
+                            <field name="name" string="Nombre"/>
+                            <field name="reference" string="Referencia"/>
+                            <field name="last_attendance" string="Última Marcación" readonly="1"/>
+                            <field name="status" string="Estado" readonly="1"/>
+                        </group>
+                    </sheet>
+                    <div class="oe_chatter">
+                        <field name="message_follower_ids" widget="mail_followers"/>
+                        <field name="activity_ids" widget="mail_activity"/>
+                        <field name="message_ids" widget="mail_thread"/>
+                    </div>
+                </form>
+            </field>
+        </record>
+
+        <record id="view_expected_locations_tree" model="ir.ui.view">
+            <field name="name">hr.expected.locations.tree</field>
+            <field name="model">hr.expected.locations</field>
+            <field name="arch" type="xml">
+                <tree string="Alerta de marcaciones" decoration-danger="status == 'missing'" decoration-success="status == 'ok'">
+                    <field name="name" string="Nombre"/>
+                    <field name="reference" string="Referencia"/>
+                    <field name="last_attendance" string="Última Marcación"/>
+                    <field name="status" string="Estado"/>
+                </tree>
+            </field>
+        </record>
+
+        <record id="action_expected_locations" model="ir.actions.act_window">
+            <field name="name">Alerta de marcaciones</field>
+            <field name="type">ir.actions.act_window</field>
+            <field name="res_model">hr.expected.locations</field>
+            <field name="view_mode">tree,form</field>
+            <field name="search_view_id" ref="view_expected_locations_search"/>
+            <field name="context">{'search_default_filter_missing': 1}</field>
+            <field name="help" type="html">
+                <p class="oe_view_nocontent_create">
+                    Crea una nueva ubicación esperada para monitorear sus marcaciones.
+                </p>
+            </field>
+        </record>
+
+        <menuitem id="menu_expected_locations"
+                  name="Alerta de marcaciones"
+                  parent="hr_attendance.menu_hr_attendance_root"
+                  action="action_expected_locations"
+                  sequence="8"/>
+    </data>
+</odoo>

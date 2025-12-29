@@ -1,0 +1,335 @@
+<?xml version="1.0" encoding="utf-8"?>
+<odoo>
+    <!--    vista tree api monitor-->
+    <record id="view_api_monitor_tree" model="ir.ui.view">
+        <field name="name">api.monitor.tree</field>
+        <field name="model">api.monitor</field>
+        <field name="arch" type="xml">
+            <tree decoration-success="status=='active'"
+                  decoration-warning="status=='warning'"
+                  decoration-danger="status=='inactive'">
+                <field name="name"/>
+                <field name="endpoint"/>
+                <field name="status" widget="badge"
+                       decoration-success="status=='active'"
+                       decoration-warning="status=='warning'"
+                       decoration-danger="status=='inactive'"/>
+                <field name="last_request_date"/>
+                <field name="last_check_date"/>
+                <field name="request_count"/>
+                <field name="inactive_count"/>
+                <field name="active" widget="boolean_toggle"/>
+            </tree>
+        </field>
+    </record>
+
+
+    <!-- Acción para Logs -->
+    <record id="action_api_monitor_log" model="ir.actions.act_window">
+        <field name="name">Historial de Verificaciones</field>
+        <field name="res_model">api.monitor.log</field>
+        <field name="view_mode">tree,form</field>
+        <field name="context">{}</field>
+    </record>
+
+    <!-- Vista Form (Formulario) -->
+    <record id="view_api_monitor_form" model="ir.ui.view">
+        <field name="name">api.monitor.form</field>
+        <field name="model">api.monitor</field>
+        <field name="arch" type="xml">
+            <form>
+                <header>
+                    <button name="check_status"
+                            string="Verificar Ahora"
+                            type="object"
+                            class="oe_highlight"/>
+                    <field name="status"
+                           widget="statusbar"
+                           statusbar_visible="active,warning,inactive"/>
+                </header>
+                <sheet>
+                    <div class="oe_button_box" name="button_box">
+                        <button name="%(action_api_monitor_log)d"
+                                type="action"
+                                class="oe_stat_button"
+                                icon="fa-history"
+                                context="{'search_default_monitor_id': active_id}">
+                            <div class="o_stat_info">
+                                <field name="request_count"
+                                       widget="statinfo"
+                                       string="Peticiones"/>
+                            </div>
+                        </button>
+                        <button name="%(action_api_monitor_log)d"
+                                type="action"
+                                class="oe_stat_button"
+                                icon="fa-exclamation-triangle"
+                                context="{'search_default_monitor_id': active_id, 'search_default_error': 1}">
+                            <div class="o_stat_info">
+                                <field name="inactive_count"
+                                       widget="statinfo"
+                                       string="Fallos"/>
+                            </div>
+                        </button>
+                    </div>
+
+<!--                    <div class="o_ribbon bg-danger"-->
+<!--                         modifiers="{'invisible': [('status', '!=', 'inactive')]}">-->
+<!--                        Inactiva-->
+<!--                    </div>-->
+
+                    <group>
+                        <group string="Información General">
+                            <field name="name"/>
+                            <field name="endpoint"/>
+                            <field name="active"/>
+                        </group>
+                        <group string="Configuración de Monitoreo">
+                            <field name="check_interval"/>
+                            <field name="max_delay"/>
+                        </group>
+                    </group>
+
+                    <group string="Estado Actual">
+                        <group>
+                            <field name="last_request_date"/>
+                            <field name="last_check_date"/>
+                        </group>
+                        <group>
+                            <field name="last_inactive_date"/>
+                        </group>
+                    </group>
+
+                    <group string="Notificaciones">
+                        <group>
+                            <field name="notify_on_inactive"/>
+                        </group>
+                        <group>
+                            <field name="notify_push" widget="many2many_tags"
+                                   modifiers="{'invisible': [('notify_on_inactive', '=', False)], 'required': [('notify_on_inactive', '=', True)]}"/>
+                        </group>
+                    </group>
+
+                    <notebook>
+                        <page string="Historial de Verificaciones">
+                            <field name="log_ids" readonly="1">
+                                <tree decoration-success="log_type=='success'"
+                                      decoration-warning="log_type=='warning'"
+                                      decoration-danger="log_type=='error'"
+                                      create="false"
+                                      edit="false">
+                                    <field name="check_date"/>
+                                    <field name="log_type" widget="badge"/>
+                                    <field name="message"/>
+                                </tree>
+                            </field>
+                        </page>
+                    </notebook>
+                </sheet>
+            </form>
+        </field>
+    </record>
+    <!-- Vista Kanban (Dashboard) -->
+    <record id="view_api_monitor_kanban" model="ir.ui.view">
+        <field name="name">api.monitor.kanban</field>
+        <field name="model">api.monitor</field>
+        <field name="arch" type="xml">
+            <kanban class="o_kanban_dashboard">
+                <field name="name"/>
+                <field name="endpoint"/>
+                <field name="status"/>
+                <field name="last_request_date"/>
+                <field name="request_count"/>
+                <field name="inactive_count"/>
+                <templates>
+                    <t t-name="kanban-box">
+                        <div t-attf-class="oe_kanban_card oe_kanban_global_click
+                                          #{record.status.raw_value == 'active' ? 'border-success' :
+                                            record.status.raw_value == 'warning' ? 'border-warning' :
+                                            'border-danger'}"
+                             style="border-width: 3px;">
+                            <div class="o_kanban_card_header">
+                                <div class="o_kanban_card_header_title">
+                                    <strong>
+                                        <field name="name"/>
+                                    </strong>
+                                </div>
+                            </div>
+                            <div class="container o_kanban_card_content mt-2">
+                                <div class="row">
+                                    <div class="col-12 text-center mb-2">
+                                        <span class="badge"
+                                              t-att-class="record.status.raw_value == 'active' ? 'badge-success' :
+                                                          record.status.raw_value == 'warning' ? 'badge-warning' :
+                                                          'badge-danger'"
+                                              style="font-size: 14px; padding: 5px 15px;">
+                                            <field name="status"/>
+                                        </span>
+                                    </div>
+                                </div>
+                                <div class="row">
+                                    <div class="col-12">
+                                        <small class="text-muted">Endpoint:</small>
+                                        <br/>
+                                        <span style="font-size: 11px;">
+                                            <field name="endpoint"/>
+                                        </span>
+                                    </div>
+                                </div>
+                                <hr class="mt-2 mb-2"/>
+                                <div class="row">
+                                    <div class="col-6">
+                                        <small class="text-muted">Última petición:</small>
+                                        <br/>
+                                        <strong>
+                                            <field name="last_request_date" widget="relative"/>
+                                        </strong>
+                                    </div>
+                                    <div class="col-6">
+                                        <small class="text-muted">Peticiones:</small>
+                                        <br/>
+                                        <strong>
+                                            <field name="request_count"/>
+                                        </strong>
+                                    </div>
+                                </div>
+                                <div class="row mt-2" t-if="record.inactive_count.raw_value &gt; 0">
+                                    <div class="col-12">
+                                        <small class="text-danger">
+                                            <i class="fa fa-exclamation-triangle"/>
+                                            <field name="inactive_count"/>
+                                            fallos registrados
+                                        </small>
+                                    </div>
+                                </div>
+                            </div>
+                            <div class="o_kanban_card_manage_pane dropdown-menu" role="menu">
+                                <a type="edit" role="menuitem" class="dropdown-item">Editar</a>
+                                <a name="check_status" type="object" role="menuitem" class="dropdown-item">
+                                    Verificar Ahora
+                                </a>
+                            </div>
+                        </div>
+                    </t>
+                </templates>
+            </kanban>
+        </field>
+    </record>
+
+    <!-- Vista de Búsqueda -->
+    <record id="view_api_monitor_search" model="ir.ui.view">
+        <field name="name">api.monitor.search</field>
+        <field name="model">api.monitor</field>
+        <field name="arch" type="xml">
+            <search>
+                <field name="name"/>
+                <field name="endpoint"/>
+                <filter string="Activas" name="active" domain="[('status', '=', 'active')]"/>
+                <filter string="Con Advertencia" name="warning" domain="[('status', '=', 'warning')]"/>
+                <filter string="Inactivas" name="inactive" domain="[('status', '=', 'inactive')]"/>
+                <separator/>
+                <filter string="Archivadas" name="archived" domain="[('active', '=', False)]"/>
+                <group expand="0" string="Agrupar por">
+                    <filter string="Estado" name="group_status" context="{'group_by': 'status'}"/>
+                </group>
+            </search>
+        </field>
+    </record>
+
+
+    <!-- ============================================ -->
+    <!-- VISTAS PARA LOG (HISTORIAL)                 -->
+    <!-- ============================================ -->
+
+    <!-- Vista Tree para Logs -->
+    <record id="view_api_monitor_log_tree" model="ir.ui.view">
+        <field name="name">api.monitor.log.tree</field>
+        <field name="model">api.monitor.log</field>
+        <field name="arch" type="xml">
+            <tree decoration-success="log_type=='success'"
+                  decoration-warning="log_type=='warning'"
+                  decoration-danger="log_type=='error'"
+                  create="false"
+                  edit="false"
+                  delete="false">
+                <field name="check_date"/>
+                <field name="monitor_id"/>
+                <field name="log_type" widget="badge"/>
+                <field name="message"/>
+            </tree>
+        </field>
+    </record>
+    <!-- Vista Form para Logs -->
+    <record id="view_api_monitor_log_form" model="ir.ui.view">
+        <field name="name">api.monitor.log.form</field>
+        <field name="model">api.monitor.log</field>
+        <field name="arch" type="xml">
+            <form create="false" edit="false" delete="false">
+                <sheet>
+                    <group>
+                        <group>
+                            <field name="monitor_id"/>
+                            <field name="check_date"/>
+                        </group>
+                        <group>
+                            <field name="log_type" widget="badge"/>
+                        </group>
+                    </group>
+                    <group string="Mensaje">
+                        <field name="message" nolabel="1"/>
+                    </group>
+                </sheet>
+            </form>
+        </field>
+    </record>
+
+    <!-- Vista de Búsqueda para Logs -->
+    <record id="view_api_monitor_log_search" model="ir.ui.view">
+        <field name="name">api.monitor.log.search</field>
+        <field name="model">api.monitor.log</field>
+        <field name="arch" type="xml">
+            <search>
+                <field name="monitor_id"/>
+                <field name="message"/>
+                <filter string="Éxito" name="success" domain="[('log_type', '=', 'success')]"/>
+                <filter string="Advertencias" name="warning" domain="[('log_type', '=', 'warning')]"/>
+                <filter string="Errores" name="error" domain="[('log_type', '=', 'error')]"/>
+                <separator/>
+                <filter string="Hoy" name="today"
+                        domain="[('check_date', '&gt;=', datetime.datetime.now().replace(hour=0, minute=0, second=0))]"/>
+                <filter string="Esta Semana" name="week"
+                        domain="[('check_date', '&gt;=', (context_today() - datetime.timedelta(days=7)).strftime('%Y-%m-%d'))]"/>
+                <group expand="0" string="Agrupar por">
+                    <filter string="API" name="group_monitor" context="{'group_by': 'monitor_id'}"/>
+                    <filter string="Tipo" name="group_type" context="{'group_by': 'log_type'}"/>
+                    <filter string="Fecha" name="group_date" context="{'group_by': 'check_date:day'}"/>
+                </group>
+            </search>
+        </field>
+    </record>
+
+
+    <!--    action action_api_monitor-->
+    <record id="action_api_monitor" model="ir.actions.act_window">
+        <field name="name">Api Monitor</field>
+        <field name="res_model">api.monitor</field>
+        <field name="view_mode">tree,form</field>
+        <field name="view_id" ref="view_api_monitor_tree"/>
+    </record>
+
+
+
+    <menuitem id="menu_api_monitor" parent="menu_product_warehouse_sale_summary_error" name="Api monitor"
+              action="action_api_monitor"/>
+    <menuitem id="menu_api_monitor_history" parent="menu_api_monitor" name="APIs Monitoreadas"
+              action="action_api_monitor"
+              sequence="10"/>
+    <!-- Submenú: Historial -->
+    <menuitem id="menu_api_monitor_logs"
+              name="Historial"
+              parent="menu_api_monitor"
+              action="action_api_monitor_log"
+              sequence="20"/>
+
+
+</odoo>

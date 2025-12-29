@@ -1,0 +1,75 @@
+<?xml version="1.0" encoding="utf-8"?>
+<odoo>
+    <template id="shift_allocation_report_temp_doc">
+        <t t-call="web.external_layout">
+             <div class="page" style="font-size:85%">
+                <div class="oe_structure"/>
+
+                 <center>
+                     <h4><b>Asignación de turno - <span t-field="doc.name"/> </b></h4>
+                 </center>
+                <table width="100%">
+                    <tr>
+                        <th width="20%" style="border:1px solid black;padding:5px;">Employee</th>
+                        <td width="30%" style="border:1px solid black;padding:5px;"><span t-field="doc.employee_id.name"/> </td>
+                        <th width="20%" style="border:1px solid black;padding:5px;">From Date</th>
+                        <td width="30%" style="border:1px solid black;padding:5px;"><span t-field="doc.from_date"/> </td>
+                    </tr>
+                    <tr>
+                        <th width="20%" style="border:1px solid black;padding:5px;">Responsible</th>
+                        <td width="30%" style="border:1px solid black;padding:5px;"><span t-field="doc.user_id.name"/> </td>
+                        <th width="20%" style="border:1px solid black;padding:5px;">To Date</th>
+                        <td width="30%" style="border:1px solid black;padding:5px;"><span t-field="doc.to_date"/> </td>
+                    </tr>
+                    <tr>
+                        <th width="20%" style="border:1px solid black;padding:5px;">Horario</th>
+                        <td width="30%" style="border:1px solid black;padding:5px;"><span t-field="doc.shift_id.resource_calendar_id"/> </td>
+                        <th width="20%" style="border:1px solid black;padding:5px;">Shift</th>
+                        <td width="30%" style="border:1px solid black;padding:5px;"><span t-field="doc.shift_id.name"/> </td>
+                    </tr>
+                </table>
+                 <table width="100%" style="margin-top:25px;">
+                     <tr><td width="100%" colspan="6"><b style="font-size:130%; padding-bottom: 10px; padding-top: 10px; padding-left: 10px;">Working Day</b></td> </tr>
+                     <tr>
+                         <th style="border:1px solid black;padding:5px;" width="22%">Shift</th>
+                         <th style="border:1px solid black;padding:5px;" width="16%">Date of Week</th>
+                         <th style="border:1px solid black;padding:5px;" width="14%">Entrada</th>
+                         <th style="border:1px solid black;padding:5px;" width="14%">Salida</th>
+                         <th style="border:1px solid black;padding:5px;" width="14%">Total de Horas</th>
+                         <th style="border:1px solid black;padding:5px;" width="20%">Observación</th>
+                     </tr>
+                     <tr t-foreach="doc.workday_ids" t-as="line">
+                         <td style="border:1px solid black;padding:5px;" width="22%"><span t-esc="line.shift_id.name"/></td>
+                         <td style="border:1px solid black;padding:5px;" width="16%"><span t-esc="line.date"/></td>
+                         <td style="border:1px solid black;padding:5px;" width="14%"><span t-esc="line.time_in"/></td>
+                         <td style="border:1px solid black;padding:5px;" width="14%"><span t-esc="line.time_out"/></td>
+                         <td style="border:1px solid black;padding:5px;" width="14%"><span t-esc="line.worked_hours"/></td>
+                         <td style="border:1px solid black;padding:5px;" width="20%"><span t-esc="line.observation"/></td>
+                     </tr>
+
+                 </table>
+                 <t t-if="doc.weekend_ids">
+                     <table width="70%" style="margin-top:15px;">
+                         <tr><td width="70%" colspan="7"><b style="font-size:130%;">Week End</b></td> </tr>
+                         <tr>
+                             <th style="border:1px solid black;padding:5px;" width="35%">Day of Week</th>
+                             <th style="border:1px solid black;padding:5px;" width="35%">Date of Week</th>
+                         </tr>
+                         <tr t-foreach="doc.weekend_ids" t-as="line">
+                             <td style="border:1px solid black;padding:5px;" width="25%"><span t-esc="line.week_off_id.name"/></td>
+                             <td style="border:1px solid black;padding:5px;" width="25%"><span t-esc="line.date"/></td>
+                         </tr>
+                     </table>
+                 </t>
+                 <div class="oe_structure"/>
+             </div>
+        </t>
+    </template>
+    <template id="shift_report">
+        <t t-call="web.html_container">
+            <t t-foreach="docs" t-as="doc">
+                <t t-call="employee_shift_scheduling_app.shift_allocation_report_temp_doc"/>
+            </t>
+        </t>
+    </template>
+</odoo>

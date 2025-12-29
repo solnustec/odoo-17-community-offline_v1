@@ -1,0 +1,1171 @@
+<?xml version="1.0" encoding="utf-8"?>
+<template xml:space="preserve" owl="1">
+    <t t-name="sales_report.SalesReport" class="dashboard_for_report_sales">
+        <t t-if="state.error.status">
+            <div class="loader-wrapper fade-loader h-100 bg-white d-flex justify-content-center align-items-center">
+                <i class="fa fa-exclamation-triangle fa-2x text-danger"/>
+                <t class="mt-2 text-muted text-danger mx-3" t-esc="state.error.message"/>
+            </div>
+        </t>
+        <!--        vista solo para grupo de promopckiones-->
+        <t t-if="this.state.is_promotion_user and !this.state.is_purchase_admin">
+            <div class="dashboard_for_report_sales p-1 h-100">
+                <!-- Aviso de productos en carrito (localStorage) -->
+                <t t-if="state.cart.length > 0">
+                    <div class="alert alert-warning alert-dismissible fade show py-2 px-3 mb-2 d-flex align-items-center justify-content-between" role="alert" style="font-size: 0.85rem;">
+                        <div class="d-flex align-items-center flex-wrap" style="gap: 0.5rem;">
+                            <i class="fa fa-shopping-cart me-1"/>
+                            <strong>Carrito pendiente:</strong>
+                            <span class="text-muted">
+                                <t t-foreach="state.cart.slice(0, 3)" t-as="item" t-key="item.id">
+                                    <span class="badge bg-secondary me-1">
+                                        <t t-esc="item.name.substring(0, 20)"/><t t-if="item.name.length > 20">...</t>
+                                        <t t-if="item.brand"> (<t t-esc="item.brand"/>)</t>
+                                        x<t t-esc="item.quantity"/>
+                                    </span>
+                                </t>
+                                <t t-if="state.cart.length > 3">
+                                    <span class="badge bg-info">+<t t-esc="state.cart.length - 3"/> mas</span>
+                                </t>
+                            </span>
+                            <small class="text-danger ms-2">Si no vacia el carrito, estos productos se agregaran a la orden de compra.</small>
+                        </div>
+                        <div class="d-flex" style="gap: 0.5rem;">
+                            <button type="button" class="btn btn-sm btn-outline-danger" t-on-click="clearAllCart" title="Vaciar carrito">
+                                <i class="fa fa-trash"/> Vaciar
+                            </button>
+                        </div>
+                    </div>
+                </t>
+                <div class="row mt-1">
+                    <div class="col-12">
+                        <div class="row container">
+                            <div class="col-2">
+                                <label class="form-label">
+                                    Marca <br/>
+                                    <input list="brands" name="brand" t-model="state.selectedBrand"
+                                           class="form-control form-control-sm"
+                                           t-on-change="onBrandChange"/>
+
+                                    <datalist id="brands">
+                                        <t t-foreach="state.brands" t-as="brand" t-key="brand.id">
+                                            <option t-att-value="brand.name" class="o_input"
+                                                    style="cursor: pointer!important"/>
+                                        </t>
+                                    </datalist>
+                                </label>
+                            </div>
+                            <div class="col-2">
+                                <label class="form-label">
+                                    Laboratorio <br/>
+                                    <input list="labs" name="lab" t-model="state.selectedLaboratory"
+                                           class="form-control form-control-sm"
+                                           t-on-change="onLaboratoryChange"/>
+                                    <datalist id="labs">
+                                        <t t-foreach="state.laboratories" t-as="lab" t-key="lab.id">
+                                            <option t-att-value="lab.name"
+                                                    class="o_field_widget o_required_modifier o_field_selection"
+                                                    style="cursor: pointer!important"/>
+                                        </t>
+                                    </datalist>
+                                </label>
+                            </div>
+                            <div class="col-4">
+                                <input type="text" class="form-control bg-white mt-3"
+                                       t-att-placeholder="state.search_mode === 'product' ? 'Escriba el nombre de un producto...' : 'Escriba el nombre de un laboratorio...'"
+                                       t-model="state.product_query"
+                                       t-on-input="(ev)=> this.onSearchInputProd(ev)"/>
+                            </div>
+                            <div class="col-2">
+                                <div class="form-check d-none">
+                                  <input class="form-check-input" type="checkbox" name="searchMode"
+                                         id="searchModeProduct" value="product" t-on-change="onSearchModeChange"
+                                         t-att-checked="state.search_mode === 'product'"/>
+                                    <label class="form-check-label" for="searchModeProduct">
+                                    Producto
+                                  </label>
+                                </div>
+                            </div>
+
+                        </div>
+
+                    </div>
+                    <!--                    tabla productos-->
+                    <div class="col-12">
+            <div class="col-sm-12 col-md-12 p-0 m-0">
+            <t t-if="state.products_filtered.length > 0 ">
+                <div t-ref="container"
+                     t-att-class="'overflow-y-auto ' + (state.search_mode === 'laboratory' and 'product-table-scroll-labs' or '')"
+                     style="max-height: 70vh; position:relative; font-size:12px;font-weight:500">
+                <table class="table table-sm table-hover ">
+                    <thead class="bg-secondary text-dark fw-bold sticky-top text-dark">
+                        <tr t-if="state.search_mode === 'product'" class="p-2">
+                            <th t-on-click="()=> this.handleSortRow('product_name')"
+                                style="cursor: pointer;">Nombre</th>
+                            <!--                            <th>Acumulable</th>-->
+                            <!--                            <th>Promoción</th>-->
+                            <th>Stock(Unidades)</th>
+                            <th>%D.Esp</th>
+                            <th></th>
+                        </tr>
+                    </thead>
+                    <tbody style="font-size: 14px;  font-weight: 500;">
+                        <t t-foreach="state.products_filtered" t-as="product"
+                           t-key="product.product_id">
+                                <tr t-att-class="{
+                                'product-selected': product.product_id === state.selected_product_id,
+                                'not-sales':product.quantity_sold &lt;= 0,
+                                }">
+                                    <td style="cursor: pointer;">
+                                        <span class="fw-bold product-name-cell"
+                                              t-att-data-product-id="product.product_id">
+                                            <t t-esc="product.product_name" class="fw-bold"/>
+                                            <br/>
+                                            <span><t t-esc="product.brand" /></span>
+                                        </span>
+                                    </td>
+                                    <!--                                    <td>-->
+
+                                    <!--                                    </td>-->
+                                    <!--                                    <td>-->
+
+                                    <!--                                    </td>-->
+                                    <td>
+                                        <t t-esc="product.stock_total or '0'"/>
+                                    </td>
+                                    <td
+                                            class="cursor-pointer">
+                                        <t t-esc="product.discount or '0'"/>
+                                    </td>
+                                    <td>
+                                        <!--                                                        <t>-->
+                                        <a type="button"
+                                           t-on-click="()=>openModal(product.product_id)"
+                                           class="btn btn-outline-primary btn-sm"
+                                           title="Información"
+                                        >
+                                            <i class="fa fa-edit"/>
+                                        </a>
+                                    </td>
+                                </tr>
+                        </t>
+                        </tbody>
+                    </table>
+                </div>
+                </t>
+                <t t-elif="this.state.brand_id != null and state.products_filtered.length == 0">
+                    <span class=" d-flex text-muted text-center text-warning">
+                        No se encontraron productos, intente con otra marca.
+                    </span>
+                </t>
+            </div>
+            </div>
+        </div></div>
+
+            <t t-if="state.selected_product_id and state.modalOpen">
+                <ProductDetailsModal
+                        isOpen="state.modalOpen"
+                        onClose="closeModal"
+                        onOpenCartModal="openCartModal"
+                        lastPurchases="state.lastPurchases"
+                        product="state.cartProductData"
+                        productId="state.selected_product_id"
+                        ProductDetails="state.selectedProductDetails"
+                        laboratories="state.laboratories"
+                        brands="state.brands"
+                        onUpdateProduct="this.onProductUpdated"
+                        is_promotion_user="state.is_promotion_user"
+                        is_purchase_admin="state.is_purchase_admin"
+                />
+            </t>
+        </t>
+
+        <!--        fin vista pra grupo de promociones-->
+        <t t-if="this.state.is_purchase_admin and this.state.is_promotion_user">
+            <div class="dashboard_for_report_sales p-1 h-100">
+                <!-- Aviso de productos en carrito (localStorage) -->
+                <t t-if="state.cart.length > 0">
+                    <div class="alert alert-warning alert-dismissible fade show py-2 px-3 mb-2 d-flex align-items-center justify-content-between" role="alert" style="font-size: 0.85rem;">
+                        <div class="d-flex align-items-center flex-wrap" style="gap: 0.5rem;">
+                            <i class="fa fa-shopping-cart me-1"/>
+                            <strong>Carrito pendiente:</strong>
+                            <span class="text-muted">
+                                <t t-foreach="state.cart.slice(0, 3)" t-as="item" t-key="item.id">
+                                    <span class="badge bg-secondary me-1">
+                                        <t t-esc="item.name.substring(0, 20)"/><t t-if="item.name.length > 20">...</t>
+                                        <t t-if="item.brand"> (<t t-esc="item.brand"/>)</t>
+                                        x<t t-esc="item.quantity"/>
+                                    </span>
+                                </t>
+                                <t t-if="state.cart.length > 3">
+                                    <span class="badge bg-info">+<t t-esc="state.cart.length - 3"/> mas</span>
+                                </t>
+                            </span>
+                            <small class="text-danger ms-2">Si no vacia el carrito, estos productos se agregaran a la orden de compra.</small>
+                        </div>
+                        <button type="button" class="btn btn-sm btn-outline-danger" t-on-click="clearAllCart" title="Vaciar carrito">
+                            <i class="fa fa-trash"/> Vaciar
+                        </button>
+                    </div>
+                </t>
+                <div class="row mt-1">
+                    <div class="col-sm-12 col-md-8 ">
+                        <div class="row p-0 m-0">
+                            <div class="col-2">
+                                <label class="o_field_widget o_field_date" for="start_date">Desde
+                                    <br/>
+                                    <input type="date" id="start_date" name="start_date"
+                                           t-ref="start_date"
+                                           class="o_input cursor-pointer"
+                                           placeholder="Fecha de inicio"
+                                           t-att-value="start_date"
+                                           t-on-change="(ev) => this.onStartDateChange(ev)"/>
+                                </label>
+                            </div>
+                            <div class="col-2">
+                                <label class="o_field_widget o_field_date" for="end_date">Hasta
+                                    <br/>
+                                    <input type="date" id="end_date" name="end_date"
+                                           t-ref="end_date"
+                                           class="o_input "
+                                           t-att-value="end_date"
+                                           t-on-change="(ev) => this.onEndDateChange(ev)"/>
+                                </label>
+                            </div>
+                            <div class="col-1">
+                                <label class="form-label" for="end_date">Buscar
+                                    <br/>
+                                    <button class="btn btn-secondary"
+                                            t-on-click="getSalesInformation">
+                                        <i class="fa fa-search"/>
+                                    </button>
+                                </label>
+                            </div>
+                            <div class="col-1 pt-3">
+                                <button class="btn btn-secondary" t-on-click="getPendingProducts"
+                                        t-att-class="state.pendingProducts ? 'btn-primary' : 'btn-secondary'">
+                                    <i class="fa fa-list"/>
+                                </button>
+                            </div>
+                            <div class="col-2">
+                                <RecordSelector
+                                        resModel="'product.brand'"
+                                        resId="state.selectedBrand"
+                                        update.bind="onUpdateSelectedBrand"
+                                        placeholder="'Marca'"/>
+                                <!--                                        <label class="form-label">-->
+                                <!--                                            Marca-->
+                                <!--                                            <br/>-->
+                                <!--                                            <input list="brands" name="brand" t-model="state.selectedBrand"-->
+                                <!--                                                   class="form-control form-control-sm"-->
+                                <!--                                                   t-on-change="onBrandChange"/>-->
+
+                                <!--                                            <datalist id="brands">-->
+                                <!--                                                <t t-foreach="state.brands" t-as="brand" t-key="brand.id">-->
+                                <!--                                                    <option t-att-value="brand.name" class="o_input"-->
+                                <!--                                                            style="cursor: pointer!important"/>-->
+                                <!--                                                </t>-->
+                                <!--                                            </datalist>-->
+                                <!--                                        </label>-->
+                            </div>
+                            <div class="col-2">
+                                <RecordSelector
+                                        resModel="'product.laboratory'"
+                                        resId="state.selectedLaboratory"
+                                        update.bind="onUpdateSelectedLaboratory"
+                                        placeholder="'Laboratorio'"/>
+                            </div>
+                            <div class="col-2">
+                                <RecordSelector
+                                        resModel="'stock.warehouse'"
+                                        resId="state.selectedWarehouse"
+                                        update.bind="onUpdateSelectedWarehouse"
+                                        placeholder="'Bodega'"/>
+                            </div>
+                        </div>
+                    </div>
+                    <div class="cols-ms-12 col-md-4">
+                        <div class="row p-0 m-0">
+                            <div class="col-sm-12  col-12">
+                                <div class="row p-0 m-0">
+                                    <div class="col-sm-6 col-md-5">
+                                        <button type="button" class="btn btn-primary "
+                                                t-on-click="createPurchaseOrder">
+                                            Guardar
+                                            <i class="fa fa-fw fa-shopping-cart"/>
+                                        </button>
+                                    </div>
+                                    <div class="col-sm-6 col-md-6 col-7 p-0 justify-content-around align-items-center ">
+                                        <span class="badge rounded-pill text-bg-danger cursor-pointer"
+                                              t-on-click="()=> this.warehousesStock('stock_0')">Sin Stock
+                                                </span>
+                                        <span class="badge rounded-pill text-bg-warning cursor-pointer"
+                                              t-on-click="()=> this.warehousesStock('stock_1')">1 a 10
+                                                </span>
+                                        <span class="badge rounded-pill text-bg-success cursor-pointer"
+                                              t-on-click="()=> this.warehousesStock('stock_2')">Más de 10
+                                                </span>
+                                    </div>
+                                </div>
+                            </div>
+                            <div class="col-12">
+                                <div class="mt-1">
+                                    <div class="d-flex align-items-center">
+                                        <select t-on-change="onPurchaseOrderChange" class="form-select"
+                                                style="flex: 1">
+                                            <option value="">Seleccione una orden</option>
+                                            <t t-foreach="state.lastPurchaseOrders" t-as="order"
+                                               t-key="order.id">
+                                                <option t-att-value="order.id">
+                                                    <t t-esc="order.name + ' - ' + order.partner_id[1] + ' (' + order.date_order + ')'"/>
+                                                </option>
+                                            </t>
+                                        </select>
+                                        <button type="button" class="btn btn-outline-secondary ms-2"
+                                                t-on-click="openPurchaseOrderModal"
+                                                title="Ver orden de compra">
+                                                    <i class="fa fa-eye"/>
+                                        </button>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+                <div class="row p-0 m-0">
+                    <div class="col-9 mb-1">
+                        <div class="row p-0 m-0">
+                            <div class="col-6">
+                                <input type="text" class="form-control bg-white" style="width: 100%;"
+                                       t-att-placeholder="state.search_mode === 'product' ? 'Escriba el nombre de un producto...' : 'Escriba el nombre de un laboratorio...'"
+                                       t-model="state.product_query"
+                                       t-on-input="(ev)=> this.onSearchInputProd(ev)"/>
+                            </div>
+                            <div class="col-3">
+                                <button class="btn btn-sm btn-success"
+                                        t-on-click=" ()=> this.exportProductsToExcel()">
+                                    <i class="fa fa-file-excel-o"/>
+                                </button>
+                                <t t-if="this.state.product_code">
+                                            Código: <t class="mx-1" t-esc="this.state.product_code"/>
+                                </t>
+                            </div>
+                            <div class="col-3">
+                                <div class="row">
+                                    <div class="col-3">
+                                        <div class="form-check">
+                                            <input class="form-check-input" type="checkbox" name="searchMode"
+                                                   id="searchModeProduct" value="product"
+                                                   t-on-change="onSearchModeChange"
+                                                   t-att-checked="state.search_mode === 'product'"/>
+                                            <label class="form-check-label" for="searchModeProduct">
+                                                Prod.
+                                            </label>
+                                        </div>
+                                    </div>
+                                    <div class="col-4">
+                                        <div class="form-check">
+                                            <input class="form-check-input" type="checkbox" name="searchMode"
+                                                   id="searchModeLaboratory" value="laboratory"
+                                                   t-on-change="onSearchModeChange"
+                                                   t-att-checked="state.search_mode === 'laboratory'"/>
+                                            <label class="form-check-label" for="searchModeLaboratory">
+                                                Lab.
+                                            </label>
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+                            <!--                        <div class="col-3 float-left">-->
+                            <!--                            <button class="btn btn-outline-secondary text-dark float-end" t-on-click="addNewProduct">Agregar producto-->
+                            <!--                                <i class="fa fa-external-link"/>-->
+                            <!--                            </button>-->
+                            <!--                        </div>-->
+                        </div>
+                    </div>
+                    <div class="col-3">
+                        <t t-if="state.selected_product_id or state.selected_laboratory_row_id">
+                            <div class=" position-relative">
+                                <i class="fa fa-search"
+                                   style="position:absolute; left:10px; top:50%; transform:translateY(-50%); color:#6c757d; pointer-events:none;"/>
+                                <input type="text" class="form-control bg-white"
+                                       style="width: 100%; padding-left: 2rem;"
+                                       placeholder="Buscar bodega..."
+                                       t-model="state.warehouse_query"
+                                       t-on-input="(ev)=> this.onSearchInputWarehouse(ev)"/>
+                            </div>
+                        </t>
+                    </div>
+                </div>
+                <t>
+                    <t t-if="state.loading">
+                        <div class="loader-wrapper fade-loader h-100  d-flex justify-content-center align-items-center"
+                             style="background-color: #f2f3f4">
+                            <i class="fa fa-spinner fa-spin fa-2x text-primary"/>
+                            <p class="mt-2 text-muted text-primary mx-2">Obteniendo información, espere...</p>
+                        </div>
+                    </t>
+                </t>
+
+                <div class="row p-0 m-0">
+                            <!--                tabla de productos-->
+                    <div class="col-sm-9 col-md-9 p-0 m-0">
+                        <t t-if="state.products_filtered.length > 0 ">
+                            <div t-ref="container"
+                                 t-att-class="'overflow-y-auto ' + (state.search_mode === 'laboratory' and 'product-table-scroll-labs' or '')"
+                                 style="max-height: 70vh; position:relative; font-size:12px;font-weight:600">
+                                <table class="table table-sm table-hover ">
+                                    <thead class="bg-secondary text-dark fw-bold text-dark"
+                                           style="position: sticky; top: 0; z-index: 1;">
+                                        <tr t-if="state.search_mode === 'product'" class="p-2">
+                                            <th t-on-click="()=> this.handleSortRow('product_name')"
+                                                style="cursor: pointer;">Nombre
+                                            </th>
+                                            <th t-on-click="()=> this.handleSortRow('quantity_sold')"
+                                                style="cursor: pointer;">Cant(U)
+                                                    </th>
+                                            <th t-on-click="()=> this.handleSortRow('boxes')"
+                                                style="cursor: pointer;">Cajas</th>
+                                            <th t-on-click="()=> this.handleSortRow('units')"
+                                                style="cursor: pointer;">Unids.</th>
+                                            <th t-on-click="()=> this.handleSortRow('stock_total')"
+                                                style="cursor: pointer;">Stock(U)
+                                                    </th>
+                                            <th t-on-click="() => this.handleSortReab()"
+                                                style="cursor: pointer; background-color: #e3f2fd; color: #1976d2; font-weight: bold;">Reab.</th>
+                                            <th>Tot.</th>
+                                            <th>Costo</th>
+                                            <th>CP</th>
+                                            <th>UC</th>
+                                            <th>PVF</th>
+                                            <th>%CP.PVF</th>
+                                            <th>%D.Esp</th>
+                                            <th>%Util</th>
+                                            <th>Inf.</th>
+                                            <th aria-label="Acciones">
+                                                <div class="d-flex align-items-center justify-content-center">
+                                                    <button type="button"
+                                                            class="btn btn-sm btn-outline-danger p-1"
+                                                            t-on-click="clearAllCart"
+                                                            title="Limpiar carrito"
+                                                            style="font-size: 10px; padding: 2px 4px;">
+                                                        <i class="fa fa-trash-o" style="font-size: 10px;"></i>
+                                                    </button>
+                                                </div>
+                                            </th>
+                                            <th aria-label="Opciones">N/D</th>
+                                        </tr>
+                                        <tr t-else="">
+                                            <th style="cursor: pointer;">Laboratorio</th>
+                                            <th>Cant.</th>
+                                            <th colspan="2"></th>
+                                            <th>Stock</th>
+                                            <th>Tot.</th>
+                                            <th>Costo</th>
+                                            <th colspan="5"></th>
+                                            <th>%Util</th>
+                                            <th colspan="2"/>
+                                        </tr>
+                                    </thead>
+                                    <tbody style="font-size: 12px;  font-weight: 600;">
+                                        <t t-if="state.search_mode === 'product'">
+                                            <t t-foreach="state.products_filtered" t-as="product"
+                                               t-key="product.product_id">
+                                                <tr t-att-class="{
+                                                                'product-selected': product.product_id === state.selected_product_id,
+                                                                'not-sales':product.quantity_sold &lt;= 0,
+                                                                }"
+                                                >
+                                                    <td style="cursor: pointer; max-width: 250px;"
+                                                        class="text-black"
+                                                        t-on-mouseenter="(ev) => this.onProductHover(ev, product.product_id)"
+                                                        t-on-mouseleave="(ev) => this.onProductLeave(ev)"
+                                                        t-on-click="() => this.selectProduct(product.product_id)"
+                                                    >
+                                                        <span class="fw-bold product-name-cell"
+                                                              t-att-data-product-id="product.product_id">
+                                                            <t t-esc="product.product_name"
+
+                                                               class="fw-bold"/>
+                                                            <br/>
+                                                            <t t-esc="product.brand "/>
+                                                        </span>
+                                                    </td>
+                                                    <td t-on-click="() => this.selectProduct(product.product_id)"
+                                                        class="text-success cursor-pointer fw-bold">
+                                                                <t t-esc="product.quantity_sold or '0'" class=""/>
+                                                    </td>
+
+                                                    <td t-on-click="() => this.selectProduct(product.product_id)"
+                                                        class=" text-success cursor-pointer fw-bold">
+                                                                <t t-esc="product.boxes or '0'" class="fw-bold"/>
+                                                    </td>
+
+                                                    <td t-on-click="() => this.selectProduct(product.product_id)"
+                                                        class="cursor-pointer">
+                                                                <t t-esc="product.units or '0'"/>
+                                                    </td>
+
+                                                    <td t-on-click="() => this.selectProduct(product.product_id)"
+                                                        class="text-primary fw-bold cursor-pointer">
+                                                                <t t-esc="product.stock_total.toFixed(0) or '0'"/>
+                                                    </td>
+
+                                                    <td t-on-click="() => this.openMatildeReplenish(product)"
+                                                        style="background-color: #e3f2fd; color: #1976d2; font-weight: bold; cursor: pointer;">
+                                                                <t t-esc="product.matilde_qty_to_order or '0'"/>
+                                                    </td>
+
+                                                    <td t-on-click="() => this.selectProduct(product.product_id)"
+                                                        class="cursor-pointer">
+                                                                <t t-esc="product.amount_total or '0'"/>
+                                                    </td>
+                                                    <td t-on-click="() => this.selectProduct(product.product_id)"
+                                                        class="cursor-pointer">
+                                                                <t t-esc="product.total_cost or '0'"/>
+                                                    </td>
+                                                    <td t-on-click="() => this.selectProduct(product.product_id)"
+                                                        class="cursor-pointer">
+                                                                <t t-esc="product.avg_standar_price_old or '0'"/>
+                                                    </td>
+                                                    <td t-on-click="() => this.selectProduct(product.product_id)"
+                                                        class="text-info fw-bold cursor-pointer">
+                                                                <t t-esc="product.standar_price_old or '0'"/>
+                                                    </td>
+                                                    <td t-on-click="() => this.selectProduct(product.product_id)"
+                                                        class="cursor-pointer">
+                                                                <t t-esc="product.pvf or '0'"/>
+                                                    </td>
+                                                    <td t-on-click="() => this.selectProduct(product.product_id)"
+                                                        class="text-info fw-bold cursor-pointer">
+                                                                <t t-esc="product.percentage_change_average_cost or '0'"/>
+                                                    </td>
+
+                                                    <td t-on-click="() => this.selectProduct(product.product_id)"
+                                                        class="cursor-pointer">
+                                                                <t t-esc="product.discount or '0'"/>
+                                                    </td>
+                                                    <td t-on-click="() => this.selectProduct(product.product_id)"
+                                                        class="cursor-pointer">
+                                                                <t t-esc="product.utility or '0'"/>
+                                                    </td>
+                                                    <td>
+                                                        <a type="button"
+                                                           t-on-click="()=>openModal(product.product_id)"
+                                                           class="btn btn-outline-secondary btn-sm"
+                                                        >
+                                                            <i class="fa fa-info"/>
+                                                        </a>
+
+                                                    </td>
+
+                                                    <td class="text-center">
+                                                        <t t-set="cartItem"
+                                                           t-value="state.cart.find(i => i.id === product.product_id)"/>
+                                                        <button
+                                                                class="btn btn-outline-primary btn-sm position-relative"
+                                                                t-on-click="() => this.openCartModal(product)"
+                                                                title="Agregar al carrito">
+                                                                    <i class="fa fa-shopping-cart"/>
+                                                            <t t-if="cartItem">
+                                                                <span class="position-absolute top-0 start-100 translate-middle badge rounded-pill bg-light">
+                                                                    <t t-esc="(cartItem.quantity || 0) + (cartItem.freeProductQuantity || 0)"/>
+                                                                </span>
+                                                            </t>
+                                                        </button>
+                                                        <t t-if="state.selected_product_id === product.product_id">
+                                                             <a t-on-click="() => this.sendToSpreedSheet()"
+                                                                class="btn btn-sm btn-outline-success mt-1 mb-0">
+                                                                <i class="fa fa-paper-plane"/>
+                                                            </a>
+                                                        </t>
+
+
+                                                        <t t-set="cartItem"
+                                                           t-value="state.cart.find(i => i.id === product.product_id)"/>
+                                                        <t t-if="cartItem">
+                                                            <button
+                                                                    class="btn btn-sm btn-outline-danger"
+                                                                    title="Eliminar del carrito"
+                                                                    t-on-click="() => this.removeCart(cartItem)">
+                                                                <i class="fa fa-trash"/>
+                                                            </button>
+                                                        </t>
+                                                    </td>
+                                                    <td>
+                                                        <div class="form-check" style="z-index: 100;">
+                                                            <input class="form-check-input" type="checkbox"
+                                                                   t-att-value="product.product_sales_priority"
+                                                                   t-on-change="() => this.onProductNotAvailableForSupplier(product.product_id)"
+                                                                   id="product-not-available"
+                                                                   t-att-checked="product.product_sales_priority"/>
+                                                        </div>
+
+
+                                                    </td>
+                                                </tr>
+                                            </t>
+                                        </t>
+                                        <t t-else="">
+                                            <t t-foreach="state.products_filtered" t-as="lab"
+                                               t-key="lab.laboratory_id">
+                                                <tr t-att-class="{'product-selected': lab.laboratory_id === state.selected_laboratory_row_id}"
+                                                    t-on-click="() => this.selectLaboratory(lab.laboratory_id)"
+                                                    style="cursor:pointer;">
+                                                    <td>
+                                                        <t t-esc="lab.product_name"/>
+                                                    </td>
+                                                    <td class="text-success fw-bold">
+                                                                <t t-esc="lab.quantity_sold or '0'"/>
+                                                    </td>
+                                                    <td colspan="2"/>
+                                                    <td class="text-success fw-bold"><t t-esc="lab.stock_total or '0'"/>
+                                                    </td>
+                                                    <td><t t-esc="(lab.amount_total).toFixed ? lab.amount_total.toFixed(3) : lab.amount_total"/>
+                                                    </td>
+                                                    <td><t t-esc="(lab.total_cost).toFixed ? lab.total_cost.toFixed(3) : lab.total_cost"/>
+                                                    </td>
+                                                    <td colspan="5"/>
+                                                    <td><t t-esc="lab.utility.toFixed ? lab.utility.toFixed(3) : lab.utility"/>
+                                                    </td>
+                                                    <td colspan="2"/>
+                                                </tr>
+                                            </t>
+                                            <tr t-if="state.labs_loading_more">
+                                                <td colspan="15" class="text-center py-2">
+                                                    <i class="fa fa-spinner fa-spin text-primary"/>
+                                                    Cargando más laboratorios...
+                                                </td>
+                                            </tr>
+                                        </t>
+                                    </tbody>
+                                    <tfoot class="fw-bold borderless sticky-bottom bg-white"
+                                           style="position: sticky; bottom: 0;">
+                                        <tr class="text-capitalize table-active sticky-bottom text-primary">
+                                            <t t-if="state.search_mode === 'product'">
+                                                <td class="text-end border">Totales:</td>
+                                                <td>
+                                                    <t t-esc="state.product_totals.quantity_sold"/>
+                                                </td>
+                                                <td>
+                                                    <t t-esc="state.product_totals.boxes"/>
+                                                </td>
+                                                <td>
+                                                    <t t-esc="state.product_totals.units"/>
+                                                </td>
+                                                <td>
+                                                    <t t-esc="state.product_totals.stock_total.toFixed(0)"/>
+                                                </td>
+                                                <!-- Columna Reab. Matilde (sin totales agregados por simplicidad) -->
+                                                <td style="background-color: #e3f2fd;"/>
+                                                <td>$
+                                                    <t t-esc="state.product_totals.amount_total.toFixed(2)"/>
+                                                </td>
+                                                <td>$
+                                                    <t t-esc="state.product_totals.total_cost.toFixed(2)"/>
+                                                </td>
+                                                <td/>
+                                                <td/>
+                                                <td/>
+                                                <td>
+                                                    <t t-esc="state.product_totals.discount.toFixed(2)"/>
+                                                </td>
+                                                <td/>
+                                                <td>
+                                                    <t t-esc="state.product_totals.utility.toFixed(2)"/>
+                                                </td>
+
+                                                <td class="text-success" colspan="3">$
+                                                    <t
+                                                            t-esc="state.product_totals.utilidad_bruta.toFixed(3)"/>
+                                                </td>
+                                            </t>
+                                            <t t-else="">
+                                                <td class="text-end border">Totales:</td>
+                                                <td>
+                                                    <t t-esc="state.product_totals.quantity_sold"/>
+                                                </td>
+                                                <td colspan="2"/>
+                                                <td>
+                                                    <t t-esc="state.product_totals.stock_total"/>
+                                                </td>
+                                                <td>$
+                                                    <t t-esc="state.product_totals.amount_total.toFixed(3)"/>
+                                                </td>
+                                                <td>$
+                                                    <t t-esc="state.product_totals.total_cost.toFixed(3)"/>
+                                                </td>
+                                                <td colspan="5"/>
+                                                <td>
+                                                    <t t-esc="state.product_totals.utility.toFixed(3)"/>
+                                                </td>
+                                                <td colspan="2"/>
+                                            </t>
+                                        </tr>
+                                    </tfoot>
+                                </table>
+                            </div>
+                        </t>
+                        <t t-elif="this.state.brand_id != null and state.products_filtered.length == 0">
+                            <span class=" d-flex text-muted text-center text-warning">
+                                No se encontraron productos, intente con otra marca.
+                            </span>
+                        </t>
+                    </div>
+
+                    <!--                table de almacenes-->
+                    <div class="cols-sm-3 col-md-3 m-0 p-0">
+
+                        <t t-if="this.state.loading_warehouses">
+                            <div class="d-flex justify-content-center align-items-center h-100">
+                                <i class="fa fa-spinner fa-spin fa-2x text-primary"/>
+                                <p class="mt-2 text-muted text-primary mx-2">Cargando información de bodegas...</p>
+                            </div>
+                        </t>
+
+                        <t t-else="">
+                            <div class="overflow-y-auto"
+                                 style="max-height: 70vh;font-size:12px;font-weight:500">
+                                <t t-if="state.warehouses.length > 0">
+                                    <table class="table table-sm table-hover table-responsive fw-bold ">
+                                        <thead class="bg-light  text-dark"
+                                               style="position: sticky; top: 0; z-index: 1;">
+                                            <tr>
+                                                <th t-on-click="()=> this.sortWarehouseData('warehouse_name')"
+                                                    style="cursor:pointer;width:40%">Bodega
+                                                </th>
+                                                <th t-on-click="()=> this.sortWarehouseData('total_sold')"
+                                                    style="cursor:pointer">Vts(U)
+                                                        </th>
+                                                <th t-on-click="()=> this.sortWarehouseData('stock')"
+                                                    style="cursor:pointer"
+                                                    class="text-success">
+                                                            Stock(U)
+                                                        </th>
+                                                <th>Cajas</th>
+                                                <th>Unds</th>
+
+                                                <th>UxC</th>
+                                            </tr>
+                                        </thead>
+                                        <tbody>
+                                            <t t-foreach="state.warehouses" t-as="warehouse"
+                                               t-key="warehouse.warehouse_id">
+                                                <tr class="p-4"
+                                                    t-att-class="{
+                                                            'bg-secondary text-success fw-bold border-dark': this.state.selected_warehouse_id === warehouse.warehouse_id,
+                                                            'stock-status-red': warehouse.stock == 0,
+                                                            'stock-status-orange': warehouse.stock > 0 and warehouse.stock &lt;= 10,
+                                                            'stock-status-green': warehouse.stock > 10
+                                                        }">
+                                                    <td>
+                                                        <t t-esc="warehouse.warehouse_name"/>
+                                                    </td>
+                                                    <td class="text-info">
+                                                        <t t-esc="warehouse.total_sold or 0"/>
+                                                    </td>
+                                                    <td>
+                                                        <t t-esc="warehouse.stock or 0"/>
+                                                    </td>
+                                                    <td>
+                                                        <t t-esc="warehouse.boxes or 0"/>
+                                                    </td>
+                                                    <td>
+                                                        <t t-esc="warehouse.units or 0"/>
+                                                    </td>
+
+                                                    <td>
+                                                        <t t-esc="warehouse.uom or 0"/>
+                                                    </td>
+                                                </tr>
+                                            </t>
+                                        </tbody>
+                                        <tfoot class="sticky-bottom bg-light fw-bold"
+                                               style="position: sticky; bottom: 0;">
+                                            <tr class="table-active text-primary sticky-bottom">
+                                                <td class="text-start border">Bodegas
+                                                    <t t-esc="state.warehouses.length"/>
+                                                </td>
+                                                <td>
+                                                    <t t-esc="state.warehouses_totals.total_sold or 0"/>
+                                                </td>
+                                                <td>
+                                                    <t t-esc="state.warehouses_totals.stock or 0"/>
+                                                </td>
+                                                <td>
+                                                    <t t-esc="state.warehouses_totals.boxes or  0"/>
+                                                </td>
+                                                <td>
+                                                    <t t-esc="state.warehouses_totals.units or  0"/>
+                                                </td>
+                                                <td/>
+                                                <td/>
+                                            </tr>
+                                        </tfoot>
+                                    </table>
+                                </t>
+                            </div>
+                        </t>
+                    </div>
+                    <!--                        torales
+                    -->
+
+                </div>
+            </div>
+
+            <t t-if="state.selected_product_id and state.modalOpen">
+                <ProductDetailsModal
+                        isOpen="state.modalOpen"
+                        onClose="closeModal"
+                        onOpenCartModal="openCartModal"
+                        lastPurchases="state.lastPurchases"
+                        product="state.cartProductData"
+                        productId="state.selected_product_id"
+                        ProductDetails="state.selectedProductDetails"
+                        laboratories="state.laboratories"
+                        brands="state.brands"
+                        onUpdateProduct="this.onProductUpdated"
+                        is_promotion_user="state.is_promotion_user"
+                        is_purchase_admin="state.is_purchase_admin"
+                />
+            </t>
+
+            <!--        modal de carrito-->
+            <t t-if="state.showCartModal">
+                <div class="cart-modal modal fade show"
+                     t-att-style="state.cartModalMinimized ? 'display: block; background: rgba(0,0,0,0); pointer-events: none;' : 'display: block;'"
+                     tabindex="-1" role="document">
+                    <div t-att-class="state.cartModalMinimized ? 'modal-dialog cart-modal-sm' : 'modal-dialog modal-lg modal-dialog-centered modal-dialog-scrollable'"
+                         role="document" style="font-size: 0.83rem;min-width:80%!important">
+                        <div t-att-style="state.cartModalMinimized ? 'pointer-events: auto;' : ''"
+                             class="modal-content">
+                            <div class="modal-header">
+                                <h5 class="modal-title">
+                                    <b>
+                                        <t t-esc="state.cartProductData.product.name"/>
+                                        <t t-if="state.cartProductData.lastPurchase.length > 0 and !state.cartModalMinimized">
+                                            <span class="text-info mx-4">
+                                                Ultimo Precio de Costo
+                                                <small class="form-text text-muted">
+                                                    (
+                                                    <t t-esc="state.cartProductData.lastPurchase[0].price_unit or '0'"/>
+                                                    )
+                                                </small>
+                                            </span>
+                                        </t>
+                                    </b>
+
+                                </h5>
+                                <div class="d-flex gap-2 align-items-center">
+                                    <t t-if="state.cartProductData.matilde_qty_to_order and state.cartProductData.matilde_qty_to_order > 0">
+                                        <span class="text-info fw-bold me-2">
+                                            Cant. sugerida: <t t-esc="state.cartProductData.matilde_qty_to_order"/>
+                                        </span>
+                                    </t>
+                                    <button type="button" class="btn btn-sm btn-outline-primary"
+                                            t-on-click="copyCartProductName"
+                                            title="Copiar resumen al portapapeles">
+                                        <i class="fa fa-copy"/>
+                                    </button>
+                                    <button type="button" class="btn btn-sm btn-outline-secondary"
+                                            t-on-click="toggleCartModalMinimize"
+                                            t-att-title="state.cartModalMinimized ? 'Expandir' : 'Minimizar'">
+                                                <i t-att-class="state.cartModalMinimized ? 'fa fa-expand' : 'fa fa-compress'"/>
+                                            </button>
+                                    <button type="button" class="btn-close" t-on-click="closeCartModal"
+                                            aria-label="Close"/>
+                                </div>
+                            </div>
+                            <t t-if="!state.cartModalMinimized">
+                                <div class="modal-body">
+                                    <div class="row">
+                                        <div class="col-2">
+                                            <label>Cantidad</label>
+                                            <input type="number" class="form-control" min="0"
+                                                   t-model="state.cartProductData.quantity"
+                                                   t-on-input="ev => this.updateCartProductData('quantity', ev.target.value)"/>
+                                        </div>
+                                        <div class="col-2">
+                                            <label>Producto Gratis</label>
+                                            <input type="number" class="form-control" min="0"
+                                                   t-model="state.cartProductData.freeProductQuantity"
+                                                   t-on-input="ev => this.updateCartProductData('freeProductQuantity', ev.target.value)"/>
+
+                                        </div>
+                                        <div class="col-2">
+                                            <label>Descuento (%)</label>
+                                            <input type="number" class="form-control"
+
+                                                   t-model="state.cartProductData.discount"
+                                                   t-on-input="ev => this.updateCartProductData('discount', ev.target.value)"/>
+                                        </div>
+                                        <div class="col-2">
+                                            <label>Unidad de Compra</label>
+                                            <input type="text" t-att-value="state.cartProductData.purchaseUom"
+                                                   class="form-control" readonly="readonly"/>
+
+                                        </div>
+                                        <div class="col-2">
+                                            <label>Costo Unid.
+                                                <t t-if="state.cartProductData.lastPurchase.length > 0">
+                                                    <small class="form-text text-muted">
+                                                        (
+                                                        <t t-esc="state.cartProductData.lastPurchase[0].price_unit or '0'"/>
+                                                        )
+                                                    </small>
+                                                </t>
+
+                                            </label>
+                                            <input type="number" class="form-control"
+                                                   t-model="state.cartProductData.price_unit"
+                                                   t-on-input="ev => this.updateCartProductData('price_unit', ev.target.value)"
+                                            />
+                                        </div>
+                                        <div class="col-2">
+                                            <label>Costo Caja</label>
+                                            <input type="number" class="form-control"
+                                                   t-model="state.cartProductData.price_box"
+                                                   t-on-input="ev => this.updateCartProductData('price_box', ev.target.value)"
+
+                                            />
+                                        </div>
+                                    </div>
+                                    <div class="row mt-2">
+                                        <div class="col-12 d-flex align-items-center gap-3">
+                                            <div class="form-check">
+                                                <input class="form-check-input" type="checkbox" id="promoOneOne"
+                                                       t-att-checked="state.cartProductData.promoOneOne || false"
+                                                       t-on-change="(ev)=> this.onTogglePromoOneOne(ev)"/>
+                                                <label class="form-check-label"
+                                                       for="promoOneOne">Promo 1 + 1</label>
+                                            </div>
+                                            <div class="d-flex align-items-center gap-2">
+                                                <div class="form-check">
+                                                    <input class="form-check-input" type="checkbox"
+                                                           id="promoCustomXY"
+                                                           t-att-checked="state.cartProductData.promoCustomXY || false"
+                                                           t-on-change="(ev)=> this.onTogglePromoCustomXY(ev)"/>
+                                                    <label class="form-check-label"
+                                                           for="promoCustomXY">Promo X + Y
+                                                    </label>
+                                                </div>
+                                                <input type="number" class="form-control form-control-sm"
+                                                       style="width:80px" min="1"
+                                                       placeholder="X"
+                                                       t-att-disabled="!state.cartProductData.promoCustomXY"
+                                                       t-model.number="state.cartProductData.promoX"
+                                                       t-on-input="(ev)=> this.onPromoXYChange('promoX', ev.target.value)"/>
+                                                <span>+</span>
+                                                <input type="number" class="form-control form-control-sm"
+                                                       style="width:80px" min="0"
+                                                       placeholder="Y"
+                                                       t-att-disabled="!state.cartProductData.promoCustomXY"
+                                                       t-model.number="state.cartProductData.promoY"
+                                                       t-on-input="(ev)=> this.onPromoXYChange('promoY', ev.target.value)"/>
+                                            </div>
+                                        </div>
+                                    </div>
+                                    <div class="row mt-2">
+                                        <!--                                        <div class="col-2">-->
+                                        <!--                                            <label>PVF-->
+                                        <!--                                            <t t-if="state.cartProductData.lastPurchase.length > 0">-->
+                                        <!--                                                    <small class="form-text text-muted">-->
+                                        <!--                                                        (-->
+                                        <!--                                                        <t t-esc="state.cartProductData.lastPurchase[0].pvf.toFixed(2)  or '0'"/>-->
+                                        <!--                                                        )-->
+                                        <!--                                                    </small>-->
+                                        <!--                                                </t>-->
+                                        <!--                                            </label>-->
+                                        <input type="number" class="form-control"
+                                               t-model="state.cartProductData.pvf"
+                                               invisible="1" hidden="1"/>
+                                        <!--                                        </div>-->
+                                        <div class="col-6">
+                                            <textarea class="form-control mt-2" rows="2"
+                                                      placeholder="Escriba una nota del producto para la orden de compra..."
+                                                      t-model="state.cartProductData.note"/>
+                                        </div>
+                                        <!--                                        <div class="col-6">-->
+                                        <!--                                            <textarea class="form-control mt-2" rows="2"-->
+                                        <!--                                                      placeholder="Escriba una nota para el punto de venta..."-->
+                                        <!--                                                      t-model="state.cartProductData.note"/>-->
+                                        <!--                                        </div>-->
+
+                                    </div>
+
+                                    <!-- Purchase History Table in Cart Modal -->
+                                    <t t-if="state.cartProductData.lastPurchase.length > 0">
+
+                                        <div class="row mb-2 mt-2">
+                                            <div class="col-12">
+                                                <!--                                                <div class="row">-->
+                                                <!--                                                    <div class="col-4">-->
+                                                <!--                                                        <span class="font-weight-bold text-primary">Compras ultimo mes</span>-->
+                                                <!--                                                    </div>-->
+
+                                                <!--                                                    <div class="col-3">-->
+                                                <!--                                                        <span class="text-primary">Compras</span>-->
+                                                <!--                                                        <span class="text-primary ">-->
+                                                <!--                                                        <t-->
+                                                <!--                                                                t-esc="state.cartProductData.summary_purchases.total_quantity_received or ''"/>-->
+                                                <!--                                                            Unidades-->
+                                                <!--                                                        </span>-->
+                                                <!--                                                    </div>-->
+                                                <!--                                                    <div class="col-1"/>-->
+                                                <!--                                                    <div class="col-3 fw-bold">-->
+                                                <!--                                                        <span class="text-success ">Ventas </span>-->
+                                                <!--                                                        <span class="text-success ">-->
+                                                <!--                                                            <t-->
+                                                <!--                                                                    t-esc="state.cartProductData.summary_sales.total_quantity_sold or ''"/>-->
+                                                <!--                                                            Unidades-->
+                                                <!--                                                        </span>-->
+
+                                                <!--                                                    </div>-->
+                                                <!--                                                </div>-->
+                                            </div>
+
+                                            <!-- Purchase History Table - Shows last 4 purchases -->
+                                            <div class="table-responsive bg-white mt-2">
+                                                <table class="table table-borderless table-sm align-middle table-hover">
+                                                    <thead class="table-light">
+                                                        <tr class="fw-bold">
+                                                            <th>Fecha</th>
+                                                            <th>Descuento</th>
+                                                            <th>PVF</th>
+                                                            <th>Costo (Unitario)</th>
+                                                            <th>Cantidad Pagada</th>
+                                                            <th>Prod. Gratis</th>
+                                                            <th>Total Unidades</th>
+                                                            <th>Proveedor</th>
+                                                            <th>Orden</th>
+                                                            <th>Factura</th>
+                                                        </tr>
+                                                    </thead>
+                                                    <tbody>
+                                                        <tr t-foreach="state.cartProductData.lastPurchase"
+                                                            t-as="purchase"
+                                                            t-key="purchase_index">
+                                                            <td t-esc="purchase.date_order"/>
+                                                            <td t-esc="purchase.discount"/>
+                                                            <td t-esc="purchase.pvf"/>
+                                                            <td t-esc="purchase.price_unit"/>
+                                                            <td t-esc="purchase.paid_quantity"/>
+                                                            <td t-esc="purchase.free_product_qty"/>
+                                                            <td t-esc="purchase.product_qty"/>
+                                                            <td t-esc="purchase.supplier"/>
+                                                            <td>
+                                                                <a t-if="purchase.order_id" href="#"
+                                                                   t-on-click="() => this.openPurchaseOrder(purchase.order_id)">
+                                                                    <t t-esc="purchase.order_name or 'Orden'"/>
+                                                                </a>
+                                                                <t t-if="!purchase.order_id">—</t>
+                                                            </td>
+                                                            <td>
+                                                                <a t-if="purchase.invoice_id" href="#"
+                                                                   t-on-click="() => this.openVendorBill(purchase.invoice_id)">
+                                                                    <t t-esc="purchase.invoice_name or 'Factura'"/>
+                                                                </a>
+                                                                <t t-if="!purchase.invoice_id">—</t>
+                                                            </td>
+                                                        </tr>
+                                                    </tbody>
+                                                </table>
+                                            </div>
+                                        </div>
+                                    </t>
+                                    <t t-else="">
+                                        <p class="text-muted text-primary">No hay información de compras recientes.</p>
+                                    </t>
+                                </div>
+                            </t>
+                            <t t-if="!state.cartModalMinimized">
+                                <div class="modal-footer gap-2">
+                                    <div class="me-auto fw-bold">
+                                        Total Ítem: $
+                                        <t t-esc="state.cartProductData.total || 0"/>
+                                    </div>
+                                    <button type="button" class="btn btn-secondary"
+                                            t-on-click="() => this.state.showCartModal = false">Descartar
+                                    </button>
+                                    <button type="button" class="btn btn-primary" t-on-click="confirmAddToCart">
+                                        Agregar a la orden de compra
+                                    </button>
+                                </div>
+                            </t>
+                        </div>
+                    </div>
+                </div>
+            </t>
+
+            <!-- Tooltip de imagen del producto -->
+            <div id="product-image-tooltip" class="product-image-tooltip" style="display: none;">
+                <div class="tooltip-content">
+                    <img id="product-tooltip-image" class="tooltip-image" alt="Imagen del producto"/>
+                    <div class="tooltip-arrow"></div>
+                </div>
+            </div>
+            <!--            modal para enviar inforamcion a google sheet-->
+            <t t-if="state.isOpenGoogleModal">
+                <GoogleSheetModal
+                        productId="state.selected_product_id"
+                        isOpen="state.isOpenGoogleModal"
+                        onClose="() => handleGoogleModalClose()"
+                        google_url="state.google_spreadsheet_url"
+                        reportData="state.googleSheetData"
+                />
+            </t>
+
+            <!-- Modal de warning para múltiples marcas -->
+            <t t-if="state.showMultiBrandWarning">
+                <div class="modal fade show" style="display: block;" tabindex="-1" role="dialog">
+                    <div class="modal-dialog modal-dialog-centered" role="document">
+                        <div class="modal-content">
+                            <div class="modal-header bg-warning">
+                                <h5 class="modal-title">
+                                    <i class="fa fa-exclamation-triangle me-2"/>
+                                    Múltiples Marcas Detectadas
+                                </h5>
+                                <button type="button" class="btn-close" t-on-click="closeMultiBrandWarning"/>
+                            </div>
+                            <div class="modal-body">
+                                <p class="mb-3">
+                                    El carrito contiene productos de <strong><t t-esc="state.cartBrands.length"/></strong> marcas diferentes.
+                                    Seleccione las marcas que desea eliminar o continúe con la compra.
+                                </p>
+                                <div class="list-group">
+                                    <t t-foreach="state.cartBrands" t-as="brand" t-key="brand.name">
+                                        <label class="list-group-item list-group-item-action d-flex align-items-center gap-2" style="cursor: pointer;">
+                                            <input type="checkbox" class="form-check-input m-0"
+                                                   t-att-checked="state.selectedBrandsToRemove.includes(brand.name)"
+                                                   t-on-change="() => this.toggleBrandSelection(brand.name)"/>
+                                            <div class="flex-grow-1">
+                                                <strong><t t-esc="brand.name"/></strong>
+                                                <small class="text-muted ms-2">(<t t-esc="brand.count"/> producto<t t-if="brand.count > 1">s</t>)</small>
+                                            </div>
+                                        </label>
+                                    </t>
+                                </div>
+                            </div>
+                            <div class="modal-footer">
+                                <button type="button" class="btn btn-outline-secondary" t-on-click="closeMultiBrandWarning">
+                                    Cancelar
+                                </button>
+                                <button type="button" class="btn btn-danger"
+                                        t-att-disabled="state.selectedBrandsToRemove.length === 0"
+                                        t-on-click="removeSelectedBrandProducts">
+                                    <i class="fa fa-trash me-1"/>
+                                    Eliminar Seleccionadas
+                                </button>
+                                <button type="button" class="btn btn-primary" t-on-click="proceedWithMultiBrandPurchase">
+                                    <i class="fa fa-check me-1"/>
+                                    Continuar con Todas
+                                </button>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+                <div class="modal-backdrop fade show"/>
+            </t>
+        </t>
+    </t>
+</template>

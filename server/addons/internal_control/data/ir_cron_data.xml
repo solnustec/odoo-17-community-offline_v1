@@ -1,0 +1,14 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<odoo>
+    <record id="ir_cron_update_survey_assignments" model="ir.cron">
+        <field name="name">Actualizar Estados de Asignaciones de Encuestas</field>
+        <field name="model_id" ref="model_in_survey_campaign_assignment"/>
+        <field name="state">code</field>
+        <field name="code">model.update_all_assignment_states()</field>
+        <field name="interval_number">5</field>
+        <field name="interval_type">minutes</field>
+        <field name="numbercall">-1</field>
+        <field name="doall" eval="False"/>
+        <field name="active" eval="True"/>
+    </record>
+</odoo>

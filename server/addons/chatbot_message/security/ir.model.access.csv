@@ -1,0 +1,6 @@
+id,name,model_id:id,group_id:id,perm_read,perm_write,perm_create,perm_unlink
+access_chatbot_message_city,access.chatbot.message.city,model_chatbot_message_city,base.group_user,1,1,1,1
+access_chatbot_message_location,access.chatbot.message.location,model_chatbot_message_location,base.group_user,1,1,1,1
+access_chatbot_message_product,access.chatbot.message.product,model_chatbot_message_product,base.group_user,1,1,1,1
+access_chatbot_message_interaction,access.chatbot.message.interaction,model_chatbot_message_interaction,base.group_user,1,1,1,1
+access_chatbot_message_delivery,access.chatbot.message.delivery,model_chatbot_message_delivery,base.group_user,1,1,1,1

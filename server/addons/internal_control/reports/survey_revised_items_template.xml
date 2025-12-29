@@ -1,0 +1,56 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<odoo>
+    <!-- Reporte de items revisados: usa plantilla base -->
+    <template id="report_survey_revised_items">
+        <t t-call="internal_control.survey_base_template">
+            <t t-set="report_title" t-value="'Reporte de Items Revisados'"/>
+            <t t-set="content_title" t-value="'Resultados de Items Revisados:'"/>
+            <t t-set="report_type" t-value="'revised_items'"/>
+        </t>
+    </template>
+
+    <!-- Template específico para el contenido de items revisados -->
+    <template id="survey_revised_items_content">
+        <div style="padding: 20px; margin-top: 15px; font-size: 11px;">
+            <!-- Tabla de items revisados (Componente reutilizable) -->
+            <t t-call="internal_control.survey_revised_items_table"/>
+
+            <!-- Resumen -->
+            <div style="background-color: #ecf0f1; padding: 15px; border-radius: 5px; margin-top: 20px;">
+                <h4 style="margin-bottom: 15px; font-weight: bold; color: #333;">Resumen:</h4>
+                <t t-set="total_revisados" t-value="sum(docs.mapped('total_items_revisados'))"/>
+                <t t-set="total_sin_novedad" t-value="sum(docs.mapped('total_items_sin_novedad'))"/>
+                <t t-set="promedio_cumplimiento" t-value="sum(docs.mapped('porcentaje_cumplimiento')) / len(docs) if docs else 0"/>
+                
+                <table style="width: 100%; border-collapse: collapse; margin-bottom: 20px;">
+                    <thead>
+                        <tr style="background-color: #f8f9fa; border: 1px solid #ddd;">
+                            <th style="border: 1px solid #ddd; padding: 8px; text-align: left; font-weight: bold; width: 50%; background-color: #fff; vertical-align: middle;">Métrica</th>
+                            <th style="border: 1px solid #ddd; padding: 8px; text-align: left; font-weight: bold; width: 50%; background-color: #fff; vertical-align: middle;">Valor</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        <tr style="border: 1px solid #ddd; background-color: #fff;">
+                            <td style="border: 1px solid #ddd; padding: 8px; font-weight: 600; color: #555; background-color: #fff;">Total Items Revisados</td>
+                            <td style="border: 1px solid #ddd; padding: 8px; color: #000; background-color: #fff;"><t t-out="total_revisados"/></td>
+                        </tr>
+                        <tr style="border: 1px solid #ddd; background-color: #fff;">
+                            <td style="border: 1px solid #ddd; padding: 8px; font-weight: 600; color: #555; background-color: #fff;">Total Items Sin Novedad</td>
+                            <td style="border: 1px solid #ddd; padding: 8px; color: #000; background-color: #fff;"><t t-out="total_sin_novedad"/></td>
+                        </tr>
+                        <tr style="border: 1px solid #ddd; background-color: #fff;">
+                            <td style="border: 1px solid #ddd; padding: 8px; font-weight: 600; color: #555; background-color: #fff;">Promedio de Cumplimiento</td>
+                            <td style="border: 1px solid #ddd; padding: 8px; color: #000; background-color: #fff;"><t t-out="'%.1f' % promedio_cumplimiento"/>%</td>
+                        </tr>
+                    </tbody>
+                </table>
+            </div>
+
+            <!-- Matriz de Riesgo (Componente reutilizable) -->
+            <t t-call="internal_control.survey_risk_matrix"/>
+
+            <!-- Footer (Componente reutilizable) -->
+            <t t-call="internal_control.survey_footer"/>
+        </div>
+    </template>
+</odoo> 

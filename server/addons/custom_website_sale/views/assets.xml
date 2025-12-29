@@ -1,0 +1,15 @@
+<odoo>
+    <template id="assets_frontend" name="custom_shop assets" inherit_id="website_sale.products_item">
+        <xpath expr="." position="inside">
+            <link rel="stylesheet" type="text/css" href="/custom_website_sale/static/src/css/custom_shop.css"/>
+            <!--            <link rel="stylesheet" type="text/css" href="/custom_website_sale/static/src/js/custom_sale_order.js/"/>-->
+        </xpath>
+    </template>
+    <template id="assets_frontend_sale_order_details" inherit_id="sale.sale_order_portal_content"
+              name="Js sales content order">
+        <xpath expr="." position="inside">
+            <script type="text/javascript" src="/custom_website_sale/static/src/js/custom_sale_order.js/"></script>
+        </xpath>
+    </template>
+
+</odoo>

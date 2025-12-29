@@ -1,0 +1,48 @@
+<?xml version="1.0" encoding="utf-8"?>
+<odoo>
+    <!-- Wizard Form View -->
+    <record id="view_change_salesperson_wizard_form" model="ir.ui.view">
+        <field name="name">change.salesperson.wizard.form</field>
+        <field name="model">change.salesperson.wizard</field>
+        <field name="arch" type="xml">
+            <form string="Cambiar Vendedor">
+                <group>
+                    <field name="sale_order_id" readonly="1"/>
+                    <field name="current_user_id" readonly="1"/>
+                    <field name="new_user_id" options="{'no_create': True, 'no_create_edit': True}"/>
+                </group>
+                <footer>
+                    <button name="action_change_salesperson" string="Cambiar Vendedor" type="object" class="btn-primary"/>
+                    <button string="Cancelar" class="btn-secondary" special="cancel"/>
+                </footer>
+            </form>
+        </field>
+    </record>
+
+    <!-- Action to open the wizard -->
+    <record id="action_change_salesperson_wizard" model="ir.actions.act_window">
+        <field name="name">Cambiar Vendedor</field>
+        <field name="res_model">change.salesperson.wizard</field>
+        <field name="view_mode">form</field>
+        <field name="target">new</field>
+        <field name="binding_model_id" ref="sale.model_sale_order"/>
+        <field name="binding_view_types">form</field>
+    </record>
+
+    <!-- Add button to sale.order form view -->
+    <record id="view_order_form_change_salesperson" model="ir.ui.view">
+        <field name="name">sale.order.form.change.salesperson</field>
+        <field name="model">sale.order</field>
+        <field name="inherit_id" ref="sale.view_order_form"/>
+        <field name="arch" type="xml">
+            <xpath expr="//button[@name='action_quotation_send']" position="after">
+                <button name="%(action_change_salesperson_wizard)d"
+                        string="Cambiar Vendedor"
+                        type="action"
+                        class="btn-secondary"
+                        icon="fa-user-plus"
+                        groups="pragtech_whatsapp_base.group_change_salesperson"/>
+            </xpath>
+        </field>
+    </record>
+</odoo>

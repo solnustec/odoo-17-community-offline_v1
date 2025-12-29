@@ -1,0 +1,91 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<templates id="template" xml:space="preserve">
+    <!-- Template for adding clear all button in pos -->
+    <t t-name="product_parent.OrderLineClearALL" owl="1">
+
+
+       <button class="control-button btn btn-light  rounded-0 fw-bolder"
+               t-on-click="() => this.onClick()">
+           <i class="fa fa-user"/>
+           <span style="padding-left:5px">Historial cliente</span>
+       </button>
+        <div class="bg-white px-md-2 pb-1 w-100" t-if="this.state.institutions.length > 0" t-key="'inst-container-' + (this.state.currentPartnerId || 'none')">
+                <select id="inst-select"
+                            class="form-select mt-2 institutions-field"
+                            t-att-value="this.state.selected || ''"
+                            t-on-change="onInstitutionChange"
+                            t-att-disabled="this.state.institutions.length === 0"
+                            t-key="'inst-select-' + (this.state.currentPartnerId || 'none')">
+                        <option value="" t-att-selected="!this.state.selected">-- Selecciona una institución --</option>
+                        <option t-foreach="this.state.institutions"
+                                t-as="inst"
+                                t-key="inst.id"
+                                t-att-value="inst.id"
+                                t-att-selected="this.state.selected == inst.id">
+                  <t t-esc="inst.name"/>
+                </option>
+              </select>
+        </div>
+
+   </t>
+
+
+    <t t-name="bi_pos_check_info.OrderLinePopup" owl="1">
+        <div class="popup popup-CheckInfoPopup"
+             style="max-width: 700px; padding: 20px; border-radius: 8px; background-color: white; box-shadow: 0 0 15px rgba(0, 0, 0, 0.5);">
+        <div class="modal-header"
+             style="color: black; display: flex; flex-direction: column; align-items: flex-start; gap: 10px;">
+            <div style="display: flex; gap: 10px; width: 100%;">
+               <input type="number" class="form-control" placeholder="Ingrese cédula o R.U.C" style="flex: 1;"
+                      id="history" t-att-value="state.vatClient"
+                      t-on-input="onInputChange"/>
+                <button class="btn btn-primary" t-on-click="searchClient">Buscar</button>
+            </div>
+        </div>
+
+            <div class="text-start" style="padding-top:15px;padding-bottom:15px;padding-left:10px;">
+            <h6 class="modal-title">Filtro por fechas</h6>
+        </div>
+            <!-- Inputs de fecha para filtrar -->
+            <div class="row mx-auto" style="align-items: flex-end;">
+            <div class="col-md-4 text-start">
+                <label class="text-muted">Fecha de inicio</label>
+                <input type="date" id="startDate" class="form-control" placeholder="Fecha inicio"/>
+            </div>
+                <div class="col-md-4 text-start">
+                <label class="text-muted">Fecha fin</label>
+                    <input type="date" id="endDate" class="form-control" placeholder="Fecha fin"/>
+            </div>
+                <div class="col-md-4">
+                <button class="btn btn-primary w-100" t-on-click="filterByDate">Filtrar</button>
+            </div>
+        </div>
+            <hr/>
+
+            <div class="modal-body" style="margin-top: 15px; max-height: 300px; overflow-y: auto;">
+            <table class="table table-striped">
+                <thead id="tableHeaders">
+                    <tr>
+                        <th>ITEM</th>
+                        <th>CANTIDAD</th>
+                        <th>PVP $</th>
+                        <th>% DESC</th>
+                        <th>DEVOL</th>
+                    </tr>
+                </thead>
+                <tbody id="tableBody"></tbody>
+            </table>
+        </div>
+
+            <footer class="footer modal-footer"
+                    style="margin-top: 15px; display: flex; justify-content: space-between;">
+            <div class="button cancel btn btn-lg btn-secondary" t-on-click="cancel">
+                Cerrar
+            </div>
+        </footer>
+    </div>
+</t>
+
+
+
+</templates>

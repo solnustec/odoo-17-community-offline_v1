@@ -1,0 +1,24 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<odoo>
+	<data>
+
+		<record model="ir.ui.view" id="hr_payroll_structure_form_view">
+			<field name="name">hr.payroll.structure.form</field>
+			<field name="model">hr.payroll.structure</field>
+			<field name="inherit_id" ref="hr_payroll.view_hr_employee_grade_form" />
+			<field name="arch" type="xml">
+				<xpath expr="//notebook/page[2]" position="after">
+					<page string="Mapeo de Cuentas">
+						<field name="map_account_ids" nolabel="1" colspan="4">
+							<tree editable="top">
+								<field name="origin_account_id" />
+								<field name="dest_account_id" />
+							</tree>
+						</field>
+					</page>
+				</xpath>
+			</field>
+		</record>
+
+	</data>
+</odoo>

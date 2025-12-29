@@ -1,0 +1,155 @@
+<?xml version="1.0" encoding="utf-8"?>
+<odoo>
+    <record id="ec_payroll_department_change_mail_template" model="mail.template">
+        <field name="name">Notificación de Cambio de Departamento</field>
+        <field name="model_id" ref="ec_payroll.model_hr_employee"/>
+        <field name="email_from">{{ object.sudo().get_email_sender() }}</field>
+        <field name="email_to">{{ ','.join(object.sudo().get_email_to()) }}</field>
+        <field name="subject">Cambio de Departamento - {{object.name}}</field>
+        <field name="body_html" type="html">
+            <div style="font-family: Arial, sans-serif; max-width: 600px; margin: 20px auto; padding: 20px; border: 1px solid #e0e0e0; border-radius: 8px; background-color: #f9f9f9;">
+                <!-- Header -->
+                <div style="background-color: #2196F3; color: white; padding: 15px; border-radius: 8px 8px 0 0; text-align: center; margin: -20px -20px 20px -20px;">
+                    <h2 style="margin: 0; font-size: 20px;">📋 Notificación de Cambio de Departamento</h2>
+                </div>
+
+                <!-- Contenido principal -->
+                <div style="background-color: white; padding: 20px; border-radius: 8px; box-shadow: 0 2px 4px rgba(0,0,0,0.1);">
+                    <p style="color: #333; font-size: 16px; line-height: 1.6; margin-bottom: 20px;">
+                        <strong>Estimado equipo,</strong>
+                    </p>
+
+                    <div style="background-color: #e3f2fd; padding: 15px; border-left: 4px solid #2196F3; margin: 20px 0;">
+                        <p style="color: #333; font-size: 15px; line-height: 1.6; margin: 0;">
+                            Se ha registrado un <strong>cambio de departamento</strong> para el empleado(a):
+                        </p>
+                    </div>
+
+                    <!-- Información del empleado -->
+                    <table style="width: 100%; border-collapse: collapse; margin: 20px 0;">
+                        <tr style="background-color: #f5f5f5;">
+                            <td style="padding: 12px; border: 1px solid #ddd; font-weight: bold; color: #555;">👤 Empleado:</td>
+                            <td style="padding: 12px; border: 1px solid #ddd; color: #333;"><t t-out="object.name"/></td>
+                        </tr>
+                        <tr>
+                            <td style="padding: 12px; border: 1px solid #ddd; font-weight: bold; color: #555;">📅 Fecha del cambio:</td>
+                            <td style="padding: 12px; border: 1px solid #ddd; color: #333;"><t t-out="object.write_date.strftime('%Y-%m-%d %H:%M:%S')"/></td>
+                        </tr>
+                        <tr style="background-color: #f5f5f5;">
+                            <td style="padding: 12px; border: 1px solid #ddd; font-weight: bold; color: #555;">🏢 Departamento anterior:</td>
+                            <td style="padding: 12px; border: 1px solid #ddd; color: #333;"><t t-out="object.department_from"/></td>
+                        </tr>
+                        <tr>
+                            <td style="padding: 12px; border: 1px solid #ddd; font-weight: bold; color: #555;">🎯 Nuevo departamento:</td>
+                            <td style="padding: 12px; border: 1px solid #ddd; color: #333; background-color: #e8f5e8;"><strong><t t-out="object.department_id.name"/></strong></td>
+                        </tr>
+                        <tr style="background-color: #f5f5f5;">
+                            <td style="padding: 12px; border: 1px solid #ddd; font-weight: bold; color: #555;">🏛️ Zona/Sucursal:</td>
+                            <td style="padding: 12px; border: 1px solid #ddd; color: #333;"><t t-out="object.department_id.parent_id.name"/></td>
+                        </tr>
+                    </table>
+
+                    <!-- Información adicional -->
+<!--                    <div style="background-color: #fff3cd; border: 1px solid #ffeaa7; padding: 15px; border-radius: 8px; margin: 20px 0;">-->
+<!--                        <p style="color: #856404; margin: 0; font-size: 14px;">-->
+<!--                            <strong>📝 Motivo:</strong> <t t-out="object.name"/>-->
+<!--                        </p>-->
+<!--                    </div>-->
+
+                    <p style="color: #333; font-size: 15px; line-height: 1.6; margin-top: 20px;">
+                        El cambio ha sido procesado correctamente en el sistema.
+                    </p>
+                </div>
+
+                <!-- Footer -->
+                <div style="margin-top: 20px; padding: 15px; background-color: #f5f5f5; border-radius: 8px; text-align: center;">
+                    <p style="color: #666; font-size: 13px; margin: 0;">
+                        <strong>Procesado por:</strong> <t t-out="object.write_uid.name"/> - <t t-out="object.user_id.company_id.name"/>
+                    </p>
+                    <p style="color: #666; font-size: 12px; margin: 5px 0 0 0;">
+                        Este es un mensaje automático del sistema de Farmacias Cuxibamba. Por favor, no responder a este correo.
+                    </p>
+                </div>
+            </div>
+        </field>
+    </record>
+
+
+    <record id="ec_payroll_job_change_mail_template" model="mail.template">
+        <field name="name">Notificación de Cambio de Cargo</field>
+        <field name="model_id" ref="ec_payroll.model_hr_employee"/>
+        <field name="email_from">{{ object.sudo().get_email_sender() }}</field>
+        <field name="email_to">{{ ','.join(object.sudo().get_email_to()) }}</field>
+        <field name="subject">Cambio de Cargo - {{object.name}}</field>
+        <field name="body_html" type="html">
+            <div style="font-family: Arial, sans-serif; max-width: 600px; margin: 20px auto; padding: 20px; border: 1px solid #e0e0e0; border-radius: 8px; background-color: #f9f9f9;">
+                <!-- Header -->
+                <div style="background-color: #FF9800; color: white; padding: 15px; border-radius: 8px 8px 0 0; text-align: center; margin: -20px -20px 20px -20px;">
+                    <h2 style="margin: 0; font-size: 20px;">💼 Notificación de Cambio de Cargo</h2>
+                </div>
+
+                <!-- Contenido principal -->
+                <div style="background-color: white; padding: 20px; border-radius: 8px; box-shadow: 0 2px 4px rgba(0,0,0,0.1);">
+                    <p style="color: #333; font-size: 16px; line-height: 1.6; margin-bottom: 20px;">
+                        <strong>Estimado equipo,</strong>
+                    </p>
+
+                    <div style="background-color: #fff3e0; padding: 15px; border-left: 4px solid #FF9800; margin: 20px 0;">
+                        <p style="color: #333; font-size: 15px; line-height: 1.6; margin: 0;">
+                            Se ha registrado un <strong>cambio de cargo</strong> para el empleado(a):
+                        </p>
+                    </div>
+
+                    <!-- Información del empleado -->
+                    <table style="width: 100%; border-collapse: collapse; margin: 20px 0;">
+                        <tr style="background-color: #f5f5f5;">
+                            <td style="padding: 12px; border: 1px solid #ddd; font-weight: bold; color: #555;">👤 Empleado:</td>
+                            <td style="padding: 12px; border: 1px solid #ddd; color: #333;"><t t-out="object.name"/></td>
+                        </tr>
+                        <tr>
+                            <td style="padding: 12px; border: 1px solid #ddd; font-weight: bold; color: #555;">📅 Fecha del cambio:</td>
+                            <td style="padding: 12px; border: 1px solid #ddd; color: #333;"><t t-out="object.write_date.strftime('%Y-%m-%d %H:%M:%S')"/></td>
+                        </tr>
+                        <tr style="background-color: #f5f5f5;">
+                            <td style="padding: 12px; border: 1px solid #ddd; font-weight: bold; color: #555;">📋 Cargo anterior:</td>
+                            <td style="padding: 12px; border: 1px solid #ddd; color: #333;"><t t-out="object.job_from"/></td>
+                        </tr>
+                        <tr>
+                            <td style="padding: 12px; border: 1px solid #ddd; font-weight: bold; color: #555;">💼 Nuevo cargo:</td>
+                            <td style="padding: 12px; border: 1px solid #ddd; color: #333; background-color: #e8f5e8;"><strong><t t-out="object.job_id.name"/></strong></td>
+                        </tr>
+                        <tr style="background-color: #f5f5f5;">
+                            <td style="padding: 12px; border: 1px solid #ddd; font-weight: bold; color: #555;">🏢 Departamento:</td>
+                            <td style="padding: 12px; border: 1px solid #ddd; color: #333;"><t t-out="object.department_id.name"/></td>
+                        </tr>
+                        <tr>
+                            <td style="padding: 12px; border: 1px solid #ddd; font-weight: bold; color: #555;">🏛️ Zona/Sucursal:</td>
+                            <td style="padding: 12px; border: 1px solid #ddd; color: #333;"><t t-out="object.department_id.parent_id.name"/></td>
+                        </tr>
+                    </table>
+
+                    <!-- Información adicional -->
+<!--                    <div style="background-color: #fff3cd; border: 1px solid #ffeaa7; padding: 15px; border-radius: 8px; margin: 20px 0;">-->
+<!--                        <p style="color: #856404; margin: 0; font-size: 14px;">-->
+<!--                            <strong>📝 Motivo:</strong> <t t-out="object.name"/>-->
+<!--                        </p>-->
+<!--                    </div>-->
+
+                    <p style="color: #333; font-size: 15px; line-height: 1.6; margin-top: 20px;">
+                        El cambio ha sido procesado correctamente en el sistema.
+                    </p>
+                </div>
+
+                <!-- Footer -->
+                <div style="margin-top: 20px; padding: 15px; background-color: #f5f5f5; border-radius: 8px; text-align: center;">
+                    <p style="color: #666; font-size: 13px; margin: 0;">
+                        <strong>Procesado por:</strong> <t t-out="object.write_uid.name"/> - <t t-out="object.user_id.company_id.name"/>
+                    </p>
+                    <p style="color: #666; font-size: 12px; margin: 5px 0 0 0;">
+                        Este es un mensaje automático del sistema de Farmacias Cuxibamba. Por favor, no responder a este correo.
+                    </p>
+                </div>
+            </div>
+        </field>
+    </record>
+</odoo>

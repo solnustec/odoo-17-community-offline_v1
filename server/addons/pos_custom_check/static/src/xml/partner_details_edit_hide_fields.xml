@@ -1,0 +1,30 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<templates xml:space="preserve">
+    <t t-inherit="point_of_sale.PartnerDetailsEdit" t-inherit-mode="extension">
+
+        <!-- Ocultar el campo Barcode (removerlo del t-foreach) -->
+        <xpath expr="//t[@t-foreach]" position="attributes">
+            <attribute name="t-foreach">['Street', 'Email', 'Mobile']</attribute>
+        </xpath>
+
+         <!-- Modifica label State -->
+        <xpath expr="//label[@for='state']" position="replace">
+            <label class="form-label label" for="state">Provincia</label>
+        </xpath>
+
+         <!-- Oculta bloque country -->
+        <xpath expr="//select[@t-model='changes.country_id']/.." position="replace"/>
+       
+
+        <!-- Oculta bloque de lenguaje -->
+        <xpath expr="//select[@t-model='changes.lang']/.." position="replace"/>
+        
+        
+              <!-- Eliminar el bloque de país -->
+        <xpath expr="//label[@for='vat']" position="replace">
+            <label class="form-label label" for="id_type">Cédula/RUC</label>
+        </xpath>
+
+       
+    </t>
+</templates>

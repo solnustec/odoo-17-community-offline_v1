@@ -1,0 +1,13 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<templates xml:space="preserve">
+    <t name="lolokk" t-inherit="website.s_searchbar.autocomplete" t-inherit-mode="extension">
+        <xpath expr="//b[@t-if=&quot;result['detail']&quot; and @class='text-nowrap']" position="replace">
+            <b t-if="result['detail']" class="text-nowrap">
+                <t t-out="result['detail_discount'] || result['detail'] || '0.00'"
+                   t-options="{'widget': 'monetary', 'display_currency': website_sale_order.currency_id}"
+                   class="oe_price"
+                />
+            </b>
+        </xpath>
+    </t>
+</templates>

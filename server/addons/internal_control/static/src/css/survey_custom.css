@@ -1,0 +1,7 @@
+/* Oculta todos los items de breadcrumb excepto el activo */
+ol.breadcrumb .breadcrumb-item {
+    display: none !important;
+}
+ol.breadcrumb .breadcrumb-item.active {
+    display: list-item !important;
+}

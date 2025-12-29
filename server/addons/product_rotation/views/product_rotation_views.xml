@@ -1,0 +1,419 @@
+<?xml version="1.0" encoding="utf-8"?>
+<odoo>
+    <data>
+        <!-- ======================= VISTA DE BUSQUEDA ======================= -->
+        <record id="view_product_rotation_daily_search" model="ir.ui.view">
+            <field name="name">product.rotation.daily.search</field>
+            <field name="model">product.rotation.daily</field>
+            <field name="arch" type="xml">
+                <search string="Analisis de Rotacion de Productos">
+                    <!-- Campos de busqueda rapida -->
+                    <field name="product_id" string="Producto"
+                           filter_domain="['|', ('product_id.name', 'ilike', self), ('product_id.default_code', 'ilike', self)]"/>
+                    <field name="warehouse_id" string="Bodega"/>
+                    <field name="company_id" string="Compania" groups="base.group_multi_company"/>
+
+                    <separator/>
+
+                    <!-- ========== FILTROS DE ESTADO DE ROTACION ========== -->
+                    <filter name="filter_no_rotation" string="Sin Rotacion"
+                            domain="[('flag_no_rotation', '=', True)]"
+                            help="Productos sin movimiento en los ultimos 30 dias o que nunca han rotado"/>
+                    <filter name="filter_no_sales" string="Sin Ventas"
+                            domain="[('flag_no_sales', '=', True)]"
+                            help="Productos sin ventas en los ultimos 30 dias o que nunca se han vendido"/>
+                    <filter name="filter_no_transfers" string="Sin Transferencias"
+                            domain="[('flag_no_transfers', '=', True)]"
+                            help="Productos sin transferencias en los ultimos 30 dias o que nunca se han transferido"/>
+
+                    <separator/>
+
+                    <!-- ========== FILTROS DE STOCK ========== -->
+                    <filter name="filter_with_stock" string="Con Stock"
+                            domain="[('stock_on_hand', '>', 0)]"
+                            help="Productos que actualmente tienen stock disponible"/>
+                    <filter name="filter_low_stock" string="Stock Bajo (&lt;10)"
+                            domain="[('stock_on_hand', '>', 0), ('stock_on_hand', '&lt;', 10)]"
+                            help="Productos con menos de 10 unidades en stock"/>
+
+                    <separator/>
+
+                    <!-- ========== FILTROS POR DIAS SIN MOVIMIENTO ========== -->
+                    <filter name="filter_7_days" string="7+ Dias sin Movimiento"
+                            domain="[('days_without_rotation', '>=', 7), ('days_without_rotation', '!=', 9999)]"
+                            help="Productos con 7 o mas dias sin movimiento (excluye 'nunca')"/>
+                    <filter name="filter_15_days" string="15+ Dias sin Movimiento"
+                            domain="[('days_without_rotation', '>=', 15), ('days_without_rotation', '!=', 9999)]"
+                            help="Productos con 15 o mas dias sin movimiento (excluye 'nunca')"/>
+                    <filter name="filter_30_days" string="30+ Dias sin Movimiento"
+                            domain="[('days_without_rotation', '>=', 30), ('days_without_rotation', '!=', 9999)]"
+                            help="Productos con 30 o mas dias sin movimiento (excluye 'nunca')"/>
+                    <filter name="filter_60_days" string="60+ Dias sin Movimiento"
+                            domain="[('days_without_rotation', '>=', 60), ('days_without_rotation', '!=', 9999)]"
+                            help="Productos con 60 o mas dias sin movimiento (excluye 'nunca')"/>
+                    <filter name="filter_90_days" string="90+ Dias sin Movimiento"
+                            domain="[('days_without_rotation', '>=', 90), ('days_without_rotation', '!=', 9999)]"
+                            help="Productos con 90 o mas dias sin movimiento (excluye 'nunca')"/>
+
+                    <separator/>
+
+                    <!-- ========== FILTROS DE PRODUCTOS CRITICOS ========== -->
+                    <filter name="filter_critical" string="Criticos (Sin Rotacion + Stock)"
+                            domain="[('flag_no_rotation', '=', True), ('stock_on_hand', '>', 0)]"
+                            help="Productos criticos: tienen stock pero no rotan"/>
+                    <filter name="filter_never_sold" string="Nunca Vendido"
+                            domain="[('days_without_sale', '=', 9999)]"
+                            help="Productos que NUNCA se han vendido (dias = 9999)"/>
+                    <filter name="filter_never_moved" string="Nunca Movido"
+                            domain="[('days_without_rotation', '=', 9999)]"
+                            help="Productos que NUNCA han tenido ningun movimiento (dias = 9999)"/>
+
+                    <separator/>
+
+                    <!-- ========== FILTRO DE ACTUALIZACION ========== -->
+                    <filter name="filter_updated_today" string="Actualizado Hoy"
+                            domain="[('updated_at', '>=', (context_today()).strftime('%Y-%m-%d'))]"
+                            help="Registros actualizados por el cron de hoy"/>
+
+                    <!-- ========== AGRUPAR POR ========== -->
+                    <group expand="0" string="Agrupar Por">
+                        <filter name="group_by_warehouse" string="Bodega"
+                                context="{'group_by': 'warehouse_id'}"/>
+                        <filter name="group_by_company" string="Compania"
+                                context="{'group_by': 'company_id'}"
+                                groups="base.group_multi_company"/>
+                        <filter name="group_by_flag_rotation" string="Estado de Rotacion"
+                                context="{'group_by': 'flag_no_rotation'}"/>
+                        <filter name="group_by_flag_sales" string="Estado de Ventas"
+                                context="{'group_by': 'flag_no_sales'}"/>
+                        <separator/>
+                        <filter name="group_by_days_rotation" string="Dias sin Rotacion"
+                                context="{'group_by': 'days_without_rotation'}"/>
+                    </group>
+                </search>
+            </field>
+        </record>
+
+        <!-- ======================= VISTA DE LISTA (TREE) ======================= -->
+        <record id="view_product_rotation_daily_tree" model="ir.ui.view">
+            <field name="name">product.rotation.daily.tree</field>
+            <field name="model">product.rotation.daily</field>
+            <field name="arch" type="xml">
+                <tree string="Analisis de Rotacion de Productos"
+                      decoration-danger="flag_no_rotation == True"
+                      decoration-warning="flag_no_sales == True and flag_no_rotation == False"
+                      decoration-info="flag_no_transfers == True and flag_no_rotation == False and flag_no_sales == False"
+                      default_order="days_without_rotation desc">
+
+                    <!-- Informacion del Producto -->
+                    <field name="product_id" string="Producto"/>
+                    <field name="product_default_code" string="Referencia" optional="show"/>
+                    <field name="warehouse_id" string="Bodega"/>
+                    <field name="company_id" string="Compania" groups="base.group_multi_company" optional="hide"/>
+
+                    <!-- Stock -->
+                    <field name="stock_on_hand" string="Stock" sum="Stock Total"/>
+
+                    <!-- Fechas -->
+                    <field name="last_sale_date" string="Ult. Venta" optional="show"/>
+                    <field name="last_transfer_date" string="Ult. Transferencia" optional="show"/>
+                    <field name="last_rotation_date" string="Ult. Movimiento" optional="hide"/>
+
+                    <!-- Dias sin Actividad -->
+                    <field name="days_without_sale" string="Dias s/Venta" optional="show"/>
+                    <field name="days_without_transfer" string="Dias s/Transf." optional="show"/>
+                    <field name="days_without_rotation" string="Dias Inactivo"/>
+
+                    <!-- Flags con indicadores visuales -->
+                    <field name="flag_no_rotation" string="Sin Rotacion"
+                           widget="boolean_toggle" readonly="1"/>
+                    <field name="flag_no_sales" string="Sin Ventas"
+                           widget="boolean_toggle" readonly="1" optional="show"/>
+                    <field name="flag_no_transfers" string="Sin Transf."
+                           widget="boolean_toggle" readonly="1" optional="hide"/>
+
+                    <!-- Metadatos -->
+                    <field name="updated_at" string="Actualizado" optional="hide"/>
+                </tree>
+            </field>
+        </record>
+
+        <!-- ======================= VISTA KANBAN ======================= -->
+        <record id="view_product_rotation_daily_kanban" model="ir.ui.view">
+            <field name="name">product.rotation.daily.kanban</field>
+            <field name="model">product.rotation.daily</field>
+            <field name="arch" type="xml">
+                <kanban class="o_kanban_small_column"
+                        default_group_by="warehouse_id"
+                        records_draggable="false"
+                        quick_create="false">
+                    <field name="product_id"/>
+                    <field name="warehouse_id"/>
+                    <field name="stock_on_hand"/>
+                    <field name="days_without_rotation"/>
+                    <field name="days_without_sale"/>
+                    <field name="days_without_transfer"/>
+                    <field name="flag_no_rotation"/>
+                    <field name="flag_no_sales"/>
+                    <field name="flag_no_transfers"/>
+                    <field name="last_rotation_date"/>
+                    <field name="product_default_code"/>
+
+                    <templates>
+                        <t t-name="kanban-box">
+                            <div class="oe_kanban_global_click">
+                                <!-- Encabezado de tarjeta con color segun estado -->
+                                <div t-attf-class="oe_kanban_content p-2 #{record.flag_no_rotation.raw_value ? 'bg-danger bg-opacity-25' : (record.flag_no_sales.raw_value ? 'bg-warning bg-opacity-25' : 'bg-success bg-opacity-10')}">
+
+                                    <!-- Nombre y Codigo del Producto -->
+                                    <div class="o_kanban_record_title fw-bold text-truncate">
+                                        <field name="product_id"/>
+                                    </div>
+                                    <div class="text-muted small" t-if="record.product_default_code.raw_value">
+                                        <span>[<field name="product_default_code"/>]</span>
+                                    </div>
+
+                                    <!-- Informacion de Stock -->
+                                    <div class="mt-2 d-flex justify-content-between">
+                                        <span class="text-muted">Stock:</span>
+                                        <span class="fw-bold">
+                                            <field name="stock_on_hand" widget="float"/>
+                                        </span>
+                                    </div>
+
+                                    <!-- Dias sin Movimiento -->
+                                    <div class="d-flex justify-content-between">
+                                        <span class="text-muted">Dias Inactivo:</span>
+                                        <span t-attf-class="fw-bold #{record.days_without_rotation.raw_value == 9999 ? 'text-danger' : (record.days_without_rotation.raw_value >= 30 ? 'text-danger' : (record.days_without_rotation.raw_value >= 15 ? 'text-warning' : 'text-success'))}">
+                                            <!-- 9999 = Nunca (caso mas critico) -->
+                                            <t t-if="record.days_without_rotation.raw_value == 9999">Nunca</t>
+                                            <t t-else=""><field name="days_without_rotation"/></t>
+                                        </span>
+                                    </div>
+
+                                    <!-- Ultima Actividad -->
+                                    <div class="d-flex justify-content-between small text-muted mt-1">
+                                        <span>Ult. Actividad:</span>
+                                        <span>
+                                            <t t-if="record.last_rotation_date.raw_value">
+                                                <field name="last_rotation_date"/>
+                                            </t>
+                                            <t t-else="">
+                                                <span class="text-danger">Nunca</span>
+                                            </t>
+                                        </span>
+                                    </div>
+
+                                    <!-- Badges de Estado -->
+                                    <div class="mt-2">
+                                        <span t-if="record.flag_no_rotation.raw_value"
+                                              class="badge bg-danger me-1">Sin Rotacion</span>
+                                        <span t-if="record.flag_no_sales.raw_value and not record.flag_no_rotation.raw_value"
+                                              class="badge bg-warning me-1">Sin Ventas</span>
+                                        <span t-if="record.flag_no_transfers.raw_value and not record.flag_no_rotation.raw_value"
+                                              class="badge bg-info me-1">Sin Transf.</span>
+                                        <span t-if="not record.flag_no_rotation.raw_value and not record.flag_no_sales.raw_value and not record.flag_no_transfers.raw_value"
+                                              class="badge bg-success">Activo</span>
+                                    </div>
+                                </div>
+                            </div>
+                        </t>
+                    </templates>
+                </kanban>
+            </field>
+        </record>
+
+        <!-- ======================= VISTA DE FORMULARIO ======================= -->
+        <record id="view_product_rotation_daily_form" model="ir.ui.view">
+            <field name="name">product.rotation.daily.form</field>
+            <field name="model">product.rotation.daily</field>
+            <field name="arch" type="xml">
+                <form string="Detalle de Rotacion de Producto" create="false">
+                    <header>
+                        <!-- Boton de transferencia (solo si tiene stock y no rota) -->
+                        <button name="action_open_transfer_wizard"
+                                string="Transferir Producto"
+                                type="object"
+                                class="btn-primary"
+                                icon="fa-truck"
+                                invisible="not flag_no_rotation or stock_on_hand &lt;= 0"/>
+                        <!-- Indicadores de estado -->
+                        <field name="flag_no_rotation" widget="boolean_toggle" readonly="1"
+                               string="Sin Rotacion" class="oe_inline"/>
+                        <field name="flag_no_sales" widget="boolean_toggle" readonly="1"
+                               string="Sin Ventas" class="oe_inline"/>
+                        <field name="flag_no_transfers" widget="boolean_toggle" readonly="1"
+                               string="Sin Transferencias" class="oe_inline"/>
+                    </header>
+                    <sheet>
+                        <!-- Banner de alerta para productos criticos -->
+                        <div class="alert alert-danger" role="alert"
+                             invisible="not flag_no_rotation">
+                            <strong>Atencion!</strong> Este producto no ha rotado en los ultimos 30 dias o nunca ha tenido movimiento.
+                        </div>
+
+                        <div class="oe_title">
+                            <h1>
+                                <field name="product_id" readonly="1"/>
+                            </h1>
+                            <h3 class="text-muted" invisible="not product_default_code">
+                                [<field name="product_default_code" readonly="1"/>]
+                            </h3>
+                        </div>
+
+                        <group>
+                            <group string="Ubicacion">
+                                <field name="warehouse_id" string="Bodega" readonly="1"/>
+                                <field name="company_id" string="Compania" readonly="1"
+                                       groups="base.group_multi_company"/>
+                            </group>
+                            <group string="Stock">
+                                <field name="stock_on_hand" string="Stock Disponible" readonly="1"/>
+                            </group>
+                        </group>
+
+                        <group>
+                            <group string="Fechas de Ultima Actividad">
+                                <field name="last_sale_date" string="Ultima Venta" readonly="1"/>
+                                <field name="last_transfer_date" string="Ultima Transferencia" readonly="1"/>
+                                <field name="last_rotation_date" string="Ultimo Movimiento" readonly="1"/>
+                            </group>
+                            <group string="Dias sin Actividad">
+                                <field name="days_without_sale" string="Dias sin Venta" readonly="1"/>
+                                <field name="days_without_transfer" string="Dias sin Transferencia" readonly="1"/>
+                                <field name="days_without_rotation" readonly="1"
+                                       string="Dias sin Movimiento"/>
+                            </group>
+                        </group>
+
+                        <!-- Seccion de Redistribucion (solo visible si no tiene rotacion) -->
+                        <group string="Redistribucion Sugerida" invisible="not flag_no_rotation" col="1">
+                            <field name="has_suggested_warehouses" invisible="1"/>
+                            <field name="suggested_warehouse_ids" widget="many2many_tags"
+                                   string="Bodegas con Rotacion Activa" readonly="1"
+                                   invisible="not has_suggested_warehouses"/>
+                            <field name="suggested_warehouses_html" nolabel="1"
+                                   readonly="1" class="w-100"/>
+                        </group>
+
+                        <group string="Metadatos" groups="base.group_no_one">
+                            <field name="updated_at" string="Ultima Actualizacion" readonly="1"/>
+                        </group>
+                    </sheet>
+                    <div class="oe_chatter">
+                        <field name="message_follower_ids"/>
+                        <field name="activity_ids"/>
+                        <field name="message_ids"/>
+                    </div>
+                </form>
+            </field>
+        </record>
+
+        <!-- ======================= VISTA PIVOT ======================= -->
+        <record id="view_product_rotation_daily_pivot" model="ir.ui.view">
+            <field name="name">product.rotation.daily.pivot</field>
+            <field name="model">product.rotation.daily</field>
+            <field name="arch" type="xml">
+                <pivot string="Analisis de Rotacion de Productos" sample="1">
+                    <field name="warehouse_id" string="Bodega" type="row"/>
+                    <field name="flag_no_rotation" string="Sin Rotacion" type="col"/>
+                    <field name="stock_on_hand" string="Stock" type="measure"/>
+                    <field name="days_without_rotation" string="Dias Inactivo" type="measure"/>
+                </pivot>
+            </field>
+        </record>
+
+        <!-- ======================= VISTA DE GRAFICO ======================= -->
+        <record id="view_product_rotation_daily_graph" model="ir.ui.view">
+            <field name="name">product.rotation.daily.graph</field>
+            <field name="model">product.rotation.daily</field>
+            <field name="arch" type="xml">
+                <graph string="Analisis de Rotacion de Productos" type="bar" sample="1">
+                    <field name="warehouse_id" string="Bodega"/>
+                    <field name="days_without_rotation" string="Dias Inactivo" type="measure"/>
+                </graph>
+            </field>
+        </record>
+
+        <!-- ======================= ACCIONES ======================= -->
+        <record id="action_product_rotation_daily" model="ir.actions.act_window">
+            <field name="name">Analisis de Rotacion</field>
+            <field name="res_model">product.rotation.daily</field>
+            <field name="view_mode">tree,kanban,pivot,graph,form</field>
+            <field name="search_view_id" ref="view_product_rotation_daily_search"/>
+            <field name="context">{
+                'search_default_filter_with_stock': 1,
+            }</field>
+            <field name="help" type="html">
+                <p class="o_view_nocontent_smiling_face">
+                    No hay datos de rotacion disponibles
+                </p>
+                <p>
+                    Los datos de rotacion de productos se generan automaticamente mediante una accion programada diaria.
+                    Verifique que el cron "Rotacion de Productos: Actualizacion Diaria" este activo.
+                </p>
+            </field>
+        </record>
+
+        <!-- Accion para productos Sin Rotacion (acceso directo) -->
+        <record id="action_product_rotation_no_rotation" model="ir.actions.act_window">
+            <field name="name">Productos Sin Rotacion</field>
+            <field name="res_model">product.rotation.daily</field>
+            <field name="view_mode">tree,kanban,form</field>
+            <field name="search_view_id" ref="view_product_rotation_daily_search"/>
+            <field name="domain">[('flag_no_rotation', '=', True)]</field>
+            <field name="context">{}</field>
+            <field name="help" type="html">
+                <p class="o_view_nocontent_smiling_face">
+                    No hay productos sin rotacion
+                </p>
+                <p>
+                    Todos los productos con stock estan rotando correctamente.
+                </p>
+            </field>
+        </record>
+
+        <!-- Accion para productos Criticos -->
+        <record id="action_product_rotation_critical" model="ir.actions.act_window">
+            <field name="name">Productos Criticos</field>
+            <field name="res_model">product.rotation.daily</field>
+            <field name="view_mode">tree,kanban,form</field>
+            <field name="search_view_id" ref="view_product_rotation_daily_search"/>
+            <field name="domain">[('flag_no_rotation', '=', True), ('stock_on_hand', '>', 0)]</field>
+            <field name="context">{}</field>
+            <field name="help" type="html">
+                <p class="o_view_nocontent_smiling_face">
+                    No hay productos criticos
+                </p>
+                <p>
+                    No hay productos que tengan stock pero no esten rotando.
+                </p>
+            </field>
+        </record>
+
+        <!-- ======================= MENUS ======================= -->
+        <menuitem id="menu_product_rotation_root"
+                  name="Analisis de Rotacion"
+                  parent="stock.menu_stock_root"
+                  sequence="100"/>
+
+        <menuitem id="menu_product_rotation_analysis"
+                  name="Rotacion de Productos"
+                  parent="menu_product_rotation_root"
+                  action="action_product_rotation_daily"
+                  sequence="10"/>
+
+        <menuitem id="menu_product_rotation_no_rotation"
+                  name="Sin Rotacion"
+                  parent="menu_product_rotation_root"
+                  action="action_product_rotation_no_rotation"
+                  sequence="20"/>
+
+        <menuitem id="menu_product_rotation_critical"
+                  name="Productos Criticos"
+                  parent="menu_product_rotation_root"
+                  action="action_product_rotation_critical"
+                  sequence="30"/>
+
+    </data>
+</odoo>

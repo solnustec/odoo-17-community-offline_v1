@@ -1,0 +1,155 @@
+<?xml version="1.0" encoding="utf-8"?>
+<odoo>
+    <!-- Vista Tree -->
+    <record id="view_gamification_goal_history_tree" model="ir.ui.view">
+        <field name="name">gamification.goal.history.tree</field>
+        <field name="model">gamification.goal.history</field>
+        <field name="arch" type="xml">
+            <tree string="Historial de Metas" decoration-success="state == 'reached'" decoration-warning="state == 'inprogress'" decoration-danger="state == 'failed'" decoration-muted="state == 'draft'">
+                <field name="date_archived" string="Archivado"/>
+                <field name="user_id" widget="many2one_avatar_user"/>
+                <field name="department_id"/>
+                <field name="department_parent_id" string="Zona"/>
+                <field name="challenge_name"/>
+                <field name="definition_name" string="Meta"/>
+                <field name="target_goal"/>
+                <field name="current_value" string="Alcanzado"/>
+                <field name="completeness" widget="progressbar"/>
+                <field name="state" widget="badge" decoration-success="state == 'reached'" decoration-warning="state == 'inprogress'" decoration-danger="state == 'failed'"/>
+                <field name="reached_date"/>
+                <field name="bonification_amount" sum="Total Bonificaciones"/>
+                <field name="bonification_status" widget="boolean_toggle"/>
+            </tree>
+        </field>
+    </record>
+
+    <!-- Vista Form -->
+    <record id="view_gamification_goal_history_form" model="ir.ui.view">
+        <field name="name">gamification.goal.history.form</field>
+        <field name="model">gamification.goal.history</field>
+        <field name="arch" type="xml">
+            <form string="Detalle de Historial" create="false" edit="false">
+                <sheet>
+                    <div class="oe_title">
+                        <h1>
+                            <field name="display_name"/>
+                        </h1>
+                    </div>
+                    <group>
+                        <group string="Usuario">
+                            <field name="user_id"/>
+                            <field name="employee_id"/>
+                            <field name="department_id"/>
+                            <field name="department_parent_id"/>
+                        </group>
+                        <group string="Desafío y Meta">
+                            <field name="challenge_id"/>
+                            <field name="challenge_name"/>
+                            <field name="definition_id"/>
+                            <field name="definition_name"/>
+                        </group>
+                    </group>
+                    <group>
+                        <group string="Progreso">
+                            <field name="target_goal"/>
+                            <field name="current_value"/>
+                            <field name="completeness" widget="progressbar"/>
+                            <field name="state" widget="badge"/>
+                        </group>
+                        <group string="Fechas">
+                            <field name="start_date"/>
+                            <field name="end_date"/>
+                            <field name="reached_date"/>
+                            <field name="date_archived"/>
+                        </group>
+                    </group>
+                    <group string="Bonificaciones">
+                        <field name="bonification"/>
+                        <field name="bonification_amount"/>
+                        <field name="bonification_status"/>
+                    </group>
+                    <group string="Información Técnica" groups="base.group_no_one">
+                        <field name="original_goal_id"/>
+                    </group>
+                </sheet>
+            </form>
+        </field>
+    </record>
+
+    <!-- Vista Search -->
+    <record id="view_gamification_goal_history_search" model="ir.ui.view">
+        <field name="name">gamification.goal.history.search</field>
+        <field name="model">gamification.goal.history</field>
+        <field name="arch" type="xml">
+            <search string="Buscar en Historial">
+                <field name="user_id"/>
+                <field name="employee_id"/>
+                <field name="department_id"/>
+                <field name="challenge_name"/>
+                <field name="definition_name"/>
+                <separator/>
+                <filter name="filter_reached" string="Alcanzadas" domain="[('state', '=', 'reached')]"/>
+                <filter name="filter_inprogress" string="En Progreso" domain="[('state', '=', 'inprogress')]"/>
+                <filter name="filter_failed" string="Fallidas" domain="[('state', '=', 'failed')]"/>
+                <separator/>
+                <filter name="filter_with_bonus" string="Con Bonificación" domain="[('bonification_amount', '>', 0)]"/>
+                <filter name="filter_bonus_pending" string="Bonificación Pendiente" domain="[('bonification_amount', '>', 0), ('bonification_status', '=', False), ('state', '=', 'reached')]"/>
+                <separator/>
+                <filter name="filter_this_month" string="Este Mes" domain="[('date_archived', '>=', (context_today() - relativedelta(day=1)).strftime('%Y-%m-%d'))]"/>
+                <filter name="filter_last_month" string="Mes Pasado" domain="[('date_archived', '>=', (context_today() - relativedelta(months=1, day=1)).strftime('%Y-%m-%d')), ('date_archived', '&lt;', context_today().strftime('%Y-%m-01'))]"/>
+                <separator/>
+                <group expand="0" string="Agrupar por">
+                    <filter name="group_by_user" string="Usuario" context="{'group_by': 'user_id'}"/>
+                    <filter name="group_by_department" string="Departamento" context="{'group_by': 'department_id'}"/>
+                    <filter name="group_by_zone" string="Zona" context="{'group_by': 'department_parent_id'}"/>
+                    <filter name="group_by_challenge" string="Desafío" context="{'group_by': 'challenge_id'}"/>
+                    <filter name="group_by_state" string="Estado" context="{'group_by': 'state'}"/>
+                    <filter name="group_by_month" string="Mes de Archivado" context="{'group_by': 'date_archived:month'}"/>
+                </group>
+            </search>
+        </field>
+    </record>
+
+    <!-- Vista Pivot -->
+    <record id="view_gamification_goal_history_pivot" model="ir.ui.view">
+        <field name="name">gamification.goal.history.pivot</field>
+        <field name="model">gamification.goal.history</field>
+        <field name="arch" type="xml">
+            <pivot string="Análisis de Historial">
+                <field name="department_id" type="row"/>
+                <field name="state" type="col"/>
+                <field name="bonification_amount" type="measure"/>
+            </pivot>
+        </field>
+    </record>
+
+    <!-- Vista Graph -->
+    <record id="view_gamification_goal_history_graph" model="ir.ui.view">
+        <field name="name">gamification.goal.history.graph</field>
+        <field name="model">gamification.goal.history</field>
+        <field name="arch" type="xml">
+            <graph string="Gráfico de Historial" type="bar">
+                <field name="challenge_name"/>
+                <field name="state" type="col"/>
+            </graph>
+        </field>
+    </record>
+
+    <!-- Acción -->
+    <record id="action_gamification_goal_history" model="ir.actions.act_window">
+        <field name="name">Historial de Metas</field>
+        <field name="res_model">gamification.goal.history</field>
+        <field name="view_mode">tree,form,pivot,graph</field>
+        <field name="search_view_id" ref="view_gamification_goal_history_search"/>
+        <field name="context">{}</field>
+        <field name="help" type="html">
+            <p class="o_view_nocontent_smiling_face">
+                No hay registros en el historial
+            </p>
+            <p>
+                El historial se genera automáticamente cuando se eliminan metas
+                o cuando se archivan manualmente desde un desafío.
+            </p>
+        </field>
+    </record>
+</odoo>

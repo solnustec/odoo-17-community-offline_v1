@@ -1,0 +1,13 @@
+<?xml version="1.0" encoding="utf-8"?>
+<odoo>
+    <record id="view_resource_calendar_attendance_tree_inherit" model="ir.ui.view">
+        <field name="name">resource.calendar.attendance.tree.inherit</field>
+        <field name="model">resource.calendar.attendance</field>
+        <field name="inherit_id" ref="resource.view_resource_calendar_attendance_tree"/>
+        <field name="arch" type="xml">
+            <xpath expr="//field[@name='week_type']" position="after">
+                <field name="is_extraordinary"/>
+            </xpath>
+        </field>
+    </record>
+</odoo>

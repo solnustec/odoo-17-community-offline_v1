@@ -1,0 +1,42 @@
+<?xml version="1.0" encoding="utf-8"?>
+<odoo>
+    <data>
+        <record id="stock_warehouse_form_inherit_conection" model="ir.ui.view">
+            <field name="name">stock.warehouse.form.inherit.conection</field>
+            <field name="model">stock.warehouse</field>
+            <field name="inherit_id" ref="stock.view_warehouse"/>
+            <field name="arch" type="xml">
+
+                <xpath expr="//field[@name='code']" position="after">
+                    <field name="sequence" string="Orden"/>
+                    <field name="department_id" string="Departamento relacionado"/>
+                </xpath>
+
+                <xpath expr="//page[@name='technical_info']" position="after">
+                    <page string="Información de la sucursal">
+                        <group colspan="2">
+                            <group string="Ubicación y contacto">
+                                <field name="street"/>
+                                <field name="street2"/>
+                                <field name="city"/>
+                                <field name="state_id"/>
+                                <field name="zip"/>
+                                <field name="country_id"/>
+                                <field name="mobile"/>
+                                <field name="phone"/>
+                            </group>
+                            <group string="Coordenadas y configuración">
+                                <field name="x_lat"/>
+                                <field name="x_long"/>
+                                <field name="is_public"/>
+                                <field name="x_turno"/>
+                                <field name="x_24hours"/>
+                            </group>
+                        </group>
+                    </page>
+                </xpath>
+
+            </field>
+        </record>
+    </data>
+</odoo>

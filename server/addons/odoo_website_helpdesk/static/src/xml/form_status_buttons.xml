@@ -1,0 +1,43 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<templates xml:space="preserve">
+    <t t-name="custom_form_buttons.FormStatusIndicator" t-inherit="web.FormStatusIndicator" t-inherit-mode="extension">
+        <!-- Make Save button compact with fixed width -->
+        <xpath expr="//button[contains(@class, 'o_form_button_save')]" position="attributes">
+            <attribute name="class">o_form_button_save btn btn-primary px-1 py-0 mx-0 small d-flex align-items-center</attribute>
+            <attribute name="data-tooltip">Guardar cambios</attribute>
+            <attribute name="style">width: 4rem;</attribute>
+        </xpath>
+
+        <!-- Style icon in Save button to be smaller -->
+        <xpath expr="//button[contains(@class, 'o_form_button_save')]/i[1]" position="attributes">
+            <attribute name="style">font-size: 0.5rem; margin-right: 0.2rem;</attribute>
+        </xpath>
+
+        <!-- Add "Guardar" text inside Save button with smaller font -->
+        <xpath expr="//button[contains(@class, 'o_form_button_save')]" position="inside">
+            <span class="ms-0" style="font-size: 0.6rem;">Guardar</span>
+        </xpath>
+
+        <!-- Make Cancel button compact with fixed width -->
+        <xpath expr="//button[contains(@class, 'o_form_button_cancel')]" position="attributes">
+            <attribute name="class">o_form_button_cancel btn btn-secondary px-1 py-0 mx-0 small d-flex align-items-center</attribute>
+            <attribute name="data-tooltip">Descartar Cambios</attribute>
+            <attribute name="style">width: 4rem;</attribute>
+        </xpath>
+
+        <!-- Style icon in Cancel button to be smaller -->
+        <xpath expr="//button[contains(@class, 'o_form_button_cancel')]/i[1]" position="attributes">
+            <attribute name="style">font-size: 0.5rem; margin-right: 0.2rem;</attribute>
+        </xpath>
+
+        <!-- Add "Descartar" text inside Cancel button with smaller font -->
+        <xpath expr="//button[contains(@class, 'o_form_button_cancel')]" position="inside">
+            <span class="ms-0" style="font-size: 0.6rem;">Descartar</span>
+        </xpath>
+
+        <!-- Stack buttons vertically with minimal spacing -->
+        <xpath expr="//div[contains(@class, 'o_form_status_indicator_buttons')]" position="attributes">
+            <attribute name="class">o_form_status_indicator_buttons d-flex flex-column gap-1 align-items-start</attribute>
+        </xpath>
+    </t>
+</templates>

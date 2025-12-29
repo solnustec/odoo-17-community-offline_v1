@@ -1,0 +1,449 @@
+<?xml version="1.0" encoding="utf-8"?>
+<odoo>
+
+<!--    <record id="hr_employee_form_inherited_view" model="ir.ui.view">-->
+<!--        <field name="name">hr.employee.form</field>-->
+<!--        <field name="model">hr.employee</field>-->
+<!--        <field name="inherit_id" ref="hr.view_employee_form"/>-->
+<!--        <field name="arch" type="xml">-->
+<!--            <xpath expr="//page[@name='hr_settings']" position="after">-->
+<!--                <page string="Asignación de turnos" name='shift_allocation'>-->
+<!--                    <field name="allocation_ids" domain="[('state', '=', 'done')]">-->
+<!--                        <tree>-->
+<!--                            <field name="shift_id" required="1"/>-->
+<!--                            <field name="from_date" required="1"/>-->
+<!--                            <field name="to_date" required="1"/>-->
+<!--                        </tree>-->
+<!--                    </field>-->
+<!--                </page>-->
+<!--                <page string="Work Day">-->
+<!--                    <field name="workday_ids" domain="[('allocation_id.state', '=', 'done')]">-->
+<!--                        <tree editable="bottom">-->
+<!--                            <field name="allocation_id" required="1"/>-->
+<!--                            <field name="shift_id" required="1" options="{'no_open': True, 'no_create': True}"/>-->
+<!--                            <field name="date" required="1"/>-->
+<!--                        </tree>-->
+<!--                    </field>-->
+<!--                </page>-->
+<!--                <page string="Week End">-->
+<!--                    <field name="weekend_ids" domain="[('allocation_id.state', '=', 'done')]">-->
+<!--                        <tree editable="bottom">-->
+<!--                            <field name="allocation_id" required="1"/>-->
+<!--                            <field name="week_off_id" required="1" options="{'no_open': True, 'no_create': True}"/>-->
+<!--                            <field name="shift_id" invisible="1" options="{'no_open': True, 'no_create': True}"/>-->
+<!--                            <field name="date" required="1"/>-->
+<!--                        </tree>-->
+<!--                    </field>-->
+<!--                </page>-->
+<!--            </xpath>-->
+<!--        </field>-->
+<!--    </record>-->
+
+    <record id="employee_shift_allocation_tree_view" model="ir.ui.view">
+        <field name="name">employee.shift.allocation.tree</field>
+        <field name="model">employee.shift.allocation</field>
+        <field name="arch" type="xml">
+            <tree>
+                <field name="name"/>
+                <field name="shift_id"/>
+                <field name="from_date"/>
+                <field name="to_date"/>
+                <field name="employee_id"/>
+                <field name="company_id"/>
+                <field name="state"/>
+            </tree>
+        </field>
+    </record>
+    <record id="employee_shift_allocation_form_view" model="ir.ui.view">
+        <field name="name">employee.shift.allocation.form</field>
+        <field name="model">employee.shift.allocation</field>
+        <field name="arch" type="xml">
+            <form>
+                <header>
+                    <button name="action_done" readonly="state != 'draft'" string="Done" type="object" class="oe_highlight"/>
+                    <button name="action_cancel" readonly="state != 'draft'" string="Cancel" type="object" class="oe_highlight"/>
+                    <field name="state" widget="statusbar" readonly="1"/>
+                </header>
+                <sheet>
+                    <div class="oe_title">
+                        <h1><field name="name" placeholder="Name" readonly="1"/></h1><br/>
+                    </div>
+                    <group>
+                        <group>
+                            <field name="shift_id" readonly="state != 'draft'" required="1" options="{'no_open': True, 'no_create': True}"/>
+                            <field name="from_date" readonly="state != 'draft'" required="1"/>
+                            <field name="employee_id" required="1" readonly="state != 'draft'" options="{'no_open': True, 'no_create': True}"/>
+
+                        </group>
+                        <group>
+                            <field name="shift_type_id" readonly="state != 'draft'" required="1" options="{'no_open': True, 'no_create': True}"/>
+                            <field name="to_date" readonly="state != 'draft'" required="1" options="{'no_open': True, 'no_create': True}"/>
+                            <field name="company_id" readonly="1" options="{'no_open': True, 'no_create': True}"/>
+                        </group>
+                    </group>
+                    <notebook>
+                        <page string="Work Day">
+                            <field name="workday_ids" readonly="state != 'draft'">
+                                <tree editable="bottom">
+                                    <field name="allocation_id" invisible="1"/>
+                                    <field name="shift_id" required="1" options="{'no_open': True, 'no_create': True}"/>
+                                    <field name="date" required="1"/>
+                                </tree>
+                            </field>
+                        </page>
+                        <page string="Week End">
+                            <field name="weekend_ids" readonly="state != 'draft'">
+                                <tree editable="bottom">
+                                    <field name="allocation_id" invisible="1"/>
+                                    <field name="week_off_id" required="1" options="{'no_open': True, 'no_create': True}"/>
+                                    <field name="shift_id" invisible="1" options="{'no_open': True, 'no_create': True}"/>
+                                    <field name="user_id" invisible="1" options="{'no_open': True, 'no_create': True}"/>
+                                    <field name="date" required="1"/>
+                                </tree>
+                            </field>
+                        </page>
+                    </notebook>
+                </sheet>
+                <div class="oe_chatter">
+                    <field name="message_follower_ids" widget="mail_followers" groups="base.group_user"/>
+                    <field name="activity_ids" widget="mail_activity"/>
+                    <field name="message_ids" widget="mail_thread"/>
+                </div>
+            </form>
+        </field>
+    </record>
+    <record id="employee_shift_allocation_search_view" model="ir.ui.view">
+        <field name="name">employee.shift.allocation.search</field>
+        <field name="model">employee.shift.allocation</field>
+        <field name="arch" type="xml">
+            <search>
+                <field name="name"/>
+                <field name="shift_id"/>
+                <field name="from_date"/>
+                <field name="to_date"/>
+                <field name="employee_id"/>
+                <field name="company_id"/>
+                <field name="state"/>
+                <group expand="0" string="Group By">
+                    <filter string="Shift" name="shift_id" context="{'group_by':'shift_id'}"/>
+                    <filter string="Employee" name="employee_id" context="{'group_by':'employee_id'}"/>
+                    <filter string="From" name="from_date" context="{'group_by':'from_date'}"/>
+                    <filter string="state" name="state" context="{'group_by':'state'}"/>
+                </group>
+            </search>
+        </field>
+    </record>
+    <record id="action_employee_shift_allocation" model="ir.actions.act_window">
+        <field name="name">Employee Shift Allocation</field>
+        <field name="type">ir.actions.act_window</field>
+        <field name="res_model">employee.shift.allocation</field>
+        <field name="view_mode">tree,kanban,search,form</field>
+    </record>
+
+    <menuitem id="main_menu_employee_shift"
+              name="Validaciones"
+              parent="hr.menu_hr_root"
+              sequence="5"/>
+
+<!--    <menuitem id="main_menu_employee_shift_allocation"-->
+<!--              name="Employee Shift Allocation"-->
+<!--              parent="main_menu_employee_shift"-->
+<!--              action="action_employee_shift_allocation"-->
+<!--              groups="hr.group_hr_user"-->
+<!--              sequence="5"/>-->
+
+
+    <record id="employee_week_end_tree_view" model="ir.ui.view">
+        <field name="name">employee.week.end.tree</field>
+        <field name="model">employee.week.end</field>
+        <field name="arch" type="xml">
+            <tree>
+                <field name="allocation_id"/>
+                <field name="employee_id"/>
+                <field name="date"/>
+                <field name="user_id"/>
+                <field name="shift_id"/>
+            </tree>
+        </field>
+    </record>
+    <record id="employee_week_end_form_view" model="ir.ui.view">
+        <field name="name">employee.week.end.form</field>
+        <field name="model">employee.week.end</field>
+        <field name="arch" type="xml">
+            <form>
+                <sheet>
+                    <group>
+                        <group>
+                            <field name="allocation_id" required="1" options="{'no_open': True, 'no_create': True}"/>
+                            <field name="shift_id" required="1" options="{'no_open': True, 'no_create': True}"/>
+                            <field name="employee_id" required="1" options="{'no_open': True, 'no_create': True}"/>
+
+                        </group>
+                        <group>
+                            <field name="week_off_id" required="1"/>
+                            <field name="user_id" required="1"/>
+                            <field name="date"/>
+                        </group>
+                    </group>
+                </sheet>
+            </form>
+        </field>
+    </record>
+    <record id="employee_week_end_search_view" model="ir.ui.view">
+        <field name="name">employee.week.end.tree</field>
+        <field name="model">employee.week.end</field>
+        <field name="arch" type="xml">
+            <search>
+                <field name="allocation_id"/>
+                <field name="employee_id"/>
+                <field name="date"/>
+                <field name="user_id"/>
+                <field name="shift_id"/>
+                <group expand="0" string="Group By">
+                    <filter string="Shift" name="shift_id" context="{'group_by':'shift_id'}"/>
+                    <filter string="Employee" name="employee_id" context="{'group_by':'employee_id'}"/>
+                    <filter string="Asignación de turnos" name="allocation_id" context="{'group_by':'allocation_id'}"/>
+                </group>
+            </search>
+        </field>
+    </record>
+    <record id="employee_week_end_calendar" model="ir.ui.view">
+        <field name="name">employee.week.end.calendar</field>
+        <field name="model">employee.week.end</field>
+        <field name="arch" type="xml">
+            <calendar date_start="date" hide_time="false" event_limit="5" mode="month" quick_create="False">
+                <field name="employee_id"/>
+            </calendar>
+        </field>
+    </record>
+    <record id="action_employee_week_end" model="ir.actions.act_window">
+        <field name="name">Employee Week Off</field>
+        <field name="type">ir.actions.act_window</field>
+        <field name="res_model">employee.week.end</field>
+        <field name="context">{'create':0, 'edit':0}</field>
+        <field name="view_mode">calendar,tree,search,form</field>
+    </record>
+<!--    <menuitem id="menu_employee_week_end"-->
+<!--              name="Employee Week Off"-->
+<!--              parent="main_menu_employee_shift"-->
+<!--              action="action_employee_week_end"-->
+<!--              sequence="0"/>-->
+
+
+    <record id="employee_work_day_tree_view" model="ir.ui.view">
+        <field name="name">employee.work.day.tree</field>
+        <field name="model">employee.work.day</field>
+        <field name="arch" type="xml">
+            <tree>
+                <field name="allocation_id"/>
+                <field name="employee_id"/>
+                <field name="date"/>
+                <field name="user_id"/>
+                <field name="shift_id"/>
+            </tree>
+        </field>
+    </record>
+    <record id="employee_work_day_form_view" model="ir.ui.view">
+        <field name="name">employee.work.day.form</field>
+        <field name="model">employee.work.day</field>
+        <field name="arch" type="xml">
+            <form>
+                <sheet>
+                    <group>
+                        <group>
+                            <field name="allocation_id" required="1" options="{'no_open': True, 'no_create': True}"/>
+                            <field name="shift_id" required="1" options="{'no_open': True, 'no_create': True}"/>
+                            <field name="employee_id" required="1" options="{'no_open': True, 'no_create': True}"/>
+
+                        </group>
+                        <group>
+                            <field name="user_id" required="1"/>
+                            <field name="date"/>
+                        </group>
+                        <group>
+                            <field name="observation" />
+                        </group>
+                    </group>
+                </sheet>
+            </form>
+        </field>
+    </record>
+    <record id="employee_work_day_search_view" model="ir.ui.view">
+        <field name="name">employee.work.day.tree</field>
+        <field name="model">employee.work.day</field>
+        <field name="arch" type="xml">
+            <search>
+                <field name="allocation_id"/>
+                <field name="employee_id"/>
+                <field name="date"/>
+                <field name="user_id"/>
+                <field name="shift_id"/>
+                <group expand="0" string="Group By">
+                    <filter string="Shift" name="shift_id" context="{'group_by':'shift_id'}"/>
+                    <filter string="Employee" name="employee_id" context="{'group_by':'employee_id'}"/>
+                    <filter string="Shift Allocation" name="allocation_id" context="{'group_by':'allocation_id'}"/>
+                </group>
+            </search>
+        </field>
+    </record>
+    <record id="employee_work_day_calendar" model="ir.ui.view">
+        <field name="name">employee.work.day.calendar</field>
+        <field name="model">employee.work.day</field>
+        <field name="arch" type="xml">
+            <calendar date_start="date_start" date_stop="date_stop" hide_time="false" event_limit="5" mode="month" quick_create="False">
+                <field name="employee_id"/>
+            </calendar>
+        </field>
+    </record>
+    <record id="action_employee_work_day" model="ir.actions.act_window">
+        <field name="name">Employee Shift Day</field>
+        <field name="type">ir.actions.act_window</field>
+        <field name="res_model">employee.work.day</field>
+        <field name="context">{'create':0, 'edit':0}</field>
+        <field name="view_mode">calendar,tree,search,form</field>
+    </record>
+
+<!--    <menuitem id="menu_employee_work_day"-->
+<!--              name="Employee Shift Day"-->
+<!--              parent="main_menu_employee_shift"-->
+<!--              action="action_employee_work_day"-->
+<!--              sequence="1"/>-->
+
+    <record id="view_time_off_exception_tree" model="ir.ui.view">
+        <field name="name">hr.work.entry.tree.inherit</field>
+        <field name="model">hr.work.entry</field>
+        <field name="arch" type="xml">
+            <tree string="Aprobación de Excepciones">
+                <field name="name"/>
+                <field name="work_entry_type_id" options="{'no_create': True, 'no_open': True}"/>
+                <field name="code" optional="hidden"/>
+                <field name="external_code" optional="hidden"/>
+                <field name="duration" widget="float_time" readonly="1"/>
+                <field name="state" widget="badge" decoration-info="state == 'draft'" decoration-warning="state in ('confirm','cancelled')" decoration-success="state == 'validated'"/>
+                <field name="date_start" string="Entrada" readonly="1"/>
+                <field name="date_stop" string="Salida" readonly="1"/>
+                <button name="aprob_metod" string="Aprobar"  type="object" invisible="state != 'draft'" icon="fa-thumbs-up" />
+                <button string="Rechazar" name="cancel_metod" type="object" invisible="state != 'draft'" icon="fa-times"/>
+            </tree>
+        </field>
+        <field name="groups_id" eval="[(6, 0, [ref('employee_shift_scheduling_app.group_validators_entry_works_admin')])]"/>
+    </record>
+
+
+    <record id="view_work_entry_form_custom" model="ir.ui.view">
+        <field name="name">work.entry.form</field>
+        <field name="model">hr.work.entry</field>
+        <field name="arch" type="xml">
+            <form string="Work Entry">
+                <header>
+                    <field name="is_validator" invisible="1" readonly="1"/>
+                    <field name="state" widget="statusbar" readonly="1" statusbar_visible="draft,validated,conflict"/>
+                    <button string="Aprobar" name="aprob_metod" type="object" class="oe_highlight" invisible="state == 'validated' or is_validator == False"/>
+                    <button string="Rechazar" name="cancel_metod" type="object" invisible="state == 'cancelled' or is_validator == False"/>
+                    <button string="Marcar como borrador" name="draft_metod" type="object" invisible="state == 'draft' or is_validator == False"/>
+                </header>
+                <div class="alert alert-warning text-center" role="alert" invisible="state != 'validated'">
+                    Note: Las entradas de trabajo validadas no se pueden modificar.
+                </div>
+                <sheet>
+                    <group>
+                        <group>
+                            <field name="name" string="Description" placeholder="Work Entry Name" readonly="state == 'validated'"/>
+                            <field name="employee_id" readonly="state != 'draft'" widget="many2one_avatar_user"/>
+                            <field name="work_entry_type_id" readonly="state == 'validated'" options="{'no_create': True, 'no_open': True}"/>
+                        </group>
+                        <group>
+                            <field name="date_start" readonly="state != 'draft'"/>
+                            <field name="date_stop" required="1" readonly="state != 'draft'"/>
+                            <label for="duration"/>
+                            <div class="o_row mw-50 mw-sm-25">
+                                <field name="duration" nolabel="1" widget="float_time" class="o_hr_narrow_field" readonly="state != 'draft'"/>
+                                <span>Hours</span>
+                            </div>
+                            <field name="company_id" invisible="1"/>
+                        </group>
+                    </group>
+                </sheet>
+            </form>
+        </field>
+        <field name="groups_id" eval="[(6, 0, [ref('employee_shift_scheduling_app.group_validators_entry_works_admin')])]"/>
+    </record>
+
+
+    <record id="action_employee_exception" model="ir.actions.act_window">
+        <field name="name">Horas de Excepción</field>
+        <field name="type">ir.actions.act_window</field>
+        <field name="res_model">employee.shift.changes</field>
+        <field name="domain">[('work_entry_type_id.name', '=', 'Excepción')]</field>
+        <field name="context">{'create':0, 'edit':0}</field>
+        <field name="view_mode">search,tree,form</field>
+<!--        <field name="view_id" ref="view_time_off_exception_tree"/>-->
+        <field name="view_ids" eval="[(5, 0, 0),
+        (0, 0, {'view_mode': 'tree', 'view_id': ref('view_time_off_exception_tree')}),
+        (0, 0, {'view_mode': 'form', 'view_id': ref('view_work_entry_form_custom')}),
+    ]"/>
+        <field name="groups_id" eval="[(6, 0, [ref('employee_shift_scheduling_app.group_validators_entry_works_admin')])]"/>
+<!--        <field name="groups_id" eval="[(6, 0, [ref('base.group_user')])]"/>-->
+    </record>
+
+    <!-- Cambia el ID del menú para que sea único -->
+<!--    <menuitem id="menu_time_off_exception"-->
+<!--              name="Aprobaciones de Excepciones"-->
+<!--              parent="main_menu_employee_shift"-->
+<!--              action="action_employee_exception"-->
+<!--              sequence="1"-->
+<!--    />-->
+
+
+    <!--validacion de horas extraordinarias -->
+
+    <record id="view_time_off_extraordinary_tree" model="ir.ui.view">
+        <field name="name">hr.work.entry.tree.inherit.extra</field>
+        <field name="model">hr.work.entry</field>
+        <field name="arch" type="xml">
+            <tree string="Aprobación de Horas Extraordinarias">
+                <field name="name"/>
+                <field name="work_entry_type_id" options="{'no_create': True, 'no_open': True}"/>
+                <field name="code" optional="hidden"/>
+                <field name="external_code" optional="hidden"/>
+                <field name="is_validator" optional="hidden" readonly="1"/>
+                <field name="duration" widget="float_time" readonly="1"/>
+                <field name="state" widget="badge" decoration-info="state == 'draft'"
+                       decoration-warning="state in ('confirm','cancelled')"
+                       decoration-success="state == 'validated'"
+                       readonly="is_validator == False"/>
+                <field name="date_start" string="Entrada" readonly="1"/>
+                <field name="date_stop" string="Salida" readonly="1"/>
+                <button name="aprob_metod" string="Aprobar"  type="object"
+                        invisible="['|', ('state', '!=', 'draft'), ('is_validator', '=', False)]" icon="fa-thumbs-up" />
+                <button string="Rechazar" name="cancel_metod" type="object"
+                        invisible="['|', ('state', '!=', 'draft'), ('is_validator', '=', False)]" icon="fa-times"/>
+            </tree>
+        </field>
+    </record>
+
+    <record id="action_employee_extraordinarias" model="ir.actions.act_window">
+        <field name="name">Horas Extraordinarias</field>
+        <field name="type">ir.actions.act_window</field>
+        <field name="res_model">hr.work.entry</field>
+        <field name="domain">[('work_entry_type_id.name', '=', 'Horas Extraordinarias')]</field>
+        <field name="context">{'create':0, 'edit':0}</field>
+        <field name="view_mode">search,tree,form</field>
+<!--        <field name="view_id" ref="view_time_off_exception_tree"/>-->
+        <field name="view_ids" eval="[(5, 0, 0),
+        (0, 0, {'view_mode': 'tree', 'view_id': ref('view_time_off_extraordinary_tree')}),
+        (0, 0, {'view_mode': 'form', 'view_id': ref('view_work_entry_form_custom')}),
+    ]"/>
+        <field name="groups_id" eval="[(6, 0, [ref('employee_shift_scheduling_app.group_validators_entry_works_admin')])]"/>
+<!--        <field name="groups_id" eval="[(6, 0, [ref('base.group_user')])]"/>-->
+    </record>
+
+<!--    <menuitem id="menu_time_off_extraordinary"-->
+<!--              name="Aprobaciones de Horas Extraordinarias"-->
+<!--              parent="main_menu_employee_shift"-->
+<!--              action="action_employee_extraordinarias"-->
+<!--              sequence="1"-->
+<!--              groups="employee_shift_scheduling_app.group_validators_entry_works_admin"/>-->
+</odoo>
+
+

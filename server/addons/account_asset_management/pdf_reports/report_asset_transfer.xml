@@ -1,0 +1,251 @@
+<?xml version="1.0" encoding="utf-8"?>
+<odoo>
+    <data>
+        <template id="report_asset_transfer">
+            <t t-call="web.html_container">
+                <t t-foreach="docs" t-as="o">
+                    <t t-call="web.external_layout">
+                        <main class="o_report_layout afx-wrap">
+
+                            <!-- ===== Logo ===== -->
+                            <div style="text-align:left; margin-bottom:10px;">
+                                <img t-if="o.company_id.logo"
+                                     t-att-src="image_data_uri(o.company_id.logo)"
+                                     style="max-height:120px; max-width:300px; display:block; margin:0;"
+                                     alt="Logo"/>
+                            </div>
+
+                            <!-- ===== Estilos ===== -->
+                            <style type="text/css">
+                                .afx-wrap { font-size:12px; font-family: Arial, sans-serif; }
+                                .afx-title { text-align:center; font-weight:700; font-size:16px; margin:0 0 8px;
+                                text-transform:uppercase; }
+                                .afx-subtitle { text-align:center; font-size:12px; margin:0 0 16px; color:#444; }
+                                .afx-table { width:100%; border-collapse:collapse; margin-bottom:14px; }
+                                .afx-table td { border:1px solid #dcdcdc; padding:6px 8px; vertical-align:top; }
+                                .afx-label { width:35%; background:#f6f6f6; font-weight:600; }
+                                .afx-note { margin-top:8px; padding:8px; border:1px solid #e0e0e0; background:#fcfcfc; }
+                                .afx-note .lbl { font-weight:600; margin-right:6px; }
+                                .afx-cond { margin-top:18px; margin-bottom:20px; }
+                                .afx-cond ol { padding-left:18px; line-height:1.5; }
+
+                                /* ===== Firmas ===== */
+                                .signatures-container { display: block; margin-top: 15px; page-break-inside: avoid; }
+                                .sign-block {
+                                border: 1px solid #000;
+                                padding: 8px;
+                                margin-bottom: 10px;
+                                text-align: center;
+                                background: #fafafa;
+                                height: 200px;
+                                box-sizing: border-box;
+                                page-break-inside: avoid;
+                                display: flex;
+                                flex-direction: column;
+                                justify-content: space-between;
+                                }
+                                .sign-title {
+                                font-weight: 700;
+                                margin-bottom: 3px;
+                                text-transform: uppercase;
+                                font-size: 13px;
+                                border-bottom: 1px solid #ddd;
+                                padding-bottom: 2px;
+                                }
+                                .badge-box {
+                                flex: 1;
+                                border: 1px dashed #999;
+                                border-radius: 6px;
+                                display: flex;
+                                justify-content: center;
+                                align-items: center;
+                                margin: 5px auto;
+                                height: 140px;
+                                width: 95%;
+                                overflow: hidden;
+                                text-align: center;
+                                }
+                                .signature-placeholder { color: red; font-style: italic; }
+                                .signature-footer { margin-top: 3px; font-size: 11px; color: #666; }
+                            </style>
+
+                            <!-- ===== Cabecera ===== -->
+                            <h3 class="afx-title">ACTA DE TRANSFERENCIA / RESPONSABILIDAD DE ACTIVO</h3>
+                            <div class="afx-subtitle">Este documento registra el cambio de custodia del activo.</div>
+
+                            <!-- ===== Datos ===== -->
+                            <h4 style="margin:10px 0 6px;">Datos del Activo</h4>
+                            <table class="afx-table">
+                                <tr>
+                                    <td class="afx-label">Activo</td>
+                                    <td>
+                                        <span t-esc="o.asset_id.name"/>
+                                    </td>
+                                </tr>
+                                <tr>
+                                    <td class="afx-label">Anterior custodio</td>
+                                    <td>
+                                        <span t-esc="o.custodian_from_id.name"/>
+                                    </td>
+                                </tr>
+                                <tr>
+                                    <td class="afx-label">Nuevo custodio</td>
+                                    <td>
+                                        <span t-esc="o.custodian_to_id.name"/>
+                                    </td>
+                                </tr>
+                                <tr>
+                                    <td class="afx-label">Fecha de transferencia</td>
+                                    <td>
+                                        <span t-esc="o.transfer_date"/>
+                                    </td>
+                                </tr>
+                            </table>
+
+                            <!-- ===== Observaciones ===== -->
+                            <div class="afx-note" t-if="o.note">
+                                <span class="lbl">Observaciones:</span>
+                                <span t-esc="o.note"/>
+                            </div>
+
+                            <!-- ===== Condiciones ===== -->
+                            <div class="afx-cond">
+                                <ol>
+                                    <li>Los Activos descritos en la presente acta estarán bajo responsabilidad del
+                                        usuario firmante y se ingresarán a su nombre en el Sistema de Activos Fijos.
+                                    </li>
+                                    <li>Los movimientos (retiro, cambio, traslado, etc.) deben gestionarse con Control
+                                        de Activos Fijos.
+                                    </li>
+                                    <li>En caso de negligencia comprobada, se autoriza el descuento conforme normativa
+                                        laboral.
+                                    </li>
+                                </ol>
+                            </div>
+
+                            <!-- ===== Firmas ===== -->
+                            <h4 style="margin:10px 0 6px;">Firmas</h4>
+                            <div class="signatures-container">
+
+                                <!-- Custodio Anterior -->
+                                <div class="sign-block">
+                                    <div class="sign-title">CUSTODIO ANTERIOR</div>
+                                    <t t-if="o.signed_by_from">
+                                        <div class="badge-box">
+                                            <table style="width:100%; text-align:center;" class="table-borderless">
+                                                <tr>
+                                                    <td>
+                                                        <div style="font-size:12pt; font-weight:600;">
+                                                            <span t-esc="o.custodian_from_id.name"/>
+                                                        </div>
+                                                    </td>
+                                                </tr>
+                                                <tr>
+                                                    <td>
+                                                        <div style="font-size:10pt;">
+                                                            <span t-esc="o.custodian_from_id.job_id.name"/>
+                                                        </div>
+                                                    </td>
+                                                </tr>
+                                                <tr>
+                                                    <td>
+                                                        <div t-if="o.custodian_from_id.barcode"
+                                                             t-field="o.custodian_from_id.barcode"
+                                                             t-options="{'widget': 'barcode', 'width': 600, 'height': 120, 'img_style': 'max-height:45pt;max-width:100%;', 'img_align': 'center'}"/>
+                                                    </td>
+                                                </tr>
+                                            </table>
+                                        </div>
+                                    </t>
+                                    <t t-else="">
+                                        <div class="badge-box">
+                                            <div class="signature-placeholder">Pendiente de firma</div>
+                                        </div>
+                                    </t>
+                                    <div class="signature-footer">Nombre, Cargo y Firma</div>
+                                </div>
+
+                                <!-- Nuevo Custodio -->
+                                <div class="sign-block">
+                                    <div class="sign-title">NUEVO CUSTODIO</div>
+                                    <t t-if="o.signed_by_to">
+                                        <div class="badge-box">
+                                            <table style="width:100%; text-align:center;" class="table-borderless">
+                                                <tr>
+                                                    <td>
+                                                        <div style="font-size:12pt; font-weight:600;">
+                                                            <span t-esc="o.custodian_to_id.name"/>
+                                                        </div>
+                                                    </td>
+                                                </tr>
+                                                <tr>
+                                                    <td>
+                                                        <div style="font-size:10pt;">
+                                                            <span t-esc="o.custodian_to_id.job_id.name"/>
+                                                        </div>
+                                                    </td>
+                                                </tr>
+                                                <tr>
+                                                    <td>
+                                                        <div t-if="o.custodian_to_id.barcode"
+                                                             t-field="o.custodian_to_id.barcode"
+                                                             t-options="{'widget': 'barcode', 'width': 600, 'height': 120, 'img_style': 'max-height:45pt;max-width:100%;', 'img_align': 'center'}"/>
+                                                    </td>
+                                                </tr>
+                                            </table>
+                                        </div>
+                                    </t>
+                                    <t t-else="">
+                                        <div class="badge-box">
+                                            <div class="signature-placeholder">Pendiente de firma</div>
+                                        </div>
+                                    </t>
+                                    <div class="signature-footer">Nombre, Cargo y Firma</div>
+                                </div>
+
+                                <!-- Administrador -->
+                                <div class="sign-block">
+                                    <div class="sign-title">ADMINISTRADOR DE ACTIVOS</div>
+                                    <t t-if="o.signed_by_admin and o.admin_employee_id">
+                                        <div class="badge-box">
+                                            <table style="width:100%; text-align:center;" class="table-borderless">
+                                                <tr>
+                                                    <td>
+                                                        <div style="font-size:12pt; font-weight:600;">
+                                                            <span t-esc="o.admin_employee_id.name"/>
+                                                        </div>
+                                                    </td>
+                                                </tr>
+                                                <tr>
+                                                    <td>
+                                                        <div style="font-size:10pt;">
+                                                            <span t-esc="o.admin_employee_id.job_id.name"/>
+                                                        </div>
+                                                    </td>
+                                                </tr>
+                                                <tr>
+                                                    <td>
+                                                        <div t-if="o.admin_employee_id.barcode"
+                                                             t-field="o.admin_employee_id.barcode"
+                                                             t-options="{'widget': 'barcode', 'width': 600, 'height': 120, 'img_style': 'max-height:45pt;max-width:100%;', 'img_align': 'center'}"/>
+                                                    </td>
+                                                </tr>
+                                            </table>
+                                        </div>
+                                    </t>
+                                    <t t-else="">
+                                        <div class="badge-box">
+                                            <div class="signature-placeholder">Pendiente de firma</div>
+                                        </div>
+                                    </t>
+                                    <div class="signature-footer">Nombre, Cargo y Firma</div>
+                                </div>
+
+                            </div>
+                        </main>
+                    </t>
+                </t>
+            </t>
+        </template>
+    </data>
+</odoo>

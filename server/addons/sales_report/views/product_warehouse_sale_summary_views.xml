@@ -1,0 +1,155 @@
+<?xml version="1.0" encoding="utf-8"?>
+<odoo>
+    <!-- Vista de búsqueda -->
+    <record id="view_product_warehouse_sale_summary_search" model="ir.ui.view">
+        <field name="name">product.warehouse.sale.summary.search</field>
+        <field name="model">product.warehouse.sale.summary</field>
+        <field name="arch" type="xml">
+            <search string="Buscar Resumen de Ventas">
+                <!-- Campos de búsqueda -->
+                <field name="product_id" string="Producto"/>
+                <field name="warehouse_id" string="Almacén"/>
+                <field name="date" string="Fecha"/>
+
+                <!-- Filtros predefinidos -->
+                <filter name="filter_today" string="Hoy"
+                        domain="[('date', '=', context_today().strftime('%Y-%m-%d'))]"/>
+                <filter name="filter_last_7_days" string="Últimos 7 días"
+                        domain="[('date', '&gt;=', (context_today() - datetime.timedelta(days=7)).strftime('%Y-%m-%d'))]"/>
+                <filter name="filter_last_30_days" string="Últimos 30 días"
+                        domain="[('date', '&gt;=', (context_today() - datetime.timedelta(days=30)).strftime('%Y-%m-%d'))]"/>
+                <filter name="filter_last_60_days" string="Últimos 60 días"
+                        domain="[('date', '&gt;=', (context_today() - datetime.timedelta(days=60)).strftime('%Y-%m-%d'))]"/>
+
+                <separator/>
+
+                <filter name="filter_sales" string="Ventas"
+                        domain="[('record_type', '=', 'sale')]"/>
+                <filter name="filter_transfers" string="Transferencias"
+                        domain="[('record_type', '=', 'transfer')]"/>
+
+                <separator/>
+
+                <filter name="filter_legacy" string="Sistema Legado"
+                        domain="[('is_legacy_system', '=', True)]"/>
+                <filter name="filter_not_legacy" string="No Legado"
+                        domain="[('is_legacy_system', '=', False)]"/>
+
+                <!-- Agrupaciones -->
+                <group expand="0" string="Agrupar por">
+                    <filter name="group_by_date" string="Fecha" context="{'group_by': 'date'}"/>
+                    <filter name="group_by_product" string="Producto" context="{'group_by': 'product_id'}"/>
+                    <filter name="group_by_warehouse" string="Almacén" context="{'group_by': 'warehouse_id'}"/>
+                    <filter name="group_by_record_type" string="Tipo" context="{'group_by': 'record_type'}"/>
+                    <filter name="group_by_legacy" string="Sistema Legado" context="{'group_by': 'is_legacy_system'}"/>
+                </group>
+            </search>
+        </field>
+    </record>
+
+    <!-- Vista de lista -->
+    <record id="view_product_warehouse_sale_summary_tree" model="ir.ui.view">
+        <field name="name">product.warehouse.sale.summary.tree</field>
+        <field name="model">product.warehouse.sale.summary</field>
+        <field name="arch" type="xml">
+            <tree>
+                <field name="date" readonly="1"/>
+                <field name="hour" readonly="1" optional="hide"/>
+                <field name="product_id" readonly="1"/>
+                <field name="warehouse_id" readonly="1" optional="hide"/>
+                <field name="amount_total" readonly="1" optional="hide"/>
+                <field name="quantity_sold" readonly="1"/>
+                <field name="costo_total" readonly="1" optional="hide"/>
+                <field name="record_type" readonly="1"/>
+                <field name="is_legacy_system" readonly="1" widget="boolean"/>
+            </tree>
+        </field>
+    </record>
+
+    <!--    vista para los errores de sincronizacion de ventas-->
+    <record id="view_product_warehouse_sale_summary_error_tree" model="ir.ui.view">
+        <field name="name">sales.summary.error.tree</field>
+        <field name="model">sales.summary.error</field>
+        <field name="arch" type="xml">
+            <tree>
+                <field name="error_details" readonly="1"/>
+            </tree>
+        </field>
+
+    </record>
+    <!-- Vista de formulario -->
+    <record id="view_product_warehouse_sale_summary_form" model="ir.ui.view">
+        <field name="name">product.warehouse.sale.summary.form</field>
+        <field name="model">product.warehouse.sale.summary</field>
+        <field name="arch" type="xml">
+            <form>
+                <sheet>
+                    <group>
+                        <group>
+                            <field name="date" readonly="1"/>
+                            <field name="product_id" readonly="1"/>
+                            <field name="warehouse_id" readonly="1"/>
+                            <field name="uom_id" readonly="1"/>
+                        </group>
+                        <group>
+                            <field name="quantity_sold" readonly="1"/>
+                            <field name="amount_total" readonly="1"/>
+                            <field name="costo_total" readonly="1"/>
+                        </group>
+                        <group>
+                            <field name="record_type" readonly="1"/>
+                            <field name="is_legacy_system" readonly="1"/>
+                        </group>
+                    </group>
+                </sheet>
+            </form>
+        </field>
+    </record>
+
+
+    <!-- Acción para abrir el reporte -->
+    <record id="action_product_warehouse_sale_summary" model="ir.actions.act_window">
+        <field name="name">Total Ventas</field>
+        <field name="res_model">product.warehouse.sale.summary</field>
+        <field name="view_mode">tree,form</field>
+        <field name="view_id" ref="view_product_warehouse_sale_summary_tree"/>
+        <field name="search_view_id" ref="view_product_warehouse_sale_summary_search"/>
+        <field name="context">{'search_default_filter_last_30_days': 1}</field>
+    </record>
+
+    <!--    accion para el meniu de errores-->
+
+    <record id="action_product_warehouse_sale_summary_error" model="ir.actions.act_window">
+        <field name="name">Errores</field>
+        <field name="res_model">sales.summary.error</field>
+        <field name="view_mode">tree,form</field>
+        <field name="view_id" ref="view_product_warehouse_sale_summary_error_tree"/>
+    </record>
+
+
+
+
+    <!-- Menú para acceder al reporte -->
+    <menuitem
+            id="menu_product_warehouse_sale_summary"
+            name="Total Ventas"
+            groups="base.group_no_one"
+            parent="purchase.menu_purchase_root"
+            sequence="50"
+            action="action_product_warehouse_sale_summary">
+
+    </menuitem>
+
+
+    <!--    menu superior para ver los errores-->
+    <menuitem
+            id="menu_product_warehouse_sale_summary_error"
+            name="Errores"
+            groups="base.group_no_one"
+            parent="purchase.menu_purchase_root"
+            sequence="60"
+            action="action_product_warehouse_sale_summary_error"/>
+<!--        menu para productos nuevos a sincronizar-->
+
+
+</odoo>

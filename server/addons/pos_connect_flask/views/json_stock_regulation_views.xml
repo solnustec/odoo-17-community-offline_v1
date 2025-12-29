@@ -1,0 +1,56 @@
+<odoo>
+    <!-- Vista de formulario para JSON Storage -->
+    <record id="view_json_stock_regulation_form" model="ir.ui.view">
+        <field name="name">json.stock.regulation.form</field>
+        <field name="model">json.stock.regulation</field>
+        <field name="arch" type="xml">
+            <form string="Regulación de inventario" readonly="1">
+                <sheet>
+                    <group>
+                        <field name="json_data" widget="monospaced" placeholder="JSON Data"/>
+                        <field name="pos_config_id" readonly="1"/>
+                        <field name="laboratory_id" readonly="1"/>
+                        <field name="warehouse_id" readonly="1"/>
+                        <field name="create_date" readonly="1"/>
+                        <field name="sync_date" readonly="1"/>
+                        <field name="db_key" readonly="1"/>
+                        <field name="id_point_of_sale" />
+                        <field name="sent" readonly="0"/>
+                        <field name="json_formated"/>
+                        <field name="sent_to_vf"/>
+                        <field name="sync_date_vf"/>
+                    </group>
+                </sheet>
+            </form>
+        </field>
+    </record>
+
+    <!-- Vista de árbol para JSON Storage -->
+    <record id="view_json_stock_regulation_tree" model="ir.ui.view">
+        <field name="name">json.stock.regulation.tree</field>
+        <field name="model">json.stock.regulation</field>
+        <field name="arch" type="xml">
+            <tree string="Regulación de inventario">
+                <field name="pos_config_id"/>
+                <field name="create_date"/>
+                <field name="sync_date"/>
+                <field name="db_key"/>
+                <field name="id_point_of_sale"/>
+                <field name="sent" readonly="1"/>
+            </tree>
+        </field>
+    </record>
+
+    <!-- Acción para JSON Storage -->
+    <record id="action_json_stock_regulation_credit" model="ir.actions.act_window">
+        <field name="name">Regulación de stock</field>
+        <field name="res_model">json.stock.regulation</field>
+        <field name="view_mode">tree,form</field>
+    </record>
+
+    <!-- Menú para JSON Storage -->
+    <menuitem id="menu_json_stock_regulation"
+              name="Regulación de inventario"
+              parent="point_of_sale.menu_point_config_product"
+              action="action_json_stock_regulation_credit"/>
+</odoo>

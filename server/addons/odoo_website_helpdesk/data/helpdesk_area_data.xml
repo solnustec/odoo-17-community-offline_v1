@@ -1,0 +1,89 @@
+<?xml version="1.0" encoding="utf-8"?>
+<odoo>
+    <data noupdate="0">
+        <!-- Áreas -->
+        <record id="area_sistemas" model="helpdesk.area">
+            <field name="name">Sistemas</field>
+        </record>
+        <record id="area_computadoras" model="helpdesk.area">
+            <field name="name">Computadoras</field>
+        </record>
+        <record id="area_sistemas_seguridad" model="helpdesk.area">
+            <field name="name">Sistemas de Seguridad</field>
+        </record>
+
+        <!-- Subáreas para Sistemas -->
+        <record id="subarea_visualplus" model="helpdesk.subarea">
+            <field name="name">VisualPlus</field>
+            <field name="area_id" ref="area_sistemas"/>
+        </record>
+        <record id="subarea_odoo" model="helpdesk.subarea">
+            <field name="name">Odoo</field>
+            <field name="area_id" ref="area_sistemas"/>
+        </record>
+        <record id="subarea_punto_venta" model="helpdesk.subarea">
+            <field name="name">Punto de Venta</field>
+            <field name="area_id" ref="area_sistemas"/>
+        </record>
+
+        <!-- Subáreas para Computadoras -->
+        <record id="subarea_monitor" model="helpdesk.subarea">
+            <field name="name">Monitor</field>
+            <field name="area_id" ref="area_computadoras"/>
+        </record>
+        <record id="subarea_teclado" model="helpdesk.subarea">
+            <field name="name">Teclado</field>
+            <field name="area_id" ref="area_computadoras"/>
+        </record>
+        <record id="subarea_impresora" model="helpdesk.subarea">
+            <field name="name">Impresora</field>
+            <field name="area_id" ref="area_computadoras"/>
+        </record>
+        <record id="subarea_mouse" model="helpdesk.subarea">
+            <field name="name">Mouse</field>
+            <field name="area_id" ref="area_computadoras"/>
+        </record>
+        <record id="subarea_internet" model="helpdesk.subarea">
+            <field name="name">Internet</field>
+            <field name="area_id" ref="area_computadoras"/>
+        </record>
+        <record id="subarea_cpu" model="helpdesk.subarea">
+            <field name="name">CPU</field>
+            <field name="area_id" ref="area_computadoras"/>
+        </record>
+        <record id="subarea_lector" model="helpdesk.subarea">
+            <field name="name">Lector</field>
+            <field name="area_id" ref="area_computadoras"/>
+        </record>
+        <record id="subarea_biometrico" model="helpdesk.subarea">
+            <field name="name">Biométrico</field>
+            <field name="area_id" ref="area_computadoras"/>
+        </record>
+        <record id="subarea_regulador_voltaje" model="helpdesk.subarea">
+            <field name="name">Regulador de Voltaje</field>
+            <field name="area_id" ref="area_computadoras"/>
+        </record>
+        <record id="subarea_ups" model="helpdesk.subarea">
+            <field name="name">UPS</field>
+            <field name="area_id" ref="area_computadoras"/>
+        </record>
+
+        <!-- Subáreas para Sistemas de Seguridad -->
+        <record id="subarea_camaras" model="helpdesk.subarea">
+            <field name="name">Cámaras</field>
+            <field name="area_id" ref="area_sistemas_seguridad"/>
+        </record>
+        <record id="subarea_sensores" model="helpdesk.subarea">
+            <field name="name">Sensores</field>
+            <field name="area_id" ref="area_sistemas_seguridad"/>
+        </record>
+        <record id="subarea_alarmas" model="helpdesk.subarea">
+            <field name="name">Alarmas</field>
+            <field name="area_id" ref="area_sistemas_seguridad"/>
+        </record>
+        <record id="subarea_barras_antihurto" model="helpdesk.subarea">
+            <field name="name">Barras Antihurto</field>
+            <field name="area_id" ref="area_sistemas_seguridad"/>
+        </record>
+    </data>
+</odoo>

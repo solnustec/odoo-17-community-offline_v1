@@ -1,0 +1,303 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<odoo>
+    <template id="report_helpdesk_ticket_full">
+        <t t-call="web.html_container">
+            <t t-foreach="docs" t-as="o">
+                <t t-call="web.external_layout">
+                    <div class="page" style="font-family: Arial, sans-serif; font-size: 12px;">
+
+                        <!-- Contenedor flex para separar en extremos -->
+                        <div style="display: flex; justify-content: space-between; font-size: 0.9rem; color: #666; margin-bottom: 1rem;">
+                            <div style="text-align: right;">
+                                <strong>Fecha y hora:</strong> <t t-esc="print_date"/>
+                            </div>
+                            <div style="text-align: left;">
+                                <strong>Número de Ticket:</strong> <t t-esc="o.name"/>
+                            </div>
+                            <div style="text-align: left;">
+                                <strong>Asunto:</strong> <t t-esc="o.subject"/>
+                            </div>
+                        </div>
+
+                        <!-- Datos del cliente -->
+                        <h4 style="border-bottom: 2px solid #2F5597; padding-bottom: 4px; color: #2F5597;">Información del Solicitante de Soporte</h4>
+                        <table class="table table-borderless mb-4" style="width: 100%;">
+                            <tbody>
+                                <tr>
+                                    <td style="width: 150px; font-weight: bold;">Nombre:</td>
+                                    <td>
+                                        <t t-esc="o.customer_id.name or 'N/A'"/>
+                                    </td>
+                                </tr>
+                                <tr>
+                                    <td style="font-weight: bold;">Cédula/Pasaporte:</td>
+                                    <td>
+                                        <t t-esc="o.user_vat or 'N/A'"/>
+                                    </td>
+                                </tr>
+                                <tr>
+                                    <td style="font-weight: bold;">Correo electrónico:</td>
+                                    <td>
+                                        <t t-esc="o.user_email or 'N/A'"/>
+                                    </td>
+                                </tr>
+                                <tr>
+                                    <td style="font-weight: bold;">Teléfono:</td>
+                                    <td>
+                                        <t t-esc="o.user_phone or 'N/A'"/>
+                                    </td>
+                                </tr>
+                                <tr>
+                                    <td style="font-weight: bold;">Departamento:</td>
+                                    <td>
+                                        <t t-esc="o.department_id.name or 'N/A'"/>
+                                    </td>
+                                </tr>
+                            </tbody>
+                        </table>
+
+                        <!-- Datos generales del ticket -->
+                        <h4 style="border-bottom: 2px solid #2F5597; padding-bottom: 4px; color: #2F5597;">Información del Ticket</h4>
+                        <table class="table table-sm table-bordered mb-4" style="width: 100%;">
+                            <tbody>
+                                <tr>
+                                    <th>Estado</th>
+                                    <td class="text-center">
+                                        <t t-esc="o.stage_id.name or 'N/A'"/>
+                                    </td>
+                                    <th>Tipo de Ticket</th>
+                                    <td class="text-center">
+                                        <t t-esc="o.ticket_type_id.name or 'N/A'"/>
+                                    </td>
+                                </tr>
+                                <tr>
+                                    <th>Usuario Asignado</th>
+                                    <td class="text-center">
+                                        <t t-if="o.assigned_user_ids">
+                                            <t t-foreach="o.assigned_user_ids" t-as="user">
+                                                <t t-esc="user.name"/><t t-if="not user_last">,</t>
+                                            </t>
+                                        </t>
+                                        <t t-if="not o.assigned_user_ids">N/A</t>
+                                    </td>
+                                    <th>Fecha de Creación</th>
+                                    <td class="text-center">
+                                        <t t-esc="o.format_local_datetime(o.create_date)"/>
+                                    </td>
+                                </tr>
+                                <tr>
+                                    <th>Fecha de Inicio</th>
+                                    <td class="text-center">
+                                        <t t-esc="o.format_local_datetime(o.start_date)"/>
+                                    </td>
+                                    <th>Fecha de Fin</th>
+                                    <td class="text-center">
+                                        <t t-esc="o.format_local_datetime(o.end_date)"/>
+                                    </td>
+                                </tr>
+                                <tr>
+                                    <th>Ticket Aprobado</th>
+                                    <td class="text-center">
+                                        <t t-esc="'Sí' if o.approved else 'No'"/>
+                                    </td>
+                                </tr>
+                            </tbody>
+                        </table>
+
+                        <!-- Descripción -->
+                        <div style="margin-bottom: 20px;">
+                            <h4 style="color: #2F5597; border-bottom: 2px solid #2F5597; padding-bottom: 4px;">
+                                Descripción del Problema
+                            </h4>
+                            <div t-field="o.description" style="white-space: pre-wrap;"/>
+                        </div>
+
+                        <!-- Archivos adjuntos -->
+                        <t t-set="attachments" t-value="o.attachment_ids.filtered(lambda a: not a.is_technical)"/>
+                        <t t-if="attachments">
+                            <div class="mb16">
+                                <h4 style="border-bottom: 2px solid #2F5597; padding-bottom: 4px; color: #2F5597;">
+                                    Archivos Adjuntos
+                                </h4>
+                                <div style="display: grid; grid-template-columns: repeat(auto-fill, minmax(240px, 1fr)); gap: 16px;">
+                                    <t t-foreach="attachments" t-as="att">
+                                        <t t-set="is_image" t-value="'image/' in (att.mimetype or '')"/>
+                                        <t t-set="file_type" t-value="(att.mimetype or '').split('/')[-1].upper()"/>
+
+                                        <t t-if="is_image and att.datas">
+                                            <div style="border: 1px solid #ddd; border-radius: 8px; padding: 12px; background: #fafafa;">
+                                                <div style="height: 160px; display: flex; justify-content: center; align-items: center; overflow: hidden; border-radius: 6px; background: white;">
+                                                    <img t-att-src="'data:%s;base64,%s' % (att.mimetype, att.datas.decode('utf-8'))"
+                                                         style="max-width: 100%; max-height: 100%; object-fit: contain;"/>
+                                                </div>
+                                                <div style="margin-top: 8px; text-align: center; font-size: 14px; color: #333;">
+                                                    Nombre de Imagen: <t t-esc="att.name"/>
+                                                </div>
+                                            </div>
+                                        </t>
+
+                                        <t t-if="not is_image">
+                                            <div style="border: 1px solid #ddd; border-radius: 6px; padding: 10px; background: #f7f7f7; font-size: 13px; color: #444;">
+                                                Archivo <t t-esc="file_type"/>: <t t-esc="att.name"/>
+                                            </div>
+                                        </t>
+                                    </t>
+                                </div>
+                            </div>
+                        </t>
+
+                        <t t-if="o.description_technical">
+                            <div style="margin-bottom: 20px;">
+                                <h4 style="color: #2F5597; border-bottom: 2px solid #2F5597; padding-bottom: 4px;">
+                                    Descripción dada por el Técnico
+                                </h4>
+                                <div t-field="o.description_technical" style="white-space: pre-wrap;"/>
+                            </div>
+                        </t>
+
+                        <!-- Archivos técnicos adjuntos -->
+                        <t t-set="technical_attachments" t-value="o.attachment_ids.filtered(lambda a: a.is_technical)"/>
+                        <t t-if="technical_attachments">
+                            <div class="mb16">
+                                <h4 style="border-bottom: 2px solid #2F5597; padding-bottom: 4px; color: #2F5597;">
+                                    Archivos Adjuntos del Técnico
+                                </h4>
+                                <div style="display: grid; grid-template-columns: repeat(auto-fill, minmax(240px, 1fr)); gap: 16px;">
+                                    <t t-foreach="technical_attachments" t-as="att">
+                                        <t t-set="is_image" t-value="'image/' in (att.mimetype or '')"/>
+                                        <t t-set="file_type" t-value="(att.mimetype or '').split('/')[-1].upper()"/>
+
+                                        <t t-if="is_image and att.datas">
+                                            <div style="border: 1px solid #ddd; border-radius: 8px; padding: 12px; background: #fafafa;">
+                                                <div style="height: 160px; display: flex; justify-content: center; align-items: center; overflow: hidden; border-radius: 6px; background: white;">
+                                                    <img t-att-src="'data:%s;base64,%s' % (att.mimetype, att.datas.decode('utf-8'))"
+                                                         style="max-width: 100%; max-height: 100%; object-fit: contain;"/>
+                                                </div>
+                                                <div style="margin-top: 8px; text-align: center; font-size: 14px; color: #333;">
+                                                    Nombre de Imagen: <t t-esc="att.name"/>
+                                                </div>
+                                            </div>
+                                        </t>
+
+                                        <t t-if="not is_image">
+                                            <div style="border: 1px solid #ddd; border-radius: 6px; padding: 10px; background: #f7f7f7; font-size: 13px; color: #444;">
+                                                Archivo <t t-esc="file_type"/>: <t t-esc="att.name"/>
+                                            </div>
+                                        </t>
+                                    </t>
+                                </div>
+                            </div>
+                        </t>
+
+                        <t t-if="o.stage_closing">
+                            <!-- Insignia del responsable con padding vertical reducido -->
+                            <h4 style="color: #2F5597; border-bottom: 2px solid #2F5597; padding-bottom: 4px; margin-top: 40px;">
+                                Identificación del Responsable
+                            </h4>
+
+                            <t t-set="employee" t-value="o.user_id.employee_ids"/>
+
+                            <t t-if="employee or o.assigned_user_ids">
+                                <table style="width:486pt; border: 1pt solid black; border-radius:8pt; table-layout:fixed; margin-left:auto; margin-right:auto;">
+                                    <tr>
+                                        <t t-if="o.kanban_state == 'validated'">
+                                            <!-- Tarjeta empleado -->
+                                            <td style="width:243pt; background-color:#f9f7f7; text-align:center; vertical-align:middle; padding:5pt; border-right: 1pt solid black;">
+                                                <t t-if="employee">
+                                                    <t t-set="emp" t-value="employee[0]"/>
+                                                    <t t-if="emp.image_1920">
+                                                        <img t-att-src="image_data_uri(emp.image_1920)"
+                                                             style="max-height:80pt; max-width:100%; border-radius:4pt;" alt="Foto"/>
+                                                    </t>
+                                                    <t t-if="not emp.image_1920">
+                                                        <div style="width:60pt; height:60pt; background-color:#3B4CCA; color:white; display:flex; align-items:center; justify-content:center; font-size:28pt; border-radius:4pt;">
+                                                            <t t-esc="emp.name[0]"/>
+                                                        </div>
+                                                    </t>
+                                                    <div style="font-size:13pt; font-weight:bold; margin-bottom:4pt;">
+                                                        <t t-esc="emp.name"/>
+                                                    </div>
+                                                    <div style="font-size:9pt; margin-bottom:6pt; color:#555;">
+                                                        <t t-esc="emp.job_id.name or ''"/>
+                                                    </div>
+                                                    <div t-if="emp.barcode"
+                                                         t-field="emp.barcode"
+                                                         t-options="{
+                                                            'widget': 'barcode',
+                                                            'width': 400,
+                                                            'height': 100,
+                                                            'img_style': 'max-height:45pt;max-width:100%;',
+                                                            'img_align': 'center'
+                                                         }"/>
+                                                </t>
+                                            </td>
+                                        </t>
+                                        <!-- Tarjetas usuarios asignados -->
+                                        <td style="width:243pt; background-color:#f9f7f7; text-align:center; vertical-align:middle; padding:5pt;">
+                                            <t t-if="o.assigned_user_ids">
+                                                <t t-foreach="o.assigned_user_ids" t-as="user">
+                                                    <t t-set="assignee" t-value="user.employee_ids and user.employee_ids[0] or False"/>
+                                                    <t t-if="assignee">
+                                                        <t t-if="assignee.image_1920">
+                                                            <img t-att-src="image_data_uri(assignee.image_1920)"
+                                                                 style="max-height:80pt; max-width:100%; border-radius:4pt;" alt="Foto"/>
+                                                        </t>
+                                                        <t t-if="not assignee.image_1920">
+                                                            <div style="width:60pt; height:60pt; background-color:#3B4CCA; color:white; display:flex; align-items:center; justify-content:center; font-size:28pt; border-radius:4pt;">
+                                                                <t t-esc="assignee.name[0]"/>
+                                                            </div>
+                                                        </t>
+                                                        <div style="font-size:13pt; font-weight:bold; margin-bottom:4pt;">
+                                                            <t t-esc="assignee.name"/>
+                                                        </div>
+                                                        <div style="font-size:9pt; margin-bottom:6pt; color:#555;">
+                                                            <t t-esc="assignee.job_id.name or ''"/>
+                                                        </div>
+                                                        <div t-if="assignee.barcode"
+                                                             t-field="assignee.barcode"
+                                                             t-options="{
+                                                                'widget': 'barcode',
+                                                                'width': 400,
+                                                                'height': 100,
+                                                                'img_style': 'max-height:45pt;max-width:100%;',
+                                                                'img_align': 'center'
+                                                             }"/>
+                                                        <hr t-if="not user_last" style="border: 1px solid #ddd; margin: 10px 0;"/>
+                                                    </t>
+                                                    <t t-if="not assignee">
+                                                        <div style="font-size:13pt; font-weight:bold; margin-bottom:4pt;">
+                                                            <t t-esc="user.name"/>
+                                                        </div>
+                                                        <div style="font-size:9pt; margin-bottom:6pt; color:#555;">
+                                                            Sin información de empleado
+                                                        </div>
+                                                    </t>
+                                                </t>
+                                            </t>
+                                            <t t-if="not o.assigned_user_ids">
+                                                <div style="font-size:13pt; font-weight:bold; margin-bottom:4pt;">
+                                                    N/A
+                                                </div>
+                                            </t>
+                                        </td>
+                                    </tr>
+                                </table>
+                            </t>
+                        </t>
+                    </div>
+                </t>
+            </t>
+        </t>
+    </template>
+
+    <record id="report_ticket_full" model="ir.actions.report">
+        <field name="name">Reporte Completo de Ticket de Soporte</field>
+        <field name="model">ticket.helpdesk</field>
+        <field name="report_type">qweb-pdf</field>
+        <field name="report_name">odoo_website_helpdesk.report_helpdesk_ticket_full</field>
+        <field name="report_file">odoo_website_helpdesk.report_helpdesk_ticket_full</field>
+        <field name="binding_model_id" ref="model_ticket_helpdesk"/>
+        <field name="binding_view_types">form</field>
+        <field name="binding_type">report</field>
+    </record>
+</odoo>

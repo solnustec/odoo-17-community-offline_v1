@@ -1,0 +1,399 @@
+<?xml version="1.0" encoding="utf-8"?>
+<odoo>
+
+    <!-- ================================================================== -->
+    <!-- COLA DE REABASTECIMIENTO (Queue)                                   -->
+    <!-- ================================================================== -->
+
+    <record id="view_replenishment_queue_tree" model="ir.ui.view">
+        <field name="name">product.replenishment.queue.tree</field>
+        <field name="model">product.replenishment.queue</field>
+        <field name="arch" type="xml">
+            <tree string="Cola de Reabastecimiento" create="false" edit="false">
+                <field name="created_at" string="Fecha"/>
+                <field name="product_id"/>
+                <field name="warehouse_id"/>
+                <field name="quantity"/>
+                <field name="event_date"/>
+                <field name="record_type"/>
+                <field name="is_legacy_system"/>
+                <field name="retry_count"/>
+            </tree>
+        </field>
+    </record>
+
+    <record id="view_replenishment_queue_search" model="ir.ui.view">
+        <field name="name">product.replenishment.queue.search</field>
+        <field name="model">product.replenishment.queue</field>
+        <field name="arch" type="xml">
+            <search string="Buscar en Cola">
+                <field name="product_id"/>
+                <field name="warehouse_id"/>
+                <filter string="Ventas" name="sales" domain="[('record_type', '=', 'sale')]"/>
+                <filter string="Transferencias" name="transfers" domain="[('record_type', '=', 'transfer')]"/>
+                <filter string="Legacy" name="legacy" domain="[('is_legacy_system', '=', True)]"/>
+                <separator/>
+                <filter string="Con Reintentos" name="retried" domain="[('retry_count', '>', 0)]"/>
+                <group expand="0" string="Agrupar por">
+                    <filter string="Almacén" name="group_warehouse" context="{'group_by': 'warehouse_id'}"/>
+                    <filter string="Producto" name="group_product" context="{'group_by': 'product_id'}"/>
+                    <filter string="Tipo" name="group_type" context="{'group_by': 'record_type'}"/>
+                    <filter string="Fecha Evento" name="group_date" context="{'group_by': 'event_date'}"/>
+                </group>
+            </search>
+        </field>
+    </record>
+
+    <record id="action_replenishment_queue" model="ir.actions.act_window">
+        <field name="name">Cola de Eventos</field>
+        <field name="res_model">product.replenishment.queue</field>
+        <field name="view_mode">tree</field>
+        <field name="search_view_id" ref="view_replenishment_queue_search"/>
+        <field name="context">{'search_default_group_warehouse': 1}</field>
+        <field name="help" type="html">
+            <p class="o_view_nocontent_smiling_face">
+                La cola está vacía
+            </p>
+            <p>
+                Los eventos de venta/transferencia aparecen aquí antes de ser procesados.
+                El cron los consume cada minuto.
+            </p>
+        </field>
+    </record>
+
+    <!-- ================================================================== -->
+    <!-- DEAD LETTER QUEUE                                                  -->
+    <!-- ================================================================== -->
+
+    <record id="view_dead_letter_tree" model="ir.ui.view">
+        <field name="name">product.replenishment.dead.letter.tree</field>
+        <field name="model">product.replenishment.dead.letter</field>
+        <field name="arch" type="xml">
+            <tree string="Eventos Fallidos" decoration-danger="state == 'pending'" decoration-muted="state == 'discarded'" decoration-success="state == 'resolved'">
+                <field name="failed_at" string="Fecha Fallo"/>
+                <field name="product_id"/>
+                <field name="warehouse_id"/>
+                <field name="quantity"/>
+                <field name="error_type"/>
+                <field name="retry_count"/>
+                <field name="state" widget="badge" decoration-danger="state == 'pending'" decoration-success="state == 'resolved'" decoration-warning="state == 'reprocessing'" decoration-muted="state == 'discarded'"/>
+            </tree>
+        </field>
+    </record>
+
+    <record id="view_dead_letter_form" model="ir.ui.view">
+        <field name="name">product.replenishment.dead.letter.form</field>
+        <field name="model">product.replenishment.dead.letter</field>
+        <field name="arch" type="xml">
+            <form string="Evento Fallido">
+                <header>
+                    <button name="action_reprocess" string="Reprocesar" type="object" class="btn-primary" invisible="state != 'pending'"/>
+                    <button name="action_mark_resolved" string="Marcar Resuelto" type="object" invisible="state not in ('pending', 'reprocessing')"/>
+                    <button name="action_discard" string="Descartar" type="object" invisible="state != 'pending'" confirm="¿Está seguro de descartar este evento?"/>
+                    <field name="state" widget="statusbar" statusbar_visible="pending,reprocessing,resolved,discarded"/>
+                </header>
+                <sheet>
+                    <group>
+                        <group string="Datos del Evento">
+                            <field name="product_id"/>
+                            <field name="warehouse_id"/>
+                            <field name="quantity"/>
+                            <field name="event_date"/>
+                            <field name="record_type"/>
+                            <field name="is_legacy_system"/>
+                        </group>
+                        <group string="Información del Error">
+                            <field name="error_type"/>
+                            <field name="retry_count"/>
+                            <field name="failed_at"/>
+                            <field name="original_created_at"/>
+                        </group>
+                    </group>
+                    <group string="Mensaje de Error">
+                        <field name="error_message" nolabel="1"/>
+                    </group>
+                    <group string="Traceback" invisible="not error_traceback">
+                        <field name="error_traceback" nolabel="1"/>
+                    </group>
+                    <group string="Resolución" invisible="state not in ('resolved', 'discarded')">
+                        <field name="resolved_at"/>
+                        <field name="resolved_by"/>
+                        <field name="resolution_notes"/>
+                    </group>
+                </sheet>
+            </form>
+        </field>
+    </record>
+
+    <record id="view_dead_letter_search" model="ir.ui.view">
+        <field name="name">product.replenishment.dead.letter.search</field>
+        <field name="model">product.replenishment.dead.letter</field>
+        <field name="arch" type="xml">
+            <search string="Buscar Eventos Fallidos">
+                <field name="product_id"/>
+                <field name="warehouse_id"/>
+                <field name="error_type"/>
+                <filter string="Pendientes" name="pending" domain="[('state', '=', 'pending')]"/>
+                <filter string="Resueltos" name="resolved" domain="[('state', '=', 'resolved')]"/>
+                <filter string="Descartados" name="discarded" domain="[('state', '=', 'discarded')]"/>
+                <separator/>
+                <filter string="Max Reintentos" name="max_retries" domain="[('error_type', '=', 'max_retries')]"/>
+                <filter string="Producto Eliminado" name="product_deleted" domain="[('error_type', '=', 'product_deleted')]"/>
+                <filter string="Error BD" name="db_error" domain="[('error_type', '=', 'database_error')]"/>
+                <group expand="0" string="Agrupar por">
+                    <filter string="Tipo Error" name="group_error_type" context="{'group_by': 'error_type'}"/>
+                    <filter string="Estado" name="group_state" context="{'group_by': 'state'}"/>
+                    <filter string="Almacén" name="group_warehouse" context="{'group_by': 'warehouse_id'}"/>
+                </group>
+            </search>
+        </field>
+    </record>
+
+    <record id="action_dead_letter" model="ir.actions.act_window">
+        <field name="name">Eventos Fallidos</field>
+        <field name="res_model">product.replenishment.dead.letter</field>
+        <field name="view_mode">tree,form</field>
+        <field name="search_view_id" ref="view_dead_letter_search"/>
+        <field name="context">{'search_default_pending': 1}</field>
+        <field name="help" type="html">
+            <p class="o_view_nocontent_smiling_face">
+                No hay eventos fallidos
+            </p>
+            <p>
+                Los eventos que fallan después de varios reintentos aparecen aquí
+                para revisión manual.
+            </p>
+        </field>
+    </record>
+
+    <!-- ================================================================== -->
+    <!-- ESTADÍSTICAS DIARIAS                                               -->
+    <!-- ================================================================== -->
+
+    <record id="view_stats_daily_tree" model="ir.ui.view">
+        <field name="name">product.sales.stats.daily.tree</field>
+        <field name="model">product.sales.stats.daily</field>
+        <field name="arch" type="xml">
+            <tree string="Estadísticas Diarias" create="false">
+                <field name="date"/>
+                <field name="product_id"/>
+                <field name="warehouse_id"/>
+                <field name="record_type"/>
+                <field name="quantity_total" sum="Total"/>
+                <field name="event_count" sum="Eventos"/>
+                <field name="last_updated"/>
+            </tree>
+        </field>
+    </record>
+
+    <record id="view_stats_daily_search" model="ir.ui.view">
+        <field name="name">product.sales.stats.daily.search</field>
+        <field name="model">product.sales.stats.daily</field>
+        <field name="arch" type="xml">
+            <search string="Buscar Stats Diarios">
+                <field name="product_id"/>
+                <field name="warehouse_id"/>
+                <field name="date"/>
+                <filter string="Hoy" name="today" domain="[('date', '=', context_today().strftime('%Y-%m-%d'))]"/>
+                <filter string="Últimos 7 días" name="last_7" domain="[('date', '>=', (context_today() - datetime.timedelta(days=7)).strftime('%Y-%m-%d'))]"/>
+                <filter string="Últimos 30 días" name="last_30" domain="[('date', '>=', (context_today() - datetime.timedelta(days=30)).strftime('%Y-%m-%d'))]"/>
+                <separator/>
+                <filter string="Ventas" name="sales" domain="[('record_type', '=', 'sale')]"/>
+                <filter string="Transferencias" name="transfers" domain="[('record_type', '=', 'transfer')]"/>
+                <group expand="0" string="Agrupar por">
+                    <filter string="Fecha" name="group_date" context="{'group_by': 'date'}"/>
+                    <filter string="Almacén" name="group_warehouse" context="{'group_by': 'warehouse_id'}"/>
+                    <filter string="Producto" name="group_product" context="{'group_by': 'product_id'}"/>
+                    <filter string="Tipo" name="group_type" context="{'group_by': 'record_type'}"/>
+                </group>
+            </search>
+        </field>
+    </record>
+
+    <record id="view_stats_daily_pivot" model="ir.ui.view">
+        <field name="name">product.sales.stats.daily.pivot</field>
+        <field name="model">product.sales.stats.daily</field>
+        <field name="arch" type="xml">
+            <pivot string="Stats Diarios">
+                <field name="date" type="row"/>
+                <field name="warehouse_id" type="col"/>
+                <field name="quantity_total" type="measure"/>
+                <field name="event_count" type="measure"/>
+            </pivot>
+        </field>
+    </record>
+
+    <record id="view_stats_daily_graph" model="ir.ui.view">
+        <field name="name">product.sales.stats.daily.graph</field>
+        <field name="model">product.sales.stats.daily</field>
+        <field name="arch" type="xml">
+            <graph string="Stats Diarios" type="line">
+                <field name="date" type="row"/>
+                <field name="quantity_total" type="measure"/>
+            </graph>
+        </field>
+    </record>
+
+    <record id="action_stats_daily" model="ir.actions.act_window">
+        <field name="name">Estadísticas Diarias</field>
+        <field name="res_model">product.sales.stats.daily</field>
+        <field name="view_mode">tree,pivot,graph</field>
+        <field name="search_view_id" ref="view_stats_daily_search"/>
+        <field name="context">{'search_default_last_7': 1, 'search_default_group_date': 1}</field>
+    </record>
+
+    <!-- ================================================================== -->
+    <!-- ESTADÍSTICAS ROLLING                                               -->
+    <!-- ================================================================== -->
+
+    <record id="view_stats_rolling_tree" model="ir.ui.view">
+        <field name="name">product.sales.stats.rolling.tree</field>
+        <field name="model">product.sales.stats.rolling</field>
+        <field name="arch" type="xml">
+            <tree string="Estadísticas Rolling" create="false">
+                <field name="product_id"/>
+                <field name="warehouse_id"/>
+                <field name="record_type"/>
+                <field name="mean_30d" string="Media 30d"/>
+                <field name="stddev_30d" string="Stddev 30d"/>
+                <field name="cv_30d" string="CV 30d"/>
+                <field name="total_qty_30d" string="Total 30d"/>
+                <field name="days_with_sales_30d" string="Días c/venta"/>
+                <field name="last_calculated"/>
+            </tree>
+        </field>
+    </record>
+
+    <record id="view_stats_rolling_form" model="ir.ui.view">
+        <field name="name">product.sales.stats.rolling.form</field>
+        <field name="model">product.sales.stats.rolling</field>
+        <field name="arch" type="xml">
+            <form string="Estadísticas Rolling">
+                <sheet>
+                    <group>
+                        <group string="Identificación">
+                            <field name="product_id"/>
+                            <field name="warehouse_id"/>
+                            <field name="record_type"/>
+                            <field name="last_calculated"/>
+                            <field name="calculation_source"/>
+                        </group>
+                    </group>
+                    <notebook>
+                        <page string="30 Días">
+                            <group>
+                                <group>
+                                    <field name="mean_30d"/>
+                                    <field name="stddev_30d"/>
+                                    <field name="cv_30d"/>
+                                </group>
+                                <group>
+                                    <field name="total_qty_30d"/>
+                                    <field name="days_with_sales_30d"/>
+                                </group>
+                            </group>
+                        </page>
+                        <page string="60 Días">
+                            <group>
+                                <group>
+                                    <field name="mean_60d"/>
+                                    <field name="stddev_60d"/>
+                                    <field name="cv_60d"/>
+                                </group>
+                                <group>
+                                    <field name="total_qty_60d"/>
+                                    <field name="days_with_sales_60d"/>
+                                </group>
+                            </group>
+                        </page>
+                        <page string="90 Días">
+                            <group>
+                                <group>
+                                    <field name="mean_90d"/>
+                                    <field name="stddev_90d"/>
+                                    <field name="cv_90d"/>
+                                </group>
+                                <group>
+                                    <field name="total_qty_90d"/>
+                                    <field name="days_with_sales_90d"/>
+                                </group>
+                            </group>
+                        </page>
+                    </notebook>
+                </sheet>
+            </form>
+        </field>
+    </record>
+
+    <record id="view_stats_rolling_search" model="ir.ui.view">
+        <field name="name">product.sales.stats.rolling.search</field>
+        <field name="model">product.sales.stats.rolling</field>
+        <field name="arch" type="xml">
+            <search string="Buscar Stats Rolling">
+                <field name="product_id"/>
+                <field name="warehouse_id"/>
+                <filter string="Ventas" name="sales" domain="[('record_type', '=', 'sale')]"/>
+                <filter string="Transferencias" name="transfers" domain="[('record_type', '=', 'transfer')]"/>
+                <filter string="Combinado" name="combined" domain="[('record_type', '=', 'combined')]"/>
+                <separator/>
+                <filter string="Alta Variabilidad (CV > 1)" name="high_cv" domain="[('cv_30d', '>', 1.0)]"/>
+                <filter string="Sin Ventas 30d" name="no_sales" domain="[('days_with_sales_30d', '=', 0)]"/>
+                <group expand="0" string="Agrupar por">
+                    <filter string="Almacén" name="group_warehouse" context="{'group_by': 'warehouse_id'}"/>
+                    <filter string="Tipo" name="group_type" context="{'group_by': 'record_type'}"/>
+                </group>
+            </search>
+        </field>
+    </record>
+
+    <record id="action_stats_rolling" model="ir.actions.act_window">
+        <field name="name">Estadísticas Rolling</field>
+        <field name="res_model">product.sales.stats.rolling</field>
+        <field name="view_mode">tree,form</field>
+        <field name="search_view_id" ref="view_stats_rolling_search"/>
+        <field name="context">{'search_default_sales': 1}</field>
+        <field name="help" type="html">
+            <p class="o_view_nocontent_smiling_face">
+                No hay estadísticas rolling calculadas
+            </p>
+            <p>
+                Ejecuta la migración de datos para poblar esta tabla:
+                <code>env['replenishment.data.migration'].migrate_to_new_architecture()</code>
+            </p>
+        </field>
+    </record>
+
+    <!-- ================================================================== -->
+    <!-- MENÚ DE MONITOREO                                                  -->
+    <!-- ================================================================== -->
+
+    <menuitem id="menu_replenishment_monitoring"
+              name="Monitoreo Reabastecimiento"
+              parent="stock.menu_stock_warehouse_mgmt"
+              sequence="99"/>
+
+    <menuitem id="menu_replenishment_queue"
+              name="Cola de Eventos"
+              parent="menu_replenishment_monitoring"
+              action="action_replenishment_queue"
+              sequence="10"/>
+
+    <menuitem id="menu_dead_letter"
+              name="Eventos Fallidos"
+              parent="menu_replenishment_monitoring"
+              action="action_dead_letter"
+              sequence="20"/>
+
+    <menuitem id="menu_stats_daily"
+              name="Stats Diarios"
+              parent="menu_replenishment_monitoring"
+              action="action_stats_daily"
+              sequence="30"/>
+
+    <menuitem id="menu_stats_rolling"
+              name="Stats Rolling"
+              parent="menu_replenishment_monitoring"
+              action="action_stats_rolling"
+              sequence="40"/>
+
+</odoo>

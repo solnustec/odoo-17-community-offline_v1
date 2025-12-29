@@ -1,0 +1,133 @@
+<odoo>
+    <template id="apply_inherit" inherit_id="website_hr_recruitment.apply">
+        <xpath expr="//form[@id='hr_recruitment_form']" position="replace">
+            <form id="hr_recruitment_form"
+                  enctype="multipart/form-data" class="o_mark_required row"
+                  data-mark="*" data-model_name="hr.applicant"
+                  data-success-page="/job-thank-you"
+                  hide-change-model="true">
+                <div class="s_website_form_container">
+                    <input type="hidden" name="job_id" id="job_id" t-att-value="job.id"/>
+
+                    <div t-if="error" class="alert alert-danger">
+                        <t t-esc="error"/>
+                    </div>
+                    <div class="s_website_form_rows row s_col_no_bgcolor">
+                        <hr/>
+                        <t t-foreach="job.custom_field_category_ids" t-as="category">
+                            <div class="row">
+                                <h5 class="mb-4">
+                                    <t t-esc="category.name"/>
+                                </h5>
+                                <t t-set="filtered_fields"
+                                   t-value="job.custom_field_ids.filtered(lambda f: f.category_id.id == category.id)"/>
+                                <t t-foreach="filtered_fields" t-as="custom_field">
+
+
+                                    <div class="col-6 mb-3">
+                                        <label t-att-for="custom_field.code_field">
+                                            <t t-esc="custom_field.name"/>
+                                            <t t-if="custom_field.required">*</t>
+                                        </label>
+                                        <t t-if="custom_field.field_type == 'char'">
+                                            <input type="text" class="form-control s_website_form_input"
+                                                   t-att-name="custom_field.code_field"
+                                                   t-att-required="custom_field.required"
+                                                   t-att-data-regex-validation="custom_field.regex_validation"/>
+                                        </t>
+                                        <t t-if="custom_field.field_type == 'text'">
+                                            <textarea t-att-name="custom_field.code_field"
+                                                      class="form-control s_website_form_input"
+                                                      t-att-required="custom_field.required"
+                                                      t-att-data-regex-validation="custom_field.regex_validation"></textarea>
+                                        </t>
+                                        <t t-if="custom_field.field_type == 'integer'">
+                                            <input type="number" class="form-control s_website_form_input"
+                                                   t-att-name="custom_field.code_field"
+                                                   t-att-required="custom_field.required"
+                                                   t-att-data-regex-validation="custom_field.regex_validation"/>
+                                        </t>
+                                        <t t-if="custom_field.field_type == 'float'">
+                                            <input type="number" class="form-control s_website_form_input" step="any"
+                                                   t-att-name="custom_field.code_field"
+                                                   t-att-required="custom_field.required"
+                                                   t-att-data-regex-validation="custom_field.regex_validation"/>
+                                        </t>
+                                        <t t-if="custom_field.field_type == 'boolean'">
+                                            <div class="form-check o_radio_item">
+                                                <input name="custom_field" type="radio"
+                                                       t-att-name="custom_field.code_field"
+                                                       t-att-required="custom_field.required"
+                                                       t-att-data-regex-validation="custom_field.regex_validation"
+                                                       class="form-check-input o_radio_input"
+                                                />
+                                            </div>
+                                        </t>
+                                        <t t-if="custom_field.field_type == 'date'">
+                                            <input type="date" class="form-control s_website_form_input"
+                                                   t-att-name="custom_field.code_field"
+                                                   t-att-required="custom_field.required"
+                                                   t-att-data-regex-validation="custom_field.regex_validation"/>
+                                        </t>
+                                        <t t-if="custom_field.field_type == 'datetime'">
+                                            <input type="datetime-local" t-att-name="custom_field.code_field"
+                                                   t-att-required="custom_field.required"
+                                                   t-att-data-regex-validation="custom_field.regex_validation"/>
+                                        </t>
+                                        <t t-if="custom_field.field_type == 'selection'">
+                                            <select class="form-select" t-att-name="custom_field.code_field"
+                                                    t-att-required="custom_field.required"
+                                                    t-att-data-regex-validation="custom_field.regex_validation">
+                                                <t t-foreach="custom_field.selection_options.split(',')" t-as="option">
+                                              
+                                                    <option t-att-value="option.strip()">
+                                                        <t t-esc="option.strip()"/>
+                                                    </option>
+                                                </t>
+                                            </select>
+                                        </t>
+                                        <t t-if="custom_field.field_type == 'file'">
+                                            <input type="file"
+                                                   class="form-control s_website_form_input o_files_zone s_website_form_field"
+                                                   t-att-name="custom_field.code_field"
+                                                   t-att-required="custom_field.required"
+                                                   t-att-data-regex-validation="custom_field.regex_validation"/>
+                                        </t>
+                                        <div t-att-class="custom_field.code_field.replace(' ', '-') + '-error-message'"
+                                             style="display: none; color: red;">
+                                            <span>
+                                                El valor ingresado en el campo "<strong><t t-esc="custom_field.name"/></strong>" no coincide con el formato esperado. Verifique e intente nuevamente.
+                                            </span>
+                                        </div>
+
+                                    </div>
+                                </t>
+                            </div>
+                        </t>
+                    </div>
+                    <div class="col-12 s_website_form_submit mb64" data-name="Submit Button">
+                        <div style="width: 200px" class="s_website_form_label"/>
+                        <button type="button" class="btn btn-primary s_website_form_send" id="apply-btn">Enviar
+                            Proceso
+                        </button>
+                        <div class="alert alert-danger d-none mt-2" id="error" role="alert">
+
+                        </div>
+                    </div>
+
+                </div>
+            </form>
+        </xpath>
+
+
+    </template>
+    <data>
+        <!-- Load JavaScript assets -->
+        <template id="assets_backend" name="Custom Field Manager Assets" inherit_id="website_hr_recruitment.apply">
+            <xpath expr="." position="inside">
+                <script type="text/javascript" src="/custom/static/src/js/redirect_form_script.js"></script>
+                <script type="text/javascript" src="/custom/static/src/js/custom_file_block.js"></script>
+            </xpath>
+        </template>
+    </data>
+</odoo>

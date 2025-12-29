@@ -1,0 +1,372 @@
+<?xml version="1.0" encoding="utf-8"?>
+<odoo>
+    <report
+        id="action_report_challenge_history_pdf"
+        model="gamification.challenge.history"
+        string="Reporte de Historial de Desafío"
+        report_type="qweb-pdf"
+        name="gamification_custom.report_challenge_history"
+        file="gamification_custom.report_challenge_history"
+        print_report_name="'Historial_Desafio_%s_%s' % (object.name.replace(' ', '_'), time.strftime('%Y%m%d'))"
+        paperformat="base.paperformat_euro"
+    />
+
+    <!-- Reporte XLSX -->
+    <report
+        id="action_report_challenge_history_xlsx"
+        model="gamification.challenge.history"
+        string="Reporte de Historial de Desafío XLSX"
+        report_type="xlsx"
+        name="gamification_custom.challenge_history_xlsx"
+        file="gamification_custom.challenge_history_xlsx"
+    />
+
+    <template id="report_challenge_history">
+        <t t-call="web.html_container">
+            <t t-call="web.external_layout">
+                <div class="page">
+                    <style>
+                        /* Estilos corporativos sobrios */
+                        .report-title {
+                            border-bottom: 2px solid #333;
+                            padding-bottom: 10px;
+                            margin-bottom: 20px;
+                        }
+                        .report-title h2 {
+                            color: #333;
+                            font-size: 18px;
+                            font-weight: 600;
+                            margin: 0;
+                            text-transform: uppercase;
+                            letter-spacing: 1px;
+                        }
+                        .report-title p {
+                            color: #666;
+                            font-size: 12px;
+                            margin: 5px 0 0 0;
+                        }
+                        .info-section {
+                            margin-bottom: 20px;
+                        }
+                        .info-table {
+                            width: 100%;
+                            font-size: 10px;
+                            border-collapse: collapse;
+                        }
+                        .info-table td {
+                            padding: 4px 8px;
+                            border: 1px solid #ddd;
+                        }
+                        .info-table .label {
+                            background-color: #f5f5f5;
+                            font-weight: 600;
+                            width: 120px;
+                            color: #333;
+                        }
+                        .stats-section {
+                            margin-bottom: 20px;
+                            padding: 15px 0;
+                            border-top: 1px solid #ddd;
+                            border-bottom: 1px solid #ddd;
+                        }
+                        .stats-table {
+                            width: 100%;
+                            text-align: center;
+                        }
+                        .stats-table td {
+                            padding: 10px;
+                        }
+                        .stat-value {
+                            font-size: 24px;
+                            font-weight: 700;
+                            color: #333;
+                        }
+                        .stat-label {
+                            font-size: 9px;
+                            color: #666;
+                            text-transform: uppercase;
+                            letter-spacing: 0.5px;
+                        }
+                        .section-header {
+                            background-color: #333;
+                            color: white;
+                            padding: 8px 12px;
+                            font-size: 11px;
+                            font-weight: 600;
+                            margin-top: 20px;
+                            margin-bottom: 0;
+                            text-transform: uppercase;
+                            letter-spacing: 0.5px;
+                        }
+                        .data-table {
+                            width: 100%;
+                            border-collapse: collapse;
+                            font-size: 9px;
+                            margin-bottom: 15px;
+                        }
+                        .data-table th {
+                            background-color: #f5f5f5;
+                            color: #333;
+                            padding: 8px 5px;
+                            text-align: left;
+                            border: 1px solid #ddd;
+                            font-weight: 600;
+                            text-transform: uppercase;
+                            font-size: 8px;
+                        }
+                        .data-table td {
+                            padding: 6px 5px;
+                            border: 1px solid #ddd;
+                            color: #444;
+                        }
+                        .data-table tr:nth-child(even) {
+                            background-color: #fafafa;
+                        }
+                        .text-right { text-align: right; }
+                        .text-center { text-align: center; }
+                        .progress-bar {
+                            background-color: #e9ecef;
+                            height: 14px;
+                            width: 100%;
+                            position: relative;
+                        }
+                        .progress-fill {
+                            background-color: #666;
+                            height: 100%;
+                            text-align: center;
+                            color: white;
+                            font-size: 8px;
+                            line-height: 14px;
+                        }
+                        .summary-section {
+                            margin-top: 20px;
+                            padding: 12px;
+                            border: 1px solid #ddd;
+                            background-color: #fafafa;
+                        }
+                        .summary-row {
+                            display: flex;
+                            justify-content: space-between;
+                            font-size: 11px;
+                        }
+                        .summary-label {
+                            font-weight: 600;
+                            color: #333;
+                        }
+                        .summary-value {
+                            font-weight: 700;
+                            color: #333;
+                        }
+                        .footer-info {
+                            margin-top: 30px;
+                            padding-top: 10px;
+                            border-top: 1px solid #ddd;
+                            font-size: 8px;
+                            color: #999;
+                        }
+                        .meta-info {
+                            font-size: 10px;
+                            color: #666;
+                            margin-bottom: 15px;
+                        }
+                    </style>
+
+                    <!-- Título del Reporte -->
+                    <div class="report-title">
+                        <h2>Reporte de Historial de Desafío</h2>
+                        <p><t t-esc="docs.name"/></p>
+                    </div>
+
+                    <!-- Información del Desafío -->
+                    <div class="info-section">
+                        <table class="info-table">
+                            <tr>
+                                <td class="label">Nombre</td>
+                                <td><t t-esc="docs.name"/></td>
+                                <td class="label">Responsable</td>
+                                <td><t t-esc="docs.manager_id.name or '-'"/></td>
+                            </tr>
+                            <tr>
+                                <td class="label">Fecha Inicio</td>
+                                <td><t t-esc="docs.start_date.strftime('%d/%m/%Y') if docs.start_date else '-'"/></td>
+                                <td class="label">Fecha Fin</td>
+                                <td><t t-esc="docs.end_date.strftime('%d/%m/%Y') if docs.end_date else '-'"/></td>
+                            </tr>
+                            <tr>
+                                <td class="label">Fecha Archivado</td>
+                                <td><t t-esc="docs.date_archived.strftime('%d/%m/%Y %H:%M') if docs.date_archived else '-'"/></td>
+                                <td class="label">Estado</td>
+                                <td><t t-esc="'Archivado' if docs.state == 'archived' else 'Cancelado'"/></td>
+                            </tr>
+                        </table>
+                    </div>
+
+                    <!-- Estadísticas -->
+                    <div class="stats-section">
+                        <table class="stats-table">
+                            <tr>
+                                <td>
+                                    <div class="stat-value" t-esc="data.get('total_goals', 0)"/>
+                                    <div class="stat-label">Total Metas</div>
+                                </td>
+                                <td>
+                                    <div class="stat-value" t-esc="data.get('total_reached', 0)"/>
+                                    <div class="stat-label">Alcanzadas</div>
+                                </td>
+                                <td>
+                                    <div class="stat-value" t-esc="data.get('total_failed', 0)"/>
+                                    <div class="stat-label">Fallidas</div>
+                                </td>
+                                <td>
+                                    <div class="stat-value" t-esc="data.get('total_inprogress', 0)"/>
+                                    <div class="stat-label">En Progreso</div>
+                                </td>
+                                <td>
+                                    <div class="stat-value"><t t-esc="'{:.1f}%'.format(data.get('success_rate', 0))"/></div>
+                                    <div class="stat-label">Tasa de Éxito</div>
+                                </td>
+                            </tr>
+                        </table>
+                    </div>
+
+                    <!-- Sección: Metas Alcanzadas -->
+                    <t t-if="data.get('include_reached') and data.get('reached_goals')">
+                        <div class="section-header">
+                            Metas Alcanzadas (<t t-esc="len(data.get('reached_goals', []))"/>)
+                        </div>
+                        <table class="data-table">
+                            <thead>
+                                <tr>
+                                    <th style="width: 18%;">Usuario</th>
+                                    <th style="width: 15%;">Departamento</th>
+                                    <th style="width: 10%;">Zona</th>
+                                    <th style="width: 20%;">Meta</th>
+                                    <th style="width: 12%;">Progreso</th>
+                                    <th style="width: 10%;">F. Cumplimiento</th>
+                                    <th style="width: 8%;">Bonificación</th>
+                                    <th style="width: 7%;">Entregada</th>
+                                </tr>
+                            </thead>
+                            <tbody>
+                                <tr t-foreach="data.get('reached_goals', [])" t-as="goal">
+                                    <td><t t-esc="goal.user_id.name or '-'"/></td>
+                                    <td><t t-esc="goal.department_id.name or '-'"/></td>
+                                    <td><t t-esc="goal.department_parent_id.name or '-'"/></td>
+                                    <td><t t-esc="goal.definition_name or '-'"/></td>
+                                    <td>
+                                        <div class="progress-bar">
+                                            <div class="progress-fill" t-attf-style="width: #{min(goal.completeness or 0, 100)}%;">
+                                                <t t-esc="'{:.0f}%'.format(goal.completeness or 0)"/>
+                                            </div>
+                                        </div>
+                                    </td>
+                                    <td class="text-center"><t t-esc="goal.reached_date.strftime('%d/%m/%Y') if goal.reached_date else '-'"/></td>
+                                    <td class="text-right"><t t-esc="'${:.2f}'.format(goal.bonification_amount or 0)"/></td>
+                                    <td class="text-center">
+                                        <t t-if="goal.bonification_status">Sí</t>
+                                        <t t-else="">No</t>
+                                    </td>
+                                </tr>
+                            </tbody>
+                        </table>
+                    </t>
+
+                    <!-- Sección: Metas Fallidas -->
+                    <t t-if="data.get('include_failed') and data.get('failed_goals')">
+                        <div class="section-header">
+                            Metas Fallidas (<t t-esc="len(data.get('failed_goals', []))"/>)
+                        </div>
+                        <table class="data-table">
+                            <thead>
+                                <tr>
+                                    <th style="width: 20%;">Usuario</th>
+                                    <th style="width: 18%;">Departamento</th>
+                                    <th style="width: 12%;">Zona</th>
+                                    <th style="width: 25%;">Meta</th>
+                                    <th style="width: 10%;">Objetivo</th>
+                                    <th style="width: 10%;">Alcanzado</th>
+                                    <th style="width: 15%;">Progreso</th>
+                                </tr>
+                            </thead>
+                            <tbody>
+                                <tr t-foreach="data.get('failed_goals', [])" t-as="goal">
+                                    <td><t t-esc="goal.user_id.name or '-'"/></td>
+                                    <td><t t-esc="goal.department_id.name or '-'"/></td>
+                                    <td><t t-esc="goal.department_parent_id.name or '-'"/></td>
+                                    <td><t t-esc="goal.definition_name or '-'"/></td>
+                                    <td class="text-right"><t t-esc="'{:.2f}'.format(goal.target_goal or 0)"/></td>
+                                    <td class="text-right"><t t-esc="'{:.2f}'.format(goal.current_value or 0)"/></td>
+                                    <td>
+                                        <div class="progress-bar">
+                                            <div class="progress-fill" t-attf-style="width: #{min(goal.completeness or 0, 100)}%;">
+                                                <t t-esc="'{:.0f}%'.format(goal.completeness or 0)"/>
+                                            </div>
+                                        </div>
+                                    </td>
+                                </tr>
+                            </tbody>
+                        </table>
+                    </t>
+
+                    <!-- Sección: Metas En Progreso -->
+                    <t t-if="data.get('include_inprogress') and data.get('inprogress_goals')">
+                        <div class="section-header">
+                            Metas en Progreso (<t t-esc="len(data.get('inprogress_goals', []))"/>)
+                        </div>
+                        <table class="data-table">
+                            <thead>
+                                <tr>
+                                    <th style="width: 20%;">Usuario</th>
+                                    <th style="width: 18%;">Departamento</th>
+                                    <th style="width: 12%;">Zona</th>
+                                    <th style="width: 25%;">Meta</th>
+                                    <th style="width: 10%;">Objetivo</th>
+                                    <th style="width: 10%;">Alcanzado</th>
+                                    <th style="width: 15%;">Progreso</th>
+                                </tr>
+                            </thead>
+                            <tbody>
+                                <tr t-foreach="data.get('inprogress_goals', [])" t-as="goal">
+                                    <td><t t-esc="goal.user_id.name or '-'"/></td>
+                                    <td><t t-esc="goal.department_id.name or '-'"/></td>
+                                    <td><t t-esc="goal.department_parent_id.name or '-'"/></td>
+                                    <td><t t-esc="goal.definition_name or '-'"/></td>
+                                    <td class="text-right"><t t-esc="'{:.2f}'.format(goal.target_goal or 0)"/></td>
+                                    <td class="text-right"><t t-esc="'{:.2f}'.format(goal.current_value or 0)"/></td>
+                                    <td>
+                                        <div class="progress-bar">
+                                            <div class="progress-fill" t-attf-style="width: #{min(goal.completeness or 0, 100)}%;">
+                                                <t t-esc="'{:.0f}%'.format(goal.completeness or 0)"/>
+                                            </div>
+                                        </div>
+                                    </td>
+                                </tr>
+                            </tbody>
+                        </table>
+                    </t>
+
+                    <!-- Resumen Final -->
+                    <div class="summary-section">
+                        <table style="width: 100%;">
+                            <tr>
+                                <td class="summary-label">Total de bonificaciones de metas alcanzadas:</td>
+                                <td class="summary-value text-right"><t t-esc="'${:.2f}'.format(data.get('total_bonification', 0))"/></td>
+                            </tr>
+                        </table>
+                    </div>
+
+                    <!-- Pie de página -->
+                    <div class="footer-info">
+                        <table style="width: 100%;">
+                            <tr>
+                                <td>Generado el: <t t-esc="time.strftime('%d/%m/%Y %H:%M')"/></td>
+                                <td class="text-right">Módulo de Gamificación - Historial de Desafíos</td>
+                            </tr>
+                        </table>
+                    </div>
+                </div>
+            </t>
+        </t>
+    </template>
+
+</odoo>

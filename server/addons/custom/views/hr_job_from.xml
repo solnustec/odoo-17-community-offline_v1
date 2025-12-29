@@ -1,0 +1,26 @@
+<odoo>
+    <record id="view_hr_job_form_inherit" model="ir.ui.view">
+        <field name="name">hr.job.form.inherit</field>
+        <field name="model">hr.job</field>
+        <field name="inherit_id" ref="hr.view_hr_job_form"/>
+        <field name="arch" type="xml">
+            <xpath expr="//notebook" position="inside">
+                <page string="Campos personalizados">
+                    <group>
+                        <field name="custom_field_ids">
+                            <tree editable="bottom">
+                                <field name="category_id"/>
+                                <field name="name"/>
+                                <field name="code_field"/>
+                                <field name="field_type"/>
+                                <field name="active"/>
+                                <field name="required"/>
+                                <field name="selection_options"/>
+                            </tree>
+                        </field>
+                    </group>
+                </page>
+            </xpath>
+        </field>
+    </record>
+</odoo>

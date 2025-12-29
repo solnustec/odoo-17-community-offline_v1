@@ -1,0 +1,145 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<templates id="template" xml:space="preserve">
+    <t t-name="point_of_sale.TextInputPopup"
+       t-inherit="point_of_sale.TextInputPopup"
+       t-inherit-mode="extension"
+       owl="1">
+        <xpath expr="//div[contains(@class, 'modal-body')]" position="replace">
+            <div class="modal-body">
+                <!-- Input de código de cupón -->
+                <input class="form-control form-control-lg w-75 mx-auto"
+                       type="text"
+                       t-model="state.inputValue"
+                       t-ref="input"
+                       t-att-placeholder="props.placeholder" />
+
+                <!-- Mensaje de carga -->
+                <div t-if="state.loading" class="text-center mt-3">
+                    <i class="fa fa-spinner fa-spin fa-2x"></i>
+                    <p class="mt-2">Cargando promociones...</p>
+                </div>
+
+                <!-- Mensaje de error -->
+                <div t-if="state.error" class="alert alert-danger mt-3 mx-auto w-75">
+                    <i class="fa fa-exclamation-triangle"></i>
+                    <t t-esc="state.error"/>
+                </div>
+
+                <!-- Tabla de información de la recompensa -->
+                <table class="table table-sm table-borderless mt-4 w-100 mx-auto">
+                    <thead class="table-secondary">
+                        <tr>
+                            <th class="text-center">Recompensa</th>
+                            <th class="text-center">Cant. Mínima</th>
+                            <th class="text-center">Límite</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        <tr>
+                            <td class="text-center" t-esc="state.recompensa || 'N/A'"/>
+                            <td class="text-center" t-esc="state.cantidadMinima || 'N/A'"/>
+                            <td class="text-center" t-esc="state.limite || 'N/A'"/>
+                        </tr>
+                    </tbody>
+                </table>
+
+                <!-- Lista de Cupones Disponibles -->
+                <div class="rewards-list mt-4"
+                     t-if="!state.loading and state.availableRewards.length > 0">
+                    <h6 class="text-center mb-3 fw-bold">
+                        <i class="fa fa-ticket me-2"></i>
+                        Cupones Disponibles
+                    </h6>
+
+                    <div class="list-group mx-auto"
+                         style="max-height: 300px; overflow-y: auto; max-width: 90%;">
+                        <t t-foreach="state.availableRewards" t-as="reward" t-key="reward.id">
+                            <label class="list-group-item list-group-item-action"
+                                   t-att-class="{
+                                       'active': state.selectedRewardId === reward.id,
+                                       'border-primary': state.selectedRewardId === reward.id
+                                   }"
+                                   style="cursor: pointer; transition: all 0.2s;">
+
+                                <div class="d-flex align-items-start">
+                                    <!-- Radio Button -->
+                                    <input type="radio"
+                                           class="form-check-input me-3 mt-1"
+                                           t-att-name="'reward-selection'"
+                                           t-att-value="reward.id"
+                                           t-att-checked="state.selectedRewardId === reward.id"
+                                           t-on-click="() => this.onRewardSelect(reward.id)"
+                                           style="cursor: pointer;"/>
+
+                                    <!-- Información del cupón -->
+                                    <div class="flex-grow-1">
+                                        <div class="d-flex justify-content-between align-items-center mb-2">
+                                            <strong class="fs-6" t-esc="reward.description"/>
+                                            <span class="badge ms-2"
+                                                  t-att-class="{
+                                                      'bg-success': reward.discount_mode === 'percent',
+                                                      'bg-primary': reward.discount_mode !== 'percent'
+                                                  }">
+                                                <t t-if="reward.discount_mode === 'percent'">
+                                                    <t t-esc="reward.discount"/>%
+                                                </t>
+                                                <t t-else="">
+                                                    $<t t-esc="reward.discount.toFixed(2)"/>
+                                                </t>
+                                            </span>
+                                        </div>
+
+                                        <!-- Detalles adicionales -->
+                                        <div class="small">
+                                            <div class="text-muted mb-1">
+                                                <i class="fa fa-tag me-1"></i>
+                                                <t t-esc="reward.program_id.name"/>
+                                            </div>
+
+                                            <div class="d-flex gap-3 flex-wrap">
+                                                <span t-if="reward.discount_applicability === 'order'"
+                                                      class="badge bg-info">
+                                                    <i class="fa fa-shopping-cart me-1"></i>
+                                                    Toda la orden
+                                                </span>
+                                                <span t-else="" class="badge bg-warning text-dark">
+                                                    <i class="fa fa-cube me-1"></i>
+                                                    Productos específicos
+                                                </span>
+
+                                                <span t-if="reward.required_points > 0"
+                                                      class="badge bg-secondary">
+                                                    <i class="fa fa-star me-1"></i>
+                                                    <t t-esc="reward.required_points"/> pts
+                                                </span>
+
+                                                <span t-if="reward.discount_max_amount > 0"
+                                                      class="badge bg-danger">
+                                                    <i class="fa fa-exclamation-circle me-1"></i>
+                                                    Max: $<t t-esc="reward.discount_max_amount.toFixed(2)"/>
+                                                </span>
+
+                                                <span t-if="reward.is_global_discount"
+                                                      class="badge bg-dark">
+                                                    <i class="fa fa-globe me-1"></i>
+                                                    Global
+                                                </span>
+                                            </div>
+                                        </div>
+                                    </div>
+                                </div>
+                            </label>
+                        </t>
+                    </div>
+                </div>
+
+                <!-- Mensaje cuando no hay cupones -->
+                <div t-if="!state.loading and state.availableRewards.length === 0"
+                     class="alert alert-info mt-4 mx-auto w-75 text-center">
+                    <i class="fa fa-info-circle me-2"></i>
+                    No hay cupones disponibles en este momento
+                </div>
+            </div>
+        </xpath>
+    </t>
+</templates>

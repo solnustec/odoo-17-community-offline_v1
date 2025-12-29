@@ -1,0 +1,200 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!-- Copyright Nova Code (http://www.novacode.nl)
+See LICENSE file for full licensing details. -->
+
+<odoo>
+    <!-- es_EC -->
+    <data noupdate="1">
+        <record id="i18n_es_EC_complete" model="formio.translation">
+            <field name="lang_id" ref="base.lang_es_EC"/>
+            <field name="source_id" ref="formio.i18n_complete"/>
+            <field name="value">El formulario ha sido enviado</field>
+        </record>
+        <record id="i18n_es_EC_error" model="formio.translation">
+            <field name="lang_id" ref="base.lang_es_EC"/>
+            <field name="source_id" ref="formio.i18n_error"/>
+            <field name="value">Antes de guardar el formulario, debe resolver los siguientes errores.</field>
+        </record>
+        <record id="i18n_es_EC_alertMessage" model="formio.translation">
+            <field name="lang_id" ref="base.lang_es_EC"/>
+            <field name="source_id" ref="formio.i18n_alertMessage"/>
+            <field name="value">{{message}}</field>
+        </record>
+        <record id="i18n_es_EC_required" model="formio.translation">
+            <field name="lang_id" ref="base.lang_es_EC"/>
+            <field name="source_id" ref="formio.i18n_required"/>
+            <field name="value">{{field}} es obligatorio</field>
+        </record>
+        <record id="i18n_es_EC_pattern" model="formio.translation">
+            <field name="lang_id" ref="base.lang_es_EC"/>
+            <field name="source_id" ref="formio.i18n_pattern"/>
+            <field name="value">{{field}} no cumple con el formato {{pattern}}</field>
+        </record>
+        <record id="i18n_es_EC_minLength" model="formio.translation">
+            <field name="lang_id" ref="base.lang_es_EC"/>
+            <field name="source_id" ref="formio.i18n_minLength"/>
+            <field name="value">{{field}} debe tener más de {{length}} caracteres.</field>
+        </record>
+        <record id="i18n_es_EC_maxLength" model="formio.translation">
+            <field name="lang_id" ref="base.lang_es_EC"/>
+            <field name="source_id" ref="formio.i18n_maxLength"/>
+            <field name="value">{{field}} debe tener menos de {{length}} caracteres.</field>
+        </record>
+        <record id="i18n_es_EC_min" model="formio.translation">
+            <field name="lang_id" ref="base.lang_es_EC"/>
+            <field name="source_id" ref="formio.i18n_min"/>
+            <field name="value">{{field}} no puede ser menor que {{min}}.</field>
+        </record>
+        <record id="i18n_es_EC_max" model="formio.translation">
+            <field name="lang_id" ref="base.lang_es_EC"/>
+            <field name="source_id" ref="formio.i18n_max"/>
+            <field name="value">{{field}} no puede ser mayor que {{max}}.</field>
+        </record>
+        <record id="i18n_es_EC_maxDate" model="formio.translation">
+            <field name="lang_id" ref="base.lang_es_EC"/>
+            <field name="source_id" ref="formio.i18n_maxDate"/>
+            <field name="value">{{field}} no debe tener una fecha posterior a {{- maxDate}}.</field>
+        </record>
+        <record id="i18n_es_EC_minDate" model="formio.translation">
+            <field name="lang_id" ref="base.lang_es_EC"/>
+            <field name="source_id" ref="formio.i18n_minDate"/>
+            <field name="value">{{field}} no debe tener una fecha anterior a {{- minDate}}.</field>
+        </record>
+        <record id="i18n_es_EC_invalid_email" model="formio.translation">
+            <field name="lang_id" ref="base.lang_es_EC"/>
+            <field name="source_id" ref="formio.i18n_invalid_email"/>
+            <field name="value">{{field}} debe ser una dirección de correo electrónico válida.</field>
+        </record>
+        <record id="i18n_es_EC_invalid_url" model="formio.translation">
+            <field name="lang_id" ref="base.lang_es_EC"/>
+            <field name="source_id" ref="formio.i18n_invalid_url"/>
+            <field name="value">{{field}} debe ser una URL válida.</field>
+        </record>
+        <record id="i18n_es_EC_invalid_regex" model="formio.translation">
+            <field name="lang_id" ref="base.lang_es_EC"/>
+            <field name="source_id" ref="formio.i18n_invalid_regex"/>
+            <field name="value">{{field}} no coincide con el patrón.</field>
+        </record>
+        <record id="i18n_es_EC_invalid_date" model="formio.translation">
+            <field name="lang_id" ref="base.lang_es_EC"/>
+            <field name="source_id" ref="formio.i18n_invalid_date"/>
+            <field name="value">{{field}} no es una fecha válida.</field>
+        </record>
+        <record id="i18n_es_EC_invalid_day" model="formio.translation">
+            <field name="lang_id" ref="base.lang_es_EC"/>
+            <field name="source_id" ref="formio.i18n_invalid_day"/>
+            <field name="value">{{field}} no es un día válido.</field>
+        </record>
+        <record id="i18n_es_EC_mask" model="formio.translation">
+            <field name="lang_id" ref="base.lang_es_EC"/>
+            <field name="source_id" ref="formio.i18n_invalid_mask"/>
+            <field name="value">{{field}} no coincide con la máscara de entrada.</field>
+        </record>
+        <record id="i18n_es_EC_stripe" model="formio.translation">
+            <field name="lang_id" ref="base.lang_es_EC"/>
+            <field name="source_id" ref="formio.i18n_stripe"/>
+            <field name="value">{{stripe}}</field>
+        </record>
+        <record id="i18n_es_EC_month" model="formio.translation">
+            <field name="lang_id" ref="base.lang_es_EC"/>
+            <field name="source_id" ref="formio.i18n_month"/>
+            <field name="value">Mes</field>
+        </record>
+        <record id="i18n_es_EC_day" model="formio.translation">
+            <field name="lang_id" ref="base.lang_es_EC"/>
+            <field name="source_id" ref="formio.i18n_day"/>
+            <field name="value">Día</field>
+        </record>
+        <record id="i18n_es_EC_year" model="formio.translation">
+            <field name="lang_id" ref="base.lang_es_EC"/>
+            <field name="source_id" ref="formio.i18n_year"/>
+            <field name="value">Año</field>
+        </record>
+        <record id="i18n_es_EC_january" model="formio.translation">
+            <field name="lang_id" ref="base.lang_es_EC"/>
+            <field name="source_id" ref="formio.i18n_january"/>
+            <field name="value">enero</field>
+        </record>
+        <record id="i18n_es_EC_february" model="formio.translation">
+            <field name="lang_id" ref="base.lang_es_EC"/>
+            <field name="source_id" ref="formio.i18n_february"/>
+            <field name="value">febrero</field>
+        </record>
+        <record id="i18n_es_EC_march" model="formio.translation">
+            <field name="lang_id" ref="base.lang_es_EC"/>
+            <field name="source_id" ref="formio.i18n_march"/>
+            <field name="value">marzo</field>
+        </record>
+        <record id="i18n_es_EC_april" model="formio.translation">
+            <field name="lang_id" ref="base.lang_es_EC"/>
+            <field name="source_id" ref="formio.i18n_april"/>
+            <field name="value">abril</field>
+        </record>
+        <record id="i18n_es_EC_may" model="formio.translation">
+            <field name="lang_id" ref="base.lang_es_EC"/>
+            <field name="source_id" ref="formio.i18n_may"/>
+            <field name="value">mayo</field>
+        </record>
+        <record id="i18n_es_EC_june" model="formio.translation">
+            <field name="lang_id" ref="base.lang_es_EC"/>
+            <field name="source_id" ref="formio.i18n_june"/>
+            <field name="value">junio</field>
+        </record>
+        <record id="i18n_es_EC_july" model="formio.translation">
+            <field name="lang_id" ref="base.lang_es_EC"/>
+            <field name="source_id" ref="formio.i18n_july"/>
+            <field name="value">julio</field>
+        </record>
+        <record id="i18n_es_EC_august" model="formio.translation">
+            <field name="lang_id" ref="base.lang_es_EC"/>
+            <field name="source_id" ref="formio.i18n_august"/>
+            <field name="value">agosto</field>
+        </record>
+        <record id="i18n_es_EC_september" model="formio.translation">
+            <field name="lang_id" ref="base.lang_es_EC"/>
+            <field name="source_id" ref="formio.i18n_september"/>
+            <field name="value">septiembre</field>
+        </record>
+        <record id="i18n_es_EC_october" model="formio.translation">
+            <field name="lang_id" ref="base.lang_es_EC"/>
+            <field name="source_id" ref="formio.i18n_october"/>
+            <field name="value">octubre</field>
+        </record>
+        <record id="i18n_es_EC_november" model="formio.translation">
+            <field name="lang_id" ref="base.lang_es_EC"/>
+            <field name="source_id" ref="formio.i18n_november"/>
+            <field name="value">noviembre</field>
+        </record>
+        <record id="i18n_es_EC_december" model="formio.translation">
+            <field name="lang_id" ref="base.lang_es_EC"/>
+            <field name="source_id" ref="formio.i18n_december"/>
+            <field name="value">diciembre</field>
+        </record>
+        <record id="i18n_es_EC_next" model="formio.translation">
+            <field name="lang_id" ref="base.lang_es_EC"/>
+            <field name="source_id" ref="formio.i18n_next"/>
+            <field name="value">Siguiente</field>
+        </record>
+        <record id="i18n_es_EC_previous" model="formio.translation">
+            <field name="lang_id" ref="base.lang_es_EC"/>
+            <field name="source_id" ref="formio.i18n_previous"/>
+            <field name="value">Anterior</field>
+        </record>
+        <record id="i18n_es_EC_cancel" model="formio.translation">
+            <field name="lang_id" ref="base.lang_es_EC"/>
+            <field name="source_id" ref="formio.i18n_cancel"/>
+            <field name="value">Cancelar</field>
+        </record>
+        <record id="i18n_es_EC_submit" model="formio.translation">
+            <field name="lang_id" ref="base.lang_es_EC"/>
+            <field name="source_id" ref="formio.i18n_submit"/>
+            <field name="value">Enviar formulario</field>
+        </record>
+        <record id="i18n_es_EC_submitError" model="formio.translation">
+            <field name="lang_id" ref="base.lang_es_EC"/>
+            <field name="source_id" ref="formio.i18n_submitError"/>
+            <field name="value">Verifique el formulario y corrija todos los errores antes de enviarlo.</field>
+        </record>
+
+    </data>
+</odoo>

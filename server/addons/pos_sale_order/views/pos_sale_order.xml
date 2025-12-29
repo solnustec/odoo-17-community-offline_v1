@@ -1,0 +1,12 @@
+<?xml version="1.0" encoding="utf-8"?>
+<odoo>
+    <data>
+        <record id="action_sale_order_from_pos" model="ir.actions.act_window">
+            <field name="name">Orden de entrega</field>
+            <field name="res_model">pos.order</field>
+            <field name="view_mode">tree,form</field>
+            <field name="context">{'create': False}</field>
+            <field name="domain">[('to_invoice', '=', False)]</field>
+        </record>
+    </data>
+</odoo>

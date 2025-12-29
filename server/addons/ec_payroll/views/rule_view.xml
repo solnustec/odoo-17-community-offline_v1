@@ -1,0 +1,44 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<odoo>
+	<data>
+
+		<record model="ir.ui.view" id="hr_salary_rule_form_view">
+			<field name="name">hr.salary.rule.form</field>
+			<field name="model">hr.salary.rule</field>
+			<field name="inherit_id" ref="hr_payroll.hr_salary_rule_form" />
+			<field name="arch" type="xml">
+				<field name="amount_percentage_base" position="replace">
+					<field name="percentage_id" widget="selection"
+						invisible="amount_select != 'percentage'"
+						required="amount_select == 'percentage'"/>
+					<field name="amount_percentage_base" nolabel="1" />
+				</field>
+			</field>
+		</record>
+
+
+		<record model="ir.ui.view" id="hr_salary_rule_account_form_view">
+			<field name="name">hr.salary.rule.form</field>
+			<field name="model">hr.salary.rule</field>
+			<field name="inherit_id" ref="hr_payroll_account.hr_salary_rule_view_form" />
+			<field name="arch" type="xml">
+				<field name="not_computed_in_net" position="after"> 
+					<!--<field name="account_payslip"/>-->
+<!--					<field name="tax_code_id" />-->
+					<!--<field name="no_account" />-->
+					<!--<field name="group_move" />-->
+					<field name="pay_to_other" />
+					<field name="partner_id"
+						invisible="pay_to_other == False"
+						required="pay_to_other == True"/>
+					<field name="set_date_maturity_region" />
+					<!--<field name= "apply_report_ir"/>-->
+					<!--<field name= "sign_report" placeholder="Ingresar 1 o -1" required="apply_report_ir == True"
+						   						readonly="apply_report_ir == False"/>
+					<field name= "code_report" required="apply_report_ir == True"
+						   readonly="apply_report_ir == False"/>-->
+				</field>
+			</field>
+		</record>
+	</data>
+</odoo>

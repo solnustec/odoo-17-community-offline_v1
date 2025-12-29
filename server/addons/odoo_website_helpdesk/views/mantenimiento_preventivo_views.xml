@@ -1,0 +1,265 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<odoo>
+  <record id="ticket_helpdesk_view_form_inherit_mantenimiento" model="ir.ui.view">
+    <field name="name">ticket.helpdesk.view.form.inherit.mantenimiento</field>
+    <field name="model">ticket.helpdesk</field>
+    <field name="inherit_id" ref="ticket_helpdesk_view_form"/>
+    <field name="arch" type="xml">
+      <xpath expr="//notebook/page[3]" position="after">
+        <page string="Mantenimiento Preventivo" invisible="show_mantenimiento == False" groups="odoo_website_helpdesk.helpdesk_manager, odoo_website_helpdesk.helpdesk_assigned_user">
+          <div style="text-align: center;">
+            <h2>Mantenimiento Preventivo de Equipos Informáticos</h2>
+          </div>
+          <group string="Registros de Mantenimiento">
+            <field name="mantenimiento_ids">
+              <tree>
+                <field name="name_mantenimiento"/>
+              </tree>
+                <form>
+                  <group>
+                    <field name="name_mantenimiento"/>
+                  </group>
+                  <notebook>
+                    <page string="Equipo y Conectividad">
+                       <!--Equipo-->
+                      <group string="Equipo">
+                        <group>
+                          <field name="nombre_equipo"/>
+                        </group>
+                        <group>
+                          <field name="nombre_equipo_observacion"/>
+                        </group>
+                      </group>
+
+                      <!--Anydesk-->
+                      <group string="Anydesk">
+                        <group>
+                          <field name="anydesk"/>
+                        </group>
+                        <group>
+                          <field name="anydesk_observacion"/>
+                        </group>
+                      </group>
+
+                      <!--Procesador-->
+                      <group string="Procesador">
+                        <group>
+                          <field name="procesador_core"/>
+                        </group>
+                        <group>
+                          <field name="procesador_generacion"/>
+                        </group>
+                        <group>
+                          <field name="procesador_observacion"/>
+                        </group>
+                      </group>
+
+                      <!--Memoria RAM-->
+                      <group string="Memoria RAM">
+                        <group>
+                          <field name="ram_size"/>
+                        </group>
+                        <group>
+                          <field name="mem_ram_observacion"/>
+                        </group>
+                      </group>
+
+                      <!--Almacenamiento-->
+                      <group string="Almacenamiento">
+                        <group>
+                          <field name="almacenamiento_size"/>
+                        </group>
+                        <group>
+                          <field name="almacenamiento_observacion"/>
+                        </group>
+                      </group>
+
+                      <!--Sistema Operativo-->
+                      <group string="Sistema Operativo">
+                        <group>
+                          <field name="sistema_operativo"/>
+                        </group>
+                        <group>
+                          <field name="sistem_operativa_observacion"/>
+                        </group>
+                      </group>
+                    </page>
+                    <page string="Periféricos">
+                      <!--Impresora-->
+                      <group string="Impresora Epson Térmica">
+                        <group>
+                          <field name="printer_types"/>
+                        </group>
+                        <group>
+                          <field name="impresora_observacion"/>
+                        </group>
+                      </group>
+
+                      <!--Monitor-->
+                      <group string="Monitor Marca LG">
+                        <group>
+                          <field name="model_monitor"/>
+                        </group>
+                        <group>
+                          <field name="monitor_observacion"/>
+                        </group>
+                      </group>
+
+                      <!--Escáner-->
+                      <group string="Escáner">
+                        <group>
+                          <field name="model_escaner"/>
+                        </group>
+                        <group>
+                          <field name="escaner_observacion"/>
+                        </group>
+                      </group>
+
+                      <!--Teclado-->
+                      <group string="Teclado">
+                        <group>
+                          <field name="model_teclado"/>
+                        </group>
+                        <group>
+                          <field name="teclado_observacion"/>
+                        </group>
+                      </group>
+
+                      <!--Mouse-->
+                      <group string="Mouse">
+                        <group>
+                          <field name="model_mouse"/>
+                        </group>
+                        <group>
+                          <field name="mouse_observacion"/>
+                        </group>
+                      </group>
+                    </page>
+                    <page string="Accesorios y Energía">
+                      <!--Caja de Dinero-->
+                      <group string="Caja de Dinero">
+                        <group>
+                          <field name="model_cajaDinero"/>
+                        </group>
+                        <group>
+                          <field name="cajadinero_observacion"/>
+                        </group>
+                      </group>
+
+                      <!--Regulador de Voltaje-->
+                      <group string="Regulador de Voltaje">
+                        <group>
+                          <field name="model_regulador"/>
+                        </group>
+                        <group>
+                          <field name="reguladorVoltaje_observacion"/>
+                        </group>
+                      </group>
+
+                      <!--UPS-->
+                      <group string="UPS">
+                        <group>
+                          <field name="model_UPS"/>
+                        </group>
+                        <group>
+                          <field name="ups_observacion"/>
+                        </group>
+                      </group>
+                    </page>
+                    <page string="Datos Generales del Mantenimiento">
+                      <!--NVR-->
+                      <group string="NVR">
+                        <group>
+                          <field name="nvr_equipment"/>
+                        </group>
+                        <group>
+                          <field name="nvr_observacion"/>
+                        </group>
+                      </group>
+
+                      <!--Biométrico-->
+                      <group string="Regulador de Voltaje">
+                        <group>
+                          <field name="biometric_equipment"/>
+                        </group>
+                        <group>
+                          <field name="biometric_observacion"/>
+                        </group>
+                      </group>
+
+                      <!--Parte Eléctrica-->
+                      <group string="Parte Eléctrica">
+                        <group>
+                          <field name="electric_equipment"/>
+                        </group>
+                        <group>
+                          <field name="electric_observacion"/>
+                        </group>
+                      </group>
+
+                      <!--Internet-->
+                      <group string="Internet">
+                        <group>
+                          <field name="ip_sucursal"/>
+                        </group>
+                        <group>
+                          <field name="internet_velocity"/>
+                        </group>
+                        <group>
+                          <field name="type_internet"/>
+                        </group>
+                        <group>
+                          <field name="internet_provider"/>
+                        </group>
+                        <group>
+                          <field name="internet_observacion"/>
+                        </group>
+                      </group>
+                    </page>
+                    <page string="Datos Generales del Sistema de Alarma">
+                      <!--Alarma-->
+                      <group string="Alarma">
+                        <group>
+                          <field name="model_alarm"/>
+                        </group>
+                        <group>
+                          <field name="alarm_sensor1"/>
+                        </group>
+                        <group>
+                          <field name="alarm_sensor2"/>
+                        </group>
+                        <group>
+                          <field name="energizacion_alarm"/>
+                        </group>
+                        <group>
+                          <field name="teclado_alarm"/>
+                        </group>
+                        <group>
+                          <field name="sirena_alarm"/>
+                        </group>
+                        <group>
+                          <field name="code_alarm"/>
+                        </group>
+                        <group>
+                          <field name="battery_alarm"/>
+                        </group>
+                        <group>
+                          <field name="panic_buttons_alarm"/>
+                        </group>
+                        <group>
+                          <field name="alarm_observacion"/>
+                        </group>
+                      </group>
+                    </page>
+                  </notebook>
+                </form>
+              </field>
+          </group>
+          <group>
+            <field name="general_observacion"/>
+          </group>
+        </page>
+      </xpath>
+    </field>
+  </record>
+</odoo>

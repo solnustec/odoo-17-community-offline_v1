@@ -1,0 +1,86 @@
+<odoo>
+    <!-- Vista de formulario para ticket de cierre de Sesion -->
+    <record id="view_pos_close_session_user_ticket" model="ir.ui.view">
+        <field name="name">pos.close.session.user.ticket.form</field>
+        <field name="model">pos.close.session.user.ticket</field>
+        <field name="arch" type="xml">
+            <form string="Ticket de cierre de sesión">
+                <header>
+                    <button name="action_download_pdf"
+                        type="object"
+                        string="Descargar PDF"
+                        class="btn-primary"
+                        icon="fa-download" />
+                </header>
+                <sheet>
+                    <group>
+                        <field name="point_of_sale" readonly="1" />
+                        <field name="user_id" readonly="1" />
+                        <field name="pos_session_id" readonly="1" />
+                        <!--                        <field name="values" readonly="1"/>-->
+                    </group>
+                </sheet>
+            </form>
+        </field>
+    </record>
+
+
+    <!-- Vista de árbol para ticket de cierre de Sesion -->
+    <record id="view_pos_close_session_user_ticket_tree" model="ir.ui.view">
+        <field name="name">pos.close.session.user.ticket.tree</field>
+        <field name="model">pos.close.session.user.ticket</field>
+        <field name="arch" type="xml">
+            <tree string="TICKET">
+                <field name="create_date" />
+                <field name="user_id" />
+                <field name="pos_session_id" />
+                <field name="point_of_sale" />
+                <button name="action_download_pdf"
+                    type="object"
+                    string="Descargar PDF"
+                    class="btn-primary"
+                    icon="fa-download" />
+
+            </tree>
+        </field>
+    </record>
+
+    <record id="pos_close_session_user_ticket_rule_own" model="ir.rule">
+        <field name="name">Ver solo mis tickets de cierre</field>
+        <field name="model_id" ref="model_pos_close_session_user_ticket" />
+        <field name="domain_force">[('user_id', '=', user.id)]</field>
+        <field name="groups" eval="[(4, ref('base.group_user'))]" />
+        <field name="perm_read" eval="1" />
+        <field name="perm_write" eval="0" />
+        <field name="perm_create" eval="0" />
+        <field name="perm_unlink" eval="0" />
+    </record>
+
+    <record id="pos_close_session_user_ticket_rule_admin" model="ir.rule">
+        <field name="name">Ver todos los tickets (Admin)</field>
+        <field name="model_id" ref="model_pos_close_session_user_ticket" />
+        <field name="domain_force">[(1, '=', 1)]</field> <!-- sin filtro -->
+        <field name="groups" eval="[(4, ref('base.group_system'))]" />
+        <field name="perm_read" eval="1" />
+        <field name="perm_write" eval="1" />
+        <field name="perm_create" eval="1" />
+        <field name="perm_unlink" eval="1" />
+    </record>
+
+
+    <!-- Menu de Acción para ticket de cierre de Sesion -->
+    <record id="action_os_close_session_user_ticket" model="ir.actions.act_window">
+        <field name="name">Ticket de cierre de sesión</field>
+        <field name="res_model">pos.close.session.user.ticket</field>
+        <field name="view_mode">tree,form</field>
+
+    </record>
+
+    <!-- Menú principal para ticket de cierre de Sesion -->
+    <menuitem id="pos_close_session_user_ticket"
+        name="Vista de tickets de cierre de sesión"
+        parent="point_of_sale.menu_point_rep"
+        action="action_os_close_session_user_ticket"
+        sequence="6"
+    />
+</odoo>

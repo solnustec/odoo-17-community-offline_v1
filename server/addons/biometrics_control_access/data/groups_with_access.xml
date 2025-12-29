@@ -1,0 +1,14 @@
+<odoo>
+    <data noupdate="1">
+         <record model="ir.module.category" id="biometrics_access_team">
+            <field name="name">Soporte Biometrico</field>
+            <field name="description">Grupo de acceso a configuraciones de biométrico local</field>
+            <field name="sequence">22</field>
+        </record>
+        <record id="group_biometrics_access_team_admin" model="res.groups">
+            <field name="name">Acceso Biometricos</field>
+            <field name="category_id" ref="biometrics_access_team"/>
+            <field name="users" eval="[(4, ref('base.user_root')), (4, ref('base.user_admin'))]"/>
+        </record>
+    </data>
+</odoo>

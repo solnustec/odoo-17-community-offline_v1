@@ -1,0 +1,41 @@
+<?xml version="1.0" encoding="utf-8"?>
+ <odoo>
+     <!-- Menu Action -->
+     <record id="menu_location_chatbot" model="ir.actions.act_window">
+         <field name="name">Locacion del usuario</field>
+         <field name="res_model">chatbot_message.location</field>
+         <field name="view_mode">tree,graph</field>
+     </record>
+
+     <!-- Banner tree view -->
+     <record id="view_user_location_tree" model="ir.ui.view">
+         <field name="name">chatbot_message.location.tree</field>
+         <field name="model">chatbot_message.location</field>
+         <field name="arch" type="xml">
+             <tree string="Farmacia cercana">
+                 <field name="user_id"/>
+                 <field name="latitude"/>
+                 <field name="longitude"/>
+                 <field name="city_name"/>
+                 <field name="pharmacy_name"/>
+                 <field name="create_date"/>
+                 <field name="create_time"/>
+             </tree>
+         </field>
+     </record>
+     <record id="view_user_location_graph" model="ir.ui.view">
+         <field name="name">chatbot_message.location.graph</field>
+         <field name="model">chatbot_message.location</field>
+         <field name="arch" type="xml">
+             <graph string="Farmacia cercana">
+                 <field name="city_name"/>
+                 <field name="user_id"/>
+                 <field name="latitude"/>
+                 <field name="longitude"/>
+                 <field name="pharmacy_name"/>
+                 <field name="create_date"/>
+                 <field name="create_time"/>
+             </graph>
+         </field>
+     </record>
+ </odoo>

@@ -1,0 +1,9 @@
+<odoo>
+    <data noupdate="1">
+        <!-- Definir el grupo de seguridad -->
+        <record id="group_json_storage_user" model="res.groups">
+            <field name="name">JSON Storage User</field>
+            <field name="category_id" ref="base.module_category_tools"/>
+        </record>
+    </data>
+</odoo>

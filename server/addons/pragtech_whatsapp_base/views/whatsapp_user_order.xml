@@ -1,0 +1,40 @@
+<?xml version="1.0" encoding="utf-8"?>
+<odoo>
+    <record id="view_order_form_inherit_chatbot_buttons_2025" model="ir.ui.view">
+        <field name="name">sale.order.form.inherit.chatbot.buttons.2025</field>
+        <field name="model">sale.order</field>
+        <field name="inherit_id" ref="sale.view_order_form"/>
+        <field name="arch" type="xml">
+
+            <!-- Campos personalizados -->
+            <xpath expr="//field[@name='payment_term_id']" position="after">
+                <field name="x_channel" invisible="1"/>
+                <field name="digital_media"/>
+                <field name="x_modo_compra"/>
+                <field name="x_numero_chatbot"/>
+                <field name="x_tipo_pago"/>
+                <field name="x_tipo_entrega"/>
+                <field name="x_direccion_entrega"/>
+                <field name="ubication_url"/>
+                <field name="type_delivery"/>
+                <field name="pay_deuna_id"/>
+                <field name="pay_ahorita_id"/>
+                <field name="transaction_id"/>
+            </xpath>
+
+            <!-- Botón Resumen WhatsApp -->
+            <xpath expr="//header/button[@name='action_preview_sale_order']" position="after">
+                <button name="action_summary_chatbot"
+                        string="Resumen WhatsApp"
+                        type="object"
+                        class="btn-secondary oe_highlight"/>
+
+                <button name="action_dispatch_chatbot"
+                        string="Despacho WhatsApp"
+                        type="object"
+                        class="btn-secondary oe_highlight"/>
+            </xpath>
+
+        </field>
+    </record>
+</odoo>

@@ -1,0 +1,7 @@
+id,name,model_id:id,group_id:id,perm_read,perm_write,perm_create,perm_unlink
+access_product_ai_search_service,product.ai.search.service,model_product_ai_search_service,base.group_user,1,0,0,0
+access_product_ai_search_service_manager,product.ai.search.service manager,model_product_ai_search_service,base.group_system,1,1,1,1
+access_product_ai_search_config,product.ai.search.config,model_product_ai_search_config,base.group_system,1,1,1,1
+access_product_ai_search_test,product.ai.search.test,model_product_ai_search_test,base.group_user,1,1,1,1
+access_product_ai_search_test_result,product.ai.search.test.result,model_product_ai_search_test_result,base.group_user,1,1,1,1
+access_product_ai_search_indexer,product.ai.search.indexer,model_product_ai_search_indexer,base.group_system,1,1,1,1

@@ -1,0 +1,70 @@
+<?xml version="1.0" encoding="utf-8"?>
+<odoo>
+    <!-- Formulario de Configuración -->
+    <record id="view_product_ai_search_config_form" model="ir.ui.view">
+        <field name="name">product.ai.search.config.form</field>
+        <field name="model">product.ai.search.config</field>
+        <field name="arch" type="xml">
+            <form>
+                <header>
+                    <button string="💾 Guardar Configuración" name="save_config" type="object" class="btn-primary"/>
+                    <button string="🔗 Probar Conexión" name="test_connection" type="object" class="btn-info"/>
+                    <button string="🔍 Abrir Prueba de Búsqueda" name="action_open_test" type="object" class="btn-success"/>
+                    <button string="🤖 Abrir Indexador" name="action_open_indexer" type="object" class="btn-warning"/>
+                    <button string="⚡ Indexar Productos (Prueba)" name="index_products_action" type="object" class="btn-warning"/>
+                </header>
+                <sheet>
+                    <div class="oe_title">
+                        <h1>⚙️ Configuración de Búsqueda IA para Productos</h1>
+                        <p>Configure las credenciales y parámetros para la búsqueda inteligente de productos</p>
+                    </div>
+                    
+                    <group>
+                        <group string="🎯 Configuración Rápida">
+                            <field name="config_preset"/>
+                        </group>
+                        
+                        <group string="🔍 Configuração de Elasticsearch">
+                            <field name="elasticsearch_url" placeholder="https://your-elastic-cloud.es.region.gcp.elastic.cloud:443"/>
+                            <field name="elasticsearch_index" placeholder="products_odoo_ai"/>
+                            <field name="elasticsearch_strategy"/>
+                            <field name="elasticsearch_verify_certs"/>
+                        </group>
+                        
+                        <group string="🔐 Autenticação Elasticsearch">
+                            <field name="elasticsearch_auth_type"/>
+                            <field name="elasticsearch_username" 
+                                   invisible="elasticsearch_auth_type != 'basic'" 
+                                   required="elasticsearch_auth_type == 'basic'"/>
+                            <field name="elasticsearch_password" password="True" 
+                                   invisible="elasticsearch_auth_type != 'basic'" 
+                                   required="elasticsearch_auth_type == 'basic'"/>
+                            <field name="elasticsearch_api_key" password="True" 
+                                   invisible="elasticsearch_auth_type != 'api_key'" 
+                                   required="elasticsearch_auth_type == 'api_key'" 
+                                   placeholder="aWozaFBwa0I4YmlYVE1vel9GZEg6..."/>
+                        </group>
+                        
+                        <group string="🤖 Configuração de OpenAI">
+                            <field name="openai_api_key" password="True" placeholder="sk-proj-..."/>
+                        </group>
+                        
+                        <group string="⚙️ Configuración de Procesamiento">
+                            <field name="batch_size"/>
+                            <field name="auto_index"/>
+                        </group>
+                    </group>
+                </sheet>
+            </form>
+        </field>
+    </record>
+
+    <!-- Acción para abrir configuración -->
+    <record id="action_product_ai_search_config" model="ir.actions.act_window">
+        <field name="name">⚙️ Configuración de Búsqueda IA</field>
+        <field name="res_model">product.ai.search.config</field>
+        <field name="view_mode">form</field>
+        <field name="target">new</field>
+        <field name="context">{}</field>
+    </record>
+</odoo>

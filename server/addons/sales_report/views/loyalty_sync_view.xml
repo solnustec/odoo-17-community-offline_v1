@@ -1,0 +1,41 @@
+<?xml version="1.0" encoding="utf-8"?>
+<odoo>
+    <data>
+        <record id="view_loyalty_sync_tree_view" model="ir.ui.view">
+            <field name="name">loyalty.sync.tree</field>
+            <field name="model">loyalty.sync</field>
+            <field name="arch" type="xml">
+                <tree>
+                    <field name="product_id"/>
+                    <field name="promo_cant"/>
+                    <field name="product_id_old"/>
+                    <field name="base_cant" optional="hide"/>
+                    <field name="desc_esp" optional="hide"/>
+                    <field name="date_from" optional="hide"/>
+                    <field name="date_to" optional="hide"/>
+                    <field name="acumulable" optional="hide"/>
+                    <field name="coupon" optional="hide"/>
+                    <field name="obligatory_promotion" optional="hide"/>
+                    <field name="coupon_date_from"/>
+                    <field name="coupon_date_to"/>
+                    <field name="coupon_discount"/>
+                    <field name="obligatory_coupon"/>
+                    <field name="sync_state"/>
+                </tree>
+            </field>
+        </record>
+
+        <record id="action_loyalty_sync" model="ir.actions.act_window">
+            <field name="name">Promociones</field>
+            <field name="res_model">loyalty.sync</field>
+            <field name="view_mode">tree,form</field>
+            <field name="view_id" ref="view_loyalty_sync_tree_view"/>
+        </record>
+        <menuitem
+                id="menu_loyalty_sync"
+                name="Promociones"
+                groups="base.group_no_one"
+                parent="purchase.menu_purchase_root"
+                action="action_loyalty_sync"/>
+    </data>
+</odoo>

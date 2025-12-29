@@ -1,0 +1,20 @@
+<?xml version="1.0" encoding="utf-8"?>
+<odoo>
+    <record id="res_config_settings_view_form_inherit_sale_summary" model="ir.ui.view">
+        <field name="name">res.config.settings.view.form.inherit.sale.summary</field>
+        <field name="model">res.config.settings</field>
+        <field name="priority" eval="50"/>
+        <field name="inherit_id" ref="stock.res_config_settings_view_form"/>
+        <field name="arch" type="xml">
+            <xpath expr="//block[@name='matrix_setting_container']" position="after">
+                <block title="Ajuste Automático de Stock" id="sale_summary_stock_adjustment">
+                    <setting string="Ajuste Automático de Stock desde Resumen de Ventas"
+                             id="setting_auto_adjust_stock"
+                             title="Ajuste Automático de Stock desde Resumen de Ventas">
+                        <field name="auto_adjust_stock_from_sales_summary" class="w-25"/>
+                    </setting>
+                </block>
+            </xpath>
+        </field>
+    </record>
+</odoo>

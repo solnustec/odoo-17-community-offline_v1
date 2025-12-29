@@ -1,0 +1,35 @@
+{
+    'name': 'Custom Website Loyalty',
+    'version': '1.0',
+    'summary': '',
+    'author': 'Klever Ontaneda',
+    'category': 'Tools',
+    'depends': ['web', 'base', 'website', 'website_sale',
+                'website_sale_loyalty', 'loyalty',
+                'sale_loyalty', 'website_sale_stock',
+                'custom_fields_product'],
+    'data': [
+        'views/cart_lines.xml',
+        'views/loyalty_avaliable_on_view.xml',
+        'views/search_field_view.xml',
+        'views/website_layout_checkout.xml',
+        'views/website_sale_wishlist_template.xml',
+        'views/product_template.xml',
+        'views/button_shop.xml',
+        # 'data/website_stock_control.xml', #cron para despublicar productos sin stock
+    ],
+    'assets': {
+        'web.assets_frontend': [
+            'custom_website_loyalty/static/src/js/custom_shop.js',
+            'custom_website_loyalty/static/src/js/add_to_cart_notification.js',
+            'custom_website_loyalty/static/src/js/update_js_quantity.js',
+            'custom_website_loyalty/static/src/js/variant_mixin.js',
+            'custom_website_loyalty/static/src/js/alert_mesage_custom.js',
+            '/custom_website_loyalty/static/src/xml/website_detail.xml',
+            '/custom_website_loyalty/static/src/css/styles.css',
+        ],
+    },
+    'license': 'AGPL-3',
+    'installable': True,
+    'application': True,
+}

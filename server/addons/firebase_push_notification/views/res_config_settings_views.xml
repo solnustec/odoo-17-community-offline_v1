@@ -1,0 +1,25 @@
+<?xml version="1.0" encoding="utf-8"?>
+<odoo>
+    <record id="view_res_config_settings_firebase" model="ir.ui.view">
+        <field name="name">res.config.settings.firebase</field>
+        <field name="model">res.config.settings</field>
+        <field name="inherit_id"
+               ref="base.res_config_settings_view_form"/>
+        <field name="arch" type="xml">
+            <xpath expr="//form" position="inside">
+                <div class="app_settings_block" data-string="Firebase" string="Firebase">
+                    <h2>Firebase Configuración</h2>
+                    <div class="row mt16">
+
+                        <div class="col-12 mt16">
+                            <button name="test_firebase_connection"
+                                    string="Probar Conexión"
+                                    type="object"
+                                    class="btn btn-primary"/>
+                        </div>
+                    </div>
+                </div>
+            </xpath>
+        </field>
+    </record>
+</odoo>

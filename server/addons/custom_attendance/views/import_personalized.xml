@@ -1,0 +1,41 @@
+<odoo>
+    <data>
+
+        <record id="view_form_import_attendances" model="ir.ui.view">
+            <field name="name">form.import.extra.hours</field>
+            <field name="model">hr.attendance.import</field>
+            <field name="arch" type="xml">
+                <form string="Importar Asistencias">
+                    <!-- Campo de archivo para importar -->
+                    <group>
+                        <field name="file_to_import" widget="binary" string="Archivo a Importar" filename="file_name" options="{'accepted_file_extensions': '.dat,.zip'}"/>
+                        <field name="file_name" invisible="1"/>
+                    </group>
+                    <group>
+                        <button name="action_import_attendances" type="object" string="Importar" class="btn-primary"/>
+                        <button name="action_redirect_view" type="object" string="Cancelar" class="btn-secondary"/>
+                    </group>
+                </form>
+            </field>
+        </record>
+
+
+        <record id="action_attendances_import" model="ir.actions.act_window">
+            <field name="name">Import Personalisado </field>
+            <field name="type">ir.actions.act_window</field>
+            <field name="res_model">hr.attendance.import</field>
+<!--            <field name="domain">[('work_entry_type_id.name', '=', 'Horas Extraordinarias')]</field>-->
+            <field name="context">{'create': 1, 'edit': 1}</field>
+            <field name="view_mode">form</field>
+            <field name="view_id" ref="view_form_import_attendances"/>
+        </record>
+
+        <menuitem id="main_menu_employee_shift"
+                  name="Importaciones"
+                  parent="hr_attendance.menu_hr_attendance_root"
+                  action="action_attendances_import"
+                  sequence="6"/>
+
+    </data>
+</odoo>
+

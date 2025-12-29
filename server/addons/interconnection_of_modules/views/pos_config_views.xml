@@ -1,0 +1,53 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<odoo>
+    <!--
+        Vista de configuración de POS para asignar departamento.
+        Cuando se asigna un departamento, automáticamente se agregan
+        todos los empleados del departamento al POS.
+    -->
+
+    <!-- Herencia del formulario de pos.config para agregar campo departamento -->
+    <record id="view_pos_config_form_inherit_department" model="ir.ui.view">
+        <field name="name">pos.config.form.inherit.department</field>
+        <field name="model">pos.config</field>
+        <field name="inherit_id" ref="point_of_sale.pos_config_view_form"/>
+        <field name="arch" type="xml">
+            <!-- Agregar campo departamento después de other_devices -->
+            <xpath expr="//setting[@id='other_devices']" position="after">
+                <setting id="pos_department_setting"
+                         string="Departamento"
+                         help="Departamento asociado a este Punto de Venta. Los empleados del departamento serán asignados automáticamente.">
+                    <field name="department_id"
+                           options="{'no_create': True, 'no_open': True}"
+                           placeholder="Seleccionar departamento..."/>
+                </setting>
+            </xpath>
+        </field>
+    </record>
+
+    <!-- Vista Kanban: mostrar departamento en tarjeta -->
+    <record id="view_pos_config_kanban_inherit_department" model="ir.ui.view">
+        <field name="name">pos.config.kanban.inherit.department</field>
+        <field name="model">pos.config</field>
+        <field name="inherit_id" ref="point_of_sale.view_pos_config_kanban"/>
+        <field name="arch" type="xml">
+            <xpath expr="//field[@name='name']" position="after">
+                <field name="department_id"/>
+            </xpath>
+        </field>
+    </record>
+
+    <!-- Acción del servidor para sincronizar empleados masivamente -->
+    <record id="action_sync_pos_department_employees" model="ir.actions.server">
+        <field name="name">Sincronizar Empleados del Departamento</field>
+        <field name="model_id" ref="point_of_sale.model_pos_config"/>
+        <field name="binding_model_id" ref="point_of_sale.model_pos_config"/>
+        <field name="binding_view_types">list</field>
+        <field name="state">code</field>
+        <field name="code">
+if records:
+    action = records.action_sync_department_employees()
+        </field>
+    </record>
+
+</odoo>

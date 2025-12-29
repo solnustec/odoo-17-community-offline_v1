@@ -1,0 +1,14 @@
+<?xml version="1.0" encoding="utf-8"?>
+<odoo>
+    <data noupdate="1">
+        <record id="mt_survey_survey_user_input_completed" model="mail.message.subtype">
+            <field name="name">Participation completed</field>
+            <field name="description">New participation completed.</field>
+            <field name="res_model">survey.survey</field>
+            <field name="relation_field">survey_id</field>
+            <field name="default" eval="False"/>
+            <field name="hidden" eval="False"/>
+            <field name="sequence" eval="10"/>
+        </record>
+    </data>
+</odoo>

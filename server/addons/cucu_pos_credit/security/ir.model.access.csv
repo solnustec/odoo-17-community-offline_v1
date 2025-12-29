@@ -1,0 +1,2 @@
+id,name,model_id:id,group_id:id,perm_read,perm_write,perm_create,perm_unlink
+cucu_pos_credit.access_pos_create_customer_payment,access_pos_create_customer_payment,cucu_pos_credit.model_pos_create_customer_payment,base.group_user,1,0,0,0

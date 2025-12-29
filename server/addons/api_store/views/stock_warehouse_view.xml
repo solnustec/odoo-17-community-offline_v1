@@ -1,0 +1,29 @@
+<?xml version="1.0" encoding="utf-8"?>
+<odoo>
+    <data>
+
+        <record id="stock_warehouse_view_app_movil" model="ir.ui.view">
+            <field name="name">stock.warehouse.inherit.extra</field>
+            <field name="model">stock.warehouse</field>
+            <field name="inherit_id" ref="stock.view_warehouse"/>
+            <field name="arch" type="xml">
+                <xpath expr="//page[@name='technical_info']" position="after">
+                    <page name="warehouse_config_app_movil" string="Configuraciones para la App Móvil"
+                          groups="base.group_system" colspan="2">
+                        <group>
+                            <group>
+                                <field name="app_mobile_warehouse"/>
+                            </group>
+                            <group>
+                                <field name="city_id"
+                                       invisible="context.get('default_app_mobile_warehouse') != True and not app_mobile_warehouse"/>
+                            </group>
+                            <group/>
+                        </group>
+                    </page>
+                </xpath>
+            </field>
+            <!--            #TODO agregar detalles de los cambios-->
+        </record>
+    </data>
+</odoo>

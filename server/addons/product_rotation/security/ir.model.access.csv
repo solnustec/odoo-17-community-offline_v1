@@ -1,0 +1,5 @@
+id,name,model_id:id,group_id:id,perm_read,perm_write,perm_create,perm_unlink
+access_product_rotation_daily_user,product.rotation.daily.user,model_product_rotation_daily,stock.group_stock_user,1,0,0,0
+access_product_rotation_daily_manager,product.rotation.daily.manager,model_product_rotation_daily,stock.group_stock_manager,1,1,1,1
+access_product_rotation_transfer_wizard_user,product.rotation.transfer.wizard.user,model_product_rotation_transfer_wizard,stock.group_stock_user,1,1,1,1
+access_product_rotation_transfer_wizard_manager,product.rotation.transfer.wizard.manager,model_product_rotation_transfer_wizard,stock.group_stock_manager,1,1,1,1

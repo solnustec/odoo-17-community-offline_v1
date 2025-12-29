@@ -1,0 +1,25 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<odoo>
+    <record id="guide_remision" model="report.paperformat">
+        <field name="name">Shift Allocation Report Paperformat</field>
+        <field name="default" eval="False"/>
+        <field name="format">A4</field>
+        <field name="orientation">Landscape</field>
+        <field name="margin_top">10</field>
+        <field name="margin_bottom">10</field>
+        <field name="margin_left">10</field>
+        <field name="margin_right">10</field>
+    </record>
+    <record id="action_shift_change_report" model="ir.actions.report">
+        <field name="name">Guía de Remisión</field>
+        <field name="model">stock.picking</field>
+        <field name="report_type">qweb-pdf</field>
+        <field name="report_name">guide_remision.report_referral_guide_document_test</field>
+        <field name="report_file">guide_remision.report_referral_guide_document_test</field>
+        <field name="paperformat_id" ref="guide_remision"/>
+        <field name="print_report_name">'Cambio de turnos - %s' % (object.name)</field>
+        <field name="binding_model_id" ref="guide_remision.model_stock_picking"/>
+        <field name="binding_type">report</field>
+    </record>
+
+</odoo>

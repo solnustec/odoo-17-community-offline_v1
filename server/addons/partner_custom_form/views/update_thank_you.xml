@@ -1,0 +1,37 @@
+<odoo>
+    <template id="update_thank_you_template" name="Customer Update View">
+        <t t-call="website.layout">
+            <div id="wrap">
+                <div class="row p-md-5">
+                    <div class="col pt24 pb24 text-center">
+                        <div class="row p-md-4">
+                            <div class="col-md-6 p-md-4">
+                                <div class="row">
+                                    <div class="col-md-5">
+                                        <img class="img-fluid o_we_custom_image"
+                                            t-attf-style="width:{{ '100%' if (job_sudo and job_sudo.user_id) else '100%' }} !important;"
+                                            src="/custom/static/src/img/check.jpeg"
+                                            alt="Congratulations!"/>
+                                    </div>
+                                    <div class="col-md-7 d-flex flex-column"
+                                        style="justify-content: center;">
+                                        <div class="text-start mb-md-3">
+                                            <h1 style="font-size:40px;color: #003D8B !important;">¡Listo!
+                                            </h1>
+                                        </div>
+                                        <div style="background-color: #F8E032 !important;color: #003D8B !important;border-radius:10px">
+                                            <p class="fw-light pt-3">Gracias por actualizar tus datos
+                                            </p>
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+
+                        </div>
+
+                    </div>
+                </div>
+            </div>
+        </t>
+    </template>
+</odoo>

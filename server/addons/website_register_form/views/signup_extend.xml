@@ -1,0 +1,22 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<odoo>
+    <template id="signup_extend_form" inherit_id="auth_signup.fields" priority="20">
+        <xpath expr="//div[@class='mb-3 field-password pt-2']" position="before">
+            <div class="form-group">
+                <label for="l10n_latam_identification_type_id">Tipo de Identificación</label>
+                <select name="l10n_latam_identification_type_id" class="form-select" required="1">
+                    <option value="">Seleccione</option>
+                    <t t-foreach="identification_types" t-as="type">
+                        <option t-att-value="type.id" t-att-selected="type.id == l10n_latam_identification_type_id">
+                            <t t-esc="type.name"/>
+                        </option>
+                    </t>
+                </select>
+            </div>
+            <div class="form-group">
+                <label for="vat">Número de Identificación</label>
+                <input type="text" name="vat" class="form-control" required="1" t-att-value="vat or ''"/>
+            </div>
+        </xpath>
+    </template>
+</odoo>

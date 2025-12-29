@@ -1,0 +1,162 @@
+# Translation of Odoo Server.
+# This file contains the translation of the following modules:
+# 	* cucu_pos_credit
+#
+msgid ""
+msgstr ""
+"Project-Id-Version: Odoo Server 17.0-20240312\n"
+"Report-Msgid-Bugs-To: \n"
+"POT-Creation-Date: 2024-04-21 19:14+0000\n"
+"PO-Revision-Date: 2024-04-21 15:16-0400\n"
+"Last-Translator: \n"
+"Language-Team: \n"
+"Language: es\n"
+"MIME-Version: 1.0\n"
+"Content-Type: text/plain; charset=UTF-8\n"
+"Content-Transfer-Encoding: 8bit\n"
+"Plural-Forms: \n"
+"X-Generator: Poedit 3.2.2\n"
+
+#. module: cucu_pos_credit
+#: model:ir.actions.act_window,name:cucu_pos_credit.action_account_move_tree_credit
+#: model:ir.model.fields,field_description:cucu_pos_credit.field_res_partner__account_move_ids
+#: model:ir.model.fields,field_description:cucu_pos_credit.field_res_users__account_move_ids
+#: model_terms:ir.ui.view,arch_db:cucu_pos_credit.cucu_pos_credit_payments
+#: model_terms:ir.ui.view,arch_db:cucu_pos_credit.view_account_move_tree
+msgid "Account Moves"
+msgstr "Movimientos cuenta"
+
+#. module: cucu_pos_credit
+#: model:ir.model.fields,field_description:cucu_pos_credit.field_res_partner__account_payments_ids
+#: model:ir.model.fields,field_description:cucu_pos_credit.field_res_users__account_payments_ids
+#: model_terms:ir.ui.view,arch_db:cucu_pos_credit.cucu_pos_credit_payments
+msgid "Account Payments"
+msgstr "Pagos en cuenta"
+
+#. module: cucu_pos_credit
+#: model:ir.model.fields,field_description:cucu_pos_credit.field_pos_config__allow_pos_invoice
+#: model:ir.model.fields,field_description:cucu_pos_credit.field_res_config_settings__allow_pos_invoice
+msgid "Allow POS Invoice Payment and Validation"
+msgstr "Permitir pago y validación de facturas POS"
+
+#. module: cucu_pos_credit
+#: model:ir.model.fields,field_description:cucu_pos_credit.field_pos_config__allow_pos_payment
+#: model:ir.model.fields,field_description:cucu_pos_credit.field_res_config_settings__allow_pos_payment
+msgid "Allow POS Payments"
+msgstr "Permitir pagos POS"
+
+#. module: cucu_pos_credit
+#: model:ir.model.fields,field_description:cucu_pos_credit.field_pos_create_customer_payment__create_uid
+msgid "Created by"
+msgstr "Creado por"
+
+#. module: cucu_pos_credit
+#: model:ir.model.fields,field_description:cucu_pos_credit.field_pos_create_customer_payment__create_date
+msgid "Created on"
+msgstr "Creado el"
+
+#. module: cucu_pos_credit
+#: model:ir.ui.menu,name:cucu_pos_credit.menu_account_moves_tree
+msgid "Credit"
+msgstr "Crédito"
+
+#. module: cucu_pos_credit
+#: model_terms:ir.ui.view,arch_db:cucu_pos_credit.pos_report_payments_inherit
+msgid "Credits"
+msgstr "Créditos"
+
+#. module: cucu_pos_credit
+#: model:ir.model,name:cucu_pos_credit.model_res_partner
+msgid "Cucu Clients"
+msgstr "Clientes Cucu"
+
+#. module: cucu_pos_credit
+#: model:ir.model,name:cucu_pos_credit.model_pos_order
+msgid "Cucu Pos Order"
+msgstr "Cucu Pos Pedido"
+
+#. module: cucu_pos_credit
+#: model:ir.model,name:cucu_pos_credit.model_pos_config
+#: model:ir.model,name:cucu_pos_credit.model_res_config_settings
+msgid "Cucu pos config"
+msgstr ""
+
+#. module: cucu_pos_credit
+#: model:ir.model.fields,field_description:cucu_pos_credit.field_pos_create_customer_payment__display_name
+msgid "Display Name"
+msgstr "Nombre"
+
+#. module: cucu_pos_credit
+#: model:ir.model.fields,field_description:cucu_pos_credit.field_pos_create_customer_payment__id
+msgid "ID"
+msgstr ""
+
+#. module: cucu_pos_credit
+#: model:ir.model,name:cucu_pos_credit.model_account_move
+msgid "Journal Entry"
+msgstr "Asiento contable"
+
+#. module: cucu_pos_credit
+#: model:ir.model.fields,field_description:cucu_pos_credit.field_pos_create_customer_payment__write_uid
+msgid "Last Updated by"
+msgstr "Última actualización por"
+
+#. module: cucu_pos_credit
+#: model:ir.model.fields,field_description:cucu_pos_credit.field_pos_create_customer_payment__write_date
+msgid "Last Updated on"
+msgstr "Última actualización el"
+
+#. module: cucu_pos_credit
+#: model:ir.model.fields,field_description:cucu_pos_credit.field_account_payment__notes_pos
+msgid "Notes"
+msgstr "Notas"
+
+#. module: cucu_pos_credit
+#: model_terms:ir.ui.view,arch_db:cucu_pos_credit.bi_pos_reports
+msgid "POS Payment Configuration"
+msgstr "POS Configuración pago"
+
+#. module: cucu_pos_credit
+#: model:ir.model,name:cucu_pos_credit.model_pos_payment_method
+msgid "Payment Method Cucu"
+msgstr "Método pago Cucu"
+
+#. module: cucu_pos_credit
+#: model:ir.model.fields,field_description:cucu_pos_credit.field_pos_payment_method__payment_key
+msgid "Payment Method Key"
+msgstr "Método pago Key"
+
+#. module: cucu_pos_credit
+#: model_terms:ir.ui.view,arch_db:cucu_pos_credit.inherit_view_payment_form_notes
+msgid "Payment Notes"
+msgstr "Notas de pago"
+
+#. module: cucu_pos_credit
+#: model:ir.model,name:cucu_pos_credit.model_account_payment
+msgid "Payments"
+msgstr "Pagos"
+
+#. module: cucu_pos_credit
+#: model:ir.model,name:cucu_pos_credit.model_pos_create_customer_payment
+msgid "Pos Create Customer Payment"
+msgstr "Pos Crear Pago Cliente"
+
+#. module: cucu_pos_credit
+#: model:ir.model,name:cucu_pos_credit.model_pos_session
+msgid "Pos session"
+msgstr "Pos sesión"
+
+#. module: cucu_pos_credit
+#: model:ir.model,name:cucu_pos_credit.model_report_cucu_pos_cash_control_pos_report_payments
+msgid "Report Pos Cash Control"
+msgstr "Informe Control Caja Pos"
+
+#. module: cucu_pos_credit
+#: model_terms:ir.ui.view,arch_db:cucu_pos_credit.pos_report_payments_inherit
+msgid "Transaction Amount"
+msgstr "Importe de la transacción"
+
+#. module: cucu_pos_credit
+#: model_terms:ir.ui.view,arch_db:cucu_pos_credit.pos_report_payments_inherit
+msgid "Type"
+msgstr "Tipo"

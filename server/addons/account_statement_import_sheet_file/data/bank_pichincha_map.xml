@@ -1,0 +1,32 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!--
+    Copyright 2025
+    Basado en estructura OCA
+    Banco Pichincha - Mapeo personalizado
+    Licencia AGPL-3.0 o posterior
+-->
+<odoo noupdate="1">
+    <record id="bank_pichincha_statement_map" model="account.statement.import.sheet.mapping">
+        <field name="name">Banco Pichincha</field>
+        <field name="footer_lines_skip_count">0</field>
+        <field name="header_lines_skip_count">1</field>
+
+        <field name="float_thousands_sep">none</field>
+        <field name="float_decimal_sep">dot</field>
+        <field name="delimiter">semicolon</field>
+        <field name="quotechar">"</field>
+
+        <field name="timestamp_format">%d/%m/%Y</field>
+        <field name="timestamp_column">Fecha</field>
+
+        <field name="amount_type">absolute_value</field>
+        <field name="amount_column">Monto</field>
+        <field name="debit_credit_column">Tipo</field>
+        <field name="debit_value">D</field>
+        <field name="credit_value">C</field>
+
+        <field name="balance_column">Saldo</field>
+        <field name="description_column">Documento</field>
+        <field name="reference_column">Concepto</field>
+    </record>
+</odoo>

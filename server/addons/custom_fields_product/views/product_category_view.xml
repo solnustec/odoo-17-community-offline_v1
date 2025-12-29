@@ -1,0 +1,15 @@
+<odoo>
+<!--    <record id="view_product_category_form_inherit_readonly_cost" model="ir.ui.view">-->
+<!--        <field name="name">product.category.form.inherit.readonly.cost</field>-->
+<!--        <field name="model">product.category</field>-->
+<!--        <field name="inherit_id" ref="product.product_category_form_view"/>-->
+<!--        <field name="arch" type="xml">-->
+<!--            <field name="property_cost_method" position="attributes">-->
+<!--                <attribute name="readonly">1</attribute>-->
+<!--            </field>-->
+<!--            <field name="property_valuation" position="attributes">-->
+<!--                <attribute name="readonly">1</attribute>-->
+<!--            </field>-->
+<!--        </field>-->
+<!--    </record>-->
+</odoo>

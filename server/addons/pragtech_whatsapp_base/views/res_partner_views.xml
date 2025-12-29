@@ -1,0 +1,48 @@
+<?xml version="1.0" encoding="utf-8"?>
+<odoo>
+    <record id="view_partner_whatsapp_form_custom" model="ir.ui.view">
+        <field name="name">view.partner.whatsapp.form.custom</field>
+        <field name="model">res.partner.chatbot</field>
+        <field name="arch" type="xml">
+            <form string="Whatsapp Chatbot Partner">
+                <sheet>
+                    <group>
+                        <field name="name"/>
+                        <field name="chatId"/>
+                        <field name="same_vat_partner_id"/>
+                    </group>
+                    <notebook>
+                        <page string="Whatsapp Messages">
+                            <field name="whatsapp_message_ids" widget="one2many">
+                                <tree create="false">
+                                    <field name="message_body"/>
+                                    <field name="to"/>
+                                    <field name="senderName"/>
+                                    <field name="time"/>
+                                    <field name="state"/>
+                                </tree>
+                                <form string="Whatsapp Message">
+                                    <group>
+                                        <field name="message_body"/>
+                                        <field name="message_id"/>
+                                        <field name="fromMe"/>
+                                        <field name="to"/>
+                                        <field name="chatId"/>
+                                        <field name="type"/>
+                                        <field name="msg_image" nolabel="1" widget="image"/>
+                                        <field name="senderName"/>
+                                        <field name="author"/>
+                                        <field name="partner_id"/>
+                                        <field name="time"/>
+                                        <field name="state"/>
+                                        <field name="attachment_id"/>
+                                    </group>
+                                </form>
+                            </field>
+                        </page>
+                    </notebook>
+                </sheet>
+            </form>
+        </field>
+    </record>
+</odoo>

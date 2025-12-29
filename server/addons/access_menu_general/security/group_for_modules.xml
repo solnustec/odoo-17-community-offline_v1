@@ -1,0 +1,303 @@
+<?xml version="1.0" encoding="utf-8"?>
+<odoo>
+    <data noupdate="1">
+        <!-- Discuss -->
+        <record id="system_access_discuss_category" model="ir.module.category">
+            <field name="name">Discuss</field>
+        </record>
+        <record id="system_access_discuss" model="res.groups">
+            <field name="name">Access Discuss</field>
+            <field name="category_id" ref="system_access_discuss_category"/>
+            <field name="users" eval="[(4, ref('base.user_root')), (4, ref('base.user_admin'))]"/>
+        </record>
+
+        <!-- Calendar -->
+        <record id="system_access_calendar_category" model="ir.module.category">
+            <field name="name">Calendar</field>
+        </record>
+        <record id="system_access_calendar" model="res.groups">
+            <field name="name">Access Calendar</field>
+            <field name="category_id" ref="system_access_calendar_category"/>
+            <field name="users" eval="[(4, ref('base.user_root')), (4, ref('base.user_admin'))]"/>
+        </record>
+
+        <!-- Adm Campos -->
+        <record id="system_access_adm_campos_category" model="ir.module.category">
+            <field name="name">Adm. Campos</field>
+        </record>
+        <record id="system_access_adm_campos" model="res.groups">
+            <field name="name">Access Adm. Campos</field>
+            <field name="category_id" ref="system_access_adm_campos_category"/>
+            <field name="users" eval="[(4, ref('base.user_root')), (4, ref('base.user_admin'))]"/>
+        </record>
+
+        <!-- WhatsApp -->
+        <record id="system_access_whatsapp_category" model="ir.module.category">
+            <field name="name">WhatsApp</field>
+        </record>
+        <record id="system_access_whatsapp" model="res.groups">
+            <field name="name">Access WhatsApp</field>
+            <field name="category_id" ref="system_access_whatsapp_category"/>
+            <field name="users" eval="[(4, ref('base.user_root')), (4, ref('base.user_admin'))]"/>
+        </record>
+
+        <!-- Contacts -->
+        <record id="system_access_contacts_category" model="ir.module.category">
+            <field name="name">Contacts</field>
+        </record>
+        <record id="system_access_contacts" model="res.groups">
+            <field name="name">Access Contacts</field>
+            <field name="category_id" ref="system_access_contacts_category"/>
+            <field name="users" eval="[(4, ref('base.user_root')), (4, ref('base.user_admin'))]"/>
+        </record>
+
+        <!-- Abonos y Descuentos -->
+        <record id="system_access_abonos_descuentos_category" model="ir.module.category">
+            <field name="name">Abonos y Descuentos</field>
+        </record>
+        <record id="system_access_abonos_descuentos" model="res.groups">
+            <field name="name">Access Abonos y Descuentos</field>
+            <field name="category_id" ref="system_access_abonos_descuentos_category"/>
+            <field name="users" eval="[(4, ref('base.user_root')), (4, ref('base.user_admin'))]"/>
+        </record>
+
+        <!-- CRM -->
+        <record id="system_access_crm_category" model="ir.module.category">
+            <field name="name">CRM</field>
+        </record>
+        <record id="system_access_crm" model="res.groups">
+            <field name="name">Access CRM</field>
+            <field name="category_id" ref="system_access_crm_category"/>
+            <field name="users" eval="[(4, ref('base.user_root')), (4, ref('base.user_admin'))]"/>
+        </record>
+
+        <!-- Sales -->
+        <record id="system_access_sales_category" model="ir.module.category">
+            <field name="name">Sales</field>
+        </record>
+        <record id="system_access_sales" model="res.groups">
+            <field name="name">Access Sales</field>
+            <field name="category_id" ref="system_access_sales_category"/>
+            <field name="users" eval="[(4, ref('base.user_root')), (4, ref('base.user_admin'))]"/>
+        </record>
+
+        <!-- Dashboards -->
+        <record id="system_access_dashboards_category" model="ir.module.category">
+            <field name="name">Dashboards</field>
+        </record>
+        <record id="system_access_dashboards" model="res.groups">
+            <field name="name">Access Dashboards</field>
+            <field name="category_id" ref="system_access_dashboards_category"/>
+            <field name="users" eval="[(4, ref('base.user_root')), (4, ref('base.user_admin'))]"/>
+        </record>
+
+        <!-- Point of Sale -->
+        <record id="system_access_pos_category" model="ir.module.category">
+            <field name="name">Point of Sale</field>
+        </record>
+        <record id="system_access_pos" model="res.groups">
+            <field name="name">Access Point of Sale</field>
+            <field name="category_id" ref="system_access_pos_category"/>
+            <field name="users" eval="[(4, ref('base.user_root')), (4, ref('base.user_admin'))]"/>
+        </record>
+
+        <!-- Accounting -->
+        <record id="system_access_accounting_category" model="ir.module.category">
+            <field name="name">Accounting</field>
+        </record>
+        <record id="system_access_accounting" model="res.groups">
+            <field name="name">Access Accounting</field>
+            <field name="category_id" ref="system_access_accounting_category"/>
+            <field name="users" eval="[(4, ref('base.user_root')), (4, ref('base.user_admin'))]"/>
+        </record>
+
+        <!-- Website -->
+        <record id="system_access_website_category" model="ir.module.category">
+            <field name="name">Website</field>
+        </record>
+        <record id="system_access_website" model="res.groups">
+            <field name="name">Access Website</field>
+            <field name="category_id" ref="system_access_website_category"/>
+            <field name="users" eval="[(4, ref('base.user_root')), (4, ref('base.user_admin'))]"/>
+        </record>
+
+        <!-- Email Marketing -->
+        <record id="system_access_email_marketing_category" model="ir.module.category">
+            <field name="name">Email Marketing</field>
+        </record>
+        <record id="system_access_email_marketing" model="res.groups">
+            <field name="name">Access Email Marketing</field>
+            <field name="category_id" ref="system_access_email_marketing_category"/>
+            <field name="users" eval="[(4, ref('base.user_root')), (4, ref('base.user_admin'))]"/>
+        </record>
+
+        <!-- Knowledge -->
+        <record id="system_access_knowledge_category" model="ir.module.category">
+            <field name="name">Knowledge</field>
+        </record>
+        <record id="system_access_knowledge" model="res.groups">
+            <field name="name">Access Knowledge</field>
+            <field name="category_id" ref="system_access_knowledge_category"/>
+            <field name="users" eval="[(4, ref('base.user_root')), (4, ref('base.user_admin'))]"/>
+        </record>
+
+        <!-- Forms -->
+        <record id="system_access_forms_category" model="ir.module.category">
+            <field name="name">Forms</field>
+        </record>
+        <record id="system_access_forms" model="res.groups">
+            <field name="name">Access Forms</field>
+            <field name="category_id" ref="system_access_forms_category"/>
+            <field name="users" eval="[(4, ref('base.user_root')), (4, ref('base.user_admin'))]"/>
+        </record>
+
+        <!-- Purchase -->
+        <record id="system_access_purchase_category" model="ir.module.category">
+            <field name="name">Purchase</field>
+        </record>
+        <record id="system_access_purchase" model="res.groups">
+            <field name="name">Access Purchase</field>
+            <field name="category_id" ref="system_access_purchase_category"/>
+            <field name="users" eval="[(4, ref('base.user_root')), (4, ref('base.user_admin'))]"/>
+        </record>
+
+        <!-- Inventory -->
+        <record id="system_access_inventory_category" model="ir.module.category">
+            <field name="name">Inventory</field>
+        </record>
+        <record id="system_access_inventory" model="res.groups">
+            <field name="name">Access Inventory</field>
+            <field name="category_id" ref="system_access_inventory_category"/>
+            <field name="users" eval="[(4, ref('base.user_root')), (4, ref('base.user_admin'))]"/>
+        </record>
+
+        <!-- Employees -->
+        <record id="system_access_employees_category" model="ir.module.category">
+            <field name="name">Employees</field>
+        </record>
+        <record id="system_access_employees" model="res.groups">
+            <field name="name">Access Employees</field>
+            <field name="category_id" ref="system_access_employees_category"/>
+            <field name="users" eval="[(4, ref('base.user_root')), (4, ref('base.user_admin'))]"/>
+        </record>
+
+        <!-- Payroll -->
+        <record id="system_access_payroll_category" model="ir.module.category">
+            <field name="name">Payroll</field>
+        </record>
+        <record id="system_access_payroll" model="res.groups">
+            <field name="name">Access Payroll</field>
+            <field name="category_id" ref="system_access_payroll_category"/>
+            <field name="users" eval="[(4, ref('base.user_root')), (4, ref('base.user_admin'))]"/>
+        </record>
+
+        <!-- Attendances -->
+        <record id="system_access_attendances_category" model="ir.module.category">
+            <field name="name">Attendances</field>
+        </record>
+        <record id="system_access_attendances" model="res.groups">
+            <field name="name">Access Attendances</field>
+            <field name="category_id" ref="system_access_attendances_category"/>
+            <field name="users" eval="[(4, ref('base.user_root')), (4, ref('base.user_admin'))]"/>
+        </record>
+
+        <!-- Recruitment -->
+        <record id="system_access_recruitment_category" model="ir.module.category">
+            <field name="name">Recruitment</field>
+        </record>
+        <record id="system_access_recruitment" model="res.groups">
+            <field name="name">Access Recruitment</field>
+            <field name="category_id" ref="system_access_recruitment_category"/>
+            <field name="users" eval="[(4, ref('base.user_root')), (4, ref('base.user_admin'))]"/>
+        </record>
+
+        <!-- Fleet -->
+        <record id="system_access_fleet_category" model="ir.module.category">
+            <field name="name">Fleet</field>
+        </record>
+        <record id="system_access_fleet" model="res.groups">
+            <field name="name">Access Fleet</field>
+            <field name="category_id" ref="system_access_fleet_category"/>
+            <field name="users" eval="[(4, ref('base.user_root')), (4, ref('base.user_admin'))]"/>
+        </record>
+
+        <!-- Time Off -->
+        <record id="system_access_time_off_category" model="ir.module.category">
+            <field name="name">Time Off</field>
+        </record>
+        <record id="system_access_time_off" model="res.groups">
+            <field name="name">Access Time Off</field>
+            <field name="category_id" ref="system_access_time_off_category"/>
+            <field name="users" eval="[(4, ref('base.user_root')), (4, ref('base.user_admin'))]"/>
+        </record>
+
+        <!-- Link Tracker -->
+        <record id="system_access_link_tracker_category" model="ir.module.category">
+            <field name="name">Link Tracker</field>
+        </record>
+        <record id="system_access_link_tracker" model="res.groups">
+            <field name="name">Access Link Tracker</field>
+            <field name="category_id" ref="system_access_link_tracker_category"/>
+            <field name="users" eval="[(4, ref('base.user_root')), (4, ref('base.user_admin'))]"/>
+        </record>
+
+        <!-- Apps -->
+        <record id="system_access_apps_category" model="ir.module.category">
+            <field name="name">Apps</field>
+        </record>
+        <record id="system_access_apps" model="res.groups">
+            <field name="name">Access Apps</field>
+            <field name="category_id" ref="system_access_apps_category"/>
+            <field name="users" eval="[(4, ref('base.user_root')), (4, ref('base.user_admin'))]"/>
+        </record>
+
+        <!-- Settings -->
+        <record id="system_access_settings_category" model="ir.module.category">
+            <field name="name">Settings</field>
+        </record>
+        <record id="system_access_settings" model="res.groups">
+            <field name="name">Access Settings</field>
+            <field name="category_id" ref="system_access_settings_category"/>
+            <field name="users" eval="[(4, ref('base.user_root')), (4, ref('base.user_admin'))]"/>
+        </record>
+
+        <record id="system_access_surveys_category" model="ir.module.category">
+            <field name="name">Surveys</field>
+        </record>
+        <record id="system_access_surveys" model="res.groups">
+            <field name="name">Access Surveys</field>
+            <field name="category_id" ref="system_access_surveys_category"/>
+            <field name="users" eval="[(4, ref('base.user_root')), (4, ref('base.user_admin'))]"/>
+        </record>
+
+        <record id="system_access_timesheets_category" model="ir.module.category">
+            <field name="name">Timesheets</field>
+        </record>
+        <record id="system_access_timesheets" model="res.groups">
+            <field name="name">Access Timesheets</field>
+            <field name="category_id" ref="system_access_timesheets_category"/>
+            <field name="users" eval="[(4, ref('base.user_root')), (4, ref('base.user_admin'))]"/>
+        </record>
+
+        <record id="system_access_project_category" model="ir.module.category">
+            <field name="name">Project</field>
+        </record>
+        <record id="system_access_project" model="res.groups">
+            <field name="name">Access Project</field>
+            <field name="category_id" ref="system_access_project_category"/>
+            <field name="users" eval="[(4, ref('base.user_root')), (4, ref('base.user_admin'))]"/>
+        </record>
+
+
+        <record id="system_access_project_todo_category" model="ir.module.category">
+            <field name="name">Project Todo</field>
+        </record>
+        <record id="system_access_project_todo" model="res.groups">
+            <field name="name">Project Todo</field>
+            <field name="category_id" ref="system_access_project_todo_category"/>
+            <field name="users" eval="[(4, ref('base.user_root')), (4, ref('base.user_admin'))]"/>
+        </record>
+
+
+    </data>
+</odoo>

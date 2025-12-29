@@ -1,0 +1,27 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<templates xml:space="preserve">
+
+    <t t-name="stock_transfer_in_pos.RecordSelectorReadonly" owl="1">
+        <t t-if="props.readonly">
+            <span class="o_input d-flex flex-wrap gap-1 o_record_selector" t-esc="displayName"/>
+        </t>
+        <t t-else="">
+            <div class="o_input d-flex flex-wrap gap-1 o_record_selector">
+                <RecordAutocomplete
+                    resModel="props.resModel"
+                    value="displayName"
+                    domain="props.domain"
+                    context="props.context"
+                    className="'h-100 flex-grow-1'"
+                    fieldString="props.fieldString"
+                    placeholder="props.placeholder"
+                    multiSelect="false"
+                    getIds="() => []"
+                    update.bind="update"
+                />
+                <span class="o_dropdown_button"/>
+            </div>
+        </t>
+    </t>
+
+</templates>

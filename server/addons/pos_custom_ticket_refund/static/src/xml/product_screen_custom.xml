@@ -1,0 +1,20 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<templates id="template" xml:space="preserve">
+    <t t-name="pos_custom_ticket_refund.ProductScreen" t-inherit="point_of_sale.ProductScreen"
+       t-inherit-mode="extension" owl="1">
+
+        <xpath expr="//ul[@t-if='line.pack_lot_lines']" position="after">
+            <t t-if="line.is_selectionable">
+                <button class="btn btn-primary btn-sm"
+                        t-on-click.stop="() => this.get_selectionable_reward(line)">
+                    <i class="fa fa-refresh"/>
+                    Cambiar
+                </button>
+            </t>
+
+        </xpath>
+        <xpath expr="//div[@class='w-100 border-top mt-auto fw-bolder d-flex flex-column px-3 py-2 bg-200']" position="replace">
+
+        </xpath>
+    </t>
+</templates>

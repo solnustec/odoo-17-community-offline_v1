@@ -1,0 +1,63 @@
+<?xml version="1.0" encoding="utf-8"?>
+<odoo>
+    <!-- Heredar la vista de purchase.order para agregar campos -->
+    <record id="purchase_order_form_inherit_brand_lab" model="ir.ui.view">
+        <field name="name">purchase.order.form.inherit.brand.lab</field>
+        <field name="model">purchase.order</field>
+        <field name="inherit_id" ref="purchase.purchase_order_form"/>
+        <field name="arch" type="xml">
+            <!-- Mostrar marca y laboratorio después de partner_ref -->
+            <xpath expr="//field[@name='partner_ref']" position="after">
+                <field name="brand_name" string="Marca"/>
+                <field name="laboratory_name" string="Laboratorio"/>
+            </xpath>
+
+
+            <!-- Agregar columnas 'Cant. Pagada' y 'Promoción' en la pestaña de productos (order_line) -->
+            <xpath expr="//field[@name='order_line']//tree//field[@name='product_qty']" position="before">
+                <field name="paid_quantity" string="Cant.Pedida"/>
+                <field name="free_product_qty" string="Prod. Gratis"/>
+            </xpath>
+
+            <!-- Hacer opcional la columna Descripción en la lista de líneas -->
+            <xpath expr="//field[@name='order_line']//tree//field[@name='name']" position="attributes">
+                <attribute name="optional">show</attribute>
+                <attribute name="string">Descripción</attribute>
+            </xpath>
+
+            <xpath expr="//field[@name='order_line']//tree//field[@name='image_128']" position="attributes">
+                <attribute name="optional">show</attribute>
+            </xpath>
+
+            <xpath expr="//field[@name='order_line']//tree//field[@name='pvf']" position="attributes">
+                <attribute name="optional">show</attribute>
+            </xpath>
+
+            <xpath expr="//field[@name='order_line']//tree//field[@name='paid_quantity']" position="attributes">
+                <attribute name="optional">show</attribute>
+            </xpath>
+
+             <xpath expr="//field[@name='order_line']//tree//field[@name='free_product_qty']" position="attributes">
+                <attribute name="optional">show</attribute>
+            </xpath>
+
+            <!-- Agregar botón Print RFQ en estado de Orden Confirmada -->
+            <xpath expr="//button[@name='action_rfq_send'][@invisible=&quot;state != 'purchase'&quot;]" position="after">
+                <button name="print_quotation" string="Ver solicitud de Cotización" type="object" invisible="state != 'purchase'" groups="base.group_user" data-hotkey="k"/>
+            </xpath>
+        </field>
+    </record>
+
+    <!-- Heredar la vista de lista de purchase.order para agregar brand_name -->
+    <record id="purchase_order_tree_inherit_brand" model="ir.ui.view">
+        <field name="name">purchase.order.tree.inherit.brand</field>
+        <field name="model">purchase.order</field>
+        <field name="inherit_id" ref="purchase.purchase_order_kpis_tree"/>
+        <field name="arch" type="xml">
+            <!-- Agregar brand_name directamente dentro del tree, sin condicionar posición -->
+            <xpath expr="//tree" position="inside">
+                <field name="brand_name" string="Marca" optional="show"/>
+            </xpath>
+        </field>
+    </record>
+</odoo>

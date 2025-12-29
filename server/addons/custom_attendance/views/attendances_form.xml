@@ -1,0 +1,96 @@
+<?xml version="1.0" encoding="utf-8"?>
+<odoo>
+    <data>
+        <record id="hr_attendance_form_view_inherit_tw" model="ir.ui.view">
+            <field name="name">hr.work.entry.form.inherit.two</field>
+            <field name="model">hr.attendance</field>
+            <field name="inherit_id" ref="hr_attendance.hr_attendance_view_form"/>
+            <field name="arch" type="xml">
+                <xpath expr="//sheet/group" position="replace">
+                    <group>
+                        <group colspan="2">
+                            <group col="1">
+                                <field name="employee_id" widget="many2one_avatar_user"/>
+                                <field name="check_in" options="{'rounding': 0}"/>
+                                <field name="check_out" options="{'rounding': 0}"/>
+                                <field name="reference" string="Referencia de Ubicación"/>
+                            </group>
+                            <group col="2">
+                                <field name="worked_hours" widget="float_time"/>
+                                <field name="overtime_hours" widget="float_time" string="Extra Hours" invisible="1"/>
+                            </group>
+                        </group>
+                        <separator string="ENTRADA"/>
+                        <group colspan="2">
+                            <group>
+                                <group>
+                                    <field name="in_mode"/>
+                                    <field name="in_ip_address" invisible="1"/>
+                                    <field name="in_browser" invisible="1"/>
+                                </group>
+                            </group>
+                            <group invisible="1">
+                                <label for="in_country_name" string="Localisation"/>
+                                <div class="o_row" name="in_location_info">
+                                    <span>
+                                        <field name="in_country_name"/>
+                                    </span>
+                                    <span>
+                                        <field name="in_city" invisible="in_city == 'Unknown'" nolabel="1"/>
+                                    </span>
+                                </div>
+
+                                <label for="in_latitude" string="GPS Coordinates"/>
+                                <div>
+                                    <div class="o_row">
+                                        <span>
+                                            <field name="in_latitude"/>
+                                        </span>,
+                                        <span>
+                                            <field name="in_longitude" nolabel="1"/>
+                                        </span>
+                                    </div>
+                                    <button name="action_in_attendance_maps" type="object" class="btn btn-link ps-0 pt-0 pb-2" icon="oi-arrow-right" string="View on Maps" colspan="2"/>
+                                </div>
+                            </group>
+                        </group>
+                        <separator string="SALIDA" invisible="not check_out"/>
+                        <group colspan="2" invisible="not check_out">
+                            <group>
+                                <group>
+                                    <field name="out_mode" string="Modo"/>
+                                    <field name="out_ip_address" string="IP Address" invisible="1"/>
+                                    <field name="out_browser" string="Browser" invisible="1"/>
+                                </group>
+                            </group>
+                            <group invisible="1">
+                                <label for="out_country_name" string="Localisation"/>
+                                <div class="o_row" name="out_location_info">
+                                    <span>
+                                        <field name="out_country_name"/>
+                                    </span>
+                                    <span>
+                                        <field name="out_city" invisible="out_city == 'Unknown'" nolabel="1"/>
+                                    </span>
+                                </div>
+
+                                <label for="out_latitude" string="GPS Coordinates"/>
+                                <div>
+                                    <div class="o_row">
+                                        <span>
+                                            <field name="out_latitude"/>
+                                        </span>,
+                                        <span>
+                                            <field name="out_longitude" nolabel="1"/>
+                                        </span>
+                                    </div>
+                                    <button name="action_out_attendance_maps" type="object" class="btn btn-link ps-0 pt-0 pb-2" icon="oi-arrow-right" string="View on Maps" colspan="2"/>
+                                </div>
+                            </group>
+                        </group>
+                    </group>
+                </xpath>
+            </field>
+        </record>
+    </data>
+</odoo>

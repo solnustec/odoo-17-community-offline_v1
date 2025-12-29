@@ -1,0 +1,39 @@
+<?xml version="1.0" encoding="utf-8"?>
+<odoo>
+    <record id="res_config_settings_view_form" model="ir.ui.view">
+        <field name="name">res.config.settings.view.form.inherit.cus.atten</field>
+        <field name="model">res.config.settings</field>
+        <field name="priority" eval="90"/>
+        <field name="inherit_id" ref="base.res_config_settings_view_form"/>
+        <field name="arch" type="xml">
+            <xpath expr="//block[@name='overtime_settings']" position="inside">
+                <setting title="Período de Gracia"
+                         string="Período de Gracia"
+                         help="Cantidad de tiempo que define el intervalo en el que se reinician los autocompletados de marcaciones del empleado.">
+                    <div class="row">
+                        <div class="col-6">
+                            <field name="grace_period_value" class="oe_inline"/>
+                        </div>
+                        <div class="col-6">
+                            <field name="grace_period_unit" class="oe_inline"/>
+                        </div>
+                    </div>
+                </setting>
+                <setting title="Límite de Inconsistencias"
+                         string="Límite de Inconsistencias"
+                         help="Número máximo de veces que se permiten marcaciones incompletas en la jornada laboral de un empleado antes de que se dejen de autocompletar.">
+                    <field name="grace_limit"/>
+                </setting>
+
+            </xpath>
+
+            <xpath expr="//block[@name='overtime_settings']" position="after">
+                <block title="Configuración de Verificación de Marcaciones" name="attendance_check_settings">
+                    <setting title="Período de Alerta (días)" help="Número de días después de los cuales una ubicación se marca como faltante de marcaciones.">
+                        <field name="configurable_period"/>
+                    </setting>
+                </block>
+            </xpath>
+        </field>
+    </record>
+</odoo>

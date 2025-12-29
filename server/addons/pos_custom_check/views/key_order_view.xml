@@ -1,0 +1,27 @@
+<odoo>
+    <record id="view_pos_order_form_inherit_key_order" model="ir.ui.view">
+        <field name="name">pos.order.form.inherit.key.order</field>
+        <field name="model">pos.order</field>
+        <field name="inherit_id" ref="point_of_sale.view_pos_pos_form"/>
+        <field name="arch" type="xml">
+            <!-- Agregar una nueva pestaña en el notebook -->
+            <notebook position="inside">
+                <page string="Nro. Factura" name="key_order_tab">
+                    <group>
+                        <!-- Campo editable solo cuando el registro está en borrador -->
+                        <field name="key_order" placeholder="Ingrese la clave de la orden aquí" readonly="state != 'draft'"/>
+                        <field name="date_invoices" readonly="true"/>
+                    </group>
+                </page>
+                <page string="Pagos Digitales" name="digital_payment_tab">
+                    <group>
+                        <field name="payment_transaction_id" readonly="1"/>
+                        <field name="payment_transfer_number" readonly="1"/>
+                        <field name="payment_bank_name" readonly="1"/>
+                        <field name="orderer_identification" readonly="1"/>
+                    </group>
+                </page>
+            </notebook>
+        </field>
+    </record>
+</odoo>

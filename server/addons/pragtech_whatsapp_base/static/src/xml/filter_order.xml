@@ -1,0 +1,141 @@
+<templates id="template" xml:space="preserve">
+    <t t-name="pos_sale.SaleOrderList" t-inherit="pos_sale.SaleOrderList"
+       t-inherit-mode="extension"
+       owl="1">
+
+    <!-- FILTROS DE FECHA -->
+        <xpath expr="//div[contains(@class, 'orders')]" position="before">
+        <div class="so-filter-box d-flex gap-3 p-2 bg-light border-bottom">
+
+            <!-- Filtro por fecha exacta -->
+            <div class="d-flex flex-column">
+                <label class="fw-bold small">Fecha específica</label>
+                <input type="date"
+                       class="form-control"
+                       style="min-width: 150px;"
+                       t-on-change="e => this.setFilterDate(e.target.value)"/>
+            </div>
+
+            <!-- Filtro rango desde -->
+            <div class="d-flex flex-column">
+                <label class="fw-bold small">Desde</label>
+                <input type="date"
+                       class="form-control"
+                       style="min-width: 150px;"
+                       t-on-change="e => { this.startDate = e.target.value; this.render(); }"/>
+            </div>
+
+            <!-- Filtro rango hasta -->
+            <div class="d-flex flex-column">
+                <label class="fw-bold small">Hasta</label>
+                <input type="date"
+                       class="form-control"
+                       style="min-width: 150px;"
+                       t-on-change="e => { this.endDate = e.target.value; this.render(); }"/>
+            </div>
+
+            <!-- BOTÓN DE RESET -->
+            <div class="d-flex align-items-end">
+                <button class="btn btn-secondary"
+                        t-on-click="() => { this.startDate=null; this.endDate=null; this.render(); }">
+                    Reset
+                </button>
+            </div>
+        </div>
+    </xpath>
+
+
+        <!-- LISTA DE ÓRDENES (tu parte original) -->
+        <xpath expr="//div[contains(@class, 'orders')]" position="replace">
+        <div class="orders overflow-y-auto">
+            <div class="header-row d-flex text-bg-700 fw-bolder" t-att-class="{ 'd-none': ui.isSmall }">
+                <div class="col name p-2">Order</div>
+                <div class="col date p-2">Date</div>
+                <div class="col customer p-2">Customer</div>
+                <div class="col salesman p-2">Salesperson</div>
+                <div class="col total p-2">Total</div>
+                <div class="col state p-2">State</div>
+                <div class="col state p-2">Canal</div>
+            </div>
+            <div class="order-list">
+                <t t-foreach="filteredOrders" t-as="order" t-key="order.id">
+                    <SaleOrderRow
+                            onClickSaleOrder.bind="props.onClickSaleOrder"
+                            order="order"
+                            highlightedOrder="highlightedOrder"/>
+                </t>
+            </div>
+        </div>
+    </xpath>
+</t>
+
+    <t t-name="pos_sale.SaleOrderRow" t-inherit="pos_sale.SaleOrderRow"
+       t-inherit-mode="extension"
+       owl="1">
+        <xpath expr="//div[contains(@class, 'order-row')]" position="replace">
+            <div class="order-row"
+                 t-att-class="{ highlight: highlighted }"
+                 t-on-click="() => this.props.onClickSaleOrder(props.order)">
+            <div class="col name p-2">
+               <div t-if="ui.isSmall">Order</div>
+                <div>
+                  <t t-esc="name"/>
+               </div>
+            </div>
+                <div class="col date p-2">
+               <div t-if="ui.isSmall">Date</div>
+                    <div>
+                  <t t-esc="date"/>
+               </div>
+            </div>
+                <div class="col partner p-2">
+               <div t-if="ui.isSmall">Customer</div>
+                    <div>
+                  <t t-esc="partner"/>
+               </div>
+            </div>
+                <div class="col salesman p-2">
+               <div t-if="ui.isSmall">Salesman</div>
+                    <div>
+                  <t t-esc="salesman"/>
+               </div>
+            </div>
+                <div class="col end total p-2">
+               <div t-if="ui.isSmall">Total</div>
+                    <div class="flex-container d-flex flex-column h-100">
+                  <div>
+                     <t t-esc="total"/>
+                  </div>
+                        <div t-if="showAmountUnpaid" class="text-muted">
+                     (left:
+                     <t t-esc="amountUnpaidRepr"/>
+                            )
+                  </div>
+               </div>
+            </div>
+                <div class="col state p-2">
+               <div t-if="ui.isSmall">State</div>
+                    <div>
+                  <t t-esc="state"/>
+               </div>
+            </div>
+                <div class="col p-2">
+                   <div t-if="ui.isSmall">Channel</div>
+                    <div>
+                      <span class="text-success fw-bold">
+                            <t t-if="props.order.x_channel">
+                                <t t-esc="props.order.x_channel"/>
+                            </t>
+                          <t t-else="">
+                                <span style="color:#bbb;">–</span>
+                            </t>
+                        </span>
+                   </div>
+                </div>
+
+         </div>
+
+        </xpath>
+    </t>
+</templates>
+

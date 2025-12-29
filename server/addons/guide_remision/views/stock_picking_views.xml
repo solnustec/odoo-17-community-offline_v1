@@ -1,0 +1,27 @@
+<odoo>
+    <record id="view_picking_form_send_sri" model="ir.ui.view">
+        <field name="name">stock.picking.form.send_sri</field>
+        <field name="model">stock.picking</field>
+        <field name="inherit_id" ref="stock.view_picking_form"/>
+        <field name="arch" type="xml">
+
+            <!-- Insertar EN EL HEADER REAL -->
+            <xpath expr="//form/header" position="inside">
+
+                <!-- 1️⃣ Botón Guía -->
+                <button name="action_generate_and_send_guia"
+                        type="object"
+                        string="Enviar Guía al SRI"
+                        class="oe_highlight"
+                        modifiers="{'invisible': [('state', '!=', 'done')]}"/>
+
+                <!-- 2️⃣ Botón Recibo -->
+                <button name="%(report_stock_picking_receipt)d"
+                        type="action"
+                        string="Imprimir Recibo"
+                        class="oe_highlight"/>
+            </xpath>
+
+        </field>
+    </record>
+</odoo>
