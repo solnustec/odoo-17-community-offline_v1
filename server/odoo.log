@@ -1,0 +1,31 @@
+2025-12-29 18:55:12,710 9516 INFO ? odoo: Odoo version 17.0-20251229 
+2025-12-29 18:55:12,711 9516 INFO ? odoo: Using configuration file at C:\Program Files\Odoo 17.0.20251229\server\odoo.conf 
+2025-12-29 18:55:12,711 9516 INFO ? odoo: addons paths: ['C:\\Program Files\\Odoo 17.0.20251229\\server\\odoo\\addons', 'c:\\program files\\odoo 17.0.20251229\\sessions\\addons\\17.0', 'c:\\program files\\odoo 17.0.20251229\\server\\odoo\\addons'] 
+2025-12-29 18:55:12,711 9516 INFO ? odoo: database: openpg@localhost:5432 
+2025-12-29 18:55:13,687 9516 INFO ? odoo.addons.base.models.ir_actions_report: Will use the Wkhtmltopdf binary at C:\Program Files\Odoo 17.0.20251229\thirdparty\wkhtmltopdf.exe 
+2025-12-29 18:55:15,396 9516 INFO ? odoo.service.server: Initiating shutdown 
+2025-12-29 18:55:15,396 9516 INFO ? odoo.service.server: Hit CTRL-C again or send a second signal to force the shutdown. 
+2025-12-29 18:55:15,404 9516 INFO ? odoo.service.server: A child process was found, pid is psutil.Process(pid=2156, name='conhost.exe', status='running', started='18:55:05'), process may hang 
+2025-12-29 18:55:27,505 2904 INFO ? odoo: Odoo version 17.0-20251229 
+2025-12-29 18:55:27,505 2904 INFO ? odoo: Using configuration file at C:\Program Files\Odoo 17.0.20251229\server\odoo.conf 
+2025-12-29 18:55:27,505 2904 INFO ? odoo: addons paths: ['C:\\Program Files\\Odoo 17.0.20251229\\server\\odoo\\addons', 'c:\\program files\\odoo 17.0.20251229\\sessions\\addons\\17.0', 'c:\\program files\\odoo 17.0.20251229\\server\\odoo\\addons'] 
+2025-12-29 18:55:27,505 2904 INFO ? odoo: database: openpg@localhost:5432 
+2025-12-29 18:55:27,626 2904 INFO ? odoo.addons.base.models.ir_actions_report: Will use the Wkhtmltopdf binary at C:\Program Files\Odoo 17.0.20251229\thirdparty\wkhtmltopdf.exe 
+2025-12-29 18:55:27,921 2904 INFO ? odoo.service.server: HTTP service (werkzeug) running on cuxibamba:8069 
+2025-12-29 18:55:31,971 2904 INFO ? odoo.sql_db: Connection to the database failed 
+2025-12-29 18:55:36,065 2904 INFO ? odoo.sql_db: Connection to the database failed 
+2025-12-29 18:57:52,788 2904 INFO ? werkzeug: 127.0.0.1 - - [29/Dec/2025 18:57:52] "GET / HTTP/1.1" 303 - 1 0.101 0.752
+2025-12-29 18:57:53,368 2904 INFO ? werkzeug: 127.0.0.1 - - [29/Dec/2025 18:57:53] "GET /web HTTP/1.1" 303 - 2 0.019 0.222
+2025-12-29 18:57:54,744 2904 INFO ? werkzeug: 127.0.0.1 - - [29/Dec/2025 18:57:54] "GET /web/database/selector HTTP/1.1" 200 - 2 0.004 1.366
+2025-12-29 18:57:55,563 2904 INFO ? werkzeug: 127.0.0.1 - - [29/Dec/2025 18:57:55] "GET /web/static/lib/bootstrap/js/dist/dom/data.js HTTP/1.1" 200 - 1 0.009 0.485
+2025-12-29 18:57:55,564 2904 INFO ? werkzeug: 127.0.0.1 - - [29/Dec/2025 18:57:55] "GET /web/static/src/libs/fontawesome/css/font-awesome.css HTTP/1.1" 200 - 1 0.006 0.490
+2025-12-29 18:57:55,566 2904 INFO ? werkzeug: 127.0.0.1 - - [29/Dec/2025 18:57:55] "GET /web/static/lib/bootstrap/dist/css/bootstrap.css HTTP/1.1" 200 - 1 0.006 0.492
+2025-12-29 18:57:55,567 2904 INFO ? werkzeug: 127.0.0.1 - - [29/Dec/2025 18:57:55] "GET /web/static/lib/bootstrap/js/dist/dom/event-handler.js HTTP/1.1" 200 - 1 0.008 0.490
+2025-12-29 18:57:55,569 2904 INFO ? werkzeug: 127.0.0.1 - - [29/Dec/2025 18:57:55] "GET /web/static/lib/bootstrap/js/dist/dom/selector-engine.js HTTP/1.1" 200 - 1 0.008 0.488
+2025-12-29 18:57:55,571 2904 INFO ? werkzeug: 127.0.0.1 - - [29/Dec/2025 18:57:55] "GET /web/static/lib/bootstrap/js/dist/dom/manipulator.js HTTP/1.1" 200 - 1 0.012 0.486
+2025-12-29 18:57:56,490 2904 INFO ? werkzeug: 127.0.0.1 - - [29/Dec/2025 18:57:56] "GET /web/static/src/public/database_manager.js HTTP/1.1" 200 - 1 0.006 0.581
+2025-12-29 18:57:56,492 2904 INFO ? werkzeug: 127.0.0.1 - - [29/Dec/2025 18:57:56] "GET /web/static/lib/bootstrap/js/dist/modal.js HTTP/1.1" 200 - 1 0.006 0.590
+2025-12-29 18:57:56,492 2904 INFO ? werkzeug: 127.0.0.1 - - [29/Dec/2025 18:57:56] "GET /web/static/lib/bootstrap/js/dist/base-component.js HTTP/1.1" 200 - 1 0.025 0.585
+2025-12-29 18:57:56,499 2904 INFO ? werkzeug: 127.0.0.1 - - [29/Dec/2025 18:57:56] "GET /web/static/img/logo2.png HTTP/1.1" 200 - 1 0.008 0.576
+2025-12-29 18:57:57,036 2904 INFO ? werkzeug: 127.0.0.1 - - [29/Dec/2025 18:57:57] "GET /web/static/src/libs/fontawesome/fonts/fontawesome-webfont.woff2?v=4.7.0 HTTP/1.1" 200 - 1 0.005 0.061
+2025-12-29 18:57:57,307 2904 INFO ? werkzeug: 127.0.0.1 - - [29/Dec/2025 18:57:57] "GET /web/static/img/favicon.ico HTTP/1.1" 200 - 1 0.004 0.081
