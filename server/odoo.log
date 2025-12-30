@@ -29,3 +29,19 @@
 2025-12-29 18:57:56,499 2904 INFO ? werkzeug: 127.0.0.1 - - [29/Dec/2025 18:57:56] "GET /web/static/img/logo2.png HTTP/1.1" 200 - 1 0.008 0.576
 2025-12-29 18:57:57,036 2904 INFO ? werkzeug: 127.0.0.1 - - [29/Dec/2025 18:57:57] "GET /web/static/src/libs/fontawesome/fonts/fontawesome-webfont.woff2?v=4.7.0 HTTP/1.1" 200 - 1 0.005 0.061
 2025-12-29 18:57:57,307 2904 INFO ? werkzeug: 127.0.0.1 - - [29/Dec/2025 18:57:57] "GET /web/static/img/favicon.ico HTTP/1.1" 200 - 1 0.004 0.081
+2025-12-30 00:48:06,773 8992 INFO ? odoo: Odoo version 17.0-20251229 
+2025-12-30 00:48:06,774 8992 INFO ? odoo: Using configuration file at C:\Users\maria\OneDrive\Documentos\Github\odoo-17-community-offline_v1\server\odoo.conf 
+2025-12-30 00:48:06,775 8992 INFO ? odoo: addons paths: ['C:\\Users\\maria\\OneDrive\\Documentos\\Github\\odoo-17-community-offline_v1\\server\\odoo\\addons', 'c:\\users\\maria\\appdata\\local\\openerp s.a\\odoo\\addons\\17.0', 'c:\\users\\maria\\onedrive\\documentos\\github\\odoo-17-community-offline_v1\\server\\server\\odoo\\addons', 'c:\\users\\maria\\onedrive\\documentos\\github\\odoo-17-community-offline_v1\\server\\server\\addons', 'c:\\users\\maria\\onedrive\\documentos\\github\\odoo-17-community-offline_v1\\server\\odoo\\addons'] 
+2025-12-30 00:48:06,775 8992 INFO ? odoo: database: odoo@localhost:5432 
+2025-12-30 00:56:30,151 10016 INFO ? odoo: Odoo version 17.0-20251229 
+2025-12-30 00:56:30,152 10016 INFO ? odoo: Using configuration file at C:\Users\maria\OneDrive\Documentos\Github\odoo-17-community-offline_v1\server\odoo.conf 
+2025-12-30 00:56:30,152 10016 INFO ? odoo: addons paths: ['C:\\Users\\maria\\OneDrive\\Documentos\\Github\\odoo-17-community-offline_v1\\server\\odoo\\addons', 'c:\\users\\maria\\appdata\\local\\openerp s.a\\odoo\\addons\\17.0', 'c:\\users\\maria\\onedrive\\documentos\\github\\odoo-17-community-offline_v1\\server\\server\\odoo\\addons', 'c:\\users\\maria\\onedrive\\documentos\\github\\odoo-17-community-offline_v1\\server\\server\\addons', 'c:\\users\\maria\\onedrive\\documentos\\github\\odoo-17-community-offline_v1\\server\\odoo\\addons'] 
+2025-12-30 00:56:30,152 10016 INFO ? odoo: database: odoo@localhost:5432 
+2025-12-30 06:25:52,791 1228 INFO ? odoo: Odoo version 17.0-20251229 
+2025-12-30 06:25:52,792 1228 INFO ? odoo: Using configuration file at C:\Users\maria\OneDrive\Documentos\Github\odoo-17-community-offline_v1\server\odoo.conf 
+2025-12-30 06:25:52,792 1228 INFO ? odoo: addons paths: ['C:\\Users\\maria\\OneDrive\\Documentos\\Github\\odoo-17-community-offline_v1\\server\\odoo\\addons', 'c:\\users\\maria\\appdata\\local\\openerp s.a\\odoo\\addons\\17.0', 'c:\\users\\maria\\onedrive\\documentos\\github\\odoo-17-community-offline_v1\\server\\server\\odoo\\addons', 'c:\\users\\maria\\onedrive\\documentos\\github\\odoo-17-community-offline_v1\\server\\server\\addons', 'c:\\users\\maria\\onedrive\\documentos\\github\\odoo-17-community-offline_v1\\server\\odoo\\addons'] 
+2025-12-30 06:25:52,792 1228 INFO ? odoo: database: odoo@localhost:5432 
+2025-12-30 06:27:52,442 3628 INFO ? odoo: Odoo version 17.0-20251229 
+2025-12-30 06:27:52,443 3628 INFO ? odoo: Using configuration file at C:\Users\maria\OneDrive\Documentos\Github\odoo-17-community-offline_v1\server\odoo.conf 
+2025-12-30 06:27:52,443 3628 INFO ? odoo: addons paths: ['C:\\Users\\maria\\OneDrive\\Documentos\\Github\\odoo-17-community-offline_v1\\server\\odoo\\addons', 'c:\\users\\maria\\appdata\\local\\openerp s.a\\odoo\\addons\\17.0', 'c:\\users\\maria\\onedrive\\documentos\\github\\odoo-17-community-offline_v1\\server\\server\\odoo\\addons', 'c:\\users\\maria\\onedrive\\documentos\\github\\odoo-17-community-offline_v1\\server\\server\\addons', 'c:\\users\\maria\\onedrive\\documentos\\github\\odoo-17-community-offline_v1\\server\\odoo\\addons'] 
+2025-12-30 06:27:52,444 3628 INFO ? odoo: database: odoo@localhost:5432 
