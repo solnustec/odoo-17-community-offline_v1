@@ -1,0 +1,59 @@
+<?xml version="1.0" encoding="utf-8"?>
+<odoo>
+    <!-- Root Menu -->
+    <menuitem id="menu_branch_update_root"
+              name="Branch Updates"
+              web_icon="branch_update_manager,static/description/icon.png"
+              groups="branch_update_manager.group_branch_update_user"
+              sequence="100"/>
+
+    <!-- Dashboard Menu -->
+    <menuitem id="menu_branch_update_dashboard"
+              name="Dashboard"
+              parent="menu_branch_update_root"
+              action="action_branch_update_dashboard"
+              sequence="1"/>
+
+    <!-- Packages Menu -->
+    <menuitem id="menu_branch_update_packages"
+              name="Update Packages"
+              parent="menu_branch_update_root"
+              action="action_update_packages"
+              groups="branch_update_manager.group_branch_update_manager"
+              sequence="10"/>
+
+    <!-- Branches Menu -->
+    <menuitem id="menu_branch_registry"
+              name="Branches"
+              parent="menu_branch_update_root"
+              action="action_branch_registry"
+              groups="branch_update_manager.group_branch_update_manager"
+              sequence="20"/>
+
+    <!-- Logs Menu -->
+    <menuitem id="menu_update_logs"
+              name="Update Logs"
+              parent="menu_branch_update_root"
+              action="action_update_logs"
+              sequence="30"/>
+
+    <!-- Configuration Menu -->
+    <menuitem id="menu_branch_update_config"
+              name="Configuration"
+              parent="menu_branch_update_root"
+              groups="branch_update_manager.group_branch_update_admin"
+              sequence="100"/>
+
+    <menuitem id="menu_branch_update_settings"
+              name="Settings"
+              parent="menu_branch_update_config"
+              action="action_branch_update_config"
+              sequence="1"/>
+
+    <menuitem id="menu_branch_tags"
+              name="Branch Tags"
+              parent="menu_branch_update_config"
+              action="action_branch_registry_tags"
+              sequence="10"/>
+
+</odoo>

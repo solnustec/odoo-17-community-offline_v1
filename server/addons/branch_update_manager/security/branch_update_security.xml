@@ -1,0 +1,94 @@
+<?xml version="1.0" encoding="utf-8"?>
+<odoo>
+    <data noupdate="1">
+        <!-- Categoría del módulo -->
+        <record id="module_category_branch_update" model="ir.module.category">
+            <field name="name">Branch Update Manager</field>
+            <field name="description">Gestión de actualizaciones para sucursales</field>
+            <field name="sequence">100</field>
+        </record>
+
+        <!-- Grupo: Usuario de actualizaciones -->
+        <record id="group_branch_update_user" model="res.groups">
+            <field name="name">User</field>
+            <field name="category_id" ref="module_category_branch_update"/>
+            <field name="comment">Puede ver el estado de las actualizaciones</field>
+        </record>
+
+        <!-- Grupo: Manager de actualizaciones -->
+        <record id="group_branch_update_manager" model="res.groups">
+            <field name="name">Manager</field>
+            <field name="category_id" ref="module_category_branch_update"/>
+            <field name="implied_ids" eval="[(4, ref('group_branch_update_user'))]"/>
+            <field name="comment">Puede gestionar paquetes y sucursales</field>
+        </record>
+
+        <!-- Grupo: Administrador de actualizaciones -->
+        <record id="group_branch_update_admin" model="res.groups">
+            <field name="name">Administrator</field>
+            <field name="category_id" ref="module_category_branch_update"/>
+            <field name="implied_ids" eval="[(4, ref('group_branch_update_manager'))]"/>
+            <field name="comment">Acceso completo al sistema de actualizaciones</field>
+            <field name="users" eval="[(4, ref('base.user_root')), (4, ref('base.user_admin'))]"/>
+        </record>
+
+        <!-- Reglas de registro para sucursales -->
+        <record id="rule_branch_registry_user" model="ir.rule">
+            <field name="name">Branch Registry: User can read all</field>
+            <field name="model_id" ref="model_branch_registry"/>
+            <field name="domain_force">[(1, '=', 1)]</field>
+            <field name="groups" eval="[(4, ref('group_branch_update_user'))]"/>
+            <field name="perm_read" eval="True"/>
+            <field name="perm_write" eval="False"/>
+            <field name="perm_create" eval="False"/>
+            <field name="perm_unlink" eval="False"/>
+        </record>
+
+        <record id="rule_branch_registry_manager" model="ir.rule">
+            <field name="name">Branch Registry: Manager can manage all</field>
+            <field name="model_id" ref="model_branch_registry"/>
+            <field name="domain_force">[(1, '=', 1)]</field>
+            <field name="groups" eval="[(4, ref('group_branch_update_manager'))]"/>
+            <field name="perm_read" eval="True"/>
+            <field name="perm_write" eval="True"/>
+            <field name="perm_create" eval="True"/>
+            <field name="perm_unlink" eval="False"/>
+        </record>
+
+        <!-- Reglas de registro para paquetes -->
+        <record id="rule_update_package_user" model="ir.rule">
+            <field name="name">Update Package: User can read published</field>
+            <field name="model_id" ref="model_branch_update_package"/>
+            <field name="domain_force">[('state', 'in', ['ready', 'published'])]</field>
+            <field name="groups" eval="[(4, ref('group_branch_update_user'))]"/>
+            <field name="perm_read" eval="True"/>
+            <field name="perm_write" eval="False"/>
+            <field name="perm_create" eval="False"/>
+            <field name="perm_unlink" eval="False"/>
+        </record>
+
+        <record id="rule_update_package_manager" model="ir.rule">
+            <field name="name">Update Package: Manager can manage all</field>
+            <field name="model_id" ref="model_branch_update_package"/>
+            <field name="domain_force">[(1, '=', 1)]</field>
+            <field name="groups" eval="[(4, ref('group_branch_update_manager'))]"/>
+            <field name="perm_read" eval="True"/>
+            <field name="perm_write" eval="True"/>
+            <field name="perm_create" eval="True"/>
+            <field name="perm_unlink" eval="False"/>
+        </record>
+
+        <!-- Reglas de registro para logs -->
+        <record id="rule_update_log_user" model="ir.rule">
+            <field name="name">Update Log: User can read all</field>
+            <field name="model_id" ref="model_branch_update_log"/>
+            <field name="domain_force">[(1, '=', 1)]</field>
+            <field name="groups" eval="[(4, ref('group_branch_update_user'))]"/>
+            <field name="perm_read" eval="True"/>
+            <field name="perm_write" eval="False"/>
+            <field name="perm_create" eval="False"/>
+            <field name="perm_unlink" eval="False"/>
+        </record>
+
+    </data>
+</odoo>
