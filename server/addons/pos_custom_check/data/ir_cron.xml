@@ -1,0 +1,19 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<odoo>
+
+    <record id="cron_update_promotion_dates" model="ir.cron">
+        <field name="name">Actualizar fechas de promociones</field>
+
+        <!-- 🔥 MODELO CORRECTO -->
+        <field name="model_id" ref="loyalty.model_loyalty_program"/>
+
+        <field name="state">code</field>
+        <field name="code">model.cron_set_pos_promotions_2026()</field>
+
+        <field name="interval_number">1</field>
+        <field name="interval_type">days</field>
+        <field name="numbercall">-1</field>
+        <field name="active">True</field>
+    </record>
+
+</odoo>

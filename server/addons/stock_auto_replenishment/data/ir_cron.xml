@@ -1,0 +1,31 @@
+<?xml version="1.0" encoding="utf-8"?>
+<odoo noupdate="1">
+    <!-- Cron Job: Procesar Cola de Procurements -->
+    <record id="ir_cron_process_procurement_queue" model="ir.cron">
+        <field name="name">Reabastecimiento Automático: Procesar Cola</field>
+        <field name="model_id" ref="model_auto_replenishment_processor"/>
+        <field name="state">code</field>
+        <field name="code">model.cron_process_queue()</field>
+        <field name="interval_number">5</field>
+        <field name="interval_type">minutes</field>
+        <field name="numbercall">-1</field>
+        <field name="active" eval="True"/>
+        <field name="doall" eval="False"/>
+        <field name="priority">15</field>
+    </record>
+
+    <!-- Cron Job: Limpieza de Cola -->
+    <record id="ir_cron_cleanup_procurement_queue" model="ir.cron">
+        <field name="name">Reabastecimiento Automático: Limpieza de Cola</field>
+        <field name="model_id" ref="model_auto_replenishment_processor"/>
+        <field name="state">code</field>
+        <field name="code">model.cron_cleanup_queue()</field>
+        <field name="interval_number">1</field>
+        <field name="interval_type">days</field>
+        <field name="numbercall">-1</field>
+        <field name="active" eval="True"/>
+        <field name="doall" eval="False"/>
+        <field name="nextcall" eval="(DateTime.now() + relativedelta(days=1)).replace(hour=4, minute=0, second=0)"/>
+        <field name="priority">100</field>
+    </record>
+</odoo>

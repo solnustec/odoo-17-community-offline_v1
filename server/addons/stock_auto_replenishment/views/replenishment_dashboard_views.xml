@@ -1,0 +1,41 @@
+<?xml version="1.0" encoding="utf-8"?>
+<odoo>
+    <!-- Dashboard Action -->
+    <record id="action_replenishment_dashboard" model="ir.actions.client">
+        <field name="name">Dashboard Reabastecimiento</field>
+        <field name="tag">auto_replenishment_dashboard</field>
+    </record>
+
+    <!-- Fallback: Form view for dashboard data -->
+    <record id="view_replenishment_dashboard_form" model="ir.ui.view">
+        <field name="name">auto.replenishment.dashboard.form</field>
+        <field name="model">auto.replenishment.dashboard</field>
+        <field name="arch" type="xml">
+            <form string="Dashboard" create="0" edit="0">
+                <sheet>
+                    <group string="Transferencias Automáticas">
+                        <group>
+                            <field name="total_pickings"/>
+                            <field name="pickings_today"/>
+                            <field name="pickings_week"/>
+                            <field name="pickings_month"/>
+                        </group>
+                        <group>
+                            <field name="pickings_draft"/>
+                            <field name="pickings_waiting"/>
+                            <field name="pickings_ready"/>
+                            <field name="pickings_done"/>
+                        </group>
+                    </group>
+                    <group string="Cola de Procurements">
+                        <group>
+                            <field name="queue_pending"/>
+                            <field name="queue_done"/>
+                            <field name="queue_failed"/>
+                        </group>
+                    </group>
+                </sheet>
+            </form>
+        </field>
+    </record>
+</odoo>

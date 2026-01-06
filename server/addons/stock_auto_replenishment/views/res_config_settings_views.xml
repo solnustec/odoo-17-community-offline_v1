@@ -1,0 +1,65 @@
+<?xml version="1.0" encoding="utf-8"?>
+<odoo>
+    <!-- Extensión de la vista de configuración de Inventario -->
+    <record id="res_config_settings_view_form_auto_replenishment" model="ir.ui.view">
+        <field name="name">res.config.settings.view.form.inherit.auto.replenishment</field>
+        <field name="model">res.config.settings</field>
+        <field name="inherit_id" ref="stock.res_config_settings_view_form"/>
+        <field name="arch" type="xml">
+            <xpath expr="//app[@name='stock']" position="inside">
+                <block title="Reabastecimiento Automático" name="auto_replenishment_settings">
+                    <setting id="auto_replenishment_enabled"
+                             string="Habilitar Reabastecimiento Automático"
+                             help="Procesa orderpoints con trigger=auto y crea transferencias">
+                        <field name="auto_replenishment_enabled"/>
+                    </setting>
+
+                    <setting id="auto_replenishment_mode"
+                             string="Modo de Transferencias"
+                             invisible="not auto_replenishment_enabled">
+                        <field name="auto_replenishment_mode" widget="radio"/>
+                        <div class="text-muted mt-2">
+                            <b>Individual:</b> 1 transferencia por producto/orderpoint<br/>
+                            <b>Agrupado:</b> Comportamiento estándar de Odoo
+                        </div>
+                    </setting>
+
+                    <setting id="auto_replenishment_check"
+                             string="Verificar Stock en Origen"
+                             invisible="not auto_replenishment_enabled">
+                        <field name="auto_replenishment_check_stock"/>
+                    </setting>
+
+                    <setting id="auto_replenishment_confirm"
+                             string="Auto-confirmar Transferencias"
+                             invisible="not auto_replenishment_enabled">
+                        <field name="auto_replenishment_auto_confirm"/>
+                    </setting>
+
+                    <setting id="auto_replenishment_limit"
+                             string="Límite por Ejecución"
+                             invisible="not auto_replenishment_enabled">
+                        <div class="row mt-2">
+                            <div class="col-lg-4">
+                                <field name="auto_replenishment_batch_limit" class="o_light_label"/>
+                                <span class="text-muted ms-2">por ejecución</span>
+                            </div>
+                        </div>
+                    </setting>
+
+                    <setting id="auto_replenishment_expiration"
+                             string="Cancelar Transferencias Expiradas"
+                             help="Cancela automáticamente transferencias no validadas después de X días"
+                             invisible="not auto_replenishment_enabled">
+                        <div class="row mt-2">
+                            <div class="col-lg-4">
+                                <field name="auto_replenishment_expiration_days" class="o_light_label"/>
+                                <span class="text-muted ms-2">días (0 = desactivado)</span>
+                            </div>
+                        </div>
+                    </setting>
+                </block>
+            </xpath>
+        </field>
+    </record>
+</odoo>

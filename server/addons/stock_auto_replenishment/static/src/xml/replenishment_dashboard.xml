@@ -1,0 +1,260 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<templates xml:space="preserve">
+    <t t-name="stock_auto_replenishment.Dashboard">
+        <div class="o_action o_auto_replenishment_dashboard" style="overflow-y: auto; height: 100%;">
+            <div class="container-fluid py-4">
+                <!-- Header -->
+                <div class="row mb-4">
+                    <div class="col-12">
+                        <div class="d-flex justify-content-between align-items-center">
+                            <h2 class="mb-0">
+                                <i class="fa fa-refresh me-2"/>Dashboard Reabastecimiento Automático
+                            </h2>
+                            <button class="btn btn-primary" t-on-click="refresh">
+                                <i class="fa fa-sync-alt me-1"/>Actualizar
+                            </button>
+                        </div>
+                    </div>
+                </div>
+
+                <t t-if="state.loading">
+                    <div class="text-center py-5">
+                        <i class="fa fa-spinner fa-spin fa-3x"/>
+                        <p class="mt-3">Cargando datos...</p>
+                    </div>
+                </t>
+
+                <t t-else="">
+                    <!-- Transferencias - Cards principales -->
+                    <div class="row mb-4">
+                        <div class="col-md-3">
+                            <div class="card border-primary h-100" style="cursor:pointer;" t-on-click="() => this.openPickings()">
+                                <div class="card-body">
+                                    <div class="d-flex justify-content-between">
+                                        <div>
+                                            <h6 class="card-title text-muted">Total Transferencias</h6>
+                                            <h2 class="mb-0 text-primary" t-esc="state.data.total_pickings || 0"/>
+                                        </div>
+                                        <div class="align-self-center">
+                                            <i class="fa fa-truck fa-2x text-primary"/>
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                        <div class="col-md-3">
+                            <div class="card border-success h-100" style="cursor:pointer;" t-on-click="() => this.openPickings()">
+                                <div class="card-body">
+                                    <div class="d-flex justify-content-between">
+                                        <div>
+                                            <h6 class="card-title text-muted">Hoy</h6>
+                                            <h2 class="mb-0 text-success" t-esc="state.data.pickings_today || 0"/>
+                                        </div>
+                                        <div class="align-self-center">
+                                            <i class="fa fa-calendar fa-2x text-success"/>
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                        <div class="col-md-3">
+                            <div class="card border-info h-100" style="cursor:pointer;" t-on-click="() => this.openPickings()">
+                                <div class="card-body">
+                                    <div class="d-flex justify-content-between">
+                                        <div>
+                                            <h6 class="card-title text-muted">Esta Semana</h6>
+                                            <h2 class="mb-0 text-info" t-esc="state.data.pickings_week || 0"/>
+                                        </div>
+                                        <div class="align-self-center">
+                                            <i class="fa fa-calendar-check-o fa-2x text-info"/>
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                        <div class="col-md-3">
+                            <div class="card border-secondary h-100" style="cursor:pointer;" t-on-click="() => this.openPickings()">
+                                <div class="card-body">
+                                    <div class="d-flex justify-content-between">
+                                        <div>
+                                            <h6 class="card-title text-muted">Este Mes</h6>
+                                            <h2 class="mb-0 text-secondary" t-esc="state.data.pickings_month || 0"/>
+                                        </div>
+                                        <div class="align-self-center">
+                                            <i class="fa fa-calendar-o fa-2x text-secondary"/>
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- Transferencias por Estado -->
+                    <div class="row mb-4">
+                        <div class="col-12">
+                            <div class="card">
+                                <div class="card-header bg-light">
+                                    <h5 class="mb-0"><i class="fa fa-list-alt me-2"/>Transferencias por Estado</h5>
+                                </div>
+                                <div class="card-body">
+                                    <div class="row text-center">
+                                        <div class="col" style="cursor:pointer;" t-on-click="() => this.openPickings('draft')">
+                                            <div class="border rounded p-3">
+                                                <i class="fa fa-file-o fa-2x text-muted mb-2 d-block"/>
+                                                <h3 class="mb-1" t-esc="state.data.pickings_draft || 0"/>
+                                                <small class="text-muted">Borrador</small>
+                                            </div>
+                                        </div>
+                                        <div class="col" style="cursor:pointer;" t-on-click="() => this.openPickings('waiting')">
+                                            <div class="border rounded p-3">
+                                                <i class="fa fa-clock-o fa-2x text-warning mb-2 d-block"/>
+                                                <h3 class="mb-1" t-esc="state.data.pickings_waiting || 0"/>
+                                                <small class="text-muted">En Espera</small>
+                                            </div>
+                                        </div>
+                                        <div class="col" style="cursor:pointer;" t-on-click="() => this.openPickings('assigned')">
+                                            <div class="border rounded p-3">
+                                                <i class="fa fa-check-circle fa-2x text-info mb-2 d-block"/>
+                                                <h3 class="mb-1" t-esc="state.data.pickings_ready || 0"/>
+                                                <small class="text-muted">Listo</small>
+                                            </div>
+                                        </div>
+                                        <div class="col" style="cursor:pointer;" t-on-click="() => this.openPickings('done')">
+                                            <div class="border rounded p-3">
+                                                <i class="fa fa-check fa-2x text-success mb-2 d-block"/>
+                                                <h3 class="mb-1" t-esc="state.data.pickings_done || 0"/>
+                                                <small class="text-muted">Realizado</small>
+                                            </div>
+                                        </div>
+                                        <div class="col" style="cursor:pointer;" t-on-click="() => this.openPickings('cancel')">
+                                            <div class="border rounded p-3">
+                                                <i class="fa fa-times fa-2x text-danger mb-2 d-block"/>
+                                                <h3 class="mb-1" t-esc="state.data.pickings_cancelled || 0"/>
+                                                <small class="text-muted">Cancelado</small>
+                                            </div>
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- Cola y Orderpoints -->
+                    <div class="row mb-4">
+                        <div class="col-md-6">
+                            <div class="card h-100">
+                                <div class="card-header bg-light">
+                                    <h5 class="mb-0"><i class="fa fa-tasks me-2"/>Cola de Procurements</h5>
+                                </div>
+                                <div class="card-body">
+                                    <div class="row text-center">
+                                        <div class="col" style="cursor:pointer;" t-on-click="() => this.openQueue('pending')">
+                                            <div class="border border-warning rounded p-3">
+                                                <i class="fa fa-hourglass-half fa-2x text-warning mb-2 d-block"/>
+                                                <h3 class="mb-1" t-esc="state.data.queue_pending || 0"/>
+                                                <small class="text-muted">Pendiente</small>
+                                            </div>
+                                        </div>
+                                        <div class="col" style="cursor:pointer;" t-on-click="() => this.openQueue('done')">
+                                            <div class="border border-success rounded p-3">
+                                                <i class="fa fa-check-circle fa-2x text-success mb-2 d-block"/>
+                                                <h3 class="mb-1" t-esc="state.data.queue_done || 0"/>
+                                                <small class="text-muted">Procesado</small>
+                                            </div>
+                                        </div>
+                                        <div class="col" style="cursor:pointer;" t-on-click="() => this.openQueue('failed')">
+                                            <div class="border border-danger rounded p-3">
+                                                <i class="fa fa-exclamation-triangle fa-2x text-danger mb-2 d-block"/>
+                                                <h3 class="mb-1" t-esc="state.data.queue_failed || 0"/>
+                                                <small class="text-muted">Fallido</small>
+                                            </div>
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                        <div class="col-md-6">
+                            <div class="card h-100">
+                                <div class="card-header bg-light">
+                                    <h5 class="mb-0"><i class="fa fa-retweet me-2"/>Reglas de Reordenamiento</h5>
+                                </div>
+                                <div class="card-body">
+                                    <div class="row text-center">
+                                        <div class="col" style="cursor:pointer;" t-on-click="() => this.openOrderpoints(false)">
+                                            <div class="border border-primary rounded p-3">
+                                                <i class="fa fa-cogs fa-2x text-primary mb-2 d-block"/>
+                                                <h3 class="mb-1" t-esc="state.data.orderpoints_auto || 0"/>
+                                                <small class="text-muted">Automáticos</small>
+                                            </div>
+                                        </div>
+                                        <div class="col" style="cursor:pointer;" t-on-click="() => this.openOrderpoints(true)">
+                                            <div class="border border-danger rounded p-3">
+                                                <i class="fa fa-exclamation-circle fa-2x text-danger mb-2 d-block"/>
+                                                <h3 class="mb-1" t-esc="state.data.orderpoints_need_replenish || 0"/>
+                                                <small class="text-muted">Necesitan Reabastecimiento</small>
+                                            </div>
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- Estado de Crons -->
+                    <div class="row">
+                        <div class="col-12">
+                            <div class="card">
+                                <div class="card-header bg-light">
+                                    <h5 class="mb-0"><i class="fa fa-clock-o me-2"/>Estado de Tareas Programadas (Crons)</h5>
+                                </div>
+                                <div class="card-body">
+                                    <t t-if="state.data.crons and state.data.crons.length">
+                                        <table class="table table-sm table-hover mb-0">
+                                            <thead>
+                                                <tr>
+                                                    <th>Cron</th>
+                                                    <th>Estado</th>
+                                                    <th>Intervalo</th>
+                                                    <th>Última Ejecución</th>
+                                                    <th>Próxima Ejecución</th>
+                                                </tr>
+                                            </thead>
+                                            <tbody>
+                                                <t t-foreach="state.data.crons" t-as="cron" t-key="cron.id">
+                                                    <tr>
+                                                        <td>
+                                                            <i class="fa fa-cog me-1"/>
+                                                            <t t-esc="cron.name"/>
+                                                        </td>
+                                                        <td>
+                                                            <t t-if="cron.active">
+                                                                <span class="badge bg-success">
+                                                                    <i class="fa fa-check me-1"/>Activo
+                                                                </span>
+                                                            </t>
+                                                            <t t-else="">
+                                                                <span class="badge bg-danger">
+                                                                    <i class="fa fa-times me-1"/>Inactivo
+                                                                </span>
+                                                            </t>
+                                                        </td>
+                                                        <td><t t-esc="cron.interval"/></td>
+                                                        <td><t t-esc="cron.lastcall"/></td>
+                                                        <td><t t-esc="cron.nextcall"/></td>
+                                                    </tr>
+                                                </t>
+                                            </tbody>
+                                        </table>
+                                    </t>
+                                    <t t-else="">
+                                        <p class="text-muted mb-0">No se encontraron crons configurados</p>
+                                    </t>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </t>
+            </div>
+        </div>
+    </t>
+</templates>

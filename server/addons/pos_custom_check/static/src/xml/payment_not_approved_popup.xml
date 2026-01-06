@@ -1,0 +1,40 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<templates xml:space="preserve">
+    <t t-name="pos_custom_check.PaymentNotApprovedPopup" owl="1">
+        <div class="popup popup-payment-not-approved" style="max-width: 480px;">
+            <div class="modal-header">
+                <h4 class="modal-title">
+                    <i class="fa fa-exclamation-triangle me-2" style="color: #f39c12;"/>
+                    <t t-esc="props.title"/>
+                </h4>
+            </div>
+
+            <div class="modal-body">
+                <p class="mb-3" style="font-size: 15px;">
+                    <t t-esc="props.body"/>
+                </p>
+
+                <div class="alert alert-warning mb-0" role="alert" style="font-size: 13px;">
+                    <i class="fa fa-info-circle me-1"/>
+                    <strong>Nota:</strong> Si autoriza manualmente, quedará registrado en el sistema.
+                </div>
+            </div>
+
+            <div class="modal-footer d-flex flex-wrap justify-content-center gap-2">
+                <button class="btn btn-lg btn-primary" t-on-click="onRetry">
+                    <i class="fa fa-refresh me-1"/>
+                    <t t-esc="props.retryText"/>
+                </button>
+
+                <button class="btn btn-lg btn-warning" t-on-click="onAuthorize">
+                    <i class="fa fa-key me-1"/>
+                    <t t-esc="props.authorizeText"/>
+                </button>
+
+                <button class="btn btn-lg btn-secondary" t-on-click="onCancel">
+                    <t t-esc="props.cancelText"/>
+                </button>
+            </div>
+        </div>
+    </t>
+</templates>

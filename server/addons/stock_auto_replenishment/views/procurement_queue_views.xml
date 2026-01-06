@@ -1,0 +1,105 @@
+<?xml version="1.0" encoding="utf-8"?>
+<odoo>
+    <!-- Vista tree de la cola -->
+    <record id="view_procurement_queue_tree" model="ir.ui.view">
+        <field name="name">product.replenishment.procurement.queue.tree</field>
+        <field name="model">product.replenishment.procurement.queue</field>
+        <field name="arch" type="xml">
+            <tree string="Cola de Procurements"
+                  decoration-success="state == 'done'"
+                  decoration-warning="state == 'pending'"
+                  decoration-danger="state == 'failed'">
+                <field name="create_date" string="Fecha"/>
+                <field name="orderpoint_id"/>
+                <field name="qty_to_order_snapshot" string="Cantidad"/>
+                <field name="state" widget="badge"
+                       decoration-success="state == 'done'"
+                       decoration-warning="state == 'pending'"
+                       decoration-danger="state == 'failed'"/>
+                <field name="retry_count"/>
+                <field name="picking_id" optional="show"/>
+                <field name="last_error" optional="hide"/>
+            </tree>
+        </field>
+    </record>
+
+    <!-- Vista formulario de la cola -->
+    <record id="view_procurement_queue_form" model="ir.ui.view">
+        <field name="name">product.replenishment.procurement.queue.form</field>
+        <field name="model">product.replenishment.procurement.queue</field>
+        <field name="arch" type="xml">
+            <form string="Detalle de Cola">
+                <header>
+                    <button name="reset_for_retry"
+                            type="object"
+                            string="Reintentar"
+                            class="btn-primary"
+                            invisible="state != 'failed'"/>
+                </header>
+                <sheet>
+                    <group>
+                        <group string="Información">
+                            <field name="orderpoint_id"/>
+                            <field name="qty_to_order_snapshot"/>
+                            <field name="state"/>
+                            <field name="retry_count"/>
+                        </group>
+                        <group string="Resultado">
+                            <field name="picking_id"/>
+                            <field name="dedupe_key"/>
+                            <field name="create_date"/>
+                        </group>
+                    </group>
+                    <group string="Error" invisible="not last_error">
+                        <field name="last_error" nolabel="1"/>
+                    </group>
+                </sheet>
+            </form>
+        </field>
+    </record>
+
+    <!-- Vista búsqueda de la cola -->
+    <record id="view_procurement_queue_search" model="ir.ui.view">
+        <field name="name">product.replenishment.procurement.queue.search</field>
+        <field name="model">product.replenishment.procurement.queue</field>
+        <field name="arch" type="xml">
+            <search string="Cola de Procurements">
+                <field name="orderpoint_id"/>
+                <field name="picking_id"/>
+                <separator/>
+                <filter string="Pendientes" name="filter_pending"
+                        domain="[('state', '=', 'pending')]"/>
+                <filter string="Procesados" name="filter_done"
+                        domain="[('state', '=', 'done')]"/>
+                <filter string="Fallidos" name="filter_failed"
+                        domain="[('state', '=', 'failed')]"/>
+                <separator/>
+                <filter string="Hoy" name="filter_today"
+                        domain="[('create_date', '&gt;=', (context_today()).strftime('%Y-%m-%d'))]"/>
+                <separator/>
+                <group expand="0" string="Agrupar por">
+                    <filter string="Estado" name="group_state" context="{'group_by': 'state'}"/>
+                    <filter string="Fecha" name="group_date" context="{'group_by': 'create_date:day'}"/>
+                </group>
+            </search>
+        </field>
+    </record>
+
+    <!-- Acción para la cola -->
+    <record id="action_procurement_queue" model="ir.actions.act_window">
+        <field name="name">Cola de Procurements</field>
+        <field name="res_model">product.replenishment.procurement.queue</field>
+        <field name="view_mode">tree,form</field>
+        <field name="search_view_id" ref="view_procurement_queue_search"/>
+        <field name="context">{'search_default_filter_pending': 1}</field>
+        <field name="help" type="html">
+            <p class="o_view_nocontent_smiling_face">
+                No hay elementos en la cola
+            </p>
+            <p>
+                Los orderpoints con trigger=auto y qty_to_order > 0 se encolan aquí
+                para procesamiento.
+            </p>
+        </field>
+    </record>
+</odoo>

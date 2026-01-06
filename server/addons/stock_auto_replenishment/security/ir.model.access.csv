@@ -1,0 +1,4 @@
+id,name,model_id:id,group_id:id,perm_read,perm_write,perm_create,perm_unlink
+access_procurement_queue_user,product.replenishment.procurement.queue.user,model_product_replenishment_procurement_queue,stock.group_stock_user,1,0,0,0
+access_procurement_queue_manager,product.replenishment.procurement.queue.manager,model_product_replenishment_procurement_queue,stock.group_stock_manager,1,1,1,1
+access_dashboard_manager,auto.replenishment.dashboard.manager,model_auto_replenishment_dashboard,stock.group_stock_manager,1,0,0,0
