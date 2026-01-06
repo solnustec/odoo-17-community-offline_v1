@@ -85,8 +85,14 @@ class PosSyncManager(models.Model):
             'start_time': datetime.now(),
         }
 
+        sync_config_id = sync_config.id
+        error_occurred = False
+        error_message = None
+
         try:
-            sync_config.write({'sync_status': 'syncing'})
+            # Usar sudo() para evitar problemas de permisos
+            sync_config_sudo = sync_config.sudo()
+            sync_config_sudo.write({'sync_status': 'syncing'})
 
             # 1. Subir datos locales al cloud (PUSH)
             if sync_config.operation_mode in ['hybrid', 'sync_on_demand']:
@@ -102,8 +108,8 @@ class PosSyncManager(models.Model):
                 if pull_result.get('errors'):
                     result['errors'].extend(pull_result['errors'])
 
-            # Actualizar estado
-            sync_config.write({
+            # Actualizar estado exitoso
+            sync_config_sudo.write({
                 'sync_status': 'success' if not result['errors'] else 'error',
                 'last_sync_date': fields.Datetime.now(),
                 'last_error_message': '\n'.join(result['errors']) if result['errors'] else False,
@@ -120,15 +126,32 @@ class PosSyncManager(models.Model):
 
         except Exception as e:
             _logger.error(f'Error en sincronización: {str(e)}')
-            sync_config.write({
-                'sync_status': 'error',
-                'last_error_message': str(e),
-            })
+            error_occurred = True
+            error_message = str(e)
             result['success'] = False
             result['errors'].append(str(e))
 
+        # Si hubo error, intentar actualizar el estado usando un nuevo cursor
+        # para evitar problemas con transacciones abortadas
+        if error_occurred:
+            try:
+                # Intentar rollback para limpiar la transacción abortada
+                self.env.cr.rollback()
+                # Ahora podemos escribir el estado de error
+                sync_config_fresh = self.env['pos.sync.config'].sudo().browse(sync_config_id)
+                if sync_config_fresh.exists():
+                    sync_config_fresh.write({
+                        'sync_status': 'error',
+                        'last_error_message': error_message,
+                    })
+            except Exception as write_error:
+                _logger.error(f'No se pudo actualizar estado de error: {str(write_error)}')
+
         # Registrar en log
-        self._create_sync_log(sync_config, result)
+        try:
+            self._create_sync_log(sync_config, result)
+        except Exception as log_error:
+            _logger.error(f'Error creando log de sincronización: {str(log_error)}')
 
         return result
 
