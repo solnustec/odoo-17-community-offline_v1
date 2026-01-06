@@ -1146,9 +1146,10 @@ class PosSyncManager(models.Model):
             'session_id': session.id,
             'partner_id': partner.id if partner else None,
             'lines': lines,
-            'amount_total': data.get('amount_total'),
-            'amount_paid': data.get('amount_paid'),
-            'amount_return': data.get('amount_return'),
+            'amount_total': data.get('amount_total', 0.0),
+            'amount_tax': data.get('amount_tax', 0.0),  # REQUIRED: NOT NULL constraint
+            'amount_paid': data.get('amount_paid', 0.0),
+            'amount_return': data.get('amount_return', 0.0),
             'note': data.get('note'),
             'to_invoice': True,  # Permitir facturación
             'is_delivery_order': False,  # NO es orden de entrega
