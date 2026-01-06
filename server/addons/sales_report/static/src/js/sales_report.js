@@ -21,11 +21,14 @@ export class SalesReport extends Component {
         this.state = useState({
             isSorted: false,
             isSortedReab: false,
+            sortColumn: null,
+            sortDirection: null, // 'asc', 'desc', or null
             is_promotion_user: false,
             is_purchase_admin: false,
             isfilterWarehouse: false,
             isSortedWarehouse: false,
             product_code: "",
+            product_id_old: "",
             loading: false,
             error: {
                 status: false,
@@ -66,6 +69,8 @@ export class SalesReport extends Component {
             warehouse_query: "",
             //     anteriores
             lastPurchaseOrders: [],
+            // Filtro de periodo para órdenes de compra: 'day', 'month', 'year'
+            purchaseOrderPeriodFilter: 'day',
             selectedProductDetails: {},
             showProductModal: false,
             selected_warehouse_id: null,
@@ -255,6 +260,19 @@ export class SalesReport extends Component {
             return
         }
         await this.get_products(this.state.laboratory_id, this.state.brand_id);
+
+        // Si hay un producto seleccionado, refrescar la tabla de bodegas con las nuevas fechas
+        if (this.state.selected_product_id) {
+            this.state.loading_warehouses = true;
+            this.state.warehouses = await this.orm.call(
+                "product.warehouse.sale.summary",
+                "get_stock_by_warehouse",
+                [this.state.selected_product_id, this.start_date, this.end_date]
+            );
+            this.state.warehouses_base = [...this.state.warehouses];
+            await this.calculate_warehouse_totals();
+            this.state.loading_warehouses = false;
+        }
     }
 
 
@@ -380,6 +398,11 @@ export class SalesReport extends Component {
             );
             this.state.base_products_filtered = [...this.state.products_filtered];
             this.state.selected_warehouse_id = null
+            // Resetear estado de ordenamiento
+            this.state.sortColumn = null;
+            this.state.sortDirection = null;
+            this.state.isSorted = false;
+            this.state.isSortedReab = false;
             this.calculate_totals()
             this.state.loading = false;
 
@@ -524,6 +547,12 @@ export class SalesReport extends Component {
                 this.calculate_totals();
             }
         }
+    }
+
+    // Método para cambiar modo de búsqueda desde botones
+    setSearchMode(mode) {
+        if (this.state.search_mode === mode) return;
+        this.onSearchModeChange({ target: { value: mode } });
     }
 
     async get_laboratory_sales() {
@@ -703,13 +732,17 @@ export class SalesReport extends Component {
 
     async get_laboratories() {
         try {
-            this.state.laboratories = await this.orm.call(
+            const labs = await this.orm.call(
                 "product.laboratory",
                 "search_read",
                 [
                     [],
                     ["id", "name"]
                 ], {order: "name ASC"}
+            );
+            // Ordenar alfabéticamente por nombre (case insensitive)
+            this.state.laboratories = labs.sort((a, b) =>
+                (a.name || '').toLowerCase().localeCompare((b.name || '').toLowerCase())
             );
         } catch (error) {
             console.error("Error al cargar los laboratorios:", error);
@@ -746,13 +779,17 @@ export class SalesReport extends Component {
     // obtener todas las marcas
     async get_brands() {
         try {
-            this.state.brands = await this.orm.call(
+            const brands = await this.orm.call(
                 "product.brand",
                 "search_read",
                 [
                     [],
                     ["id", "name"]
                 ], {order: "name ASC"}
+            );
+            // Ordenar alfabéticamente por nombre (case insensitive)
+            this.state.brands = brands.sort((a, b) =>
+                (a.name || '').toLowerCase().localeCompare((b.name || '').toLowerCase())
             );
         } catch (error) {
             console.error("Error al cargar las marcas:", error);
@@ -827,9 +864,11 @@ export class SalesReport extends Component {
         this.state.loading_warehouses = true
         if (this.state.selected_product_id !== productId || this.state.selected_product_id === null) {
             this.state.selected_product_id = productId;
-            this.state.product_code = this.state.products_filtered.find(
+            const selectedProduct = this.state.products_filtered.find(
                 (p) => p.product_id === productId
-            ).product_code;
+            );
+            this.state.product_code = selectedProduct.product_code;
+            this.state.product_id_old = selectedProduct.id_database_old || '';
             this.state.warehouses = await this.orm.call("product.warehouse.sale.summary", "get_stock_by_warehouse", [this.state.selected_product_id, this.start_date, this.end_date])
             this.state.warehouses_base = [...this.state.warehouses];
             this.state.warehouse_query = "";
@@ -1631,22 +1670,13 @@ export class SalesReport extends Component {
             ["id"]
         ]);
 
-        // Obtener el nombre de la marca seleccionada de forma simple
-        const selectedBrand = this.state.brands.find(b => b.id === this.state.brand_id);
-        const brandName = selectedBrand ? selectedBrand.name : null;
-
-        // Obtener el nombre del laboratorio seleccionado de forma simple
-        const selectedLaboratory = this.state.laboratories.find(l => l.id === this.state.laboratory_id);
-        const laboratoryName = selectedLaboratory ? selectedLaboratory.name : null;
-
+        // Crear orden sin proveedor - el usuario lo seleccionará manualmente
+        // Las marcas y laboratorios se actualizarán después de agregar las líneas
         const orderId = await this.orm.call(
             "purchase.order",
             "create",
             [{
-                partner_id: 1654092, // 1654092//dev 1613962
                 picking_type_id: picking_type_id[0].id,
-                brand_name: brandName,
-                laboratory_name: laboratoryName,
             }]
         );
         const order_lines = []
@@ -1695,6 +1725,13 @@ export class SalesReport extends Component {
             ]
         );
 
+        // Actualizar marcas y laboratorios basándose en los productos de la orden
+        await this.orm.call(
+            "purchase.order",
+            "update_brand_laboratory_from_lines",
+            [[orderId]]
+        );
+
         this.state.cart = [];
         // Limpiar localStorage después de crear exitosamente la orden
         this.clearCartStorage();
@@ -1728,10 +1765,26 @@ export class SalesReport extends Component {
             const todayUTC = new Date(Date.UTC(now.getUTCFullYear(), now.getUTCMonth(), now.getUTCDate()));
             const tomorrowUTC = new Date(todayUTC);
             tomorrowUTC.setUTCDate(todayUTC.getUTCDate() + 1);
-            const sevenDaysAgoUTC = new Date(todayUTC);
-            sevenDaysAgoUTC.setUTCDate(todayUTC.getUTCDate() - 7);
 
-            const startStr = formatUTCDate(sevenDaysAgoUTC);
+            let startDate;
+            const filter = this.state.purchaseOrderPeriodFilter;
+
+            if (filter === 'day') {
+                // Compras del día actual
+                startDate = new Date(todayUTC);
+            } else if (filter === 'month') {
+                // Compras del mes actual (desde el primer día del mes)
+                startDate = new Date(Date.UTC(now.getUTCFullYear(), now.getUTCMonth(), 1));
+            } else if (filter === 'year') {
+                // Compras del año actual (desde el primer día del año)
+                startDate = new Date(Date.UTC(now.getUTCFullYear(), 0, 1));
+            } else {
+                // Fallback: últimos 7 días (comportamiento anterior)
+                startDate = new Date(todayUTC);
+                startDate.setUTCDate(todayUTC.getUTCDate() - 7);
+            }
+
+            const startStr = formatUTCDate(startDate);
             const endStr = formatUTCDate(tomorrowUTC);
 
             const orders = await this.orm.call(
@@ -1757,8 +1810,17 @@ export class SalesReport extends Component {
 
         } catch (error) {
             // console.error("Error al obtener las órdenes de compra del día:", error);
-            this.showError("Error al obtener las órdenes de compra del día.", error);
+            this.showError("Error al obtener las órdenes de compra del período.", error);
         }
+    }
+
+    /**
+     * Cambia el filtro de periodo para órdenes de compra y recarga la lista
+     * @param {string} period - 'day', 'month', o 'year'
+     */
+    async onPurchaseOrderPeriodChange(period) {
+        this.state.purchaseOrderPeriodFilter = period;
+        await this.fetchLastPurchaseOrders();
     }
 
     formatDate(dateStr) {
@@ -2304,44 +2366,48 @@ export class SalesReport extends Component {
         }
     }
 
-    //fucnoion para orderna las columnas de la tabla
+    //función para ordenar las columnas de la tabla (ascendente, descendente, reset)
     async handleSortRow(key) {
-        // Resetear ordenamiento de Reab. si se ordena por otra columna
-        if (this.state.isSortedReab) {
-            this.state.isSortedReab = false;
-        }
-        if ('product_name' === key) {
-            this.state.products_filtered = [...this.state.base_products_filtered]
-            // this.state.isSorted = false;
-        }
-        if (!this.state.isSorted) {
-            this.state.products_filtered.sort((a, b) => b[key] - a[key]);
-            this.state.isSorted = true;
+        // Si es la misma columna, rotar: desc -> asc -> reset
+        if (this.state.sortColumn === key) {
+            if (this.state.sortDirection === 'desc') {
+                // Cambiar a ascendente
+                this.state.sortDirection = 'asc';
+                this.state.products_filtered.sort((a, b) => {
+                    const valA = a[key] || 0;
+                    const valB = b[key] || 0;
+                    if (typeof valA === 'string') {
+                        return valA.localeCompare(valB);
+                    }
+                    return valA - valB;
+                });
+            } else if (this.state.sortDirection === 'asc') {
+                // Reset al orden original
+                this.state.products_filtered = [...this.state.base_products_filtered];
+                this.state.sortColumn = null;
+                this.state.sortDirection = null;
+            }
         } else {
-            this.state.products_filtered = [...this.state.base_products_filtered]
-            this.state.isSorted = false;
+            // Nueva columna: ordenar descendente
+            this.state.sortColumn = key;
+            this.state.sortDirection = 'desc';
+            this.state.products_filtered.sort((a, b) => {
+                const valA = a[key] || 0;
+                const valB = b[key] || 0;
+                if (typeof valA === 'string') {
+                    return valB.localeCompare(valA);
+                }
+                return valB - valA;
+            });
         }
+        // Mantener compatibilidad con estados anteriores
+        this.state.isSorted = this.state.sortColumn !== null;
+        this.state.isSortedReab = this.state.sortColumn === 'matilde_qty_to_order';
     }
 
-    // Función para ordenar por columna de Reabastecimiento (matilde_qty_to_order)
+    // Función para ordenar por columna de Reabastecimiento (usa handleSortRow)
     async handleSortReab() {
-        // Resetear ordenamiento de otras columnas si están activas
-        if (this.state.isSorted) {
-            this.state.isSorted = false;
-        }
-        if (!this.state.isSortedReab) {
-            // Ordenar de mayor a menor
-            this.state.products_filtered.sort((a, b) => {
-                const qtyA = a.matilde_qty_to_order || 0;
-                const qtyB = b.matilde_qty_to_order || 0;
-                return qtyB - qtyA;
-            });
-            this.state.isSortedReab = true;
-        } else {
-            // Volver al orden original
-            this.state.products_filtered = [...this.state.base_products_filtered];
-            this.state.isSortedReab = false;
-        }
+        await this.handleSortRow('matilde_qty_to_order');
     }
 
     async sortWarehouseData(key) {

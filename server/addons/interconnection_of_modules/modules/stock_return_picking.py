@@ -7,7 +7,7 @@ class StockReturnPicking(models.TransientModel):
         "stock.warehouse",
         string="Almacén",
         domain = [('lot_stock_id.return_location', '=', True)],
-        required = True,
+        #required = True,
     )
 
     @api.onchange("warehouse_id")

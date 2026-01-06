@@ -1,2 +1,3 @@
 id,name,model_id:id,group_id:id,perm_read,perm_write,perm_create,perm_unlink
 access_product_multi_barcodes_user,access.product.multi.barcodes.user,model_product_multiple_barcodes,base.group_user,1,1,1,1
+access_barcode_assign_wizard,access.barcode.assign.wizard,model_barcode_assign_wizard,base.group_user,1,1,1,1

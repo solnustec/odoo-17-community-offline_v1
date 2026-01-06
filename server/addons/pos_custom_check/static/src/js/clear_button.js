@@ -15,7 +15,8 @@ export class DeleteOrderLines extends Component {
         this.state = useState({
             institutions: [],
             selected: "",  // Usar string vacío para consistencia con el option value=""
-            currentPartnerId: null  // Para detectar cambios de partner
+            currentPartnerId: null,  // Para detectar cambios de partner
+            isRefund: false  // Para detectar si es un reembolso
         });
         this.pos.DeleteOrderLines = this;
 
@@ -32,10 +33,13 @@ export class DeleteOrderLines extends Component {
             this.loadInstitutions();
         });
 
-        // Detectar cambios de partner en cada render
+        // Detectar cambios de partner y reembolsos en cada render
         onWillRender(() => {
             const order = this.pos.get_order();
             const currentPartnerId = order?.partner?.id || null;
+
+            // Detectar si es un reembolso
+            this.state.isRefund = this._isRefundOrder(order);
 
             // Si el partner cambió, recargar instituciones
             if (this.state.currentPartnerId !== currentPartnerId) {
@@ -60,6 +64,23 @@ export class DeleteOrderLines extends Component {
                 selectElement.value = "";
             }
         }, 0);
+    }
+
+    /**
+     * Verifica si la orden actual es un reembolso
+     * @param {Object} order - La orden actual del POS
+     * @returns {boolean} - true si es un reembolso, false en caso contrario
+     */
+    _isRefundOrder(order) {
+        if (!order) {
+            return false;
+        }
+        const orderlines = order.get_orderlines();
+        if (!orderlines || orderlines.length === 0) {
+            return false;
+        }
+        // Una orden es un reembolso si tiene líneas con refunded_orderline_id
+        return orderlines.some(line => !!line.refunded_orderline_id);
     }
 
     /**

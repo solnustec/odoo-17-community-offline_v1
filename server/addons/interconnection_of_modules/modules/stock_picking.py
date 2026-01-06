@@ -8,6 +8,23 @@ class StockPicking(models.Model):
     _inherit = 'stock.picking'
     _order = 'scheduled_date desc, id desc'  # Orden descendente (más recientes primero)
 
+    @api.model
+    def default_get(self, fields_list):
+        """Resuelve el picking_type_id por defecto basado en el contexto"""
+        defaults = super().default_get(fields_list)
+
+        # Si viene del menú de Transferencias (internal)
+        if self._context.get('restricted_picking_type_code') == 'internal':
+            # Buscar un picking_type de tipo internal
+            picking_type = self.env['stock.picking.type'].search([
+                ('code', '=', 'internal'),
+                ('company_id', '=', self.env.company.id),
+            ], limit=1)
+            if picking_type:
+                defaults['picking_type_id'] = picking_type.id
+
+        return defaults
+
     picking_type_code = fields.Selection(
         related='picking_type_id.code',
         string='Tipo de Operación',
@@ -60,9 +77,24 @@ class StockPicking(models.Model):
     # Mantén los onchange para la relación inversa (warehouse -> location)
     @api.onchange('origin_warehouse_id')
     def _onchange_origin_warehouse(self):
-        """Actualiza location_id cuando cambia el almacén de origen manualmente"""
+        """Actualiza location_id cuando cambia el almacén de origen manualmente
+        y recalcula el stock disponible en las líneas de movimiento"""
         if self.origin_warehouse_id and not self._origin.origin_warehouse_id == self.origin_warehouse_id:
-            self.location_id = self.origin_warehouse_id.lot_stock_id
+            new_location = self.origin_warehouse_id.lot_stock_id
+            self.location_id = new_location
+            # Actualizar location_id y stock_product en todas las líneas de movimiento
+            for move in self.move_ids_without_package:
+                move.location_id = new_location
+                # Recalcular stock disponible para cada línea (si el campo existe - definido en guide_remision)
+                if hasattr(move, 'stock_product'):
+                    if move.product_id and new_location:
+                        stock_quant = self.env['stock.quant'].search([
+                            ('product_id', '=', move.product_id.id),
+                            ('location_id', '=', new_location.id)
+                        ], limit=1)
+                        move.stock_product = stock_quant.inventory_quantity_auto_apply - stock_quant.reserved_quantity if stock_quant else 0
+                    else:
+                        move.stock_product = 0.0
 
     @api.onchange('dest_warehouse_id')
     def _onchange_dest_warehouse(self):

@@ -19,8 +19,9 @@
                 <field name="name"/>
                 <field name="date"/>
                 <field name="warehouse_id"/>
-                <field name="state"/>
-                <field name="status_change"/>   <!-- ✔️ Importante -->
+                <field name="state" string="Estado"/>
+                <field name="status_change" string="Modificado"/>
+                <field name="create_uid" readonly="1" string="Responsable"/>
             </tree>
         </field>
     </record>

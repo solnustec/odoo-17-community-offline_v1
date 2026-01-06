@@ -96,6 +96,14 @@ class StockMove(models.Model):
 
     def _is_stock_restriction_applicable(self):
         self.ensure_one()
+
+        if self.location_dest_id.usage == 'customer':
+            return False
+
+            # NO aplicar a recepciones de proveedor
+        if self.location_id.usage == 'supplier':
+            return False
+
         # No aplicar la restricción para movimientos generados desde el POS
         if self.picking_id and self.picking_id.pos_order_id:
             return False

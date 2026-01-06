@@ -75,6 +75,10 @@ patch(ClosePosPopup.prototype, {
         const cashierHash = cashier.barcode;
         const employee = this.pos.employees.find(emp => emp.barcode === cashierHash);
         if (employee && (!employee.pin || await this.checkPin(employee))) {
+            // Marcar que estamos en proceso de cierre para desactivar la advertencia de recarga
+            // Esto aplica tanto para "CERRAR SISTEMA" como para "Panel Administrativo"
+            this.pos.is_closing_session = true;
+
             const { confirmed } = await this.popup.add(ConfirmPop, {
                 title: "¿Qué desea hacer con la sesión actual del sistema?",
                 body: _t(

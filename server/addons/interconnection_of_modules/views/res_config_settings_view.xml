@@ -11,8 +11,16 @@
                              string="Bloquear transferencias sin stock"
                              help="Impide validar transferencias cuando no existen existencias físicas en la ubicación de origen.">
                         <field name="block_transfer_without_stock"/>
-                        <div class="text-muted" modifiers="{'invisible': [('block_transfer_without_stock', '=', False)]}">
+                        <div class="text-muted" invisible="not block_transfer_without_stock">
                             Si no hay stock disponible el sistema bloqueará la edición de cantidades y la validación de la transferencia.
+                        </div>
+                    </setting>
+                    <setting id="sync_transfer_without_moves_setting"
+                             string="Sincronizar transferencias sin mover stock"
+                             help="Permite registrar transferencias externas sin validar el picking.">
+                        <field name="sync_transfer_without_moves"/>
+                        <div class="text-muted" invisible="not sync_transfer_without_moves">
+                            Las transferencias internas (API e interfaz) se crearán sin validar, el stock no se moverá automáticamente.
                         </div>
                     </setting>
                 </xpath>

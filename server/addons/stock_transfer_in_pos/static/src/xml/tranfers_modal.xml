@@ -648,11 +648,11 @@
                     <div class="row mb-4">
                         <div class="col-md-6">
                             <p><strong>Fecha:</strong> <t t-esc="formatDate(props.transfer.date)"/></p>
-                            <p><strong>Origen:</strong> <t t-esc="props.transfer.origin"/></p>
-                            <p><strong>Destino:</strong> <t t-esc="props.transfer.destination"/></p>
+                            <p><strong>Origen:</strong> <t t-esc="props.transfer.origin_warehouse || props.transfer.origin || '-'"/></p>
+                            <p><strong>Destino:</strong> <t t-esc="props.transfer.destination_warehouse || props.transfer.destination || '-'"/></p>
                         </div>
                         <div class="col-md-6">
-                            <p><strong>Responsable:</strong> <t t-esc="props.transfer.responsible"/></p>
+                            <p><strong>Responsable:</strong> <t t-esc="props.transfer.user_id ? props.transfer.user_id[1] : 'Sistema'"/></p>
                         </div>
                     </div>
 

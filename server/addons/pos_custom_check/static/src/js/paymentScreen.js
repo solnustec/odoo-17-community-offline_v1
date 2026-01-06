@@ -79,6 +79,38 @@ patch(PaymentScreen.prototype, {
             return;
         }
 
+        // Validar montos de métodos de pago no efectivo
+        const totalOrder = parseFloat(Math.abs(order.get_total_with_tax() + (order.get_rounding_applied() || 0)).toFixed(2));
+
+        for (const line of paymentlines) {
+            const paymentMethod = line.payment_method;
+            const isCash = paymentMethod.is_cash_count || paymentMethod.type === "cash";
+            const paymentName = paymentMethod.originalName || paymentMethod.name;
+            // Redondear a 2 decimales para evitar errores de precisión de punto flotante
+            const amount = parseFloat(line.amount.toFixed(2));
+
+            // Solo validar métodos que NO son efectivo
+            if (!isCash) {
+                // Validar que el monto no sea menor a 0
+                if (amount < 0) {
+                    await this.popup.add(ErrorPopup, {
+                        title: _t("Monto inválido"),
+                        body: _t(`El método de pago "${paymentName}" no puede tener un monto menor a 0.`),
+                    });
+                    return;
+                }
+
+                // Validar que el monto no sea mayor al total de la factura
+                if (amount > totalOrder) {
+                    await this.popup.add(ErrorPopup, {
+                        title: _t("Monto excede el total"),
+                        body: _t(`El método de pago "${paymentName}" no puede tener un monto mayor al total de la factura ($${totalOrder.toFixed(2)}). Solo el efectivo puede exceder el total.`),
+                    });
+                    return;
+                }
+            }
+        }
+
         // Continuar con validación original
         await super.validateOrder(isForceValidate);
         localStorage.removeItem("result_institution_client");

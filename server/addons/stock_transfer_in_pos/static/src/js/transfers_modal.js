@@ -40,6 +40,9 @@ export class TransferModal extends Component {
             isLoadingPendingProducts: false,
             selectedWO: false,
 
+            // Configuración de transferencias automáticas
+            filterAutoTransfers: false,
+
             // filtros
             product_id: false,
             filterDateFrom: null,
@@ -73,6 +76,15 @@ export class TransferModal extends Component {
                 {}
             );
 
+            // Obtener configuración de transferencias automáticas
+            const transferConfig = await this.orm.call(
+                'stock.picking',
+                'get_transfer_config',
+                [[this.pos.pos_session.config_id[0]]],
+                {}
+            );
+            this.state.filterAutoTransfers = transferConfig.filter_auto_transfers || false;
+
             await this.loadTransfers('sent');
             await this.loadTransfers('received');
             await this.loadPendingProducts();
@@ -100,6 +112,11 @@ export class TransferModal extends Component {
                 // Dominio base para enviadas
                 domain = [["location_id.warehouse_id", "=", this.state.selectedWO]];
 
+                // Filtrar transferencias automáticas si está configurado
+                if (this.state.filterAutoTransfers) {
+                    domain.push(['is_auto_replenishment', '=', false]);
+                }
+
                 // APLICAR FILTROS PARA ENVIADAS
                 if (this.state.filterDestinationId) {
                     domain.push(['location_dest_id.warehouse_id', '=', this.state.filterDestinationId]);
@@ -126,6 +143,11 @@ export class TransferModal extends Component {
 
                 // Dominio base para recibidas
                 domain = [["location_dest_id.warehouse_id", "=", this.state.selectedWO]];
+
+                // Filtrar transferencias automáticas si está configurado
+                if (this.state.filterAutoTransfers) {
+                    domain.push(['is_auto_replenishment', '=', false]);
+                }
 
                 // APLICAR FILTROS PARA RECIBIDAS (si los tienes)
                 if (this.state.filterReceivedOriginId) {
@@ -235,6 +257,11 @@ export class TransferModal extends Component {
                 ["state", "in", ["draft", "waiting", "confirmed", "assigned"]],
                 ['picking_type_id.code', '=', 'internal']
             ];
+
+            // Filtrar transferencias automáticas si está configurado
+            if (this.state.filterAutoTransfers) {
+                domain.push(['is_auto_replenishment', '=', false]);
+            }
 
             // Agregar filtro de fecha si existe
             if (this.state.filterDateFrom) {
@@ -682,7 +709,6 @@ export class TransferModal extends Component {
     }
 
     async clearSentFilters() {
-        console.log('Limpiando filtros de transferencias enviadas...');
 
         this.state.filterDestinationId = null;
         this.state.filterSentState = '';
@@ -803,8 +829,6 @@ export class TransferDetailModal extends Component {
         this.state = useState({
             products: [...this.props.transfer.products],
         });
-
-        console.log("this.props.transfer, ", this.props.transfer)
 
         this.orm = useService("orm");
     }
@@ -946,8 +970,6 @@ export class TransferValidationModal extends Component {
                 "button_validate",
                 [[this.props.transfer.id]]
             );
-
-//            console.log("ver respuesta ", validate_button)
 
 //            if (validate_button && validate_button.type === "ir.actions.act_window") {
 //                const res = await this.env.services.action.doAction(validate_button);

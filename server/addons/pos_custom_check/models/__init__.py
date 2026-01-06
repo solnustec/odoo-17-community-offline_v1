@@ -21,3 +21,4 @@ from . import res_bank
 from . import ahorita_post
 from . import kardex
 from . import deuna_post
+from . import product_pricelist_item_update_date

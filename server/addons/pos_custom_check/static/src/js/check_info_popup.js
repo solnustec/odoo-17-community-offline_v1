@@ -9,6 +9,9 @@ import {useState, onWillStart, onMounted} from "@odoo/owl";
 import {PaymentStatusPopup} from "./payment_status_popup";
 import {PaymentStatusAhoritaPopup} from "./payment_status_popup_ahorita";
 import {ConfirmPopup} from "@point_of_sale/app/utils/confirm_popup/confirm_popup";
+import {ResendOptionsPopup} from "./resend_options_popup";
+import {PaymentNotApprovedPopup} from "./payment_not_approved_popup";
+import {NumberPopup} from "@point_of_sale/app/utils/input_popups/number_popup";
 
 export class CheckInfoPopup extends AbstractAwaitablePopup {
     static template = "pos_custom_check.CheckInfoPopup";
@@ -67,6 +70,9 @@ export class CheckInfoPopup extends AbstractAwaitablePopup {
             success_message: '',
             generated_amount: null,
             generated_phone: null,
+            // Autorización manual
+            self_authorized: false,
+            self_authorized_by: null,
         });
 
         onWillStart(async () => {
@@ -336,18 +342,88 @@ export class CheckInfoPopup extends AbstractAwaitablePopup {
             const response_obj = await this.orm.call("digital.payment.config", "get_enable_digital_payment", []);
             let select_options = document.getElementById("bank_id").value;
 
+            // Verificar si el pago NO está aprobado (y no tiene autorización previa)
             if (
                 this.state.enable_advanced_payments &&
                 ['DEUNA BCO PICHINCHA', 'AHORITA BANCO DE LOJA'].includes(this.state.bank_name) &&
-                !['APPROVED', 'CONFIRMADO', 'APROBADO'].includes(this.state.payment_status)
+                !['APPROVED', 'CONFIRMADO', 'APROBADO'].includes(this.state.payment_status) &&
+                !this.state.self_authorized
             ) {
-                await this.popup.add(ErrorPopup, {
+                const result = await this.popup.add(PaymentNotApprovedPopup, {
                     title: _t("Pago no aprobado"),
-                    body: _t("La transacción aún no ha sido aprobada. Valide el estado del pago antes de continuar."),
+                    body: _t("La transacción aún no ha sido aprobada. Valide el estado o autorice con su PIN."),
                 });
-                return;
-            }
 
+                if (!result.confirmed) {
+                    return;
+                }
+
+                if (result.action === 'retry') {
+                    // Validar estado del pago
+                    if (this.state.bank_name === 'DEUNA BCO PICHINCHA') {
+                        await this.checkPaymentStatus();
+                    } else {
+                        await this.checkPaymentStatusAhorita();
+                    }
+                    return;
+                }
+
+                if (result.action === 'authorize') {
+                    // Validar campos obligatorios primero
+                    if (!check_number || check_number.trim() === '') {
+                        await this.popup.add(ErrorPopup, {
+                            title: _t("Campo requerido"),
+                            body: _t("Debe ingresar el Nro. Cheque."),
+                        });
+                        return;
+                    }
+                    if (!bank_account || bank_account.trim() === '') {
+                        await this.popup.add(ErrorPopup, {
+                            title: _t("Campo requerido"),
+                            body: _t("Debe ingresar el Nro. Cuenta."),
+                        });
+                        return;
+                    }
+
+                    // Pedir PIN del empleado actual
+                    const cashier = this.pos.get_cashier();
+                    if (!cashier) {
+                        await this.popup.add(ErrorPopup, {
+                            title: _t("Error"),
+                            body: _t("No se encontró el cajero actual."),
+                        });
+                        return;
+                    }
+
+                    const { confirmed: pinConfirmed, payload: inputPin } = await this.popup.add(NumberPopup, {
+                        isPassword: true,
+                        title: _t("Ingrese su PIN para autorizar"),
+                    });
+
+                    if (!pinConfirmed) {
+                        return;
+                    }
+
+                    // Validar PIN
+                    const pinHash = typeof Sha1 !== 'undefined' ? Sha1.hash(inputPin) : inputPin;
+                    if (cashier.pin && cashier.pin !== pinHash) {
+                        await this.popup.add(ErrorPopup, {
+                            title: _t("PIN incorrecto"),
+                            body: _t("El PIN ingresado no es correcto."),
+                        });
+                        return;
+                    }
+
+                    // PIN correcto - autorizar
+                    this.state.self_authorized = true;
+                    this.state.self_authorized_by = this.pos.user.id;
+
+                    this.notificationService.add(
+                        _t("Pago autorizado manualmente"),
+                        { type: 'success', sticky: false }
+                    );
+                }
+            }
 
             if (!bank_id || bank_id === "") {
                 await this.popup.add(ErrorPopup, {
@@ -391,6 +467,12 @@ export class CheckInfoPopup extends AbstractAwaitablePopup {
                     selected_paymentline.set_payment_bank_name(this.state.bank_name);
                     selected_paymentline.set_orderer_identification(orderer_identification);
                     selected_paymentline.amount = parseFloat(this.state.payment_amount) || 0.0;
+
+                    // Guardar datos de autorización manual si aplica
+                    if (this.state.self_authorized) {
+                        selected_paymentline.self_authorized = true;
+                        selected_paymentline.self_authorized_by = this.state.self_authorized_by;
+                    }
                 }
             }
             this.syncToPaymentline();
@@ -588,24 +670,81 @@ export class CheckInfoPopup extends AbstractAwaitablePopup {
             const montoCambiado = this.state.generated_amount !== this.state.payment_amount;
             const telefonoCambiado = this.state.generated_phone !== normalizedPhonePreview;
 
+            // Si no cambió nada, mostrar popup para reenviar
             if (!montoCambiado && !telefonoCambiado) {
-                const confirmOverwrite = await this.popup.add(ConfirmPopup, {
-                    title: _t("Confirmación requerida"),
-                    body: _t(
-                        "Ya existe un link de pago generado para esta transacción.\n" +
-                        "Si continúas, se generará un nuevo link y el anterior quedará invalidado.\n\n" +
-                        "¿Deseas continuar?"
-                    ),
-                    confirmText: _t("Sí, reemplazar"),
-                    cancelText: _t("No, cancelar"),
+                const resendOptions = await this.popup.add(ResendOptionsPopup, {
+                    title: _t("Link de pago existente"),
+                    body: _t("Ya existe un link de pago generado para esta transacción. ¿Qué deseas hacer?"),
+                    resendCurrentText: _t("Reenviar link actual"),
+                    cancelText: _t("Cancelar"),
                 });
 
-                if (!confirmOverwrite.confirmed) {
+                if (!resendOptions.confirmed) {
+                    return;
+                }
+
+                // Si eligió reenviar el link actual, solo enviar WhatsApp
+                if (resendOptions.action === 'resend_current') {
+                    await this._resendCurrentLinkDeuna();
                     return;
                 }
             }
         }
 
+        await this._generateNewLinkDeuna();
+    }
+
+    /**
+     * Reenvía el link de pago actual por WhatsApp sin generar uno nuevo (DEUNA)
+     */
+    async _resendCurrentLinkDeuna() {
+        try {
+            const phone = document.getElementById("phone")?.value?.trim();
+            if (!phone) {
+                await this.popup.add(ErrorPopup, {
+                    title: _t("Error"),
+                    body: _t("Por favor, ingrese un número de teléfono para reenviar el link."),
+                });
+                return;
+            }
+
+            const normalizedPhone = this.normalizePhoneNumber(phone);
+
+            if (!this.state.deeplink) {
+                await this.popup.add(ErrorPopup, {
+                    title: _t("Error"),
+                    body: _t("No hay un link de pago disponible para reenviar."),
+                });
+                return;
+            }
+
+            await this.send_whatsapp_message(normalizedPhone, this.state.deeplink, this.state.generated_amount);
+
+            this.state.success_message = _t("✅ Link de pago reenviado correctamente por WhatsApp.");
+            this.state.success_type = 'success';
+
+            this.notificationService.add(_t("Link reenviado por WhatsApp"), {
+                type: 'success',
+                sticky: false,
+            });
+
+        } catch (error) {
+            if (error?.status_code === 500 || error.message?.includes('qr.imageSync')) {
+                return;
+            }
+            await this.popup.add(ErrorPopup, {
+                title: _t("Error"),
+                body: _t("Error al reenviar el link: ") + (error.message || "Contacte al soporte."),
+            });
+        } finally {
+            this.syncToPaymentline();
+        }
+    }
+
+    /**
+     * Genera un nuevo link de pago DEUNA (invalida el anterior)
+     */
+    async _generateNewLinkDeuna() {
         try {
             let normalizedPhone = null;
             const phone = document.getElementById("phone")?.value?.trim();
@@ -649,10 +788,10 @@ export class CheckInfoPopup extends AbstractAwaitablePopup {
                     transactionId: this.state.transactionId,
                 });
                 if (response.error) {
-                    console.error("❌ Error creando registro DEUNA:", response.message);
+                    console.error("Error creando registro DEUNA:", response.message);
                 }
             } catch (error) {
-                console.error("❌ Error inesperado creando registro DEUNA:", error);
+                console.error("Error inesperado creando registro DEUNA:", error);
             }
 
 
@@ -721,24 +860,84 @@ export class CheckInfoPopup extends AbstractAwaitablePopup {
             const montoCambiado = this.state.generated_amount !== this.state.payment_amount;
             const telefonoCambiado = this.state.generated_phone !== normalizedPhonePreview;
 
+            // Si no cambió nada, mostrar popup para reenviar
             if (!montoCambiado && !telefonoCambiado) {
-                const confirmOverwrite = await this.popup.add(ConfirmPopup, {
-                    title: _t("Confirmación requerida"),
-                    body: _t(
-                        "Ya existe un link de pago generado para esta transacción.\n" +
-                        "Si generas uno nuevo, el anterior dejará de ser válido.\n\n" +
-                        "¿Deseas continuar?"
-                    ),
-                    confirmText: _t("Sí, reemplazar"),
-                    cancelText: _t("No, cancelar"),
+                const resendOptions = await this.popup.add(ResendOptionsPopup, {
+                    title: _t("Link de pago existente"),
+                    body: _t("Ya existe un link de pago generado para esta transacción. ¿Qué deseas hacer?"),
+                    resendCurrentText: _t("Reenviar link actual"),
+                    cancelText: _t("Cancelar"),
                 });
 
-                if (!confirmOverwrite.confirmed) {
+                if (!resendOptions.confirmed) {
+                    return;
+                }
+
+                // Si eligió reenviar el link actual, solo enviar WhatsApp
+                if (resendOptions.action === 'resend_current') {
+                    await this._resendCurrentLinkAhorita();
                     return;
                 }
             }
         }
 
+        await this._generateNewLinkAhorita();
+    }
+
+    /**
+     * Reenvía el link de pago actual por WhatsApp sin generar uno nuevo (Ahorita)
+     */
+    async _resendCurrentLinkAhorita() {
+        try {
+            this.state.loading = true;
+
+            const phone = document.getElementById("phone")?.value?.trim();
+            if (!phone || phone.length < 10) {
+                await this.popup.add(ErrorPopup, {
+                    title: _t("Error"),
+                    body: _t("Por favor, ingrese un número de teléfono válido (mínimo 10 dígitos)."),
+                });
+                return;
+            }
+
+            const normalizedPhone = this.normalizePhoneNumber(phone);
+
+            if (!this.state.deeplink) {
+                await this.popup.add(ErrorPopup, {
+                    title: _t("Error"),
+                    body: _t("No hay un link de pago disponible para reenviar."),
+                });
+                return;
+            }
+
+            await this.send_whatsapp_message(normalizedPhone, this.state.deeplink, this.state.generated_amount);
+
+            this.state.success_message = _t("✅ Link de pago reenviado correctamente por WhatsApp.");
+            this.state.success_type = 'success';
+
+            this.notificationService.add(_t("Link reenviado por WhatsApp"), {
+                type: 'success',
+                sticky: false,
+            });
+
+        } catch (error) {
+            if (error?.status_code === 500 || error.message?.includes('qr.imageSync')) {
+                return;
+            }
+            await this.popup.add(ErrorPopup, {
+                title: _t("Error"),
+                body: _t("Error al reenviar el link: ") + (error.message || "Contacte al soporte."),
+            });
+        } finally {
+            this.state.loading = false;
+            this.syncToPaymentline();
+        }
+    }
+
+    /**
+     * Genera un nuevo link de pago Ahorita (invalida el anterior)
+     */
+    async _generateNewLinkAhorita() {
         try {
             this.state.loading = true;
 

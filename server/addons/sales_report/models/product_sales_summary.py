@@ -1,10 +1,13 @@
 import functools
+import logging
 import math
 import time
 from datetime import timedelta, datetime
 from odoo.exceptions import UserError, ValidationError
 
 from odoo import models, fields, api
+
+_logger = logging.getLogger(__name__)
 
 
 class SalesSummaryError(models.Model):
@@ -169,6 +172,7 @@ class ProductWarehouseSaleSummary(models.Model):
             results.append({
                 'product_id': product_id,
                 'product_code': product.get('default_code', ''),
+                'id_database_old': template.id_database_old or '',
                 'brand': product.get('brand_id', (0, ''))[1] if isinstance(
                     product.get('brand_id'), tuple) else '',
                 'brand_id': product.get('brand_id', (0, ''))[0] if isinstance(
@@ -236,8 +240,14 @@ class ProductWarehouseSaleSummary(models.Model):
             prod_domain.append(('brand_id', '=', brand_id))
         if query:
             q = query.strip()
-            # Buscar por nombre o código (insensible a mayúsculas)
-            prod_domain += ['|', ('name', 'ilike', q), ('default_code', 'ilike', q)]
+            # Mejora: dividir la búsqueda en palabras para encontrar productos que contengan
+            # todas las palabras de la búsqueda en cualquier parte del nombre o código
+            words = q.split()
+            for word in words:
+                word = word.strip()
+                if word:
+                    # Cada palabra debe estar en el nombre O en el código
+                    prod_domain += ['|', ('name', 'ilike', word), ('default_code', 'ilike', word)]
 
         # Buscar ids paginados
         products = Product.search(prod_domain, limit=(limit or 50) + 1, offset=offset or 0)
@@ -272,6 +282,7 @@ class ProductWarehouseSaleSummary(models.Model):
                 'product_id': prod.id,
                 'product_name': prod.name,
                 'product_code': prod.default_code or '',
+                'id_database_old': prod.product_tmpl_id.id_database_old or '',
                 'quantity_sold': quantity_sold,
                 'amount_total': amount_total,
                 'total_cost': total_cost,
@@ -326,10 +337,18 @@ class ProductWarehouseSaleSummary(models.Model):
             base_domain.append(('brand_id', '=', brand_id))
             priority_domain.append(('brand_id', '=', brand_id))
         # Búsqueda global: si hay query, usar un dominio único con paginación
+        # Mejora: dividir la búsqueda en palabras para encontrar productos que contengan
+        # todas las palabras de la búsqueda en cualquier parte del nombre o código
         if product_query:
             q = product_query.strip()
-            domain_with_query = base_domain + ['|', ('name', 'ilike', q),
-                                               ('default_code', 'ilike', q)]
+            words = q.split()
+            domain_with_query = base_domain.copy()
+            for word in words:
+                word = word.strip()
+                if word:
+                    # Cada palabra debe estar en el nombre O en el código
+                    domain_with_query += ['|', ('name', 'ilike', word),
+                                          ('default_code', 'ilike', word)]
             active_products = Product.search(domain_with_query, limit=limit or 50,
                                              offset=offset or 0)
         else:
@@ -499,6 +518,7 @@ class ProductWarehouseSaleSummary(models.Model):
             results.append({
                 'product_id': product_id,
                 'product_code': product.get('default_code', ''),
+                'id_database_old': template.id_database_old or '',
                 'brand': product.get('brand_id', (0, ''))[1] if isinstance(
                     product.get('brand_id'), tuple) else '',
                 'brand_id': product.get('brand_id', (0, ''))[0] if isinstance(
@@ -1025,24 +1045,26 @@ class ProductWarehouseSaleSummary(models.Model):
 
     @api.model
     def create(self, vals):
-        record = super(ProductWarehouseSaleSummary, self).create(vals)
+        records = super(ProductWarehouseSaleSummary, self).create(vals)
 
-        # DUAL INSERTION: Encolar evento para procesamiento de stats
-        try:
-            self._enqueue_for_replenishment(record)
-        except Exception as e:
-            # No fallar la creación del registro si falla el encolado
-            import logging
-            _logger = logging.getLogger(__name__)
-            _logger.warning(
-                "Error encolando evento de reabastecimiento para record %s: %s",
-                record.id, e
-            )
+        # DUAL INSERTION: Encolar eventos para procesamiento de stats
+        # Nota: records puede ser un recordset con múltiples registros
+        # cuando se llama create() con una lista de vals
+        for record in records:
+            try:
+                self._enqueue_for_replenishment(record)
+            except Exception as e:
+                # No fallar la creación del registro si falla el encolado
+                _logger.warning(
+                    "Error encolando evento de reabastecimiento para record %s: %s",
+                    record.id, e
+                )
 
-        if record._is_auto_adjust_enabled():
-            if record.quantity_sold > 0 and not record.stock_adjusted:
-                record._reduce_stock()
-        return record
+            if record._is_auto_adjust_enabled():
+                if record.quantity_sold > 0 and not record.stock_adjusted:
+                    record._reduce_stock()
+
+        return records
 
     def _enqueue_for_replenishment(self, record):
         """
@@ -1056,6 +1078,9 @@ class ProductWarehouseSaleSummary(models.Model):
         - Procesamiento en batch para eficiencia
         - Desacoplamiento temporal
         - Tolerancia a fallos en el cálculo de stats
+
+        IMPORTANTE: Para ventas solo se encolan registros del sistema legado.
+        Para transferencias se encolan todos los registros.
         """
         # Solo encolar si hay datos relevantes
         if not record.product_id or not record.warehouse_id:
@@ -1063,6 +1088,13 @@ class ProductWarehouseSaleSummary(models.Model):
 
         if record.quantity_sold <= 0:
             return
+
+        # FILTRO CRÍTICO:
+        # - Ventas: solo sistema legado (is_legacy_system=True)
+        # - Transferencias: todos los registros
+        record_type = record.record_type or 'sale'
+        if record_type == 'sale' and not record.is_legacy_system:
+            return  # No encolar ventas que no son del sistema legado
 
         # Verificar si el módulo de cola está instalado
         Queue = self.env.get('product.replenishment.queue')
@@ -1075,7 +1107,7 @@ class ProductWarehouseSaleSummary(models.Model):
             warehouse_id=record.warehouse_id.id,
             quantity=record.quantity_sold,
             event_date=record.date,
-            record_type=record.record_type or 'sale',
+            record_type=record_type,
             is_legacy_system=record.is_legacy_system,
             source_id=record.id
         )
@@ -1126,12 +1158,22 @@ class ProductWarehouseSaleSummary(models.Model):
     def _enqueue_for_replenishment_with_qty(self, record, quantity):
         """
         Encola el registro con una cantidad específica (para updates).
+
+        IMPORTANTE: Para ventas solo se encolan registros del sistema legado.
+        Para transferencias se encolan todos los registros.
         """
         if not record.product_id or not record.warehouse_id:
             return
 
         if quantity <= 0:
             return
+
+        # FILTRO CRÍTICO:
+        # - Ventas: solo sistema legado (is_legacy_system=True)
+        # - Transferencias: todos los registros
+        record_type = record.record_type or 'sale'
+        if record_type == 'sale' and not record.is_legacy_system:
+            return  # No encolar ventas que no son del sistema legado
 
         # Verificar si el módulo de cola está instalado
         try:
@@ -1144,7 +1186,7 @@ class ProductWarehouseSaleSummary(models.Model):
             warehouse_id=record.warehouse_id.id,
             quantity=quantity,
             event_date=record.date,
-            record_type=record.record_type or 'sale',
+            record_type=record_type,
             is_legacy_system=record.is_legacy_system,
             source_id=record.id
         )

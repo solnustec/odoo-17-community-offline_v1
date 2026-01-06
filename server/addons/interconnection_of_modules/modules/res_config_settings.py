@@ -12,23 +12,41 @@ class ResConfigSettings(models.TransientModel):
              "sin stock.",
     )
 
+    sync_transfer_without_moves = fields.Boolean(
+        string="Sincronizar transferencias sin mover stock",
+        help="Cuando está activo, las transferencias externas se registran "
+             "sin validar el picking (no se mueve el stock). Útil para "
+             "sincronización con sistemas externos.",
+    )
+
     @api.model
     def get_values(self):
         res = super().get_values()
-        param_value = (
-            self.env["ir.config_parameter"]
-            .sudo()
-            .get_param("interconnection_of_modules.block_transfer_without_stock")
+        ICP = self.env["ir.config_parameter"].sudo()
+
+        block_param = ICP.get_param(
+            "interconnection_of_modules.block_transfer_without_stock"
         )
+        sync_param = ICP.get_param(
+            "stock.sync_transfer_without_moves"
+        )
+
         res.update(
-            block_transfer_without_stock=param_value in ("True", True, "1", 1),
+            block_transfer_without_stock=block_param in ("True", True, "1", 1),
+            sync_transfer_without_moves=sync_param in ("True", True, "1", 1),
         )
         return res
 
     def set_values(self):
         super().set_values()
-        self.env["ir.config_parameter"].sudo().set_param(
+        ICP = self.env["ir.config_parameter"].sudo()
+
+        ICP.set_param(
             "interconnection_of_modules.block_transfer_without_stock",
             bool(self.block_transfer_without_stock),
+        )
+        ICP.set_param(
+            "stock.sync_transfer_without_moves",
+            bool(self.sync_transfer_without_moves),
         )
 

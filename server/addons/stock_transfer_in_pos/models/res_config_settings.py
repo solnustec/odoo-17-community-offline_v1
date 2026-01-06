@@ -26,7 +26,17 @@ class ResConfigSettings(models.TransientModel):
             transfer stock from pos session """
     _inherit = 'res.config.settings'
 
-    is_stock_transfer = fields.Boolean(related="pos_config_id.stock_transfer",
-                                       string="Enable Stock Transfer",
-                                       help="Enable if you want to transfer "
-                                       "stock from PoS session", readonly=False)
+    is_stock_transfer = fields.Boolean(
+        related="pos_config_id.stock_transfer",
+        string="Habilitar Transferencias de Stock",
+        help="Habilita la opción para transferir stock desde la sesión del POS",
+        readonly=False
+    )
+    show_auto_transfers = fields.Boolean(
+        related="pos_config_id.show_auto_transfers",
+        string="Permitir ver transferencias automáticas",
+        help="Si está habilitado, el usuario podrá ver y validar las "
+             "transferencias generadas automáticamente por el sistema de "
+             "reabastecimiento. Por defecto está deshabilitado.",
+        readonly=False,
+    )

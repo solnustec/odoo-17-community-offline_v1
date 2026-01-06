@@ -2,3 +2,4 @@
 
 from . import controllers
 from . import stock_picking
+from . import api_transfer

@@ -184,7 +184,7 @@ class ProductSalesStatsRolling(models.Model):
         if n == 1:
             return mean, 0.0
 
-        # Desviación estándar poblacional
+        # Desviación estándar poblacional (igual que DESVEST.P en Excel)
         variance = sum((x - mean) ** 2 for x in values) / n
         stddev = math.sqrt(variance)
 
@@ -214,12 +214,6 @@ class ProductSalesStatsRolling(models.Model):
             full_values = daily_quantities
 
         mean, stddev = self._calculate_mean_stddev(full_values)
-
-        # Aproximación Poisson como piso mínimo SIEMPRE
-        # Para farmacias/retail con ventas en unidades enteras: stddev >= sqrt(mean)
-        # Esto evita stddev = 0 cuando hay ventas constantes pero esporádicas
-        stddev_poisson = math.sqrt(mean) if mean > 0 else 0.0
-        stddev = max(stddev, stddev_poisson)
 
         # Coeficiente de variación
         cv = stddev / mean if mean > 0 else 0.0
