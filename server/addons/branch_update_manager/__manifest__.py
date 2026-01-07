@@ -66,10 +66,10 @@ Requisitos:
         'data/ir_cron.xml',
         'data/ir_sequence.xml',
         'data/mail_template.xml',
-        # Views
-        'views/update_package_views.xml',
-        'views/branch_registry_views.xml',
+        # Views - order matters! update_log_views must be loaded before update_package_views
         'views/update_log_views.xml',
+        'views/branch_registry_views.xml',
+        'views/update_package_views.xml',
         'views/res_config_settings_views.xml',
         'views/menu_views.xml',
         # Dashboard
