@@ -66,14 +66,14 @@ Requisitos:
         'data/ir_cron.xml',
         'data/ir_sequence.xml',
         'data/mail_template.xml',
-        # Views - order matters! update_log_views must be loaded before update_package_views
+        # Views - order matters! Actions must be loaded before menus that reference them
         'views/update_log_views.xml',
         'views/branch_registry_views.xml',
         'views/update_package_views.xml',
         'views/res_config_settings_views.xml',
-        'views/menu_views.xml',
-        # Dashboard
         'views/dashboard_views.xml',
+        # Menus last (they reference actions from other view files)
+        'views/menu_views.xml',
     ],
     'assets': {
         'web.assets_backend': [
