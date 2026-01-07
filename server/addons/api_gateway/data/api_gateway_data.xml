@@ -1,0 +1,65 @@
+<?xml version="1.0" encoding="utf-8"?>
+<odoo>
+    <data noupdate="1">
+
+        <!-- Configuracion Ahorita (Banco de Loja) -->
+        <record id="api_config_ahorita" model="api.gateway.config">
+            <field name="name">Ahorita - Banco de Loja</field>
+            <field name="code">ahorita</field>
+            <field name="description">API de pagos Ahorita del Banco de Loja para cobros via deeplink y QR.</field>
+            <field name="sequence">10</field>
+            <field name="base_url">https://api.ahorita.ec</field>
+            <field name="allowed_endpoints">*</field>
+            <field name="auth_type">custom</field>
+            <field name="timeout">60</field>
+            <field name="webhook_enabled" eval="True"/>
+            <field name="webhook_path">/api_gateway/webhook/ahorita</field>
+            <field name="require_api_key" eval="True"/>
+        </record>
+
+        <!-- Configuracion Deuna (Banco Pichincha) -->
+        <record id="api_config_deuna" model="api.gateway.config">
+            <field name="name">Deuna - Banco Pichincha</field>
+            <field name="code">deuna</field>
+            <field name="description">API de pagos Deuna del Banco del Pichincha para cobros via deeplink.</field>
+            <field name="sequence">20</field>
+            <field name="base_url">https://api.deuna.io</field>
+            <field name="allowed_endpoints">*</field>
+            <field name="auth_type">bearer</field>
+            <field name="timeout">60</field>
+            <field name="webhook_enabled" eval="True"/>
+            <field name="webhook_path">/api_gateway/webhook/deuna</field>
+            <field name="require_api_key" eval="True"/>
+        </record>
+
+        <!-- Configuracion WhatsApp -->
+        <record id="api_config_whatsapp" model="api.gateway.config">
+            <field name="name">WhatsApp Business API</field>
+            <field name="code">whatsapp</field>
+            <field name="description">API de WhatsApp Business para envio de notificaciones y comprobantes.</field>
+            <field name="sequence">30</field>
+            <field name="base_url">https://graph.facebook.com</field>
+            <field name="allowed_endpoints">/v18.0/*</field>
+            <field name="auth_type">bearer</field>
+            <field name="api_key_header">Authorization</field>
+            <field name="timeout">30</field>
+            <field name="webhook_enabled" eval="False"/>
+            <field name="require_api_key" eval="True"/>
+        </record>
+
+        <!-- Configuracion SRI Ecuador (Facturacion Electronica) -->
+        <record id="api_config_sri" model="api.gateway.config">
+            <field name="name">SRI Ecuador</field>
+            <field name="code">sri</field>
+            <field name="description">API del Servicio de Rentas Internas para facturacion electronica.</field>
+            <field name="sequence">5</field>
+            <field name="base_url">https://cel.sri.gob.ec</field>
+            <field name="allowed_endpoints">*</field>
+            <field name="auth_type">none</field>
+            <field name="timeout">120</field>
+            <field name="webhook_enabled" eval="False"/>
+            <field name="require_api_key" eval="True"/>
+        </record>
+
+    </data>
+</odoo>

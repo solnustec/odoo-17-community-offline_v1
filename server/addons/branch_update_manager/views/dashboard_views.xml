@@ -1,0 +1,267 @@
+<?xml version="1.0" encoding="utf-8"?>
+<odoo>
+    <!-- Dashboard Action -->
+    <record id="action_branch_update_dashboard" model="ir.actions.act_window">
+        <field name="name">Update Dashboard</field>
+        <field name="res_model">branch.registry</field>
+        <field name="view_mode">kanban,tree,form</field>
+        <field name="context">{
+            'search_default_filter_active': 1,
+        }</field>
+        <field name="help" type="html">
+            <p class="o_view_nocontent_smiling_face">
+                No branches registered yet
+            </p>
+            <p>
+                Register your branches to start distributing updates.
+            </p>
+        </field>
+    </record>
+
+    <!-- Dashboard Kanban View for Overview -->
+    <record id="view_branch_dashboard_kanban" model="ir.ui.view">
+        <field name="name">branch.registry.dashboard.kanban</field>
+        <field name="model">branch.registry</field>
+        <field name="priority">100</field>
+        <field name="arch" type="xml">
+            <kanban class="o_kanban_dashboard" create="false">
+                <field name="name"/>
+                <field name="code"/>
+                <field name="state"/>
+                <field name="online_status"/>
+                <field name="current_version"/>
+                <field name="pending_update_count"/>
+                <field name="last_connection"/>
+                <field name="last_update_status"/>
+                <field name="city"/>
+                <templates>
+                    <t t-name="kanban-box">
+                        <div t-attf-class="oe_kanban_card oe_kanban_global_click #{record.online_status.raw_value == 'offline' ? 'o_kanban_warning' : ''}">
+                            <div class="o_kanban_card_header">
+                                <div class="o_kanban_card_header_title">
+                                    <div class="o_primary">
+                                        <field name="name"/>
+                                    </div>
+                                    <div class="o_secondary">
+                                        <field name="code"/> - <field name="city"/>
+                                    </div>
+                                </div>
+                                <div class="o_kanban_manage_button_section">
+                                    <t t-if="record.online_status.raw_value == 'online'">
+                                        <span class="badge rounded-pill text-bg-success">
+                                            <i class="fa fa-circle"/> Online
+                                        </span>
+                                    </t>
+                                    <t t-elif="record.online_status.raw_value == 'offline'">
+                                        <span class="badge rounded-pill text-bg-danger">
+                                            <i class="fa fa-circle"/> Offline
+                                        </span>
+                                    </t>
+                                    <t t-else="">
+                                        <span class="badge rounded-pill text-bg-secondary">
+                                            <i class="fa fa-question-circle"/> Unknown
+                                        </span>
+                                    </t>
+                                </div>
+                            </div>
+                            <div class="container o_kanban_card_content">
+                                <div class="row">
+                                    <div class="col-6">
+                                        <span class="o_kanban_primary_bottom">
+                                            <strong>Version:</strong>
+                                            <span t-if="record.current_version.value">
+                                                <field name="current_version"/>
+                                            </span>
+                                            <span t-else="" class="text-muted">Not set</span>
+                                        </span>
+                                    </div>
+                                    <div class="col-6 text-end">
+                                        <t t-if="record.pending_update_count.raw_value > 0">
+                                            <span class="badge text-bg-warning">
+                                                <field name="pending_update_count"/> pending
+                                            </span>
+                                        </t>
+                                        <t t-else="">
+                                            <span class="badge text-bg-success">
+                                                <i class="fa fa-check"/> Up to date
+                                            </span>
+                                        </t>
+                                    </div>
+                                </div>
+                                <div class="row mt-2">
+                                    <div class="col-12">
+                                        <small class="text-muted">
+                                            <i class="fa fa-clock-o"/>
+                                            Last seen: <field name="last_connection"/>
+                                        </small>
+                                    </div>
+                                </div>
+                                <div class="row mt-1">
+                                    <div class="col-12">
+                                        <t t-if="record.last_update_status.raw_value == 'success'">
+                                            <small class="text-success">
+                                                <i class="fa fa-check-circle"/> Last update: Success
+                                            </small>
+                                        </t>
+                                        <t t-elif="record.last_update_status.raw_value == 'failed'">
+                                            <small class="text-danger">
+                                                <i class="fa fa-times-circle"/> Last update: Failed
+                                            </small>
+                                        </t>
+                                        <t t-elif="record.last_update_status.raw_value == 'pending'">
+                                            <small class="text-warning">
+                                                <i class="fa fa-spinner"/> Update pending...
+                                            </small>
+                                        </t>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    </t>
+                </templates>
+            </kanban>
+        </field>
+    </record>
+
+    <!-- Dashboard Template (for web rendering) -->
+    <template id="dashboard_template" name="Branch Update Dashboard">
+        <t t-call="web.layout">
+            <t t-set="head">
+                <style>
+                    .dashboard-card {
+                        border-radius: 8px;
+                        box-shadow: 0 2px 4px rgba(0,0,0,0.1);
+                        margin-bottom: 20px;
+                    }
+                    .stat-number {
+                        font-size: 2.5rem;
+                        font-weight: bold;
+                    }
+                    .stat-label {
+                        color: #6c757d;
+                        font-size: 0.9rem;
+                    }
+                    .branch-list {
+                        max-height: 400px;
+                        overflow-y: auto;
+                    }
+                </style>
+            </t>
+            <div class="container-fluid py-4">
+                <h2>Branch Update Dashboard</h2>
+
+                <!-- Stats Cards -->
+                <div class="row mb-4">
+                    <div class="col-md-3">
+                        <div class="card dashboard-card text-center">
+                            <div class="card-body">
+                                <div class="stat-number text-primary">
+                                    <t t-esc="total_branches"/>
+                                </div>
+                                <div class="stat-label">Total Branches</div>
+                            </div>
+                        </div>
+                    </div>
+                    <div class="col-md-3">
+                        <div class="card dashboard-card text-center">
+                            <div class="card-body">
+                                <div class="stat-number text-success">
+                                    <t t-esc="active_branches"/>
+                                </div>
+                                <div class="stat-label">Active Branches</div>
+                            </div>
+                        </div>
+                    </div>
+                    <div class="col-md-3">
+                        <div class="card dashboard-card text-center">
+                            <div class="card-body">
+                                <div class="stat-number text-info">
+                                    <t t-esc="online_branches"/>
+                                </div>
+                                <div class="stat-label">Online Now</div>
+                            </div>
+                        </div>
+                    </div>
+                    <div class="col-md-3">
+                        <div class="card dashboard-card text-center">
+                            <div class="card-body">
+                                <div class="stat-number text-warning">
+                                    <t t-esc="len(packages)"/>
+                                </div>
+                                <div class="stat-label">Available Packages</div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <div class="row">
+                    <!-- Recent Packages -->
+                    <div class="col-md-6">
+                        <div class="card dashboard-card">
+                            <div class="card-header">
+                                <h5 class="mb-0">Recent Packages</h5>
+                            </div>
+                            <div class="card-body">
+                                <table class="table table-sm">
+                                    <thead>
+                                        <tr>
+                                            <th>Reference</th>
+                                            <th>Version</th>
+                                            <th>Status</th>
+                                            <th>Installs</th>
+                                        </tr>
+                                    </thead>
+                                    <tbody>
+                                        <t t-foreach="packages" t-as="pkg">
+                                            <tr>
+                                                <td><t t-esc="pkg.reference"/></td>
+                                                <td><t t-esc="pkg.version"/></td>
+                                                <td>
+                                                    <span t-attf-class="badge #{pkg.state == 'published' and 'text-bg-success' or 'text-bg-secondary'}">
+                                                        <t t-esc="pkg.state"/>
+                                                    </span>
+                                                </td>
+                                                <td><t t-esc="pkg.install_count"/></td>
+                                            </tr>
+                                        </t>
+                                    </tbody>
+                                </table>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- Branch Status -->
+                    <div class="col-md-6">
+                        <div class="card dashboard-card">
+                            <div class="card-header">
+                                <h5 class="mb-0">Branch Status</h5>
+                            </div>
+                            <div class="card-body branch-list">
+                                <t t-foreach="branches" t-as="branch">
+                                    <div class="d-flex justify-content-between align-items-center mb-2 p-2 border-bottom">
+                                        <div>
+                                            <strong><t t-esc="branch.name"/></strong>
+                                            <small class="text-muted d-block">
+                                                <t t-esc="branch.code"/>
+                                            </small>
+                                        </div>
+                                        <div class="text-end">
+                                            <span t-if="branch.is_online"
+                                                  class="badge text-bg-success">Online</span>
+                                            <span t-else=""
+                                                  class="badge text-bg-danger">Offline</span>
+                                            <small class="d-block text-muted">
+                                                v<t t-esc="branch.current_version or 'N/A'"/>
+                                            </small>
+                                        </div>
+                                    </div>
+                                </t>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </t>
+    </template>
+
+</odoo>

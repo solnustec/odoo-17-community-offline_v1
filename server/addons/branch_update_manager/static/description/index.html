@@ -1,0 +1,317 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <meta charset="utf-8">
+    <title>Branch Update Manager</title>
+    <style>
+        body {
+            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Oxygen, Ubuntu, sans-serif;
+            line-height: 1.6;
+            color: #333;
+            max-width: 900px;
+            margin: 0 auto;
+            padding: 20px;
+        }
+        h1, h2, h3 { color: #875A7B; }
+        .feature-box {
+            background: #f8f9fa;
+            border-left: 4px solid #875A7B;
+            padding: 15px;
+            margin: 15px 0;
+        }
+        code {
+            background: #e9ecef;
+            padding: 2px 6px;
+            border-radius: 3px;
+            font-family: monospace;
+        }
+        pre {
+            background: #1e1e1e;
+            color: #d4d4d4;
+            padding: 15px;
+            border-radius: 5px;
+            overflow-x: auto;
+        }
+        .badge {
+            display: inline-block;
+            padding: 4px 8px;
+            border-radius: 4px;
+            font-size: 12px;
+            font-weight: bold;
+        }
+        .badge-success { background: #28a745; color: white; }
+        .badge-info { background: #17a2b8; color: white; }
+        .step-number {
+            display: inline-block;
+            width: 30px;
+            height: 30px;
+            background: #875A7B;
+            color: white;
+            text-align: center;
+            line-height: 30px;
+            border-radius: 50%;
+            margin-right: 10px;
+        }
+    </style>
+</head>
+<body>
+
+<h1>🔄 Branch Update Manager</h1>
+
+<p>
+    <span class="badge badge-success">v17.0.1.0.0</span>
+    <span class="badge badge-info">Production Ready</span>
+</p>
+
+<p>
+    Sistema automatizado para distribuir y aplicar actualizaciones de módulos Odoo
+    a múltiples sucursales que operan en modo offline, diseñado para escalar hasta
+    250+ ubicaciones con conectividad intermitente.
+</p>
+
+<h2>✨ Características Principales</h2>
+
+<div class="feature-box">
+    <h3>📦 Gestión de Paquetes</h3>
+    <ul>
+        <li>Empaquetado automático de módulos en archivos ZIP</li>
+        <li>Verificación de integridad con checksums SHA256</li>
+        <li>Soporte para actualizaciones incrementales (delta)</li>
+        <li>Versionado semántico de paquetes</li>
+        <li>Scripts pre/post actualización personalizables</li>
+    </ul>
+</div>
+
+<div class="feature-box">
+    <h3>🏢 Gestión de Sucursales</h3>
+    <ul>
+        <li>Registro centralizado de 250+ sucursales</li>
+        <li>Monitoreo en tiempo real del estado (online/offline)</li>
+        <li>API Keys únicas por sucursal</li>
+        <li>Agrupación por tags y ubicación</li>
+        <li>Historial completo de actualizaciones</li>
+    </ul>
+</div>
+
+<div class="feature-box">
+    <h3>🔄 Distribución Automática</h3>
+    <ul>
+        <li>API REST segura para distribución</li>
+        <li>Descarga con reintentos automáticos</li>
+        <li>Ventana de actualización configurable</li>
+        <li>Priorización de actualizaciones críticas</li>
+        <li>Funciona con conectividad intermitente</li>
+    </ul>
+</div>
+
+<div class="feature-box">
+    <h3>🛡️ Seguridad y Rollback</h3>
+    <ul>
+        <li>Backup automático antes de cada actualización</li>
+        <li>Rollback automático en caso de fallas</li>
+        <li>Autenticación con API Keys</li>
+        <li>Verificación de checksums</li>
+        <li>Logs de auditoría completos</li>
+    </ul>
+</div>
+
+<h2>🏗️ Arquitectura del Sistema</h2>
+
+<pre>
+┌─────────────────────────────────────────────────────────────────┐
+│                    SERVIDOR CENTRAL (AWS)                        │
+│  ┌─────────────────┐  ┌─────────────────┐  ┌─────────────────┐  │
+│  │ Package Manager │  │  API REST       │  │  Dashboard      │  │
+│  │ - Create        │  │  /api/updates/* │  │  - 250 branches │  │
+│  │ - Publish       │  │  - check        │  │  - Status       │  │
+│  │ - Distribute    │  │  - download     │  │  - Logs         │  │
+│  └─────────────────┘  └─────────────────┘  └─────────────────┘  │
+└─────────────────────────────────┬───────────────────────────────┘
+                                  │
+              Internet intermitente (250 sucursales)
+                                  │
+    ┌─────────────┬───────────────┼───────────────┬─────────────┐
+    │             │               │               │             │
+    ▼             ▼               ▼               ▼             ▼
+┌─────────┐  ┌─────────┐    ┌─────────┐    ┌─────────┐   ┌─────────┐
+│Branch 1 │  │Branch 2 │    │Branch 3 │    │Branch 4 │   │Branch N │
+│Windows  │  │Windows  │    │Windows  │    │Windows  │   │Windows  │
+│8GB RAM  │  │8GB RAM  │    │8GB RAM  │    │8GB RAM  │   │8GB RAM  │
+└─────────┘  └─────────┘    └─────────┘    └─────────┘   └─────────┘
+</pre>
+
+<h2>🚀 Guía de Instalación</h2>
+
+<h3>Servidor Central (Cloud)</h3>
+
+<p><span class="step-number">1</span> <strong>Instalar el módulo:</strong></p>
+<pre>
+# Copiar el módulo al directorio de addons
+cp -r branch_update_manager /opt/odoo/addons/
+
+# Actualizar lista de módulos
+./odoo-bin -d database -u base --stop-after-init
+
+# Instalar el módulo
+./odoo-bin -d database -i branch_update_manager --stop-after-init
+</pre>
+
+<p><span class="step-number">2</span> <strong>Configurar en Ajustes:</strong></p>
+<ul>
+    <li>Ir a Branch Updates → Configuration → Settings</li>
+    <li>Seleccionar "Central Server (Cloud)" como modo de operación</li>
+    <li>Guardar la Master API Key</li>
+</ul>
+
+<p><span class="step-number">3</span> <strong>Registrar sucursales:</strong></p>
+<ul>
+    <li>Ir a Branch Updates → Branches</li>
+    <li>Crear una nueva sucursal con código único (ej: SUC001)</li>
+    <li>Anotar el código para usarlo en el registro</li>
+</ul>
+
+<h3>Sucursales (Branch)</h3>
+
+<p><span class="step-number">1</span> <strong>Configurar el agente:</strong></p>
+<pre>
+# Editar config.json con los datos de la sucursal
+{
+    "cloud_url": "https://erp.empresa.com",
+    "branch_uuid": "UUID_PROPORCIONADO",
+    "api_key": "API_KEY_PROPORCIONADA",
+    "addons_path": "C:\\odoo-17\\server\\addons",
+    "odoo_service_name": "OdooService",
+    "check_interval": 300,
+    "auto_apply": true
+}
+</pre>
+
+<p><span class="step-number">2</span> <strong>Instalar como servicio Windows:</strong></p>
+<pre>
+# Ejecutar como Administrador
+install_agent_service.bat C:\odoo-17\python\python.exe C:\odoo-17\config.json
+</pre>
+
+<p><span class="step-number">3</span> <strong>Verificar el servicio:</strong></p>
+<pre>
+# Ver estado
+sc query OdooUpdateAgent
+
+# Ver logs
+type C:\odoo-17\logs\update_agent.log
+</pre>
+
+<h2>📋 Flujo de Trabajo</h2>
+
+<ol>
+    <li><strong>Crear Paquete:</strong> En el servidor, seleccionar módulos y generar el paquete ZIP</li>
+    <li><strong>Publicar:</strong> Marcar el paquete como "Published" para hacerlo disponible</li>
+    <li><strong>Distribución:</strong> Las sucursales verifican automáticamente cada 5 minutos</li>
+    <li><strong>Descarga:</strong> Si hay actualizaciones, se descargan automáticamente</li>
+    <li><strong>Backup:</strong> Se crea backup de los módulos actuales</li>
+    <li><strong>Aplicación:</strong> Los nuevos módulos reemplazan a los anteriores</li>
+    <li><strong>Reinicio:</strong> El servicio Odoo se reinicia automáticamente</li>
+    <li><strong>Confirmación:</strong> El resultado se reporta al servidor central</li>
+</ol>
+
+<h2>📊 Dashboard</h2>
+
+<p>El dashboard proporciona una vista en tiempo real de:</p>
+<ul>
+    <li>✅ Sucursales online/offline</li>
+    <li>📦 Paquetes publicados y pendientes</li>
+    <li>📈 Estadísticas de instalaciones</li>
+    <li>⚠️ Fallas y alertas</li>
+    <li>📜 Logs de actividad</li>
+</ul>
+
+<h2>🔧 API REST</h2>
+
+<table border="1" cellpadding="10" style="border-collapse: collapse; width: 100%;">
+    <tr>
+        <th>Endpoint</th>
+        <th>Método</th>
+        <th>Descripción</th>
+    </tr>
+    <tr>
+        <td><code>/api/updates/ping</code></td>
+        <td>GET</td>
+        <td>Health check</td>
+    </tr>
+    <tr>
+        <td><code>/api/branch/register</code></td>
+        <td>POST</td>
+        <td>Registrar nueva sucursal</td>
+    </tr>
+    <tr>
+        <td><code>/api/updates/check</code></td>
+        <td>POST</td>
+        <td>Verificar actualizaciones</td>
+    </tr>
+    <tr>
+        <td><code>/api/updates/download</code></td>
+        <td>POST</td>
+        <td>Descargar paquete</td>
+    </tr>
+    <tr>
+        <td><code>/api/updates/confirm</code></td>
+        <td>POST</td>
+        <td>Confirmar instalación</td>
+    </tr>
+</table>
+
+<h2>⚙️ Configuración Avanzada</h2>
+
+<h3>Ventana de Actualización</h3>
+<p>Por defecto, las actualizaciones se aplican entre 2:00 AM y 6:00 AM para minimizar disrupciones:</p>
+<pre>
+{
+    "update_window_start": 2,
+    "update_window_end": 6
+}
+</pre>
+
+<h3>Prioridades</h3>
+<ul>
+    <li><strong>Critical:</strong> Se aplica inmediatamente, ignora ventana de actualización</li>
+    <li><strong>High:</strong> Se aplica en la próxima ventana disponible</li>
+    <li><strong>Normal:</strong> Se aplica según el orden de publicación</li>
+    <li><strong>Low:</strong> Puede posponerse si hay otras actualizaciones</li>
+</ul>
+
+<h2>🆘 Solución de Problemas</h2>
+
+<h3>La sucursal no aparece como "Online"</h3>
+<ul>
+    <li>Verificar conectividad de red hacia el servidor</li>
+    <li>Revisar que el servicio OdooUpdateAgent esté corriendo</li>
+    <li>Verificar API Key y UUID en config.json</li>
+</ul>
+
+<h3>La actualización falla</h3>
+<ul>
+    <li>Revisar logs en C:\odoo-17\logs\update_agent.log</li>
+    <li>Verificar espacio en disco</li>
+    <li>Revisar permisos de escritura en addons_path</li>
+    <li>El rollback automático debería haber restaurado el estado anterior</li>
+</ul>
+
+<h3>Rollback manual</h3>
+<pre>
+# Los backups se guardan en:
+C:\Users\[Usuario]\AppData\Local\Temp\odoo_backups\
+
+# Para restaurar manualmente:
+# 1. Detener el servicio Odoo
+# 2. Extraer el backup en el directorio de addons
+# 3. Reiniciar el servicio
+</pre>
+
+<h2>📝 Licencia</h2>
+<p>LGPL-3</p>
+
+<h2>👥 Soporte</h2>
+<p>Para soporte técnico, contactar al equipo de desarrollo.</p>
+
+</body>
+</html>
