@@ -392,6 +392,36 @@ class BranchRegistry(models.Model):
             'publish_date': pkg.publish_date.isoformat() if pkg.publish_date else None,
         } for pkg in self.pending_update_ids.sorted(key=lambda p: p.publish_date)]
 
+    @api.model
+    def cron_check_offline_branches(self):
+        """
+        Cron job: Verifica sucursales que no se han conectado en 24 horas
+        y envía notificación al administrador.
+        """
+        threshold = datetime.now() - timedelta(hours=24)
+        branches = self.search([
+            ('state', '=', 'active'),
+            ('last_connection', '<', threshold),
+        ])
+
+        if branches:
+            admin_email = self.env['ir.config_parameter'].sudo().get_param(
+                'branch_update.admin_email', 'admin@example.com'
+            )
+            branch_names = ', '.join(branches.mapped('name'))
+
+            self.env['mail.mail'].sudo().create({
+                'subject': f'[ALERTA] {len(branches)} sucursales offline',
+                'body_html': f'Las siguientes sucursales no se han conectado en 24 horas: {branch_names}',
+                'email_to': admin_email,
+            }).send()
+
+            _logger.warning(
+                f'Sucursales offline detectadas: {branch_names}'
+            )
+
+        return True
+
 
 class BranchRegistryTag(models.Model):
     """Etiquetas para agrupar sucursales."""

@@ -32,22 +32,7 @@
             <field name="name">Branch Update: Check Offline Branches</field>
             <field name="model_id" ref="model_branch_registry"/>
             <field name="state">code</field>
-            <field name="code">
-# Buscar sucursales que no se han conectado en 24 horas
-from datetime import datetime, timedelta
-threshold = datetime.now() - timedelta(hours=24)
-branches = model.search([
-    ('state', '=', 'active'),
-    ('last_connection', '&lt;', threshold),
-])
-if branches:
-    # Enviar notificación al administrador
-    env['mail.mail'].sudo().create({
-        'subject': f'[ALERTA] {len(branches)} sucursales offline',
-        'body_html': f'Las siguientes sucursales no se han conectado en 24 horas: {", ".join(branches.mapped("name"))}',
-        'email_to': env['ir.config_parameter'].sudo().get_param('branch_update.admin_email', 'admin@example.com'),
-    }).send()
-            </field>
+            <field name="code">model.cron_check_offline_branches()</field>
             <field name="interval_number">6</field>
             <field name="interval_type">hours</field>
             <field name="numbercall">-1</field>
@@ -60,14 +45,7 @@ if branches:
             <field name="name">Branch Update: Deprecate Expired Packages</field>
             <field name="model_id" ref="model_branch_update_package"/>
             <field name="state">code</field>
-            <field name="code">
-from datetime import date
-expired = model.search([
-    ('state', '=', 'published'),
-    ('expiry_date', '&lt;', date.today()),
-])
-expired.write({'state': 'deprecated'})
-            </field>
+            <field name="code">model.cron_deprecate_expired_packages()</field>
             <field name="interval_number">1</field>
             <field name="interval_type">days</field>
             <field name="numbercall">-1</field>

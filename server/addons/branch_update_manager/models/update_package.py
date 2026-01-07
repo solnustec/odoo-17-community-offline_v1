@@ -533,6 +533,23 @@ class UpdatePackage(models.Model):
         else:
             self.sudo().write({'failure_count': self.failure_count + 1})
 
+    @api.model
+    def cron_deprecate_expired_packages(self):
+        """
+        Cron job: Depreca paquetes cuya fecha de expiración ha pasado.
+        """
+        from datetime import date
+        expired = self.search([
+            ('state', '=', 'published'),
+            ('expiry_date', '<', date.today()),
+        ])
+        if expired:
+            expired.write({'state': 'deprecated'})
+            _logger.info(
+                f'Paquetes deprecados automáticamente: {", ".join(expired.mapped("reference"))}'
+            )
+        return True
+
 
 class ModuleVersion(models.Model):
     """Versiones de módulos incluidos en un paquete."""
