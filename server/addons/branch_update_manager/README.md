@@ -2,97 +2,72 @@
 
 Sistema automatizado para distribuir actualizaciones de módulos Odoo a múltiples sucursales offline.
 
-## 🎯 Problema que Resuelve
+## Descripción
 
-Cuando tienes 250+ sucursales con Odoo POS en modo offline, actualizar manualmente los módulos en cada ubicación es:
-- Lento y propenso a errores
-- No escalable
-- Difícil de rastrear qué versión tiene cada sucursal
-- Imposible cuando no hay conexión constante
+Este módulo permite gestionar la distribución de actualizaciones de módulos Odoo desde un servidor central hacia múltiples sucursales que operan en modo offline o con conectividad intermitente.
 
-## ✅ Solución
+### Características Principales
 
-Este sistema proporciona:
-
-1. **Servidor Central (Cloud)**: Gestiona paquetes de actualización y monitorea sucursales
-2. **Agente de Sucursal (Windows)**: Se ejecuta en cada POS y aplica actualizaciones automáticamente
-3. **API REST**: Comunicación segura entre servidor y sucursales
-4. **Dashboard**: Monitoreo en tiempo real del estado de todas las sucursales
-
-## 📦 Componentes
-
-### Servidor Central (`branch_update_manager` módulo Odoo)
-
-- Gestión de paquetes de actualización
+- Gestión centralizada de paquetes de actualización
 - Registro y monitoreo de sucursales
-- API REST para distribución
-- Dashboard de control
+- API REST para distribución segura
+- Dashboard de control y monitoreo
+- Soporte para actualizaciones incrementales
+- Sistema de rollback automático
 
-### Agente de Sucursal (`update_agent_standalone.py`)
+## Componentes
 
-- Script Python independiente
-- Se ejecuta como servicio de Windows
-- Verifica actualizaciones cada 5 minutos
-- Descarga, aplica y confirma actualizaciones
-- Rollback automático en caso de fallas
+### Servidor Central (Este módulo)
 
-## 🚀 Instalación Rápida
+- **Paquetes de Actualización**: Crear, empaquetar y publicar actualizaciones
+- **Registro de Sucursales**: Gestionar todas las sucursales conectadas
+- **Logs de Actualización**: Histórico de todas las actualizaciones aplicadas
+- **Dashboard**: Vista general del estado del sistema
 
-### En el Servidor Central (AWS)
+### Agente de Sucursal (Script independiente)
+
+El script `update_agent_standalone.py` se ejecuta en cada sucursal:
+- Verifica actualizaciones periódicamente
+- Descarga y aplica paquetes automáticamente
+- Crea backups antes de actualizar
+- Realiza rollback en caso de fallas
+
+## Instalación
+
+### Servidor Central
 
 ```bash
-# 1. Copiar el módulo
-cp -r branch_update_manager /opt/odoo/addons/
+# Copiar módulo a addons
+cp -r branch_update_manager /ruta/addons/
 
-# 2. Instalar
-./odoo-bin -d odoo_db -i branch_update_manager --stop-after-init
-
-# 3. Configurar en Ajustes > Branch Updates > Settings
-#    - Seleccionar modo: "Central Server (Cloud)"
+# Instalar módulo
+./odoo-bin -d mi_base_datos -i branch_update_manager --stop-after-init
 ```
 
-### En Cada Sucursal (Windows)
+### Sucursal (Windows)
 
 ```batch
-REM 1. Copiar scripts al servidor local
+REM Copiar scripts
 copy scripts\update_agent_standalone.py C:\odoo-17\
 copy scripts\config.example.json C:\odoo-17\config.json
 
-REM 2. Editar config.json con los datos de la sucursal
+REM Editar config.json con datos de la sucursal
 
-REM 3. Instalar como servicio
+REM Instalar como servicio
 install_agent_service.bat C:\odoo-17\python\python.exe C:\odoo-17\config.json
 ```
 
-## 📋 Flujo de Trabajo
+## Configuración
 
-```
-1. Administrador crea paquete en servidor central
-                    ↓
-2. Selecciona módulos a incluir
-                    ↓
-3. Genera paquete (ZIP + checksums)
-                    ↓
-4. Publica el paquete
-                    ↓
-5. Sucursales verifican automáticamente (cada 5 min)
-                    ↓
-6. Descargan el paquete si hay actualizaciones
-                    ↓
-7. Verifican integridad (SHA256)
-                    ↓
-8. Crean backup de módulos actuales
-                    ↓
-9. Aplican la actualización
-                    ↓
-10. Reinician el servicio Odoo
-                    ↓
-11. Confirman al servidor central
-```
+### Servidor Central
 
-## ⚙️ Configuración del Agente
+1. Ir a Ajustes > Branch Updates
+2. Seleccionar modo "Central Server (Cloud)"
+3. Configurar opciones de almacenamiento y retención
 
-Crear `config.json`:
+### Sucursal
+
+Crear archivo `config.json`:
 
 ```json
 {
@@ -105,142 +80,50 @@ Crear `config.json`:
     "auto_apply": true,
     "backup_before_update": true,
     "update_window_start": 2,
-    "update_window_end": 6,
-    "log_file": "C:\\odoo-17\\logs\\update_agent.log"
+    "update_window_end": 6
 }
 ```
 
-### Parámetros
+## API REST
 
-| Parámetro | Descripción | Default |
-|-----------|-------------|---------|
-| `cloud_url` | URL del servidor central | Requerido |
-| `branch_uuid` | UUID de la sucursal | Requerido |
-| `api_key` | API Key de la sucursal | Requerido |
-| `addons_path` | Ruta de addons de Odoo | Requerido |
-| `check_interval` | Intervalo de verificación (segundos) | 300 |
-| `auto_apply` | Aplicar actualizaciones automáticamente | true |
-| `backup_before_update` | Crear backup antes de actualizar | true |
-| `update_window_start` | Hora inicio ventana de actualización | 2 |
-| `update_window_end` | Hora fin ventana de actualización | 6 |
+### Endpoints
 
-## 🔌 API REST
+| Método | Endpoint | Descripción |
+|--------|----------|-------------|
+| GET | /api/updates/ping | Health check |
+| POST | /api/branch/register | Registrar sucursal |
+| POST | /api/updates/check | Verificar actualizaciones |
+| POST | /api/updates/download | Descargar paquete |
+| POST | /api/updates/confirm | Confirmar instalación |
+| POST | /api/updates/status | Estado de actualizaciones |
 
-### Endpoints Públicos
+## Flujo de Trabajo
 
-```
-GET  /api/updates/ping           # Health check
-POST /api/branch/register        # Registrar sucursal
-```
+1. Administrador crea paquete en servidor central
+2. Selecciona módulos a incluir
+3. Genera paquete (ZIP + checksums SHA256)
+4. Publica el paquete
+5. Sucursales verifican automáticamente
+6. Descargan si hay actualizaciones pendientes
+7. Verifican integridad del paquete
+8. Crean backup de módulos actuales
+9. Aplican la actualización
+10. Reinician servicio Odoo
+11. Confirman al servidor central
 
-### Endpoints Autenticados
-
-```
-POST /api/updates/check          # Verificar actualizaciones
-POST /api/updates/download       # Descargar paquete
-POST /api/updates/confirm        # Confirmar instalación
-POST /api/updates/status         # Estado de actualizaciones
-POST /api/updates/rollback       # Solicitar rollback
-```
-
-### Ejemplo: Verificar Actualizaciones
-
-```python
-import requests
-
-response = requests.post(
-    "https://erp.empresa.com/api/updates/check",
-    json={
-        "branch_uuid": "mi-uuid",
-        "api_key": "mi-api-key",
-        "system_info": {"odoo_version": "17.0"}
-    }
-)
-
-data = response.json()
-if data["result"]["updates"]:
-    print(f"Hay {len(data['result']['updates'])} actualizaciones pendientes")
-```
-
-## 📊 Dashboard
-
-El dashboard muestra:
-
-- **Total de Sucursales**: Registradas en el sistema
-- **Sucursales Activas**: Con estado "active"
-- **Sucursales Online**: Conectadas en los últimos 10 minutos
-- **Paquetes Pendientes**: Paquetes publicados sin instalar
-
-### Vista Kanban de Sucursales
-
-Cada tarjeta muestra:
-- Estado (Online/Offline)
-- Versión actual
-- Actualizaciones pendientes
-- Última conexión
-
-## 🛡️ Seguridad
-
-- **API Keys**: Cada sucursal tiene una clave única
-- **Checksums**: SHA256 para verificar integridad de paquetes
-- **HTTPS**: Recomendado para todas las comunicaciones
-- **Ventana de Actualización**: Evita disrupciones en horario laboral
-
-## 🔧 Solución de Problemas
-
-### Sucursal no aparece Online
-
-1. Verificar conectividad de red
-2. Revisar que el servicio esté corriendo:
-   ```batch
-   sc query OdooUpdateAgent
-   ```
-3. Revisar logs:
-   ```batch
-   type C:\odoo-17\logs\update_agent.log
-   ```
-
-### Actualización Falla
-
-1. El sistema hace rollback automáticamente
-2. Revisar logs para identificar el error
-3. Verificar espacio en disco
-4. Verificar permisos de escritura
-
-### Rollback Manual
-
-```batch
-REM 1. Detener servicios
-net stop OdooService
-net stop OdooUpdateAgent
-
-REM 2. Restaurar backup
-REM Los backups están en: %TEMP%\odoo_backups\
-
-REM 3. Extraer el último backup en addons
-
-REM 4. Reiniciar servicios
-net start OdooService
-net start OdooUpdateAgent
-```
-
-## 📁 Estructura del Módulo
+## Estructura del Módulo
 
 ```
 branch_update_manager/
-├── __manifest__.py           # Definición del módulo
-├── __init__.py
 ├── models/
-│   ├── update_package.py     # Paquetes de actualización
-│   ├── branch_registry.py    # Registro de sucursales
-│   ├── update_log.py         # Logs de actualizaciones
-│   ├── update_agent.py       # Agente (versión Odoo)
-│   └── res_config_settings.py
+│   ├── update_package.py      # Paquetes de actualización
+│   ├── branch_registry.py     # Registro de sucursales
+│   ├── update_log.py          # Logs de actualizaciones
+│   ├── update_agent.py        # Agente interno
+│   └── res_config_settings.py # Configuración
 ├── controllers/
-│   ├── main.py               # Controlador web
-│   └── api.py                # API REST
-├── wizards/
-│   └── branch_register_wizard.py
+│   ├── main.py                # Controlador web
+│   └── api.py                 # API REST
 ├── views/
 │   ├── update_package_views.xml
 │   ├── branch_registry_views.xml
@@ -252,37 +135,19 @@ branch_update_manager/
 │   └── ir.model.access.csv
 ├── data/
 │   ├── ir_cron.xml
-│   ├── ir_sequence.xml
-│   └── mail_template.xml
-├── scripts/
-│   ├── update_agent_standalone.py  # Agente para Windows
-│   ├── config.example.json
-│   └── install_agent_service.bat
-└── static/
-    └── description/
-        └── index.html
+│   └── ir_sequence.xml
+└── scripts/
+    ├── update_agent_standalone.py
+    ├── config.example.json
+    └── install_agent_service.bat
 ```
 
-## 📝 Notas Técnicas
-
-### Compatibilidad
+## Requisitos
 
 - Odoo 17 Community Edition
 - Python 3.10+
-- Windows 10/11 (sucursales)
-- PostgreSQL 12-16
+- PostgreSQL 12+
 
-### Dependencias del Agente
-
-```bash
-pip install requests
-```
-
-### Requisitos de Red
-
-- Puerto 443 (HTTPS) abierto hacia el servidor central
-- Ancho de banda mínimo: 1 Mbps (para descargas de paquetes)
-
-## 📄 Licencia
+## Licencia
 
 LGPL-3

@@ -65,7 +65,6 @@ Requisitos:
         # Data
         'data/ir_cron.xml',
         'data/ir_sequence.xml',
-        'data/mail_template.xml',
         # Views - order matters! Actions must be loaded before menus that reference them
         'views/update_log_views.xml',
         'views/branch_registry_views.xml',

@@ -395,8 +395,8 @@ class BranchRegistry(models.Model):
     @api.model
     def cron_check_offline_branches(self):
         """
-        Cron job: Verifica sucursales que no se han conectado en 24 horas
-        y envía notificación al administrador.
+        Cron job: Verifica sucursales que no se han conectado en 24 horas.
+        Solo registra en el log, no envía correos.
         """
         threshold = datetime.now() - timedelta(hours=24)
         branches = self.search([
@@ -405,19 +405,9 @@ class BranchRegistry(models.Model):
         ])
 
         if branches:
-            admin_email = self.env['ir.config_parameter'].sudo().get_param(
-                'branch_update.admin_email', 'admin@example.com'
-            )
             branch_names = ', '.join(branches.mapped('name'))
-
-            self.env['mail.mail'].sudo().create({
-                'subject': f'[ALERTA] {len(branches)} sucursales offline',
-                'body_html': f'Las siguientes sucursales no se han conectado en 24 horas: {branch_names}',
-                'email_to': admin_email,
-            }).send()
-
             _logger.warning(
-                f'Sucursales offline detectadas: {branch_names}'
+                f'Sucursales offline detectadas ({len(branches)}): {branch_names}'
             )
 
         return True
