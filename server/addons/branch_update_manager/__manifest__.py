@@ -57,6 +57,7 @@ Requisitos:
         'base',
         'web',
         'mail',
+        'stock',  # Required for warehouse_id field in branch.registry
     ],
     'data': [
         # Security
