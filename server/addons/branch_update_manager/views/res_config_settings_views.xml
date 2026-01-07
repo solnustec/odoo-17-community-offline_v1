@@ -7,7 +7,7 @@
         <field name="inherit_id" ref="base.res_config_settings_view_form"/>
         <field name="arch" type="xml">
             <xpath expr="//form" position="inside">
-                <app data-string="Branch Updates" string="Branch Updates"
+                <div class="app_settings_block" data-string="Branch Updates" string="Branch Updates"
                      data-key="branch_update_manager"
                      groups="branch_update_manager.group_branch_update_admin">
                     <block title="Operation Mode" name="operation_mode">
@@ -158,7 +158,7 @@
                             </div>
                         </div>
                     </block>
-                </app>
+                </div>
             </xpath>
         </field>
     </record>
