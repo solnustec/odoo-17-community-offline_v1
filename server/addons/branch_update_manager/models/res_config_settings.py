@@ -145,9 +145,10 @@ class ResConfigSettings(models.TransientModel):
             record.branch_update_online_branches = BranchRegistry.search_count([
                 ('is_online', '=', True)
             ])
+            # pending_count is a computed non-stored field, can't use in domain
+            # Count published packages instead
             record.branch_update_pending_updates = UpdatePackage.search_count([
-                ('state', '=', 'published'),
-                ('pending_count', '>', 0)
+                ('state', '=', 'published')
             ])
 
     def action_register_branch(self):
