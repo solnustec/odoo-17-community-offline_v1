@@ -409,12 +409,15 @@ class PosSyncQueue(models.Model):
 
         # Usar SQL directo con FOR UPDATE SKIP LOCKED para evitar concurrencia
         # Esto permite que múltiples workers procesen diferentes registros
+        # NOTA: json.storage y json.note.credit se excluyen porque se sincronizan
+        # como parte de pos.order para evitar errores de foreign key
         query = """
             SELECT id FROM pos_sync_queue
             WHERE warehouse_id = %s
               AND state IN ('pending', 'error')
               AND attempt_count < max_attempts
               AND (next_retry_date IS NULL OR next_retry_date <= %s)
+              AND model_name NOT IN ('json.storage', 'json.note.credit')
             ORDER BY priority DESC, create_date ASC
             LIMIT %s
             FOR UPDATE SKIP LOCKED
@@ -465,6 +468,8 @@ class PosSyncQueue(models.Model):
         now = fields.Datetime.now()
 
         # Seleccionar y marcar como processing en una sola operación atómica
+        # NOTA: json.storage y json.note.credit se excluyen porque se sincronizan
+        # como parte de pos.order para evitar errores de foreign key
         query = """
             UPDATE pos_sync_queue
             SET state = 'processing', last_attempt_date = %s
@@ -474,6 +479,7 @@ class PosSyncQueue(models.Model):
                   AND state IN ('pending', 'error')
                   AND attempt_count < max_attempts
                   AND (next_retry_date IS NULL OR next_retry_date <= %s)
+                  AND model_name NOT IN ('json.storage', 'json.note.credit')
                 ORDER BY priority DESC, create_date ASC
                 LIMIT %s
                 FOR UPDATE SKIP LOCKED
@@ -528,6 +534,41 @@ class PosSyncQueue(models.Model):
         self.invalidate_model()
 
         _logger.info(f'Limpiados {count} registros de cola antiguos')
+        return count
+
+    @api.model
+    def cleanup_json_storage_queue(self):
+        """
+        Marca los registros json.storage y json.note.credit como sincronizados.
+
+        Estos modelos ahora se sincronizan como parte de pos.order para evitar
+        errores de foreign key. Los registros existentes en la cola se marcan
+        como 'synced' para limpiarlos.
+
+        Returns:
+            int: Número de registros actualizados
+        """
+        now = fields.Datetime.now()
+
+        self.env.cr.execute("""
+            UPDATE pos_sync_queue
+            SET state = 'synced', sync_date = %s
+            WHERE model_name IN ('json.storage', 'json.note.credit')
+              AND state IN ('pending', 'error', 'processing')
+            RETURNING id
+        """, (now,))
+
+        updated_ids = self.env.cr.fetchall()
+        count = len(updated_ids)
+
+        if count > 0:
+            # Invalidar cache
+            self.invalidate_model()
+            _logger.info(
+                f'Marcados {count} registros json.storage/json.note.credit como sincronizados '
+                f'(ahora se sincronizan como parte de pos.order)'
+            )
+
         return count
 
     @api.model

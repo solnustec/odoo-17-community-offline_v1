@@ -43,21 +43,91 @@ class JsonStorageSync(models.Model):
     def create(self, vals):
         """Override para registrar creación de json.storage.
 
-        NOTA: json.storage NO se agrega a la cola de sincronización por separado.
-        En su lugar, los datos de json.storage se incluyen en la serialización de
-        pos.order y se crean en el servidor principal durante deserialize_order.
-        Esto evita errores de foreign key cuando pos_order no existe todavía en cloud.
+        Cuando se crea json.storage, actualiza la cola de sincronización de la orden
+        asociada para incluir los datos de json.storage.
         """
         _logger.info(f'json.storage create called with keys: {list(vals.keys())}')
         record = super().create(vals)
 
-        # NO agregar a cola de sincronización - se sincroniza como parte de pos.order
+        # Verificar si debemos omitir la sincronización
+        if self.env.context.get('skip_sync_queue', False):
+            _logger.info(f'json.storage {record.id}: skip_sync_queue=True, omitiendo actualización de cola')
+            return record
+
+        # Buscar si la orden asociada está en la cola de sincronización y actualizar sus datos
+        if record.pos_order:
+            try:
+                self._update_order_queue_with_json_storage(record)
+            except Exception as e:
+                _logger.warning(f'Error actualizando cola de orden con json.storage: {e}')
+
         _logger.info(
             f'json.storage {record.id}: Creado localmente. '
             f'Se sincronizará como parte de la orden pos_order={record.pos_order.id if record.pos_order else "N/A"}'
         )
 
         return record
+
+    def _update_order_queue_with_json_storage(self, json_storage_record):
+        """
+        Actualiza el registro en la cola de sincronización de la orden asociada
+        para incluir los datos de json.storage.
+
+        Args:
+            json_storage_record: Registro json.storage recién creado
+        """
+        if not json_storage_record.pos_order:
+            return
+
+        SyncQueue = self.env['pos.sync.queue'].sudo()
+
+        # Buscar el registro de la cola para esta orden
+        queue_record = SyncQueue.search([
+            ('model', '=', 'pos.order'),
+            ('record_id', '=', json_storage_record.pos_order.id),
+            ('state', 'in', ['pending', 'error'])
+        ], limit=1, order='id desc')
+
+        if not queue_record:
+            _logger.info(
+                f'json.storage {json_storage_record.id}: No hay cola pendiente para orden '
+                f'{json_storage_record.pos_order.id}'
+            )
+            return
+
+        # Deserializar los datos actuales de la cola
+        try:
+            current_data = json.loads(queue_record.data) if queue_record.data else {}
+        except (json.JSONDecodeError, TypeError):
+            _logger.warning(f'Error deserializando datos de cola {queue_record.id}')
+            return
+
+        # Agregar los datos de json.storage
+        json_storage_data = {
+            'id': json_storage_record.id,
+            'json_data': json_storage_record.json_data,
+            'employee': json_storage_record.employee,
+            'id_point_of_sale': json_storage_record.id_point_of_sale,
+            'client_invoice': json_storage_record.client_invoice,
+            'id_database_old_invoice_client': json_storage_record.id_database_old_invoice_client,
+            'is_access_key': json_storage_record.is_access_key,
+            'sent': json_storage_record.sent,
+            'db_key': json_storage_record.db_key,
+            'pos_order_id': json_storage_record.pos_order_id.id if json_storage_record.pos_order_id else False,
+            'create_date': json_storage_record.create_date.isoformat() if json_storage_record.create_date else None,
+        }
+
+        current_data['json_storage_data'] = json_storage_data
+
+        # Actualizar el registro de la cola
+        queue_record.write({
+            'data': json.dumps(current_data, default=str)
+        })
+
+        _logger.info(
+            f'json.storage {json_storage_record.id}: Cola de orden {json_storage_record.pos_order.id} '
+            f'actualizada con json_storage_data'
+        )
 
     def write(self, vals):
         """Override para actualizar json.storage.

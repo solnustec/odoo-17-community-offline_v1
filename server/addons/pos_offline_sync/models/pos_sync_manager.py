@@ -105,6 +105,15 @@ class PosSyncManager(models.Model):
             sync_config_sudo = sync_config.sudo()
             sync_config_sudo.write({'sync_status': 'syncing'})
 
+            # 0. Limpiar registros json.storage de la cola (ahora se sincronizan como parte de pos.order)
+            try:
+                SyncQueue = self.env['pos.sync.queue'].sudo()
+                cleaned = SyncQueue.cleanup_json_storage_queue()
+                if cleaned > 0:
+                    _logger.info(f'Limpiados {cleaned} registros json.storage/json.note.credit de la cola')
+            except Exception as e:
+                _logger.warning(f'Error limpiando cola de json.storage: {e}')
+
             # 1. Subir datos locales al cloud (PUSH)
             if sync_config.operation_mode in ['hybrid', 'sync_on_demand']:
                 push_result = self._push_to_cloud(sync_config)
