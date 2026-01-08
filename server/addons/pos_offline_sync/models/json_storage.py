@@ -42,17 +42,25 @@ class JsonStorageSync(models.Model):
     @api.model
     def create(self, vals):
         """Override para agregar automáticamente a la cola de sincronización."""
+        _logger.info(f'json.storage create called with keys: {list(vals.keys())}')
         record = super().create(vals)
 
         # Verificar si debemos omitir la sincronización
         if self.env.context.get('skip_sync_queue', False):
+            _logger.info(f'json.storage {record.id}: skip_sync_queue=True, omitiendo cola')
+            return record
+
+        # Verificar si estamos en modo de instalación
+        if self.env.context.get('install_mode', False):
+            _logger.info(f'json.storage {record.id}: install_mode=True, omitiendo cola')
             return record
 
         # Agregar a la cola de sincronización
         try:
-            record._add_to_sync_queue('create')
+            result = record._add_to_sync_queue('create')
+            _logger.info(f'json.storage {record.id}: _add_to_sync_queue resultado: {result}')
         except Exception as e:
-            _logger.warning(f'Error agregando json.storage a cola de sync: {e}')
+            _logger.warning(f'Error agregando json.storage {record.id} a cola de sync: {e}', exc_info=True)
 
         return record
 
@@ -72,7 +80,7 @@ class JsonStorageSync(models.Model):
                     try:
                         record._add_to_sync_queue('write')
                     except Exception as e:
-                        _logger.warning(f'Error actualizando sync queue para json.storage: {e}')
+                        _logger.warning(f'Error actualizando sync queue para json.storage {record.id}: {e}')
 
         return result
 
@@ -84,23 +92,60 @@ class JsonStorageSync(models.Model):
             operation: Tipo de operación ('create', 'write', 'unlink')
         """
         self.ensure_one()
+
+        _logger.info(f'json.storage {self.id}: Iniciando _add_to_sync_queue({operation})')
+        _logger.info(f'  - pos_order: {self.pos_order} (id={self.pos_order.id if self.pos_order else None})')
+        _logger.info(f'  - pos_order_id: {self.pos_order_id} (id={self.pos_order_id.id if self.pos_order_id else None})')
+        _logger.info(f'  - id_point_of_sale: {self.id_point_of_sale}')
+
         SyncQueue = self.env['pos.sync.queue']
 
-        # Obtener el warehouse desde el pos_order o config
+        # Obtener el warehouse desde múltiples fuentes
         warehouse = None
+        pos_config = None
+        session = None
+
+        # Opción 1: Desde pos_order (pos.order) → session → config → warehouse
         if self.pos_order and self.pos_order.session_id:
-            warehouse = self.pos_order.session_id.config_id.picking_type_id.warehouse_id
-
-        if not warehouse:
-            # Intentar obtener desde el contexto o configuración
-            pos_config = self.env['pos.config'].search([
-                ('point_of_sale_id', '=', self.id_point_of_sale)
-            ], limit=1)
-            if pos_config:
+            session = self.pos_order.session_id
+            pos_config = session.config_id
+            if pos_config and pos_config.picking_type_id:
                 warehouse = pos_config.picking_type_id.warehouse_id
+                _logger.info(f'  - Warehouse desde pos_order: {warehouse.name if warehouse else None}')
+
+        # Opción 2: Desde pos_order_id (pos.config) → warehouse
+        if not warehouse and self.pos_order_id:
+            pos_config = self.pos_order_id  # pos_order_id es Many2one a pos.config
+            if pos_config.picking_type_id:
+                warehouse = pos_config.picking_type_id.warehouse_id
+                _logger.info(f'  - Warehouse desde pos_order_id (pos.config): {warehouse.name if warehouse else None}')
+
+        # Opción 3: Buscar pos.config por external_id (id_point_of_sale es un string)
+        if not warehouse and self.id_point_of_sale:
+            # id_point_of_sale parece ser un external_id string
+            # Intentar convertir a int y buscar por point_of_sale_id
+            try:
+                external_id = int(self.id_point_of_sale)
+                pos_config = self.env['pos.config'].search([
+                    ('point_of_sale_id', '=', external_id)
+                ], limit=1)
+                if pos_config and pos_config.picking_type_id:
+                    warehouse = pos_config.picking_type_id.warehouse_id
+                    _logger.info(f'  - Warehouse desde point_of_sale_id ({external_id}): {warehouse.name if warehouse else None}')
+            except (ValueError, TypeError):
+                _logger.info(f'  - id_point_of_sale "{self.id_point_of_sale}" no es un número válido')
+
+        # Opción 4: Usar el primer warehouse activo con sync configurado
+        if not warehouse:
+            sync_config = self.env['pos.sync.config'].search([
+                ('is_active', '=', True)
+            ], limit=1)
+            if sync_config:
+                warehouse = sync_config.warehouse_id
+                _logger.info(f'  - Warehouse desde sync_config activo: {warehouse.name if warehouse else None}')
 
         if not warehouse:
-            _logger.warning(f'No se pudo determinar warehouse para json.storage {self.id}')
+            _logger.warning(f'json.storage {self.id}: No se pudo determinar warehouse')
             return False
 
         # Serializar datos para la cola
@@ -117,10 +162,12 @@ class JsonStorageSync(models.Model):
             'priority': '1',  # Prioridad normal
         }
 
-        if self.pos_order and self.pos_order.session_id:
-            queue_vals['pos_config_id'] = self.pos_order.session_id.config_id.id
-            queue_vals['session_id'] = self.pos_order.session_id.id
+        if pos_config:
+            queue_vals['pos_config_id'] = pos_config.id
+        if session:
+            queue_vals['session_id'] = session.id
 
+        _logger.info(f'json.storage {self.id}: Creando registro en cola con warehouse={warehouse.name}')
         queue_record = SyncQueue.sudo().create(queue_vals)
 
         # Actualizar estado del registro
@@ -129,7 +176,7 @@ class JsonStorageSync(models.Model):
             'sync_queue_id': queue_record.id,
         })
 
-        _logger.info(f'json.storage {self.id} agregado a cola de sincronización')
+        _logger.info(f'json.storage {self.id} agregado a cola de sincronización (queue_id={queue_record.id})')
         return True
 
     def _serialize_for_sync(self):
@@ -153,6 +200,7 @@ class JsonStorageSync(models.Model):
             'db_key': self.db_key,
             'pos_order_id': self.pos_order_id.id if self.pos_order_id else False,
             'pos_order': self.pos_order.id if self.pos_order else False,
+            'pos_order_name': self.pos_order.name if self.pos_order else None,
             'create_date': self.create_date.isoformat() if self.create_date else None,
         }
 
@@ -193,17 +241,22 @@ class JsonNoteCreditSync(models.Model):
     @api.model
     def create(self, vals):
         """Override para agregar automáticamente a la cola de sincronización."""
+        _logger.info(f'json.note.credit create called')
         record = super().create(vals)
 
         # Verificar si debemos omitir la sincronización
         if self.env.context.get('skip_sync_queue', False):
             return record
 
+        # Verificar si estamos en modo de instalación
+        if self.env.context.get('install_mode', False):
+            return record
+
         # Agregar a la cola de sincronización
         try:
             record._add_to_sync_queue('create')
         except Exception as e:
-            _logger.warning(f'Error agregando json.note.credit a cola de sync: {e}')
+            _logger.warning(f'Error agregando json.note.credit {record.id} a cola de sync: {e}', exc_info=True)
 
         return record
 
@@ -214,15 +267,27 @@ class JsonNoteCreditSync(models.Model):
         self.ensure_one()
         SyncQueue = self.env['pos.sync.queue']
 
+        _logger.info(f'json.note.credit {self.id}: Iniciando _add_to_sync_queue({operation})')
+
         # Obtener el warehouse desde el pos_order_id (pos.config)
         warehouse = None
+        pos_config = None
+
         if self.pos_order_id:
-            pos_config = self.env['pos.config'].browse(self.pos_order_id.id)
-            if pos_config:
+            pos_config = self.pos_order_id  # Es Many2one a pos.config
+            if pos_config.picking_type_id:
                 warehouse = pos_config.picking_type_id.warehouse_id
 
+        # Fallback: usar sync_config activo
         if not warehouse:
-            _logger.warning(f'No se pudo determinar warehouse para json.note.credit {self.id}')
+            sync_config = self.env['pos.sync.config'].search([
+                ('is_active', '=', True)
+            ], limit=1)
+            if sync_config:
+                warehouse = sync_config.warehouse_id
+
+        if not warehouse:
+            _logger.warning(f'json.note.credit {self.id}: No se pudo determinar warehouse')
             return False
 
         # Serializar datos para la cola
@@ -246,9 +311,11 @@ class JsonNoteCreditSync(models.Model):
             'operation': operation,
             'data_json': json.dumps(data),
             'warehouse_id': warehouse.id,
-            'pos_config_id': self.pos_order_id.id if self.pos_order_id else False,
             'priority': '1',
         }
+
+        if pos_config:
+            queue_vals['pos_config_id'] = pos_config.id
 
         queue_record = SyncQueue.sudo().create(queue_vals)
 

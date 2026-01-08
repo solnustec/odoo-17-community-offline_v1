@@ -474,6 +474,18 @@ class PosSyncManager(models.Model):
             self.deserialize_stock_picking(data, sync_config)
             return 1
 
+        # Manejo especial para json.storage
+        if model_name == 'json.storage':
+            data['id'] = cloud_id
+            self.deserialize_json_storage(data, sync_config)
+            return 1
+
+        # Manejo especial para json.note.credit
+        if model_name == 'json.note.credit':
+            data['id'] = cloud_id
+            self.deserialize_json_note_credit(data, sync_config)
+            return 1
+
         # Crear o actualizar otros modelos
         local = self._find_local_record(Model, cloud_id, data)
         if local:
@@ -1125,13 +1137,20 @@ class PosSyncManager(models.Model):
                     product = None
 
             if product:
-                lines.append((0, 0, {
+                line_vals = {
                     'product_id': product.id,
                     'full_product_name': line_data.get('product_name', product.name),
+                    'name': line_data.get('product_name', product.name),
                     'qty': line_data.get('qty', 1),
                     'price_unit': line_data.get('price_unit'),
                     'discount': line_data.get('discount', 0),
-                }))
+                    'price_subtotal': line_data.get('price_subtotal', 0.0),
+                    'price_subtotal_incl': line_data.get('price_subtotal_incl', 0.0),
+                }
+                # Agregar product_free si existe
+                if 'product_free' in line_data:
+                    line_vals['product_free'] = line_data.get('product_free', False)
+                lines.append((0, 0, line_vals))
 
         # Generar pos_reference, name y sequence_number
         # IMPORTANTE: Buscar el último sequence_number de TODO el config_id (punto de venta)
@@ -2840,6 +2859,174 @@ class PosSyncManager(models.Model):
             vals['id_database_old'] = str(data['id_database_old'])
 
         return vals
+
+    # ==================== SERIALIZADORES DE JSON.STORAGE ====================
+
+    @api.model
+    def deserialize_json_storage(self, data, sync_config=None):
+        """
+        Deserializa datos de json.storage recibidos de una sucursal.
+
+        Args:
+            data: Diccionario con datos del registro json.storage
+            sync_config: Configuración de sincronización (opcional)
+
+        Returns:
+            json.storage: Registro creado o actualizado
+        """
+        JsonStorage = self.env['json.storage'].sudo()
+        cloud_id = data.get('id')
+
+        _logger.info(f'Deserializando json.storage cloud_id={cloud_id}')
+
+        # Buscar registro existente
+        existing = None
+        if cloud_id and 'cloud_sync_id' in JsonStorage._fields:
+            existing = JsonStorage.search([
+                ('cloud_sync_id', '=', cloud_id)
+            ], limit=1)
+
+        # También buscar por pos_order si está disponible
+        if not existing and data.get('pos_order'):
+            pos_order_id = data['pos_order']
+            # Buscar la orden por cloud_sync_id o id_database_old
+            PosOrder = self.env['pos.order'].sudo()
+            order = None
+            if 'cloud_sync_id' in PosOrder._fields:
+                order = PosOrder.search([('cloud_sync_id', '=', pos_order_id)], limit=1)
+            if not order:
+                order = PosOrder.search([('id_database_old', '=', str(pos_order_id))], limit=1)
+            if order:
+                existing = JsonStorage.search([('pos_order', '=', order.id)], limit=1)
+
+        # Preparar valores
+        vals = {
+            'json_data': data.get('json_data'),
+            'employee': data.get('employee'),
+            'id_point_of_sale': data.get('id_point_of_sale'),
+            'client_invoice': data.get('client_invoice'),
+            'id_database_old_invoice_client': data.get('id_database_old_invoice_client'),
+            'is_access_key': data.get('is_access_key', False),
+            'sent': data.get('sent', False),
+            'db_key': data.get('db_key'),
+        }
+
+        # Resolver pos_order_id (Many2one a pos.config)
+        if data.get('pos_order_id'):
+            config_id = data['pos_order_id']
+            pos_config = self.env['pos.config'].sudo().browse(config_id)
+            if pos_config.exists():
+                vals['pos_order_id'] = pos_config.id
+            else:
+                # Intentar buscar por cloud_sync_id
+                if 'cloud_sync_id' in self.env['pos.config']._fields:
+                    pos_config = self.env['pos.config'].sudo().search([
+                        ('cloud_sync_id', '=', config_id)
+                    ], limit=1)
+                    if pos_config:
+                        vals['pos_order_id'] = pos_config.id
+
+        # Resolver pos_order (Many2one a pos.order)
+        if data.get('pos_order'):
+            order_id = data['pos_order']
+            pos_order = self.env['pos.order'].sudo().browse(order_id)
+            if pos_order.exists():
+                vals['pos_order'] = pos_order.id
+            else:
+                # Intentar buscar por cloud_sync_id o id_database_old
+                PosOrder = self.env['pos.order'].sudo()
+                if 'cloud_sync_id' in PosOrder._fields:
+                    pos_order = PosOrder.search([('cloud_sync_id', '=', order_id)], limit=1)
+                if not pos_order:
+                    pos_order = PosOrder.search([('id_database_old', '=', str(order_id))], limit=1)
+                # También buscar por nombre si está disponible
+                if not pos_order and data.get('pos_order_name'):
+                    pos_order = PosOrder.search([('name', '=', data['pos_order_name'])], limit=1)
+                if pos_order:
+                    vals['pos_order'] = pos_order.id
+
+        if existing:
+            # Actualizar registro existente
+            existing.with_context(skip_sync_queue=True).write(vals)
+            if 'sync_state' in JsonStorage._fields:
+                existing.with_context(skip_sync_queue=True).write({'sync_state': 'synced'})
+            _logger.info(f'json.storage actualizado: {existing.id}')
+            return existing
+        else:
+            # Crear nuevo registro
+            if cloud_id and 'cloud_sync_id' in JsonStorage._fields:
+                vals['cloud_sync_id'] = cloud_id
+            if 'sync_state' in JsonStorage._fields:
+                vals['sync_state'] = 'synced'
+            record = JsonStorage.with_context(skip_sync_queue=True).create(vals)
+            _logger.info(f'json.storage creado: {record.id} (cloud_id={cloud_id})')
+            return record
+
+    @api.model
+    def deserialize_json_note_credit(self, data, sync_config=None):
+        """
+        Deserializa datos de json.note.credit recibidos de una sucursal.
+
+        Args:
+            data: Diccionario con datos del registro json.note.credit
+            sync_config: Configuración de sincronización (opcional)
+
+        Returns:
+            json.note.credit: Registro creado o actualizado
+        """
+        JsonNoteCredit = self.env['json.note.credit'].sudo()
+        cloud_id = data.get('id')
+
+        _logger.info(f'Deserializando json.note.credit cloud_id={cloud_id}')
+
+        # Buscar registro existente
+        existing = None
+        if cloud_id and 'cloud_sync_id' in JsonNoteCredit._fields:
+            existing = JsonNoteCredit.search([
+                ('cloud_sync_id', '=', cloud_id)
+            ], limit=1)
+
+        # Preparar valores
+        vals = {
+            'json_data': data.get('json_data'),
+            'id_point_of_sale': data.get('id_point_of_sale'),
+            'date_invoices': data.get('date_invoices'),
+            'is_access_key': data.get('is_access_key', False),
+            'sent': data.get('sent', False),
+            'db_key': data.get('db_key'),
+        }
+
+        # Resolver pos_order_id (Many2one a pos.config)
+        if data.get('pos_order_id'):
+            config_id = data['pos_order_id']
+            pos_config = self.env['pos.config'].sudo().browse(config_id)
+            if pos_config.exists():
+                vals['pos_order_id'] = pos_config.id
+            else:
+                # Intentar buscar por cloud_sync_id
+                if 'cloud_sync_id' in self.env['pos.config']._fields:
+                    pos_config = self.env['pos.config'].sudo().search([
+                        ('cloud_sync_id', '=', config_id)
+                    ], limit=1)
+                    if pos_config:
+                        vals['pos_order_id'] = pos_config.id
+
+        if existing:
+            # Actualizar registro existente
+            existing.with_context(skip_sync_queue=True).write(vals)
+            if 'sync_state' in JsonNoteCredit._fields:
+                existing.with_context(skip_sync_queue=True).write({'sync_state': 'synced'})
+            _logger.info(f'json.note.credit actualizado: {existing.id}')
+            return existing
+        else:
+            # Crear nuevo registro
+            if cloud_id and 'cloud_sync_id' in JsonNoteCredit._fields:
+                vals['cloud_sync_id'] = cloud_id
+            if 'sync_state' in JsonNoteCredit._fields:
+                vals['sync_state'] = 'synced'
+            record = JsonNoteCredit.with_context(skip_sync_queue=True).create(vals)
+            _logger.info(f'json.note.credit creado: {record.id} (cloud_id={cloud_id})')
+            return record
 
     # ==================== SERIALIZADORES DE TRANSFERENCIAS DE STOCK ====================
 
