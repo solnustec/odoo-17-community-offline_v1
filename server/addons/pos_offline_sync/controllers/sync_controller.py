@@ -328,11 +328,13 @@ class PosOfflineSyncController(http.Controller):
             session_name = data.get('session_name')
             order_state = data.get('state', 'draft')
             invoice_data = data.get('invoice_data')
+            json_storage_data = data.get('json_storage_data')
 
             _logger.info(
                 f'Procesando orden POS COMPLETA: name={order_name}, '
                 f'pos_reference={pos_reference}, session={session_name}, '
-                f'state={order_state}, tiene_factura={bool(invoice_data)}'
+                f'state={order_state}, tiene_factura={bool(invoice_data)}, '
+                f'tiene_json_storage={bool(json_storage_data)}'
             )
 
             # Verificar si la orden ya existe por pos_reference
@@ -655,10 +657,26 @@ class PosOfflineSyncController(http.Controller):
                 except Exception as e:
                     _logger.error(f'Error al crear factura normal: {e}', exc_info=True)
 
+            # ==================== PASO 5: CREAR JSON.STORAGE ====================
+            json_storage_created = False
+            json_storage_id = None
+
+            if json_storage_data:
+                try:
+                    json_storage_record = self._create_json_storage_for_order(
+                        order, json_storage_data, session
+                    )
+                    if json_storage_record:
+                        json_storage_created = True
+                        json_storage_id = json_storage_record.id
+                        _logger.info(f'json.storage creado: ID={json_storage_id}')
+                except Exception as e:
+                    _logger.error(f'Error al crear json.storage: {e}', exc_info=True)
+
             _logger.info(
                 f'Orden POS COMPLETA sincronizada: {order.name} '
                 f'(estado: {order.state}, pagos: {len(order.payment_ids)}, '
-                f'factura: {invoice_name or "N/A"})'
+                f'factura: {invoice_name or "N/A"}, json_storage: {json_storage_id or "N/A"})'
             )
 
             return {
@@ -673,6 +691,8 @@ class PosOfflineSyncController(http.Controller):
                 'payments_count': len(order.payment_ids),
                 'invoice_created': invoice_created,
                 'invoice_name': invoice_name,
+                'json_storage_created': json_storage_created,
+                'json_storage_id': json_storage_id,
             }
 
         except Exception as e:
@@ -1002,6 +1022,78 @@ class PosOfflineSyncController(http.Controller):
                 pass  # El modelo puede no existir
 
         return vals
+
+    def _create_json_storage_for_order(self, order, json_storage_data, session):
+        """
+        Crea un registro json.storage en el servidor principal a partir de los datos
+        sincronizados de la orden.
+
+        Args:
+            order: pos.order recién creado
+            json_storage_data: Diccionario con datos del json.storage del offline
+            session: pos.session de la orden
+
+        Returns:
+            json.storage: Registro creado o None si ya existe
+        """
+        JsonStorage = request.env['json.storage'].sudo()
+
+        # Verificar si ya existe un json.storage para esta orden
+        existing = JsonStorage.search([
+            ('pos_order', '=', order.id)
+        ], limit=1)
+
+        if existing:
+            _logger.info(f'json.storage ya existe para orden {order.name}: ID={existing.id}')
+            return existing
+
+        # También buscar por id original (cloud_sync_id) si existe
+        original_id = json_storage_data.get('id')
+        if original_id:
+            existing_by_old_id = JsonStorage.search([
+                ('cloud_sync_id', '=', original_id)
+            ], limit=1)
+            if existing_by_old_id:
+                _logger.info(f'json.storage ya sincronizado (cloud_sync_id={original_id}): ID={existing_by_old_id.id}')
+                return existing_by_old_id
+
+        # Buscar el pos.config para el campo pos_order_id
+        pos_config = session.config_id if session else None
+
+        # Preparar valores para crear json.storage
+        storage_vals = {
+            'json_data': json_storage_data.get('json_data'),
+            'employee': json_storage_data.get('employee', ''),
+            'id_point_of_sale': json_storage_data.get('id_point_of_sale', ''),
+            'client_invoice': json_storage_data.get('client_invoice', ''),
+            'id_database_old_invoice_client': json_storage_data.get('id_database_old_invoice_client', ''),
+            'is_access_key': json_storage_data.get('is_access_key', False),
+            'sent': json_storage_data.get('sent', False),
+            'db_key': json_storage_data.get('db_key'),
+            'pos_order': order.id,  # Referencia a la orden recién creada
+        }
+
+        # Agregar pos_order_id (pos.config) si tenemos uno válido
+        if pos_config:
+            storage_vals['pos_order_id'] = pos_config.id
+
+        # Agregar cloud_sync_id si viene el id original
+        if original_id:
+            storage_vals['cloud_sync_id'] = original_id
+
+        try:
+            # Crear con skip_sync_queue para evitar que se re-agregue a la cola
+            new_storage = JsonStorage.with_context(skip_sync_queue=True).create(storage_vals)
+
+            _logger.info(
+                f'json.storage creado exitosamente para orden {order.name}: '
+                f'ID={new_storage.id}, cloud_sync_id={original_id}'
+            )
+            return new_storage
+
+        except Exception as e:
+            _logger.error(f'Error creando json.storage para orden {order.name}: {e}', exc_info=True)
+            raise
 
     def _find_or_create_session_for_sync(self, data, warehouse_id):
         """
