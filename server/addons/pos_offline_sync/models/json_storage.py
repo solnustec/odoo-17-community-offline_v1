@@ -41,47 +41,32 @@ class JsonStorageSync(models.Model):
 
     @api.model
     def create(self, vals):
-        """Override para agregar automáticamente a la cola de sincronización."""
+        """Override para registrar creación de json.storage.
+
+        NOTA: json.storage NO se agrega a la cola de sincronización por separado.
+        En su lugar, los datos de json.storage se incluyen en la serialización de
+        pos.order y se crean en el servidor principal durante deserialize_order.
+        Esto evita errores de foreign key cuando pos_order no existe todavía en cloud.
+        """
         _logger.info(f'json.storage create called with keys: {list(vals.keys())}')
         record = super().create(vals)
 
-        # Verificar si debemos omitir la sincronización
-        if self.env.context.get('skip_sync_queue', False):
-            _logger.info(f'json.storage {record.id}: skip_sync_queue=True, omitiendo cola')
-            return record
-
-        # Verificar si estamos en modo de instalación
-        if self.env.context.get('install_mode', False):
-            _logger.info(f'json.storage {record.id}: install_mode=True, omitiendo cola')
-            return record
-
-        # Agregar a la cola de sincronización
-        try:
-            result = record._add_to_sync_queue('create')
-            _logger.info(f'json.storage {record.id}: _add_to_sync_queue resultado: {result}')
-        except Exception as e:
-            _logger.warning(f'Error agregando json.storage {record.id} a cola de sync: {e}', exc_info=True)
+        # NO agregar a cola de sincronización - se sincroniza como parte de pos.order
+        _logger.info(
+            f'json.storage {record.id}: Creado localmente. '
+            f'Se sincronizará como parte de la orden pos_order={record.pos_order.id if record.pos_order else "N/A"}'
+        )
 
         return record
 
     def write(self, vals):
-        """Override para actualizar cola de sincronización si el registro cambia."""
+        """Override para actualizar json.storage.
+
+        NOTA: json.storage NO se re-agrega a la cola de sincronización.
+        Las actualizaciones se propagan cuando la orden asociada se re-sincroniza.
+        """
         result = super().write(vals)
-
-        # Verificar si debemos omitir la sincronización
-        if self.env.context.get('skip_sync_queue', False):
-            return result
-
-        # Solo re-sincronizar si cambian campos importantes
-        sync_trigger_fields = {'json_data', 'is_access_key', 'sent'}
-        if sync_trigger_fields & set(vals.keys()):
-            for record in self:
-                if record.sync_state == 'synced':
-                    try:
-                        record._add_to_sync_queue('write')
-                    except Exception as e:
-                        _logger.warning(f'Error actualizando sync queue para json.storage {record.id}: {e}')
-
+        # NO agregar a cola de sincronización - se sincroniza como parte de pos.order
         return result
 
     def _add_to_sync_queue(self, operation='create'):

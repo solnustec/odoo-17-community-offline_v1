@@ -881,6 +881,34 @@ class PosSyncManager(models.Model):
             _logger.info(f'Pago serializado: {payment_data}')
 
         _logger.info(f'Orden {order.name} serializada con {len(data["payments"])} pagos, estado: {order.state}')
+
+        # NUEVO: Serializar json.storage (registro de factura para sistema externo)
+        # Incluido en la orden para evitar problemas de foreign key al sincronizar
+        data['json_storage_data'] = None
+        try:
+            JsonStorage = self.env['json.storage'].sudo()
+            json_storage_record = JsonStorage.search([
+                ('pos_order', '=', order.id)
+            ], limit=1)
+
+            if json_storage_record:
+                data['json_storage_data'] = {
+                    'id': json_storage_record.id,
+                    'json_data': json_storage_record.json_data,
+                    'employee': json_storage_record.employee,
+                    'id_point_of_sale': json_storage_record.id_point_of_sale,
+                    'client_invoice': json_storage_record.client_invoice,
+                    'id_database_old_invoice_client': json_storage_record.id_database_old_invoice_client,
+                    'is_access_key': json_storage_record.is_access_key,
+                    'sent': json_storage_record.sent,
+                    'db_key': json_storage_record.db_key,
+                    'pos_order_id': json_storage_record.pos_order_id.id if json_storage_record.pos_order_id else False,
+                    'create_date': json_storage_record.create_date.isoformat() if json_storage_record.create_date else None,
+                }
+                _logger.info(f'json.storage serializado para orden {order.name}: id={json_storage_record.id}')
+        except Exception as e:
+            _logger.warning(f'Error serializando json.storage para orden {order.name}: {e}')
+
         return data
 
     @api.model
@@ -1304,6 +1332,18 @@ class PosSyncManager(models.Model):
             f'   Pagos: {len(order.payment_ids)}'
         )
 
+        # ============================================================
+        # PASO 5: Crear json.storage si viene en los datos de la orden
+        # Esto evita problemas de foreign key al sincronizar separadamente
+        # ============================================================
+        json_storage_data = data.get('json_storage_data')
+        if json_storage_data:
+            try:
+                _logger.info(f'=== PASO 5: Creando json.storage para orden {order.name} ===')
+                self._create_json_storage_from_order(order, json_storage_data, session)
+            except Exception as e:
+                _logger.error(f'Error creando json.storage para orden {order.name}: {e}', exc_info=True)
+
         return order
 
     def _create_order_payments(self, order, payments_data, session):
@@ -1377,6 +1417,97 @@ class PosSyncManager(models.Model):
                 _logger.info(f'Pago creado exitosamente: ID={payment.id}, monto={payment.amount}')
             except Exception as e:
                 _logger.error(f'Error creando pago: {e}', exc_info=True)
+
+    def _create_json_storage_from_order(self, order, json_storage_data, session):
+        """
+        Crea un registro json.storage en el servidor principal a partir de los datos
+        sincronizados de la orden.
+
+        Este método se ejecuta DESPUÉS de crear la orden, garantizando que el pos_order
+        existe y puede ser referenciado por json.storage sin error de foreign key.
+
+        Args:
+            order: pos.order recién creado
+            json_storage_data: Diccionario con datos del json.storage del offline
+            session: pos.session de la orden
+        """
+        JsonStorage = self.env['json.storage'].sudo()
+
+        # Verificar si ya existe un json.storage para esta orden
+        existing = JsonStorage.search([
+            ('pos_order', '=', order.id)
+        ], limit=1)
+
+        if existing:
+            _logger.info(f'json.storage ya existe para orden {order.name}: ID={existing.id}')
+            return existing
+
+        # También buscar por id original si existe
+        original_id = json_storage_data.get('id')
+        if original_id:
+            existing_by_old_id = JsonStorage.search([
+                ('cloud_sync_id', '=', original_id)
+            ], limit=1)
+            if existing_by_old_id:
+                _logger.info(f'json.storage ya sincronizado (cloud_sync_id={original_id}): ID={existing_by_old_id.id}')
+                return existing_by_old_id
+
+        # Buscar el pos.config para el campo pos_order_id
+        pos_config = session.config_id if session else None
+
+        # Si viene un pos_order_id específico del offline, buscar ese pos.config
+        if json_storage_data.get('pos_order_id'):
+            # En el offline pos_order_id es Many2one a pos.config
+            # Intentar buscar por nombre o id
+            offline_pos_config_id = json_storage_data.get('pos_order_id')
+            config_by_id = self.env['pos.config'].sudo().search([
+                '|',
+                ('id', '=', offline_pos_config_id),
+                ('point_of_sale_id', '=', offline_pos_config_id)
+            ], limit=1)
+            if config_by_id:
+                pos_config = config_by_id
+
+        # Preparar valores para crear json.storage
+        storage_vals = {
+            'json_data': json_storage_data.get('json_data'),
+            'employee': json_storage_data.get('employee', ''),
+            'id_point_of_sale': json_storage_data.get('id_point_of_sale', ''),
+            'client_invoice': json_storage_data.get('client_invoice', ''),
+            'id_database_old_invoice_client': json_storage_data.get('id_database_old_invoice_client', ''),
+            'is_access_key': json_storage_data.get('is_access_key', False),
+            'sent': json_storage_data.get('sent', False),
+            'db_key': json_storage_data.get('db_key'),
+            'pos_order': order.id,  # CRÍTICO: Referencia a la orden recién creada
+        }
+
+        # Agregar pos_order_id (pos.config) si tenemos uno válido
+        if pos_config:
+            storage_vals['pos_order_id'] = pos_config.id
+
+        # Agregar cloud_sync_id si viene el id original
+        if original_id:
+            storage_vals['cloud_sync_id'] = original_id
+
+        try:
+            # Crear con skip_sync_queue para evitar que se re-agregue a la cola
+            new_storage = JsonStorage.with_context(skip_sync_queue=True).create(storage_vals)
+
+            # Marcar como sincronizado
+            new_storage.with_context(skip_sync_queue=True).write({
+                'sync_state': 'synced',
+                'last_sync_date': fields.Datetime.now(),
+            })
+
+            _logger.info(
+                f'json.storage creado exitosamente para orden {order.name}: '
+                f'ID={new_storage.id}, cloud_sync_id={original_id}'
+            )
+            return new_storage
+
+        except Exception as e:
+            _logger.error(f'Error creando json.storage para orden {order.name}: {e}', exc_info=True)
+            raise
 
     def _create_invoice_from_offline(self, order, invoice_data):
         """

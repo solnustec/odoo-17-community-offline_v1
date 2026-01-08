@@ -1,7 +1,7 @@
 # -*- coding: utf-8 -*-
 {
     'name': 'POS Offline Sync',
-    'version': '17.0.2.5.0',
+    'version': '17.0.2.6.0',
     'category': 'Point of Sale',
     'summary': 'Sistema de sincronización offline para Point of Sale',
     'description': """
