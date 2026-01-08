@@ -83,7 +83,7 @@ class JsonStorageSync(models.Model):
 
         # Buscar el registro de la cola para esta orden
         queue_record = SyncQueue.search([
-            ('model', '=', 'pos.order'),
+            ('model_name', '=', 'pos.order'),
             ('record_id', '=', json_storage_record.pos_order.id),
             ('state', 'in', ['pending', 'error'])
         ], limit=1, order='id desc')
