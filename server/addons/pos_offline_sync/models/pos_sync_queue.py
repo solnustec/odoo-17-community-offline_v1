@@ -539,34 +539,85 @@ class PosSyncQueue(models.Model):
     @api.model
     def cleanup_json_storage_queue(self):
         """
-        Marca los registros json.storage y json.note.credit como sincronizados.
+        Marca como sincronizados SOLO los registros json.storage cuya orden
+        asociada YA fue sincronizada exitosamente.
 
-        Estos modelos ahora se sincronizan como parte de pos.order para evitar
-        errores de foreign key. Los registros existentes en la cola se marcan
-        como 'synced' para limpiarlos.
+        IMPORTANTE: No elimina registros cuya orden aún no se ha sincronizado,
+        ya que esos datos se enviarán junto con la orden cuando haya conexión.
 
         Returns:
             int: Número de registros actualizados
         """
         now = fields.Datetime.now()
+        count = 0
 
-        self.env.cr.execute("""
-            UPDATE pos_sync_queue
-            SET state = 'synced', sync_date = %s
-            WHERE model_name IN ('json.storage', 'json.note.credit')
-              AND state IN ('pending', 'error', 'processing')
-            RETURNING id
-        """, (now,))
+        # Buscar registros json.storage pendientes en la cola
+        pending_records = self.search([
+            ('model_name', 'in', ['json.storage', 'json.note.credit']),
+            ('state', 'in', ['pending', 'error', 'processing'])
+        ])
 
-        updated_ids = self.env.cr.fetchall()
-        count = len(updated_ids)
+        if not pending_records:
+            return 0
 
-        if count > 0:
-            # Invalidar cache
+        ids_to_sync = []
+
+        for queue_record in pending_records:
+            try:
+                # Obtener el registro json.storage original
+                if queue_record.model_name == 'json.storage':
+                    storage_record = self.env['json.storage'].sudo().browse(queue_record.record_id)
+                else:  # json.note.credit
+                    storage_record = self.env['json.note.credit'].sudo().browse(queue_record.record_id)
+
+                if not storage_record.exists():
+                    # El registro ya no existe, marcar como synced para limpiar
+                    ids_to_sync.append(queue_record.id)
+                    continue
+
+                # Verificar si la orden asociada ya fue sincronizada
+                pos_order = storage_record.pos_order if hasattr(storage_record, 'pos_order') else None
+
+                if not pos_order:
+                    # Sin orden asociada, marcar como synced
+                    ids_to_sync.append(queue_record.id)
+                    continue
+
+                # Buscar si la orden está en la cola y ya fue sincronizada
+                order_queue = self.search([
+                    ('model_name', '=', 'pos.order'),
+                    ('record_id', '=', pos_order.id),
+                    ('state', '=', 'synced')
+                ], limit=1)
+
+                if order_queue:
+                    # La orden ya fue sincronizada, podemos marcar json.storage como synced
+                    ids_to_sync.append(queue_record.id)
+                    _logger.info(
+                        f'{queue_record.model_name}#{queue_record.record_id}: '
+                        f'Orden {pos_order.id} ya sincronizada, marcando como synced'
+                    )
+
+            except Exception as e:
+                _logger.warning(
+                    f'Error verificando {queue_record.model_name}#{queue_record.record_id}: {e}'
+                )
+
+        # Actualizar los registros que pueden ser marcados como synced
+        if ids_to_sync:
+            self.env.cr.execute("""
+                UPDATE pos_sync_queue
+                SET state = 'synced', sync_date = %s
+                WHERE id IN %s
+                RETURNING id
+            """, (now, tuple(ids_to_sync)))
+
+            count = len(self.env.cr.fetchall())
             self.invalidate_model()
+
             _logger.info(
                 f'Marcados {count} registros json.storage/json.note.credit como sincronizados '
-                f'(ahora se sincronizan como parte de pos.order)'
+                f'(sus órdenes asociadas ya fueron sincronizadas)'
             )
 
         return count
