@@ -95,12 +95,8 @@ class JsonStorageSync(models.Model):
             )
             return
 
-        # Deserializar los datos actuales de la cola
-        try:
-            current_data = json.loads(queue_record.data) if queue_record.data else {}
-        except (json.JSONDecodeError, TypeError):
-            _logger.warning(f'Error deserializando datos de cola {queue_record.id}')
-            return
+        # Obtener los datos actuales de la cola usando el método helper
+        current_data = queue_record.get_data()
 
         # Agregar los datos de json.storage
         json_storage_data = {
@@ -119,10 +115,8 @@ class JsonStorageSync(models.Model):
 
         current_data['json_storage_data'] = json_storage_data
 
-        # Actualizar el registro de la cola
-        queue_record.write({
-            'data': json.dumps(current_data, default=str)
-        })
+        # Actualizar el registro de la cola usando el método helper
+        queue_record.set_data(current_data)
 
         _logger.info(
             f'json.storage {json_storage_record.id}: Cola de orden {json_storage_record.pos_order.id} '
