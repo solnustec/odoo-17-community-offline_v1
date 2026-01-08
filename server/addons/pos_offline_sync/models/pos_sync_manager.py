@@ -1211,6 +1211,10 @@ class PosSyncManager(models.Model):
             if employee.exists():
                 order_vals['employee_id'] = employee.id
 
+        # CRÍTICO: Guardar el ID original del offline para poder vincular json.storage
+        if data.get('id'):
+            order_vals['id_database_old'] = str(data['id'])
+
         order = PosOrder.with_context(skip_sync_queue=True).create(order_vals)
 
         _logger.info(
@@ -2941,23 +2945,55 @@ class PosSyncManager(models.Model):
                         vals['pos_order_id'] = pos_config.id
 
         # Resolver pos_order (Many2one a pos.order)
-        if data.get('pos_order'):
-            order_id = data['pos_order']
-            pos_order = self.env['pos.order'].sudo().browse(order_id)
-            if pos_order.exists():
-                vals['pos_order'] = pos_order.id
-            else:
-                # Intentar buscar por cloud_sync_id o id_database_old
-                PosOrder = self.env['pos.order'].sudo()
-                if 'cloud_sync_id' in PosOrder._fields:
-                    pos_order = PosOrder.search([('cloud_sync_id', '=', order_id)], limit=1)
-                if not pos_order:
-                    pos_order = PosOrder.search([('id_database_old', '=', str(order_id))], limit=1)
-                # También buscar por referencia de nombre si está disponible
-                if not pos_order and data.get('_pos_order_ref'):
-                    pos_order = PosOrder.search([('name', '=', data['_pos_order_ref'])], limit=1)
+        # CRÍTICO: El ID del offline NO existe en el cloud, debemos buscar por otros criterios
+        pos_order = None
+        PosOrder = self.env['pos.order'].sudo()
+        order_id = data.get('pos_order')
+
+        _logger.info(f'Resolviendo pos_order para json.storage: offline_id={order_id}, ref={data.get("_pos_order_ref")}')
+
+        if order_id:
+            # 1. Buscar por id_database_old (el ID original del offline guardado en el cloud)
+            pos_order = PosOrder.search([('id_database_old', '=', str(order_id))], limit=1)
+            if pos_order:
+                _logger.info(f'pos_order encontrado por id_database_old: {pos_order.name} (ID: {pos_order.id})')
+
+            # 2. Buscar por cloud_sync_id (si el cloud asignó este ID)
+            if not pos_order and 'cloud_sync_id' in PosOrder._fields:
+                pos_order = PosOrder.search([('cloud_sync_id', '=', order_id)], limit=1)
                 if pos_order:
-                    vals['pos_order'] = pos_order.id
+                    _logger.info(f'pos_order encontrado por cloud_sync_id: {pos_order.name}')
+
+            # 3. Buscar por ID directo (solo si es el mismo servidor)
+            if not pos_order:
+                direct_order = PosOrder.browse(order_id)
+                if direct_order.exists():
+                    pos_order = direct_order
+                    _logger.info(f'pos_order encontrado por ID directo: {pos_order.name}')
+
+        # 4. Buscar por referencia de nombre si está disponible
+        if not pos_order and data.get('_pos_order_ref'):
+            pos_order = PosOrder.search([('name', '=', data['_pos_order_ref'])], limit=1)
+            if pos_order:
+                _logger.info(f'pos_order encontrado por nombre: {pos_order.name}')
+
+        # 5. Si aún no se encuentra, buscar la orden más reciente que coincida con client_invoice
+        if not pos_order and data.get('client_invoice'):
+            pos_order = PosOrder.search([
+                ('partner_id.vat', '=', data['client_invoice']),
+            ], order='create_date desc', limit=1)
+            if pos_order:
+                _logger.info(f'pos_order encontrado por partner VAT: {pos_order.name}')
+
+        if pos_order:
+            vals['pos_order'] = pos_order.id
+        else:
+            _logger.warning(
+                f'No se pudo encontrar pos_order para json.storage. '
+                f'offline_id={order_id}, ref={data.get("_pos_order_ref")}, '
+                f'client={data.get("client_invoice")}. '
+                f'El registro se creará SIN referencia a pos.order.'
+            )
 
         if existing:
             # Actualizar registro existente
