@@ -13,3 +13,4 @@ from . import account_move
 from . import stock_picking
 from . import pos_config_env
 from . import migration_fields
+from . import json_storage

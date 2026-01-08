@@ -32,6 +32,8 @@ class PosSyncManager(models.Model):
         'pos.payment.method': 8,
         'pos.session': 9,
         'pos.order': 10,
+        'json.storage': 11,  # Sincronizar después de pos.order
+        'json.note.credit': 12,
     }
 
     # Campos para serialización por modelo
@@ -61,6 +63,15 @@ class PosSyncManager(models.Model):
         'stock.quant': [
             'product_id', 'location_id', 'quantity', 'reserved_quantity',
             'lot_id',
+        ],
+        'json.storage': [
+            'json_data', 'pos_order_id', 'pos_order', 'employee',
+            'id_point_of_sale', 'sync_date', 'db_key', 'sent',
+            'client_invoice', 'id_database_old_invoice_client', 'is_access_key',
+        ],
+        'json.note.credit': [
+            'json_data', 'pos_order_id', 'id_point_of_sale',
+            'sync_date', 'date_invoices', 'db_key', 'sent', 'is_access_key',
         ],
     }
 
