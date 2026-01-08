@@ -1107,26 +1107,34 @@ class PosOrder(models.Model):
                 pos_config = pos_session.config_id
                 point_of_sale_id = pos_config.point_of_sale_id
 
-                # Buscar el cliente basado en el vat (client_invoice)
-                client_vat = cliente.vat
-                partner = self.env['res.partner'].search([('vat', '=', client_vat)], limit=1)
-                idcustomer_value = int(
-                    partner.id_database_old) if partner and partner.id_database_old else -1
+                # Verificar si ya existe un json.storage para esta orden
+                existing_storage = json_storage_model.sudo().search([
+                    ('pos_order', '=', id_pos_order.id)
+                ], limit=1)
 
-                # Actualizar el diccionario factura con el idcustomer correcto
-                factura['idcustomer'] = idcustomer_value
+                if existing_storage:
+                    _logger.info(f'json.storage ya existe para orden {id_pos_order.name}: ID={existing_storage.id}')
+                else:
+                    # Buscar el cliente basado en el vat (client_invoice)
+                    client_vat = cliente.vat
+                    partner = self.env['res.partner'].search([('vat', '=', client_vat)], limit=1)
+                    idcustomer_value = int(
+                        partner.id_database_old) if partner and partner.id_database_old else -1
 
-                # Crear el nuevo registro en json.storage
-                json_storage_model.sudo().create({
-                    'json_data': json.dumps([{"factura": factura}],
-                                            indent=4),
-                    'employee': f"{employee.name}",
-                    'pos_order_id': bodega_id,
-                    'id_point_of_sale': (warehouse_id or {}).get('external_id', ""),
-                    'client_invoice': cliente.vat,
-                    'pos_order': id_pos_order.id,
-                    'id_database_old_invoice_client': cliente.id_database_old,
-                })
+                    # Actualizar el diccionario factura con el idcustomer correcto
+                    factura['idcustomer'] = idcustomer_value
+
+                    # Crear el nuevo registro en json.storage
+                    json_storage_model.sudo().create({
+                        'json_data': json.dumps([{"factura": factura}],
+                                                indent=4),
+                        'employee': f"{employee.name}",
+                        'pos_order_id': bodega_id,
+                        'id_point_of_sale': (warehouse_id or {}).get('external_id', ""),
+                        'client_invoice': cliente.vat,
+                        'pos_order': id_pos_order.id,
+                        'id_database_old_invoice_client': cliente.id_database_old,
+                    })
 
         for item in order_ids:
             order = self.browse(item['id'])
