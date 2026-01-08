@@ -1058,7 +1058,21 @@ class PosOfflineSyncController(http.Controller):
                 return existing_by_old_id
 
         # Buscar el pos.config para el campo pos_order_id
-        pos_config = session.config_id if session else None
+        # Primero intentar por config_name (nombre original del POS de la sucursal)
+        pos_config = None
+        config_name = json_storage_data.get('config_name')
+        if config_name:
+            pos_config = request.env['pos.config'].sudo().search([
+                ('name', '=', config_name)
+            ], limit=1)
+            if pos_config:
+                _logger.info(f'json.storage: pos.config encontrado por nombre "{config_name}": ID={pos_config.id}')
+
+        # Fallback a session.config_id si no se encontró por nombre
+        if not pos_config:
+            pos_config = session.config_id if session else None
+            if pos_config:
+                _logger.info(f'json.storage: usando pos.config de sesión (fallback): ID={pos_config.id}')
 
         # Preparar valores para crear json.storage
         storage_vals = {
@@ -3264,6 +3278,207 @@ class PosOfflineSyncController(http.Controller):
             data['program_name'] = record.program_id.name if record.program_id else False
 
         return data
+
+    # ==================== ENDPOINTS DE INSTITUCIONES (CRÉDITOS) ====================
+
+    @http.route('/pos_offline_sync/pull_institutions', type='http', auth='public',
+                methods=['POST'], csrf=False, cors='*')
+    def pull_institutions(self, **kwargs):
+        """
+        Endpoint para descargar instituciones (créditos/descuentos) desde el cloud.
+
+        Las instituciones tienen información sobre:
+        - Descuentos adicionales para clientes institucionales
+        - Créditos con día de corte y cupo asignado
+        - Relación con puntos de venta autorizados
+
+        Payload esperado:
+        {
+            "warehouse_id": 1,
+            "last_sync": "2024-01-15T10:30:00",
+            "limit": 100,
+            "offset": 0,
+            "pos_config_id": 1  // Opcional: filtrar por POS específico
+        }
+
+        Returns:
+            dict: Instituciones con sus clientes asociados
+        """
+        try:
+            # Parsear JSON del body
+            try:
+                data = json.loads(request.httprequest.data.decode('utf-8'))
+            except (json.JSONDecodeError, UnicodeDecodeError):
+                data = kwargs
+
+            if not self._validate_api_auth(data):
+                return self._json_response({'success': False, 'error': 'Autenticación inválida'})
+
+            warehouse_id = data.get('warehouse_id')
+            last_sync = data.get('last_sync')
+            limit = data.get('limit', 100)
+            offset = data.get('offset', 0)
+            pos_config_id = data.get('pos_config_id')
+
+            # Construir dominio
+            domain = [('pvp', '=', '1')]  # Solo instituciones activas
+
+            # Filtrar por pos.config si se especifica
+            if pos_config_id:
+                domain.append(('pos_ids', 'in', [pos_config_id]))
+
+            if last_sync:
+                try:
+                    last_sync_dt = datetime.fromisoformat(last_sync)
+                    domain.append(('write_date', '>', last_sync_dt))
+                except ValueError:
+                    pass
+
+            Institution = request.env['institution'].sudo()
+
+            total = Institution.search_count(domain)
+            institutions = Institution.search(domain, limit=limit, offset=offset, order='write_date asc')
+
+            # Serializar instituciones
+            institutions_data = []
+            for inst in institutions:
+                inst_data = {
+                    'id': inst.id,
+                    'id_institutions': inst.id_institutions,
+                    'name': inst.name,
+                    'ruc_institution': inst.ruc_institution,
+                    'agreement_date': inst.agreement_date.isoformat() if inst.agreement_date else None,
+                    'address': inst.address,
+                    'type_credit_institution': inst.type_credit_institution,
+                    'cellphone': inst.cellphone,
+                    'court_day': inst.court_day,
+                    'additional_discount_percentage': inst.additional_discount_percentage,
+                    'pvp': inst.pvp,
+                    'pos_ids': inst.pos_ids.ids,
+                    'write_date': inst.write_date.isoformat() if inst.write_date else None,
+                    # Lista de clientes asociados con sus cupos
+                    'clients': []
+                }
+
+                # Agregar clientes de la institución
+                for client in inst.institution_client_ids:
+                    client_data = {
+                        'id': client.id,
+                        'partner_id': client.partner_id.id,
+                        'partner_vat': client.partner_id.vat,
+                        'partner_name': client.partner_id.name,
+                        'available_amount': client.available_amount,
+                        'sale': client.sale,
+                    }
+                    inst_data['clients'].append(client_data)
+
+                institutions_data.append(inst_data)
+
+            # Registrar en log
+            if warehouse_id:
+                self._log_sync_operation(
+                    warehouse_id, 'pull_institutions',
+                    f'Enviadas {len(institutions_data)} instituciones'
+                )
+
+            return self._json_response({
+                'success': True,
+                'total': total,
+                'count': len(institutions_data),
+                'offset': offset,
+                'institutions': institutions_data,
+                'sync_date': fields.Datetime.now().isoformat(),
+            })
+
+        except Exception as e:
+            _logger.error(f'Error obteniendo instituciones: {str(e)}')
+            import traceback
+            _logger.error(traceback.format_exc())
+            return self._json_response({'success': False, 'error': str(e)})
+
+    @http.route('/pos_offline_sync/pull_institution_clients', type='http', auth='public',
+                methods=['POST'], csrf=False, cors='*')
+    def pull_institution_clients(self, **kwargs):
+        """
+        Endpoint para descargar clientes de instituciones específicas.
+
+        Útil para sincronizar solo los clientes de una institución sin
+        descargar toda la información de instituciones.
+
+        Payload esperado:
+        {
+            "warehouse_id": 1,
+            "institution_id": 5,  // ID de la institución
+            "partner_vat": "1234567890"  // Opcional: filtrar por VAT del cliente
+        }
+
+        Returns:
+            dict: Clientes de la institución
+        """
+        try:
+            # Parsear JSON del body
+            try:
+                data = json.loads(request.httprequest.data.decode('utf-8'))
+            except (json.JSONDecodeError, UnicodeDecodeError):
+                data = kwargs
+
+            if not self._validate_api_auth(data):
+                return self._json_response({'success': False, 'error': 'Autenticación inválida'})
+
+            warehouse_id = data.get('warehouse_id')
+            institution_id = data.get('institution_id')
+            partner_vat = data.get('partner_vat')
+
+            InstitutionClient = request.env['institution.client'].sudo()
+
+            # Construir dominio
+            domain = []
+
+            if institution_id:
+                domain.append(('institution_id', '=', institution_id))
+
+            if partner_vat:
+                domain.append(('partner_id.vat', '=', partner_vat))
+
+            clients = InstitutionClient.search(domain)
+
+            # Serializar clientes
+            clients_data = []
+            for client in clients:
+                client_data = {
+                    'id': client.id,
+                    'institution_id': client.institution_id.id,
+                    'institution_name': client.institution_id.name,
+                    'institution_type': client.institution_id.type_credit_institution,
+                    'institution_discount': client.institution_id.additional_discount_percentage,
+                    'court_day': client.institution_id.court_day,
+                    'partner_id': client.partner_id.id,
+                    'partner_vat': client.partner_id.vat,
+                    'partner_name': client.partner_id.name,
+                    'available_amount': client.available_amount,
+                    'sale': client.sale,
+                }
+                clients_data.append(client_data)
+
+            # Registrar en log
+            if warehouse_id:
+                self._log_sync_operation(
+                    warehouse_id, 'pull_institution_clients',
+                    f'Enviados {len(clients_data)} clientes institucionales'
+                )
+
+            return self._json_response({
+                'success': True,
+                'count': len(clients_data),
+                'clients': clients_data,
+                'sync_date': fields.Datetime.now().isoformat(),
+            })
+
+        except Exception as e:
+            _logger.error(f'Error obteniendo clientes institucionales: {str(e)}')
+            import traceback
+            _logger.error(traceback.format_exc())
+            return self._json_response({'success': False, 'error': str(e)})
 
     # ==================== MÉTODOS AUXILIARES ====================
 

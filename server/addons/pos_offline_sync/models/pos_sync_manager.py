@@ -877,7 +877,7 @@ class PosSyncManager(models.Model):
 
             data['lines'].append(line_data)
 
-        # Serializar pagos
+        # Serializar pagos con todos los campos adicionales (cheque, tarjeta, crédito)
         _logger.info(f'Serializando {len(order.payment_ids)} pagos para orden {order.name}')
         for payment in order.payment_ids:
             payment_data = {
@@ -885,9 +885,28 @@ class PosSyncManager(models.Model):
                 'payment_method_name': payment.payment_method_id.name,
                 'amount': payment.amount,
                 'payment_date': payment.payment_date.isoformat() if hasattr(payment, 'payment_date') and payment.payment_date else None,
+                # Campos de CHEQUE
+                'check_number': getattr(payment, 'check_number', None),
+                'check_bank_account': getattr(payment, 'check_bank_account', None),
+                'check_owner': getattr(payment, 'check_owner', None),
+                'bank_id': payment.bank_id.id if hasattr(payment, 'bank_id') and payment.bank_id else None,
+                'bank_name': payment.bank_id.name if hasattr(payment, 'bank_id') and payment.bank_id else None,
+                'date': payment.date.isoformat() if hasattr(payment, 'date') and payment.date else None,
+                'institution_cheque': getattr(payment, 'institution_cheque', None),
+                'institution_discount': getattr(payment, 'institution_discount', None),
+                # Campos de TARJETA
+                'number_voucher': getattr(payment, 'number_voucher', None),
+                'type_card': payment.type_card.id if hasattr(payment, 'type_card') and payment.type_card else None,
+                'type_card_name': payment.type_card.name if hasattr(payment, 'type_card') and payment.type_card else None,
+                'number_lote': getattr(payment, 'number_lote', None),
+                'holder_card': getattr(payment, 'holder_card', None),
+                'bin_tc': getattr(payment, 'bin_tc', None),
+                'institution_card': getattr(payment, 'institution_card', None),
+                # Campos de CREDITO
+                'selecteInstitutionCredit': getattr(payment, 'selecteInstitutionCredit', None),
             }
             data['payments'].append(payment_data)
-            _logger.info(f'Pago serializado: {payment_data}')
+            _logger.info(f'Pago serializado: método={payment.payment_method_id.name}, monto={payment.amount}')
 
         _logger.info(f'Orden {order.name} serializada con {len(data["payments"])} pagos, estado: {order.state}')
 
@@ -912,6 +931,8 @@ class PosSyncManager(models.Model):
                     'sent': json_storage_record.sent,
                     'db_key': json_storage_record.db_key,
                     'pos_order_id': json_storage_record.pos_order_id.id if json_storage_record.pos_order_id else False,
+                    # NUEVO: Agregar nombre del pos.config para identificarlo en el cloud
+                    'config_name': json_storage_record.pos_order_id.name if json_storage_record.pos_order_id else None,
                     'create_date': json_storage_record.create_date.isoformat() if json_storage_record.create_date else None,
                 }
                 _logger.info(f'json.storage serializado para orden {order.name}: id={json_storage_record.id}')
@@ -1417,7 +1438,69 @@ class PosSyncManager(models.Model):
                     'amount': payment_data.get('amount', 0),
                     'session_id': session.id,
                 }
-                _logger.info(f'Creando pago con valores: {payment_vals}')
+
+                # Campos de CHEQUE
+                if payment_data.get('check_number'):
+                    payment_vals['check_number'] = payment_data.get('check_number')
+                if payment_data.get('check_bank_account'):
+                    payment_vals['check_bank_account'] = payment_data.get('check_bank_account')
+                if payment_data.get('check_owner'):
+                    payment_vals['check_owner'] = payment_data.get('check_owner')
+                if payment_data.get('institution_cheque'):
+                    payment_vals['institution_cheque'] = payment_data.get('institution_cheque')
+                if payment_data.get('institution_discount'):
+                    payment_vals['institution_discount'] = payment_data.get('institution_discount')
+
+                # Buscar banco por nombre si no existe el ID
+                if payment_data.get('bank_name'):
+                    bank = self.env['res.bank'].sudo().search([
+                        ('name', '=', payment_data.get('bank_name'))
+                    ], limit=1)
+                    if bank:
+                        payment_vals['bank_id'] = bank.id
+                elif payment_data.get('bank_id'):
+                    bank = self.env['res.bank'].sudo().browse(payment_data['bank_id'])
+                    if bank.exists():
+                        payment_vals['bank_id'] = bank.id
+
+                # Fecha del cheque
+                if payment_data.get('date'):
+                    from datetime import date as date_type
+                    try:
+                        payment_vals['date'] = date_type.fromisoformat(payment_data['date'])
+                    except (ValueError, TypeError):
+                        pass
+
+                # Campos de TARJETA
+                if payment_data.get('number_voucher'):
+                    payment_vals['number_voucher'] = payment_data.get('number_voucher')
+                if payment_data.get('number_lote'):
+                    payment_vals['number_lote'] = payment_data.get('number_lote')
+                if payment_data.get('holder_card'):
+                    payment_vals['holder_card'] = payment_data.get('holder_card')
+                if payment_data.get('bin_tc'):
+                    payment_vals['bin_tc'] = payment_data.get('bin_tc')
+                if payment_data.get('institution_card'):
+                    payment_vals['institution_card'] = payment_data.get('institution_card')
+
+                # Buscar tipo de tarjeta por nombre
+                if payment_data.get('type_card_name'):
+                    credit_card = self.env['credit.card'].sudo().search([
+                        ('name', '=', payment_data.get('type_card_name'))
+                    ], limit=1)
+                    if credit_card:
+                        payment_vals['type_card'] = credit_card.id
+                elif payment_data.get('type_card'):
+                    credit_card = self.env['credit.card'].sudo().browse(payment_data['type_card'])
+                    if credit_card.exists():
+                        payment_vals['type_card'] = credit_card.id
+
+                # Campos de CREDITO
+                if payment_data.get('selecteInstitutionCredit'):
+                    payment_vals['selecteInstitutionCredit'] = payment_data.get('selecteInstitutionCredit')
+
+                _logger.info(f'Creando pago con valores: método={payment_method.name}, monto={payment_vals.get("amount")}')
+
                 # Usar contexto para bypasear validaciones de método de pago
                 payment = PosPayment.with_context(
                     skip_payment_method_check=True,
@@ -1462,20 +1545,32 @@ class PosSyncManager(models.Model):
                 return existing_by_old_id
 
         # Buscar el pos.config para el campo pos_order_id
-        pos_config = session.config_id if session else None
+        # Primero intentar por config_name (nombre original del POS de la sucursal)
+        pos_config = None
+        config_name = json_storage_data.get('config_name')
+        if config_name:
+            pos_config = self.env['pos.config'].sudo().search([
+                ('name', '=', config_name)
+            ], limit=1)
+            if pos_config:
+                _logger.info(f'json.storage: pos.config encontrado por nombre "{config_name}": ID={pos_config.id}')
 
-        # Si viene un pos_order_id específico del offline, buscar ese pos.config
-        if json_storage_data.get('pos_order_id'):
-            # En el offline pos_order_id es Many2one a pos.config
-            # Intentar buscar por nombre o id
+        # Si no se encontró por nombre, intentar por pos_order_id
+        if not pos_config and json_storage_data.get('pos_order_id'):
             offline_pos_config_id = json_storage_data.get('pos_order_id')
-            config_by_id = self.env['pos.config'].sudo().search([
+            pos_config = self.env['pos.config'].sudo().search([
                 '|',
                 ('id', '=', offline_pos_config_id),
                 ('point_of_sale_id', '=', offline_pos_config_id)
             ], limit=1)
-            if config_by_id:
-                pos_config = config_by_id
+            if pos_config:
+                _logger.info(f'json.storage: pos.config encontrado por ID {offline_pos_config_id}: {pos_config.name}')
+
+        # Fallback a session.config_id si no se encontró
+        if not pos_config:
+            pos_config = session.config_id if session else None
+            if pos_config:
+                _logger.info(f'json.storage: usando pos.config de sesión (fallback): {pos_config.name}')
 
         # Preparar valores para crear json.storage
         storage_vals = {
@@ -1883,6 +1978,9 @@ class PosSyncManager(models.Model):
         Returns:
             dict: Datos serializados
         """
+        # Obtener el template relacionado
+        template = product.product_tmpl_id
+
         data = {
             'id': product.id,
             'name': product.name,
@@ -1908,9 +2006,13 @@ class PosSyncManager(models.Model):
             'description_sale': product.description_sale,
             'weight': product.weight,
             'volume': product.volume,
-            # Campos de sincronización
+            # Campos de sincronización del producto
             'cloud_sync_id': product.cloud_sync_id if hasattr(product, 'cloud_sync_id') else None,
             'id_database_old': product.id_database_old if hasattr(product, 'id_database_old') else None,
+            # Campos de sincronización del template
+            'product_tmpl_id': template.id if template else None,
+            'template_cloud_sync_id': template.cloud_sync_id if template and hasattr(template, 'cloud_sync_id') else None,
+            'template_id_database_old': template.id_database_old if template and hasattr(template, 'id_database_old') else None,
             # Impuestos
             'taxes_id': product.taxes_id.ids if product.taxes_id else [],
             'supplier_taxes_id': product.supplier_taxes_id.ids if product.supplier_taxes_id else [],
@@ -1959,6 +2061,34 @@ class PosSyncManager(models.Model):
         # Marcar el cloud_sync_id si viene del cloud
         if data.get('id') and not product.cloud_sync_id:
             product.write({'cloud_sync_id': data['id']})
+
+        # Sincronizar también el product.template
+        # En Odoo, product.product hereda de product.template via _inherits
+        # Por lo que debemos actualizar los campos de sincronización en el template
+        if product.product_tmpl_id:
+            template = product.product_tmpl_id
+            template_vals = {}
+
+            # Actualizar cloud_sync_id del template si viene
+            template_cloud_id = data.get('template_cloud_sync_id') or data.get('product_tmpl_id')
+            if template_cloud_id and not template.cloud_sync_id:
+                template_vals['cloud_sync_id'] = template_cloud_id
+
+            # Actualizar id_database_old del template si viene
+            template_db_old = data.get('template_id_database_old')
+            if template_db_old and not template.id_database_old:
+                template_vals['id_database_old'] = str(template_db_old)
+
+            # Marcar como sincronizado
+            template_vals['sync_state'] = 'synced'
+            template_vals['last_sync_date'] = fields.Datetime.now()
+
+            if template_vals:
+                template.write(template_vals)
+                _logger.info(
+                    f'Template actualizado: {template.name} (ID: {template.id}), '
+                    f'cloud_sync_id={template.cloud_sync_id}'
+                )
 
         return product
 
