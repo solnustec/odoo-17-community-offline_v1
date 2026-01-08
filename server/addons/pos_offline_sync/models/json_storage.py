@@ -188,7 +188,7 @@ class JsonStorageSync(models.Model):
         """
         self.ensure_one()
 
-        return {
+        data = {
             'id': self.id,
             'json_data': self.json_data,
             'employee': self.employee,
@@ -200,9 +200,12 @@ class JsonStorageSync(models.Model):
             'db_key': self.db_key,
             'pos_order_id': self.pos_order_id.id if self.pos_order_id else False,
             'pos_order': self.pos_order.id if self.pos_order else False,
-            'pos_order_name': self.pos_order.name if self.pos_order else None,
             'create_date': self.create_date.isoformat() if self.create_date else None,
         }
+        # Agregar referencia de orden para búsqueda (no es un campo del modelo)
+        if self.pos_order:
+            data['_pos_order_ref'] = self.pos_order.name
+        return data
 
 
 class JsonNoteCreditSync(models.Model):

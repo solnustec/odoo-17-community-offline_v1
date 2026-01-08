@@ -1338,6 +1338,16 @@ class PosSyncManager(models.Model):
                 else:
                     payment_method = None
 
+            # Verificar si el método de pago está permitido en la sesión
+            # Si no está permitido, usar el primer método de pago de la sesión
+            if payment_method and session.config_id.payment_method_ids:
+                if payment_method.id not in session.config_id.payment_method_ids.ids:
+                    _logger.warning(
+                        f'Método de pago {payment_method.name} no está permitido en sesión {session.name}. '
+                        f'Usando método de pago de la sesión.'
+                    )
+                    payment_method = session.config_id.payment_method_ids[:1]
+
             # Si no se encuentra, usar el primer método de pago de la sesión
             if not payment_method:
                 payment_method = session.config_id.payment_method_ids[:1]
@@ -1355,7 +1365,11 @@ class PosSyncManager(models.Model):
                     'session_id': session.id,
                 }
                 _logger.info(f'Creando pago con valores: {payment_vals}')
-                payment = PosPayment.create(payment_vals)
+                # Usar contexto para bypasear validaciones de método de pago
+                payment = PosPayment.with_context(
+                    skip_payment_method_check=True,
+                    from_pos_sync=True
+                ).create(payment_vals)
                 _logger.info(f'Pago creado exitosamente: ID={payment.id}, monto={payment.amount}')
             except Exception as e:
                 _logger.error(f'Error creando pago: {e}', exc_info=True)
@@ -2939,9 +2953,9 @@ class PosSyncManager(models.Model):
                     pos_order = PosOrder.search([('cloud_sync_id', '=', order_id)], limit=1)
                 if not pos_order:
                     pos_order = PosOrder.search([('id_database_old', '=', str(order_id))], limit=1)
-                # También buscar por nombre si está disponible
-                if not pos_order and data.get('pos_order_name'):
-                    pos_order = PosOrder.search([('name', '=', data['pos_order_name'])], limit=1)
+                # También buscar por referencia de nombre si está disponible
+                if not pos_order and data.get('_pos_order_ref'):
+                    pos_order = PosOrder.search([('name', '=', data['_pos_order_ref'])], limit=1)
                 if pos_order:
                     vals['pos_order'] = pos_order.id
 
