@@ -25,7 +25,7 @@ import errno
 import ftplib
 import json
 import logging
-import nextcloud_client
+#import nextcloud_client
 import os
 import paramiko
 import requests
