@@ -161,6 +161,54 @@ class InstitutionClient(models.Model):
 
         return result
 
+    def unlink(self):
+        """
+        Override para registrar eliminaciones en la cola de sincronización.
+
+        Esto permite que las eliminaciones se propaguen a otros servidores.
+        """
+        if self.env.context.get('skip_sync_queue'):
+            return super().unlink()
+
+        # Capturar datos antes de eliminar para poder identificar el registro en otros servidores
+        SyncQueue = self.env['pos.sync.queue'].sudo()
+        sync_config = self.env['pos.sync.config'].sudo().search([
+            ('active', '=', True)
+        ], limit=1)
+
+        if sync_config:
+            for record in self:
+                try:
+                    # Datos mínimos para identificar el registro en el servidor destino
+                    data = {
+                        'id': record.id,
+                        'partner_id': record.partner_id.id,
+                        'partner_vat': record.partner_id.vat,
+                        'institution_id': record.institution_id.id,
+                        'institution_id_institutions': record.institution_id.id_institutions,
+                        '_operation': 'unlink',
+                    }
+
+                    queue_record = SyncQueue.add_to_queue(
+                        model_name='institution.client',
+                        record_id=record.id,
+                        operation='unlink',
+                        data=data,
+                        warehouse_id=sync_config.warehouse_id.id,
+                        record_ref=f'DELETE: {record.partner_id.name} - {record.institution_id.name}',
+                        priority='2',
+                    )
+
+                    _logger.info(
+                        f'institution.client ELIMINACIÓN registrada para sync: '
+                        f'queue_id={queue_record.id}, partner={record.partner_id.name}, '
+                        f'institution={record.institution_id.name}'
+                    )
+                except Exception as e:
+                    _logger.error(f'Error registrando eliminación de institution.client: {e}')
+
+        return super().unlink()
+
     def _add_to_sync_queue(self, record, operation):
         """Agrega el registro a la cola de sincronización."""
         try:

@@ -1623,6 +1623,7 @@ class PosOfflineSyncController(http.Controller):
 
             response_data = {}
             has_more = {}  # Indica si hay más registros disponibles
+            deletions = {}  # Eliminaciones pendientes por modelo
 
             for entity in entities:
                 # Obtener límite específico para esta entidad o usar global
@@ -1636,16 +1637,24 @@ class PosOfflineSyncController(http.Controller):
                     if more_available:
                         has_more[entity] = True
 
+                # Obtener eliminaciones pendientes para este modelo
+                entity_deletions = self._get_pending_deletions(entity, warehouse_id, last_sync_dt)
+                if entity_deletions:
+                    deletions[entity] = entity_deletions
+                    _logger.info(f'PULL: {len(entity_deletions)} eliminaciones pendientes para {entity}')
+
             # Registrar en log
             total_records = sum(len(v) for v in response_data.values())
+            total_deletions = sum(len(v) for v in deletions.values())
             self._log_sync_operation(
                 warehouse_id, 'pull',
-                f'Enviados {total_records} registros para {len(entities)} entidades'
+                f'Enviados {total_records} registros y {total_deletions} eliminaciones para {len(entities)} entidades'
             )
 
             return self._json_response({
                 'success': True,
                 'data': response_data,
+                'deletions': deletions,  # Eliminaciones pendientes
                 'sync_date': fields.Datetime.now().isoformat(),
                 'has_more': has_more,  # Indica si hay más registros
                 'pagination': {
@@ -1738,6 +1747,63 @@ class PosOfflineSyncController(http.Controller):
         except Exception as e:
             _logger.error(f'Error obteniendo {model_name}: {str(e)}')
             return [], False
+
+    def _get_pending_deletions(self, model_name, warehouse_id, last_sync_dt):
+        """
+        Obtiene eliminaciones pendientes de la cola de sincronización.
+
+        Busca registros en pos.sync.queue con operation='unlink' que necesitan
+        ser propagados a otros servidores.
+
+        Args:
+            model_name: Nombre del modelo
+            warehouse_id: ID del almacén
+            last_sync_dt: Fecha de última sincronización
+
+        Returns:
+            list: Lista de datos de registros a eliminar
+        """
+        try:
+            SyncQueue = request.env['pos.sync.queue'].sudo()
+
+            # Buscar eliminaciones pendientes o sincronizadas recientemente
+            domain = [
+                ('model_name', '=', model_name),
+                ('operation', '=', 'unlink'),
+                ('warehouse_id', '=', warehouse_id),
+            ]
+
+            # Si hay fecha de última sync, solo las más recientes
+            if last_sync_dt:
+                domain.append(('create_date', '>', last_sync_dt))
+
+            # Buscar eliminaciones en cualquier estado (pending, synced)
+            # porque necesitamos propagarlas a otros servidores
+            domain.append(('state', 'in', ['pending', 'synced', 'processing']))
+
+            deletions = SyncQueue.search(domain, limit=100)
+
+            result = []
+            for deletion in deletions:
+                try:
+                    import json
+                    data = json.loads(deletion.data_json) if deletion.data_json else {}
+                    data['_queue_id'] = deletion.id
+                    data['_operation'] = 'unlink'
+                    result.append(data)
+
+                    _logger.info(
+                        f'Eliminación pendiente encontrada: {model_name} '
+                        f'id={data.get("id")}, queue_id={deletion.id}'
+                    )
+                except Exception as e:
+                    _logger.error(f'Error procesando eliminación {deletion.id}: {e}')
+
+            return result
+
+        except Exception as e:
+            _logger.error(f'Error obteniendo eliminaciones de {model_name}: {str(e)}')
+            return []
 
     def _serialize_records_batched(self, model_name, records, batch_size=100):
         """

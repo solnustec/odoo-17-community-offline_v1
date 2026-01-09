@@ -332,12 +332,23 @@ class PosSyncManager(models.Model):
             )
 
             if response.get('success'):
+                # Procesar actualizaciones normales
                 for model_name, records in response.get('data', {}).items():
                     try:
                         count = self._apply_cloud_updates(model_name, records, sync_config)
                         result['count'] += count
                     except Exception as e:
                         error_msg = f'Error aplicando {model_name}: {str(e)}'
+                        _logger.error(error_msg)
+                        result['errors'].append(error_msg)
+
+                # Procesar eliminaciones
+                for model_name, deletions in response.get('deletions', {}).items():
+                    try:
+                        deleted_count = self._apply_cloud_deletions(model_name, deletions, sync_config)
+                        _logger.info(f'Aplicadas {deleted_count} eliminaciones de {model_name}')
+                    except Exception as e:
+                        error_msg = f'Error aplicando eliminaciones de {model_name}: {str(e)}'
                         _logger.error(error_msg)
                         result['errors'].append(error_msg)
             else:
@@ -533,6 +544,87 @@ class PosSyncManager(models.Model):
             if vals:
                 Model.create(vals)
         return 1
+
+    def _apply_cloud_deletions(self, model_name, deletions, sync_config):
+        """
+        Aplica eliminaciones recibidas del cloud.
+
+        Args:
+            model_name: Nombre del modelo
+            deletions: Lista de registros a eliminar
+            sync_config: Configuración de sincronización
+
+        Returns:
+            int: Número de registros eliminados
+        """
+        if not deletions:
+            return 0
+
+        count = 0
+        Model = self.env[model_name].sudo()
+
+        for deletion_data in deletions:
+            try:
+                # Buscar el registro local usando los identificadores
+                local_record = None
+
+                if model_name == 'institution.client':
+                    # Buscar por institution + partner
+                    partner_vat = deletion_data.get('partner_vat')
+                    institution_code = deletion_data.get('institution_id_institutions')
+
+                    if partner_vat and institution_code:
+                        partner = self.env['res.partner'].sudo().search([
+                            ('vat', '=', partner_vat)
+                        ], limit=1)
+                        institution = self.env['institution'].sudo().search([
+                            ('id_institutions', '=', institution_code)
+                        ], limit=1)
+
+                        if partner and institution:
+                            local_record = Model.search([
+                                ('partner_id', '=', partner.id),
+                                ('institution_id', '=', institution.id)
+                            ], limit=1)
+
+                    # Fallback: buscar por cloud_sync_id
+                    if not local_record and deletion_data.get('id'):
+                        if 'cloud_sync_id' in Model._fields:
+                            local_record = Model.search([
+                                ('cloud_sync_id', '=', deletion_data['id'])
+                            ], limit=1)
+                else:
+                    # Para otros modelos, buscar por id o cloud_sync_id
+                    record_id = deletion_data.get('id')
+                    if record_id:
+                        if 'cloud_sync_id' in Model._fields:
+                            local_record = Model.search([
+                                ('cloud_sync_id', '=', record_id)
+                            ], limit=1)
+                        if not local_record:
+                            local_record = Model.browse(record_id)
+                            if not local_record.exists():
+                                local_record = None
+
+                if local_record:
+                    record_ref = f'{local_record.partner_id.name} - {local_record.institution_id.name}' if model_name == 'institution.client' else str(local_record.id)
+                    _logger.info(
+                        f'Eliminando {model_name} local: {record_ref} '
+                        f'(recibido del cloud)'
+                    )
+                    local_record.with_context(skip_sync_queue=True).unlink()
+                    count += 1
+                else:
+                    _logger.debug(
+                        f'Registro {model_name} a eliminar no encontrado localmente: '
+                        f'{deletion_data}'
+                    )
+
+            except Exception as e:
+                _logger.error(f'Error eliminando {model_name}: {str(e)}')
+                continue
+
+        return count
 
     def _find_local_record(self, Model, cloud_id, record_data):
         """Busca un registro local por diferentes criterios."""
