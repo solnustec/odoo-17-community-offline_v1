@@ -1515,17 +1515,30 @@ class PosSyncManager(models.Model):
         Crea un registro json.storage en el servidor principal a partir de los datos
         sincronizados de la orden.
 
-        Este método se ejecuta DESPUÉS de crear la orden, garantizando que el pos_order
-        existe y puede ser referenciado por json.storage sin error de foreign key.
+        IMPORTANTE: Este método verifica múltiples criterios para evitar duplicados:
+        1. Por pos_order (orden actual)
+        2. Por cloud_sync_id (ID original del offline)
+        3. Por client_invoice + pos_reference (identificador único de la transacción)
 
         Args:
             order: pos.order recién creado
             json_storage_data: Diccionario con datos del json.storage del offline
             session: pos.session de la orden
+
+        Returns:
+            json.storage: Registro creado o existente, o None si no debe crearse
         """
         JsonStorage = self.env['json.storage'].sudo()
 
-        # Verificar si ya existe un json.storage para esta orden
+        # Si el json.storage ya fue enviado/procesado en el offline, no crear
+        if json_storage_data.get('sent'):
+            _logger.info(
+                f'json.storage para orden {order.name}: ya fue enviado en offline (sent=True), '
+                f'omitiendo creación'
+            )
+            return None
+
+        # VERIFICACIÓN 1: Por pos_order (orden actual)
         existing = JsonStorage.search([
             ('pos_order', '=', order.id)
         ], limit=1)
@@ -1534,7 +1547,7 @@ class PosSyncManager(models.Model):
             _logger.info(f'json.storage ya existe para orden {order.name}: ID={existing.id}')
             return existing
 
-        # También buscar por id original si existe
+        # VERIFICACIÓN 2: Por cloud_sync_id (ID original del offline)
         original_id = json_storage_data.get('id')
         if original_id:
             existing_by_old_id = JsonStorage.search([
@@ -1542,7 +1555,29 @@ class PosSyncManager(models.Model):
             ], limit=1)
             if existing_by_old_id:
                 _logger.info(f'json.storage ya sincronizado (cloud_sync_id={original_id}): ID={existing_by_old_id.id}')
+                # Actualizar la referencia a la orden actual si es necesario
+                if existing_by_old_id.pos_order.id != order.id:
+                    existing_by_old_id.write({'pos_order': order.id})
+                    _logger.info(f'json.storage actualizado con nueva orden: {order.id}')
                 return existing_by_old_id
+
+        # VERIFICACIÓN 3: Por client_invoice + identificador único de la transacción
+        client_invoice = json_storage_data.get('client_invoice')
+        if client_invoice and order.pos_reference:
+            existing_orders = self.env['pos.order'].sudo().search([
+                ('pos_reference', '=', order.pos_reference)
+            ])
+            if existing_orders:
+                existing_by_client = JsonStorage.search([
+                    ('client_invoice', '=', client_invoice),
+                    ('pos_order', 'in', existing_orders.ids)
+                ], limit=1)
+                if existing_by_client:
+                    _logger.info(
+                        f'json.storage encontrado por client_invoice={client_invoice} y '
+                        f'pos_reference={order.pos_reference}: ID={existing_by_client.id}'
+                    )
+                    return existing_by_client
 
         # Buscar el pos.config para el campo pos_order_id
         # Primero intentar por config_name (nombre original del POS de la sucursal)

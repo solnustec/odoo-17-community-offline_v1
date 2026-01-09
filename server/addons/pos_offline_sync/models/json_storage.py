@@ -110,6 +110,8 @@ class JsonStorageSync(models.Model):
             'sent': json_storage_record.sent,
             'db_key': json_storage_record.db_key,
             'pos_order_id': json_storage_record.pos_order_id.id if json_storage_record.pos_order_id else False,
+            # NUEVO: config_name para identificar el POS correcto en el cloud
+            'config_name': json_storage_record.pos_order_id.name if json_storage_record.pos_order_id else None,
             'create_date': json_storage_record.create_date.isoformat() if json_storage_record.create_date else None,
         }
 
