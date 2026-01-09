@@ -385,6 +385,19 @@ class PosSyncManager(models.Model):
 
         _logger.info(f'Procesando {len(unique_records_list)} registros únicos de {model_name} (de {len(records)} totales)')
 
+        # Logging específico para institution.client
+        if model_name == 'institution.client' and unique_records_list:
+            _logger.info(
+                f'=== PULL institution.client - Recibidos {len(unique_records_list)} registros ===\n'
+                f'  IDs: {[r.get("id") for r in unique_records_list[:10]]}...'
+            )
+            for rec in unique_records_list[:5]:  # Mostrar primeros 5
+                _logger.info(
+                    f'  - id={rec.get("id")}, partner_vat={rec.get("partner_vat")}, '
+                    f'institution={rec.get("institution_id_institutions")}, '
+                    f'amount={rec.get("available_amount")}'
+                )
+
         # OPTIMIZACIÓN: Procesar en lotes con savepoint para atomicidad
         batch_size = 50  # Tamaño de lote para transacciones
         for i in range(0, len(unique_records_list), batch_size):
