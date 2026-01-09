@@ -75,5 +75,81 @@
             </field>
             <field name="auto_delete" eval="True"/>
         </record>
+
+        <!-- Template para visitas a sucursales -->
+        <record id="email_template_branch_visit" model="mail.template">
+            <field name="name">Visita Programada a Sucursal</field>
+            <field name="model_id" ref="model_survey_branch_visit"/>
+            <field name="subject">Visita programada: {{ object.branch_id.name }} - {{ object.scheduled_date }}</field>
+            <field name="email_from">{{ user.email or 'no-reply@yourcompany.com' }}</field>
+            <field name="email_to">{{ object.employee_id.work_email }}</field>
+            <field name="body_html" type="html">
+                <div style="background: #f5f5f5; padding: 0; margin: 0; font-family: Arial, 'Segoe UI', sans-serif;">
+                    <table width="100%" cellpadding="0" cellspacing="0" border="0" style="background: #f5f5f5;">
+                        <tr>
+                            <td align="center">
+                                <table width="600" cellpadding="0" cellspacing="0" border="0" style="background: #fff; border-radius: 8px; box-shadow: 0 2px 10px rgba(0,0,0,0.08); margin: 30px 0;">
+                                    <tr>
+                                        <td style="padding: 24px 24px 0 24px; text-align: center;">
+                                            <img src="https://farmaciascuxibamba.com.ec///web/image/res.company/1/logo" alt="Logo" style="height: 50px; margin-bottom: 10px;" />
+                                            <h2 style="margin: 10px 0 0 0; color: #004aad; font-size: 20px; font-weight: bold; letter-spacing: 1px;">VISITA PROGRAMADA</h2>
+                                        </td>
+                                    </tr>
+                                    <tr>
+                                        <td style="padding: 0 24px 0 24px;">
+                                            <hr style="border: none; border-top: 2px solid #004aad; width: 100%; margin: 24px 0 16px 0;" />
+                                        </td>
+                                    </tr>
+                                    <tr>
+                                        <td style="padding: 0 24px 0 24px; text-align: left;">
+                                            <p style="font-size: 16px; color: #333; margin: 0 0 8px 0;">Hola <strong>{{ object.employee_id.name }}</strong>,</p>
+                                            <p style="font-size: 15px; color: #333; margin: 0 0 16px 0;">
+                                                Se te ha programado una visita para evaluar la sucursal <strong>{{ object.branch_id.name }}</strong>.
+                                            </p>
+                                            <table cellpadding="6" cellspacing="0" width="100%" style="background: #f9f9f9; border-radius: 6px; font-size: 14px; margin-bottom: 16px;">
+                                                <tr>
+                                                    <td style="color: #555; font-weight: 600; width: 140px;">Sucursal:</td>
+                                                    <td>{{ object.branch_id.name }}</td>
+                                                </tr>
+                                                <tr>
+                                                    <td style="color: #555; font-weight: 600;">Fecha programada:</td>
+                                                    <td><strong>{{ object.scheduled_date }}</strong></td>
+                                                </tr>
+                                                <tr>
+                                                    <td style="color: #555; font-weight: 600;">Encuesta:</td>
+                                                    <td>{{ object.survey_id.title }}</td>
+                                                </tr>
+                                            </table>
+                                            <div style="text-align: center; margin: 32px 0 24px 0;">
+                                                <a href="/web#model=survey.branch.visit&amp;view_type=list"
+                                                   style="background-color: #004aad; color: #fff; padding: 14px 32px; font-size: 16px; font-weight: bold; border-radius: 4px; text-decoration: none; display: inline-block;">
+                                                    Ver Mis Visitas
+                                                </a>
+                                            </div>
+                                            <p style="font-size: 14px; color: #333; margin: 24px 0 0 0;">
+                                                Recuerda realizar la evaluación en la fecha programada.<br/>
+                                                Si tienes alguna pregunta, responde a este correo.
+                                            </p>
+                                            <p style="margin-top: 30px; font-size: 13px; color: #333;">
+                                                Saludos cordiales,<br/>
+                                                <strong>Farmacias Cuxibamba</strong><br/>
+                                                <a href="https://www.farmaciascuxibamba.com.ec" style="color: #004aad;">www.farmaciascuxibamba.com.ec</a><br/>
+                                                Loja, Ecuador
+                                            </p>
+                                        </td>
+                                    </tr>
+                                    <tr>
+                                        <td style="padding: 16px 24px 24px 24px; font-size: 11px; color: #999; text-align: center; border-top: 1px solid #eee;">
+                                            Este correo fue generado automáticamente por el sistema de Control Interno de Farmacias Cuxibamba.
+                                        </td>
+                                    </tr>
+                                </table>
+                            </td>
+                        </tr>
+                    </table>
+                </div>
+            </field>
+            <field name="auto_delete" eval="True"/>
+        </record>
     </data>
 </odoo> 

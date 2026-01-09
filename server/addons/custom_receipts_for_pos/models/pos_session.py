@@ -56,3 +56,24 @@ class PosSession(models.Model):
         result = super()._loader_params_res_company()
         result['search_params']['fields'].append('enable_coupon_printing')
         return result
+
+    def _loader_params_coupon_bin_tc(self):
+        """Function that returns the params for coupon.bin.tc model"""
+        return {
+            'search_params': {
+                'domain': [('active', '=', True)],
+                'fields': ['bin_pattern'],
+            },
+        }
+
+    def _get_pos_ui_coupon_bin_tc(self, params):
+        """Returns the active BIN TC patterns for coupon duplication"""
+        return self.env['coupon.bin.tc'].search_read(**params['search_params'])
+
+    def load_pos_data(self):
+        """Override to load coupon_bin_tc data into POS"""
+        loaded_data = super().load_pos_data()
+        loaded_data['coupon_bin_tc'] = self._get_pos_ui_coupon_bin_tc(
+            self._loader_params_coupon_bin_tc()
+        )
+        return loaded_data

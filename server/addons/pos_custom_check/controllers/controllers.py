@@ -957,6 +957,118 @@ class ProductAPI(http.Controller):
     #         return {'status': 'error', 'message': str(e)}
 
     class ProductUpdateAPI(http.Controller):
+
+        def _handle_loyalty_programs_for_product(self, env, product, available_in_pos, reactivate_promotions):
+            """
+            Gestiona los programas de lealtad cuando cambia la disponibilidad de un producto en POS.
+
+            Args:
+                env: Entorno de Odoo
+                product: product.product record
+                available_in_pos: Boolean - nuevo estado de disponibilidad en POS
+                reactivate_promotions: Boolean - si se deben reactivar promociones al dar de alta
+
+            Returns:
+                dict con información de los programas afectados
+            """
+            affected_programs = []
+
+            # Buscar rewards donde este producto es recompensa
+            rewards = env['loyalty.reward'].search([
+                '|', '|',
+                ('reward_product_id', '=', product.id),
+                ('reward_product_ids', 'in', [product.id]),
+                ('discount_product_ids', 'in', [product.id])
+            ])
+
+            if not rewards:
+                return {'affected_programs': []}
+
+            # Obtener programas únicos de los rewards encontrados
+            programs = rewards.mapped('program_id')
+
+            if not available_in_pos:
+                # === DAR DE BAJA: Desactivar pos_ok en programas con pos_ok=True ===
+                for program in programs:
+                    if program.pos_ok:
+                        # Agregar producto a la lista de productos que desactivaron el programa
+                        program.write({
+                            'pos_ok': False,
+                            'pos_auto_disabled_by_product_ids': [(4, product.id)]  # Agregar a Many2many
+                        })
+                        affected_programs.append({
+                            'program_id': program.id,
+                            'program_name': program.name,
+                            'action': 'pos_disabled',
+                            'message': f'Programa "{program.name}" desactivado en POS'
+                        })
+            else:
+                # === DAR DE ALTA ===
+                # Buscar programas donde este producto causó la desactivación
+                programs_to_check = env['loyalty.program'].search([
+                    ('pos_auto_disabled_by_product_ids', 'in', [product.id])
+                ])
+
+                for program in programs_to_check:
+                    if reactivate_promotions:
+                        # Remover producto de la lista y evaluar reactivación
+                        program.write({
+                            'pos_auto_disabled_by_product_ids': [(3, product.id)]  # Remover de Many2many
+                        })
+
+                        # Recargar el programa para verificar si la lista quedó vacía
+                        program.invalidate_recordset(['pos_auto_disabled_by_product_ids'])
+
+                        if not program.pos_auto_disabled_by_product_ids:
+                            # No hay más productos bloqueando, reactivar pos_ok
+                            program.write({'pos_ok': True})
+                            affected_programs.append({
+                                'program_id': program.id,
+                                'program_name': program.name,
+                                'action': 'pos_reactivated',
+                                'message': f'Programa "{program.name}" reactivado en POS'
+                            })
+                        else:
+                            affected_programs.append({
+                                'program_id': program.id,
+                                'program_name': program.name,
+                                'action': 'still_disabled',
+                                'message': f'Programa "{program.name}" sigue desactivado (otros productos pendientes)'
+                            })
+                    else:
+                        # No reactivar: limpiar referencia y evaluar archivado
+                        program.write({
+                            'pos_auto_disabled_by_product_ids': [(3, product.id)]  # Remover de Many2many
+                        })
+
+                        # Verificar si hay algún canal activo
+                        has_active_channel = (
+                            program.pos_ok or
+                            program.ecommerce_ok or
+                            program.sale_ok or
+                            getattr(program, 'app_ok', False) or
+                            getattr(program, 'chat_bot_ok', False)
+                        )
+
+                        if not has_active_channel:
+                            # Ningún canal activo, archivar el programa
+                            program.write({'active': False})
+                            affected_programs.append({
+                                'program_id': program.id,
+                                'program_name': program.name,
+                                'action': 'archived',
+                                'message': f'Programa "{program.name}" archivado (sin canales activos)'
+                            })
+                        else:
+                            affected_programs.append({
+                                'program_id': program.id,
+                                'program_name': program.name,
+                                'action': 'kept_for_other_channels',
+                                'message': f'Programa "{program.name}" mantenido activo en otros canales'
+                            })
+
+            return {'affected_programs': affected_programs}
+
         @http.route('/api/update-product', type='json', auth='none', methods=['POST'], csrf=False)
         def update_or_create_product(self):
             """api para actualizar o crear y actualziar productos  en Odoo desde el otro sistema"""
@@ -993,6 +1105,8 @@ class ProductAPI(http.Controller):
                     laboratorio_name = product_data.get('laboratorio', '').strip()
                     aplica_iva = product_data.get('iva')
                     available_in_pos = product_data.get('available_in_pos', True)
+                    # Parámetro para controlar reactivación de promociones (default: True)
+                    reactivate_promotions = product_data.get('reactivate_promotions', True)
 
                     # uom
                     if len(unit_size_name) == 0:
@@ -1055,10 +1169,21 @@ class ProductAPI(http.Controller):
                         }
 
                         template = env['product.template'].create(template_values)
+
+                        # Gestionar programas de lealtad para el nuevo producto
+                        product_record = template.product_variant_id
+                        if product_record:
+                            loyalty_result = self._handle_loyalty_programs_for_product(
+                                env, product_record, available_in_pos, reactivate_promotions
+                            )
+                        else:
+                            loyalty_result = {'affected_programs': []}
+
                         results.append({
                             'id': product_id,
                             'status': 'created',
-                            'message': f'Producto {template.name} creado exitosamente'
+                            'message': f'Producto {template.name} creado exitosamente',
+                            'loyalty_programs': loyalty_result.get('affected_programs', [])
                         })
                     else:
                         # Update existing product template
@@ -1084,10 +1209,20 @@ class ProductAPI(http.Controller):
                             print(e)
                             pass
 
+                        # Gestionar programas de lealtad para el producto actualizado
+                        product_record = template.product_variant_id
+                        if product_record:
+                            loyalty_result = self._handle_loyalty_programs_for_product(
+                                env, product_record, available_in_pos, reactivate_promotions
+                            )
+                        else:
+                            loyalty_result = {'affected_programs': []}
+
                         results.append({
                             'id': product_id,
                             'status': 'updated',
-                            'message': f'Producto {template.name} actualizado exitosamente'
+                            'message': f'Producto {template.name} actualizado exitosamente',
+                            'loyalty_programs': loyalty_result.get('affected_programs', [])
                         })
 
                 return {'status': 'success', 'results': results}

@@ -20,7 +20,19 @@
                         <field name="auto_replenishment_mode" widget="radio"/>
                         <div class="text-muted mt-2">
                             <b>Individual:</b> 1 transferencia por producto/orderpoint<br/>
-                            <b>Agrupado:</b> Comportamiento estándar de Odoo
+                            <b>Agrupado:</b> Agrupa múltiples productos en una transferencia por ubicación destino
+                        </div>
+                    </setting>
+
+                    <setting id="auto_replenishment_grouped_limit"
+                             string="Límite de Items por Transferencia Agrupada"
+                             invisible="not auto_replenishment_enabled or auto_replenishment_mode != 'grouped'"
+                             help="Número máximo de productos/líneas por transferencia agrupada">
+                        <div class="row mt-2">
+                            <div class="col-lg-4">
+                                <field name="auto_replenishment_grouped_items_limit" class="o_light_label"/>
+                                <span class="text-muted ms-2">items por transferencia (0 = sin límite)</span>
+                            </div>
                         </div>
                     </setting>
 

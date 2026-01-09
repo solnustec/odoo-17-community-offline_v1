@@ -42,13 +42,13 @@
                 <page string="Códigos de Barras"
                       name="multi_barcodes"
                       invisible="product_variant_count > 1">
-                    <group string="Códigos de Barras Alternativos">
-                        <field name="template_multi_barcode_ids" nolabel="1">
+<!--                    <group string="Códigos de Barras Alternativos">-->
+                            <field name="template_multi_barcode_ids" string="Códigos de Barras Alternativos" >
                             <tree editable="bottom">
-                                <field name="product_multi_barcode" string="Código de Barras"/>
+                                <field name="product_multi_barcode" string="Códigos de Barras Alternativos"/>
                             </tree>
                         </field>
-                    </group>
+<!--                    </group>-->
                 </page>
             </xpath>
         </field>

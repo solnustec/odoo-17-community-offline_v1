@@ -40,6 +40,7 @@
         'reports/survey_participation_template.xml',
         'reports/survey_export_templates.xml',
         'views/survey_campaign_views.xml',
+        'views/survey_branch_visit_views.xml',
         'views/in_survey_survey_view.xml',
     ],
     'assets': {

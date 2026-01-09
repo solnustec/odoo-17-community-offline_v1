@@ -687,7 +687,35 @@ class WhatsappBase(http.Controller):
 
         chatbot_session = Chatbot.search([('number', '=', number)], limit=1)
         privacy_ok = bool(chatbot_session and chatbot_session.privacy_polic)
-        chatbot_session.write({'last_activity': hora_local_str,})
+
+        # Detectar si la sesión está cerrada (por inactividad o salida) y reiniciar el flujo
+        closed_states = ['salir', 'salir_conversacion', 'cerrar_chat', 'canceled']
+        if chatbot_session and chatbot_session.state in closed_states:
+
+            # Reiniciar la sesión: limpiar orden y flag de inactividad
+            chatbot_session.write({
+                'last_activity': hora_local_str,
+                'inactivity_notified': False,
+                'state': 'start',
+                'orden': '',
+            })
+            user_session.update_session(number, 'start', orden='')
+
+            # Si el usuario ya aceptó políticas, enviar saludo y menú principal
+            if privacy_ok:
+                try:
+                    mensaje_hello = request.env['whatsapp_messages_user'].sudo().get_message('message_hello')
+                    MetaAPi.enviar_mensaje_texto(number, mensaje_hello)
+                    mensaje_envio = request.env['whatsapp_messages_user'].sudo().get_message('tiempo_envio')
+                    MetaAPi.enviar_mensaje_texto(number, mensaje_envio)
+                    user_session.update_session(number, state="menu_principal")
+                    MetaAPi.enviar_mensaje_lista(number, message)
+                except Exception as e:
+                    _logger.error(f"Error al reiniciar flujo para sesión cerrada {number}: {str(e)}")
+                return
+            # Si no ha aceptado políticas, continuará al flujo de políticas más abajo
+        else:
+            chatbot_session.write({'last_activity': hora_local_str,})
 
         if "location" in message:
             latitude = message["location"].get("latitude")

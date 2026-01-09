@@ -320,6 +320,20 @@ export class WhatsappChat extends Component {
             existingConv = updatedConv;
         }
 
+        // Actualizar el estado del chat desde el backend
+        try {
+            const stateData = await this.orm.call(
+                "whatsapp.chatbot",
+                "get_chat_state",
+                [updatedConv.chatId]
+            );
+            if (stateData?.state) {
+                this.state.chatStates[updatedConv.chatId] = stateData.state;
+            }
+        } catch (e) {
+            console.error("Error actualizando estado del chat:", e);
+        }
+
         // Reordenar toda la lista con el comparador mejorado
         this.state.conversations = Array.from(this.conversationsMap.values())
             .sort(this.compareConversations);
@@ -490,19 +504,32 @@ export class WhatsappChat extends Component {
     }
 
     hasCotizarReceta(id) {
-        return !!this.state.chatStates[id];
+        const state = this.state.chatStates[id];
+        // No mostrar indicador para estados cerrados/vacíos
+        const closedStates = ['cerrar_chat', 'salir', 'salir_conversacion', ''];
+        if (!state || closedStates.includes(state)) {
+            return false;
+        }
+        return true;
     }
 
     get_color_state(id) {
         const state = this.state.chatStates[id];
+
+        // Estados cerrados/inactivos - sin color (transparente)
+        const closedStates = ['cerrar_chat', 'salir', 'salir_conversacion', ''];
+        if (!state || closedStates.includes(state)) {
+            return 'transparent';
+        }
 
         switch (state) {
             case 'cotizar-receta':
                 return '#dc3545';
             case 'confirmar_pago':
                 return '#28a745';
-            case 'cerrar_chat':
-                return 'transparent';
+            default:
+                // Para otros estados activos, mostrar un color neutro
+                return '#6c757d';
         }
     }
 

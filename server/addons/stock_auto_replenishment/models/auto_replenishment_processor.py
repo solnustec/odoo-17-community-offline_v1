@@ -40,6 +40,8 @@ class AutoReplenishmentProcessor(models.AbstractModel):
                 'stock_auto_replenishment.check_stock', 'True') == 'True',
             'auto_confirm': ICP.get_param(
                 'stock_auto_replenishment.auto_confirm', 'True') == 'True',
+            'grouped_items_limit': int(ICP.get_param(
+                'stock_auto_replenishment.grouped_items_limit', '50')),
         }
 
     @api.model
@@ -78,6 +80,10 @@ class AutoReplenishmentProcessor(models.AbstractModel):
             "Iniciando procesamiento de cola [batch_size=%s, time_limit=%ss, mode=%s]",
             batch_size, time_limit, settings['mode']
         )
+
+        # Si es modo agrupado, usar flujo especial
+        if settings['mode'] == 'grouped':
+            return self._process_queue_grouped(settings, batch_size, time_limit, start_time, stats)
 
         while True:
             elapsed = time.time() - start_time
@@ -209,6 +215,8 @@ class AutoReplenishmentProcessor(models.AbstractModel):
         Ejecuta procurement en modo agrupado (estándar Odoo).
 
         Usa _procure_orderpoint_confirm que agrupa por procurement.group.
+        NOTA: Este método ya no se usa en el flujo principal cuando modo='grouped'.
+        Se mantiene por compatibilidad.
         """
         try:
             # Asegurar que tiene group_id para agrupar
@@ -235,6 +243,251 @@ class AutoReplenishmentProcessor(models.AbstractModel):
 
         except Exception as e:
             return {'error': str(e)}
+
+    def _process_queue_grouped(self, settings, batch_size, time_limit, start_time, stats):
+        """
+        Procesa la cola en modo agrupado.
+
+        Agrupa items por ubicación destino y crea pickings con múltiples
+        líneas, respetando el límite de items por picking configurado.
+        """
+        from collections import defaultdict
+
+        Queue = self.env['product.replenishment.procurement.queue']
+        items_limit = settings['grouped_items_limit'] or 0  # 0 = sin límite
+
+        # Obtener todos los items pendientes del batch
+        queue_items = Queue.get_pending_batch(batch_size=batch_size)
+        if not queue_items:
+            _logger.info("Cola vacía")
+            stats['time_elapsed'] = time.time() - start_time
+            return stats
+
+        # Validar y filtrar items
+        valid_items = []
+        for item in queue_items:
+            orderpoint = item.orderpoint_id
+
+            # Validaciones básicas
+            if not orderpoint.exists():
+                item.mark_done()
+                stats['skipped'] += 1
+                continue
+
+            if orderpoint.trigger != 'auto' or orderpoint.qty_to_order <= 0:
+                item.mark_done()
+                stats['skipped'] += 1
+                continue
+
+            if self._has_pending_picking(orderpoint):
+                item.mark_done()
+                stats['skipped'] += 1
+                continue
+
+            valid_items.append(item)
+
+        if not valid_items:
+            stats['time_elapsed'] = time.time() - start_time
+            return stats
+
+        # Agrupar por ubicación destino (warehouse destino)
+        groups = defaultdict(list)
+        for item in valid_items:
+            orderpoint = item.orderpoint_id
+            # Clave de agrupación: ubicación destino
+            dest_location_id = orderpoint.location_id.id
+            groups[dest_location_id].append(item)
+
+        _logger.info(
+            "Modo agrupado: %s items válidos en %s grupos (ubicaciones destino)",
+            len(valid_items), len(groups)
+        )
+
+        # Procesar cada grupo
+        for dest_location_id, group_items in groups.items():
+            try:
+                result = self._create_grouped_pickings(
+                    group_items, settings, items_limit
+                )
+                stats['pickings_created'] += result.get('pickings_count', 0)
+                stats['processed'] += result.get('items_processed', 0)
+                stats['failed'] += result.get('items_failed', 0)
+
+            except Exception as e:
+                _logger.error(
+                    "Error procesando grupo de ubicación %s: %s\n%s",
+                    dest_location_id, e, traceback.format_exc()
+                )
+                for item in group_items:
+                    item.mark_failed(str(e))
+                    stats['failed'] += 1
+
+        self.env.cr.commit()
+        stats['time_elapsed'] = time.time() - start_time
+
+        _logger.info(
+            "Procesamiento agrupado completado: %s procesados, %s pickings, %s omitidos, %s fallidos, %.2fs",
+            stats['processed'], stats['pickings_created'],
+            stats['skipped'], stats['failed'], stats['time_elapsed']
+        )
+
+        return stats
+
+    def _create_grouped_pickings(self, queue_items, settings, items_limit):
+        """
+        Crea pickings agrupados para una lista de items de cola.
+
+        Args:
+            queue_items: lista de items de cola (misma ubicación destino)
+            settings: configuración del módulo
+            items_limit: máximo de items por picking (0 = sin límite)
+
+        Returns:
+            dict: {pickings_count, items_processed, items_failed, items_skipped_no_stock}
+        """
+        result = {
+            'pickings_count': 0,
+            'items_processed': 0,
+            'items_failed': 0,
+            'items_skipped_no_stock': 0
+        }
+
+        if not queue_items:
+            return result
+
+        # Dividir en chunks si hay límite
+        if items_limit > 0:
+            chunks = [
+                queue_items[i:i + items_limit]
+                for i in range(0, len(queue_items), items_limit)
+            ]
+        else:
+            chunks = [queue_items]
+
+        for chunk in chunks:
+            try:
+                chunk_result = self._create_grouped_picking_for_chunk(chunk, settings)
+                picking = chunk_result.get('picking')
+                included_items = chunk_result.get('included_items', [])
+                skipped_items = chunk_result.get('skipped_items', [])
+
+                if picking:
+                    result['pickings_count'] += 1
+                    # Solo marcar como procesados los items que fueron incluidos
+                    for item in included_items:
+                        item.mark_done(picking=picking)
+                        result['items_processed'] += 1
+                else:
+                    # Si no se creó picking pero hay items incluidos, marcarlos como done
+                    for item in included_items:
+                        item.mark_done()
+                        result['items_processed'] += 1
+
+                # Los items omitidos por falta de stock se dejan pendientes
+                # para que se reintenten en el próximo cron
+                result['items_skipped_no_stock'] += len(skipped_items)
+                for item in skipped_items:
+                    _logger.info(
+                        "Item %s (producto: %s) omitido por falta de stock, permanece pendiente",
+                        item.id, item.orderpoint_id.product_id.display_name
+                    )
+
+            except Exception as e:
+                _logger.error("Error creando picking agrupado: %s", e)
+                for item in chunk:
+                    item.mark_failed(str(e))
+                    result['items_failed'] += 1
+
+        return result
+
+    def _create_grouped_picking_for_chunk(self, queue_items, settings):
+        """
+        Crea un picking con múltiples líneas para un chunk de items.
+
+        Args:
+            queue_items: lista de items de la cola
+            settings: configuración
+
+        Returns:
+            dict: {picking, included_items, skipped_items}
+        """
+        result = {
+            'picking': False,
+            'included_items': [],
+            'skipped_items': []
+        }
+
+        if not queue_items:
+            return result
+
+        # Usar el primer orderpoint para determinar ubicaciones
+        first_orderpoint = queue_items[0].orderpoint_id
+        dest_location = first_orderpoint.location_id
+        source_location = self._get_source_location(first_orderpoint)
+
+        if not source_location:
+            raise ValueError('No source warehouse configured')
+
+        # Preparar líneas de movimiento
+        move_vals_list = []
+
+        for item in queue_items:
+            orderpoint = item.orderpoint_id
+            product = orderpoint.product_id
+
+            # Verificar stock si está configurado
+            if settings['check_stock']:
+                available = self._get_available_stock(product, source_location)
+                if available <= 0:
+                    _logger.warning(
+                        "Sin stock para %s en %s, omitiendo (item permanece pendiente)",
+                        product.display_name, source_location.display_name
+                    )
+                    result['skipped_items'].append(item)
+                    continue
+
+            move_vals_list.append({
+                'name': product.display_name,
+                'product_id': product.id,
+                'product_uom_qty': orderpoint.qty_to_order,
+                'product_uom': product.uom_id.id,
+                'location_id': source_location.id,
+                'location_dest_id': dest_location.id,
+            })
+            result['included_items'].append(item)
+
+        if not move_vals_list:
+            # No hay productos con stock, devolver result con skipped_items
+            return result
+
+        # Obtener picking type
+        picking_type = self._get_internal_picking_type(source_location.warehouse_id)
+
+        # Crear el picking con todas las líneas
+        picking_vals = {
+            'picking_type_id': picking_type.id,
+            'location_id': source_location.id,
+            'location_dest_id': dest_location.id,
+            'origin': f'AUTO/GROUPED/{len(move_vals_list)} items',
+            'scheduled_date': fields.Datetime.now(),
+            'company_id': first_orderpoint.company_id.id,
+            'is_auto_replenishment': True,
+            'move_ids': [(0, 0, mv) for mv in move_vals_list],
+        }
+
+        picking = self.env['stock.picking'].create(picking_vals)
+
+        if settings['auto_confirm']:
+            picking.action_confirm()
+            picking.action_assign()
+
+        _logger.info(
+            "Picking agrupado %s creado con %s líneas para ubicación %s",
+            picking.name, len(move_vals_list), dest_location.display_name
+        )
+
+        result['picking'] = picking
+        return result
 
     def _get_source_location(self, orderpoint):
         """Obtiene la ubicación origen para la transferencia."""

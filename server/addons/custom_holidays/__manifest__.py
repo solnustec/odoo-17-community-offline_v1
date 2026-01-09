@@ -21,6 +21,7 @@ Permite, la asignacion en la fecha de contrato
         'views/views.xml',
         'views/hr_leave_accrual_plan.xml',
         'views/hr_leave_view.xml',
+        'views/hr_leave_group_validation_views.xml',
         'report/report.xml',
         'report/vacation_report.xml',
     ],

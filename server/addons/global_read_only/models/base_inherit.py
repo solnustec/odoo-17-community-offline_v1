@@ -95,8 +95,6 @@ def _should_apply_readonly_restriction(model, operation):
             # Modelos de stock que pueden ser accedidos indirectamente
             'stock.picking', 'stock.move', 'stock.quant', 'stock.lot',
             'stock.warehouse', 'stock.location',
-            # Modelos de sincronización POS offline
-            'pos.sync.config', 'pos.sync.queue', 'pos.sync.log', 'pos.sync.manager',
         }
 
         if model._name in system_models:

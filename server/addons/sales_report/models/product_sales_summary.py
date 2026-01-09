@@ -241,13 +241,15 @@ class ProductWarehouseSaleSummary(models.Model):
         if query:
             q = query.strip()
             # Mejora: dividir la búsqueda en palabras para encontrar productos que contengan
-            # todas las palabras de la búsqueda en cualquier parte del nombre o código
+            # todas las palabras de la búsqueda en cualquier parte del nombre, código o códigos alternativos
             words = q.split()
             for word in words:
                 word = word.strip()
                 if word:
-                    # Cada palabra debe estar en el nombre O en el código
-                    prod_domain += ['|', ('name', 'ilike', word), ('default_code', 'ilike', word)]
+                    # Cada palabra debe estar en el nombre, código principal O en códigos de barras alternativos
+                    prod_domain += ['|', '|', ('name', 'ilike', word), 
+                                    ('default_code', 'ilike', word),
+                                    ('multi_barcode_ids.product_multi_barcode', 'ilike', word)]
 
         # Buscar ids paginados
         products = Product.search(prod_domain, limit=(limit or 50) + 1, offset=offset or 0)
@@ -304,26 +306,22 @@ class ProductWarehouseSaleSummary(models.Model):
         }
 
     @api.model
-    # @functools.cache
-    # @timed_cache()
-    # @tools.ormcache('date_from', 'date_to', 'laboratory_id', 'brand_id')
     def get_total_sales_summary(self, date_from, date_to, laboratory_id=None,
                                 brand_id=None, sales_priority=False,
                                 product_query=None, limit=None, offset=0, warehouse_id=None):
+        """
+        Obtiene resumen de ventas por producto con datos agregados.
+        OPTIMIZADO: Elimina N+1 queries usando batch loading para templates y UoM.
+        """
         start_time = time.time()
+
+        # Constantes pre-calculadas (evita cálculos repetidos en el loop)
+        DISCOUNT_FACTOR = 0.1667  # 16.66 / 100
+        DEFAULT_SALES_DATA = {'quantity_sold': 0.0, 'amount_total': 0.0, 'costo_total': 0.0}
+
         Product = self.env['product.product']
-        priority_domain = [
-            ('active', '=', True),
-            ('type', '=', 'product'),
-            ('sale_ok', '=', True),
-            ('product_sales_priority', '=', True)
-        ]
-        product_priority_domain = [
-            ('active', '=', True),
-            ('type', '=', 'product'),
-            ('sale_ok', '=', True),
-            ('product_sales_priority', '=', True)
-        ]
+
+        # Construir dominio base
         base_domain = [
             ('active', '=', True),
             ('type', '=', 'product'),
@@ -331,64 +329,58 @@ class ProductWarehouseSaleSummary(models.Model):
         ]
         if laboratory_id:
             base_domain.append(('laboratory_id', '=', laboratory_id))
-            priority_domain.append(('laboratory_id', '=', laboratory_id))
-
         if brand_id:
             base_domain.append(('brand_id', '=', brand_id))
-            priority_domain.append(('brand_id', '=', brand_id))
-        # Búsqueda global: si hay query, usar un dominio único con paginación
-        # Mejora: dividir la búsqueda en palabras para encontrar productos que contengan
-        # todas las palabras de la búsqueda en cualquier parte del nombre o código
+        # Búsqueda de productos según el modo
         if product_query:
+            # Búsqueda por palabras clave (nombre, código y códigos de barras alternativos)
             q = product_query.strip()
             words = q.split()
             domain_with_query = base_domain.copy()
             for word in words:
                 word = word.strip()
                 if word:
-                    # Cada palabra debe estar en el nombre O en el código
-                    domain_with_query += ['|', ('name', 'ilike', word),
-                                          ('default_code', 'ilike', word)]
+                    # Buscar en: nombre, código principal, y códigos de barras alternativos
+                    domain_with_query += ['|', '|', ('name', 'ilike', word),
+                                          ('default_code', 'ilike', word),
+                                          ('multi_barcode_ids.product_multi_barcode', 'ilike', word)]
             active_products = Product.search(domain_with_query, limit=limit or 50,
                                              offset=offset or 0)
         else:
-            # Flujo original: unir priorizados + no priorizados
-            filtered_domain = base_domain + [('product_sales_priority', '=', False)]
-            if sales_priority:
-                priority_products = Product.search(product_priority_domain)
-            else:
-                priority_products = Product.search(priority_domain)
-            filtered_products = Product.search(filtered_domain)
+            # Flujo original: priorizados + no priorizados
+            priority_domain = base_domain + [('product_sales_priority', '=', True)]
+            priority_products = Product.search(priority_domain)
+
             if sales_priority:
                 active_products = priority_products
             else:
+                filtered_domain = base_domain + [('product_sales_priority', '=', False)]
+                filtered_products = Product.search(filtered_domain)
                 active_products = priority_products + filtered_products
-        # Quant = self.env['stock.quant']
-        # stock_data = Quant.read_group(
-        #     [('product_id', 'in', active_products.ids),
-        #      ('location_id.usage', '=', 'internal')],
-        #     ['product_id', 'quantity:sum'],
-        #     # ['product_id', 'inventory_quantity_auto_apply:sum'],
-        #     ['product_id']
-        # )
 
-        # stock_map = {q['product_id'][0]: q['quantity'] for q in stock_data}
+        if not active_products:
+            return []
 
+        active_product_ids = active_products.ids
+
+        # =====================================================================
+        # PASO 1: Obtener datos de ventas agregados (1 query)
+        # =====================================================================
         Summary = self.env['product.warehouse.sale.summary']
-        # agregado el is_legacy_system para filtrar datos del sistema anterior
         sales_domain = [
-            ('date', '>=', date_from), ('date', '<=', date_to),
-            ('product_id', 'in', active_products.ids),
+            ('date', '>=', date_from),
+            ('date', '<=', date_to),
+            ('product_id', 'in', active_product_ids),
             ('is_legacy_system', '=', True),
         ]
         if warehouse_id:
             sales_domain.append(('warehouse_id', '=', warehouse_id))
+
         sales_data = Summary.read_group(
             sales_domain,
             ['product_id', 'quantity_sold:sum', 'amount_total:sum', 'costo_total:sum'],
             ['product_id']
         )
-
         summary_map = {
             s['product_id'][0]: {
                 'quantity_sold': s['quantity_sold'],
@@ -397,20 +389,48 @@ class ProductWarehouseSaleSummary(models.Model):
             } for s in sales_data
         }
 
-        products = active_products.read(
-            ['default_code', 'brand_id', 'laboratory_id', 'name', 'uom_id',
-             'uom_po_id', 'discount', 'standard_price', 'list_price', 'price_with_tax',
-             'product_sales_priority', 'currency_id', 'taxes_id',
-             'product_tmpl_id'])
-        # Si se filtra por bodega, calcular stock por producto dentro de la bodega seleccionada
+        # =====================================================================
+        # PASO 2: Leer productos con campos necesarios (1 query)
+        # =====================================================================
+        products = active_products.read([
+            'default_code', 'brand_id', 'laboratory_id', 'name', 'uom_id',
+            'uom_po_id', 'discount', 'standard_price', 'list_price', 'price_with_tax',
+            'product_sales_priority', 'currency_id', 'taxes_id', 'product_tmpl_id'
+        ])
+
+        # =====================================================================
+        # PASO 3: PRE-CARGAR TEMPLATES EN BATCH (elimina N+1 query)
+        # =====================================================================
+        template_ids = [p['product_tmpl_id'][0] for p in products if p.get('product_tmpl_id')]
+        if template_ids:
+            templates_data = self.env['product.template'].browse(template_ids).read([
+                'id', 'id_database_old', 'price_with_tax', 'standar_price_old',
+                'avg_standar_price_old', 'list_price', 'sales_stock_total'
+            ])
+            template_map = {t['id']: t for t in templates_data}
+        else:
+            template_map = {}
+
+        # =====================================================================
+        # PASO 4: PRE-CARGAR UOM RATIOS EN BATCH (elimina N+1 query)
+        # =====================================================================
+        uom_ids = [p['uom_po_id'][0] for p in products if p.get('uom_po_id')]
+        if uom_ids:
+            uom_data = self.env['uom.uom'].browse(uom_ids).read(['id', 'ratio'])
+            uom_ratio_map = {u['id']: u['ratio'] for u in uom_data}
+        else:
+            uom_ratio_map = {}
+
+        # =====================================================================
+        # PASO 5: Stock por bodega (condicional, 1 query)
+        # =====================================================================
         stock_map = {}
         if warehouse_id:
             warehouse = self.env['stock.warehouse'].browse(warehouse_id)
             if warehouse.exists() and warehouse.lot_stock_id:
-                Quant = self.env['stock.quant']
-                stock_data = Quant.read_group(
+                stock_data = self.env['stock.quant'].read_group(
                     [
-                        ('product_id', 'in', active_products.ids),
+                        ('product_id', 'in', active_product_ids),
                         ('location_id', 'child_of', warehouse.lot_stock_id.id),
                     ],
                     ['product_id', 'quantity:sum'],
@@ -418,26 +438,27 @@ class ProductWarehouseSaleSummary(models.Model):
                 )
                 stock_map = {rec['product_id'][0]: rec.get('quantity', 0.0) for rec in stock_data}
 
-        # ------------------------------------------------------------------
-        # Cantidad a reabastecer específicamente para Bodega Matilde
-        # ------------------------------------------------------------------
+        # =====================================================================
+        # PASO 6: Datos de reabastecimiento Bodega Matilde (1-2 queries)
+        # =====================================================================
         matilde_qty_map = {}
         matilde_op_map = {}
         matilde_warehouse = self.env['stock.warehouse'].search(
-            [('code', '=', 'BODMA')],
-            limit=1,
+            [('code', '=', 'BODMA')], limit=1
         )
         if matilde_warehouse and matilde_warehouse.lot_stock_id:
             Orderpoint = self.env['stock.warehouse.orderpoint']
             matilde_orderpoints = Orderpoint.search([
-                ('product_id', 'in', active_products.ids),
+                ('product_id', 'in', active_product_ids),
                 ('location_id', '=', matilde_warehouse.lot_stock_id.id),
             ])
-            # Usamos directamente qty_to_order, que ya aplica la lógica de
-            # mínimos/máximos de Odoo para esa ubicación concreta.
             for op in matilde_orderpoints:
                 matilde_qty_map[op.product_id.id] = op.qty_to_order
                 matilde_op_map[op.product_id.id] = op.id
+
+        # =====================================================================
+        # PASO 7: Construir resultados (sin queries adicionales en el loop)
+        # =====================================================================
         results = []
         for product in products:
             product_id = product['id']
@@ -448,27 +469,25 @@ class ProductWarehouseSaleSummary(models.Model):
             quantity_sold = data['quantity_sold']
             costo_total = data['costo_total']
             stock_qty = stock_map.get(product_id, 0.0) if warehouse_id else 0.0
-            # Cantidad recomendada para reabastecer en Bodega Matilde
-            matilde_qty_to_order = matilde_qty_map.get(product_id, 0.0)
-            matilde_orderpoint_id = matilde_op_map.get(product_id)
 
-            uom_po = self.env['uom.uom'].browse(
-                product['uom_po_id'][0]) if product.get('uom_po_id') else False
-            uom_po_ratio = uom_po.ratio if uom_po else 1.0
+            # Obtener datos del template desde el mapa pre-cargado (SIN query)
+            tmpl_id = product.get('product_tmpl_id', (0,))[0] if product.get('product_tmpl_id') else 0
+            tmpl_data = template_map.get(tmpl_id, {})
+
+            # Obtener ratio de UoM desde el mapa pre-cargado (SIN query)
+            uom_po_id = product.get('uom_po_id', (0,))[0] if product.get('uom_po_id') else 0
+            uom_po_ratio = uom_ratio_map.get(uom_po_id, 1.0) or 1.0
 
             if uom_po_ratio and uom_po_ratio != 0:
                 if warehouse_id:
                     boxes = math.floor(stock_qty / uom_po_ratio)
-                    units = stock_qty - (boxes * uom_po_ratio)
-                    units = round(units, 3)
+                    units = round(stock_qty - (boxes * uom_po_ratio), 3)
                 else:
                     boxes = quantity_sold // uom_po_ratio
                     units = quantity_sold % uom_po_ratio
             else:
                 boxes = 0
                 units = stock_qty if warehouse_id else quantity_sold
-            template = self.env['product.template'].browse(
-                product.get('product_tmpl_id')[0])
             if quantity_sold == 0 or costo_total == 0:
                 # si no se vendio nada o el costo es cero, no se calcula utilidad
                 # ni precio con impuestos
@@ -485,46 +504,39 @@ class ProductWarehouseSaleSummary(models.Model):
             product_name = product.get('name',
                                        '') if not sales_priority else product.get(
                 'name', '') + ' - ' + product.get('brand_id', (0, ''))[1]
+            # Obtener valores del template desde el mapa (SIN query)
+            list_price = product.get('list_price', 0)
+            standar_price_old = tmpl_data.get('standar_price_old', 0) or 0
+            avg_standar_price_old = tmpl_data.get('avg_standar_price_old', 0) or 0
+            price_with_taxes = tmpl_data.get('price_with_tax', 0) or 0
+
+            # Calcular PVF y cambio de costo promedio
+            pvf = 0
             change_average_cost = 0
             percentage_change_average_cost = 0
-            price_with_taxes = template.price_with_tax
-            pvf = 0
-            if template.avg_standar_price_old <= 0 and template.standar_price_old != 0:
-                # TODO faltan los impuestos
-                pvf = product.get('list_price', 0) - (
-                        product.get('list_price', 0) * (16.66 / 100))
-                p_list_price = template.list_price or product.get('price_with_tax', 0)
-                # pvf_2=  p_list_price - (p_list_price * (16.66 / 100))
-                change_average_cost = (
-                                              pvf - template.standar_price_old) / template.standar_price_old
+
+            if avg_standar_price_old <= 0.01 and standar_price_old != 0.01:
+                pvf = list_price * (1 - DISCOUNT_FACTOR)
+                change_average_cost = (pvf - standar_price_old) / standar_price_old
                 percentage_change_average_cost = change_average_cost * 100
-                # pvf = price_with_taxes - (price_with_taxes * (16.5 / 100))
-                # p_list_price = template.list_price or product.get('list_price', 0)
-                # pvf = p_list_price - (p_list_price * (16.66 / 100))
-                # difference_pvf_and_cp = pvf - template.price_with_tax
-                # percentage_change_average_cost = (difference_pvf_and_cp * 100) / pvf
-                # change_average_cost = (pvf - difference_pvf_and_cp) / difference_pvf_and_cp
-                # percentage_change_average_cost = change_average_cost * 100
-            elif template.avg_standar_price_old <= 0 and template.standar_price_old <= 0:
+            elif avg_standar_price_old <= 0.01 and standar_price_old <= 0.01:
                 percentage_change_average_cost = 0
-            else:
-                pvf = product.get('list_price', 0) - (
-                        product.get('list_price', 0) * (16.66 / 100))
-                p_list_price = template.list_price or product.get('price_with_tax', 0)
-                # pvf_2=  p_list_price - (p_list_price * (16.66 / 100))
-                change_average_cost = (
-                                              pvf - template.avg_standar_price_old) / template.avg_standar_price_old
+            elif avg_standar_price_old > 0.01:
+                pvf = list_price * (1 - DISCOUNT_FACTOR)
+                change_average_cost = (pvf - avg_standar_price_old) / avg_standar_price_old
                 percentage_change_average_cost = change_average_cost * 100
+            # Stock total
+            stock_total = stock_map.get(product_id, 0.0) if warehouse_id else (tmpl_data.get('sales_stock_total', 0.0) or 0.0)
+
             results.append({
                 'product_id': product_id,
                 'product_code': product.get('default_code', ''),
-                'id_database_old': template.id_database_old or '',
+                'id_database_old': tmpl_data.get('id_database_old', '') or '',
                 'brand': product.get('brand_id', (0, ''))[1] if isinstance(
                     product.get('brand_id'), tuple) else '',
                 'brand_id': product.get('brand_id', (0, ''))[0] if isinstance(
                     product.get('brand_id'), tuple) else 0,
-                'laboratory_id': product.get('laboratory_id', (0, ''))[
-                    0] if isinstance(
+                'laboratory_id': product.get('laboratory_id', (0, ''))[0] if isinstance(
                     product.get('laboratory_id'), tuple) else '',
                 'product_name': product_name.lower().title(),
                 'quantity_sold': quantity_sold,
@@ -534,40 +546,336 @@ class ProductWarehouseSaleSummary(models.Model):
                 'units': units,
                 'uom': product.get('uom_id', (0, ''))[1] if isinstance(
                     product.get('uom_id'), tuple) else '',
-                'uom_po_id': product.get('uom_po_id', (0, ''))[
-                    1] if isinstance(
+                'uom_po_id': product.get('uom_po_id', (0, ''))[1] if isinstance(
                     product.get('uom_po_id'), tuple) else '',
                 'uom_factor': uom_po_ratio,
-                'stock_total': (stock_map.get(product_id, 0.0) if warehouse_id else (
-                            getattr(template, 'sales_stock_total', 0.0) or 0.0)),
-                'standard_price': template.standar_price_old,
-                'list_price': product.get('list_price', 0),
+                'stock_total': stock_total,
+                'standard_price': standar_price_old,
+                'list_price': list_price,
                 'discount': product.get('discount', 0),
                 'utility': truncado,
-                # 'pvf': round(template.standar_price_old - (template.standar_price_old * 0.1666), 2),
                 'pvf': round(pvf, 2),
-                'product_sales_priority': product.get('product_sales_priority',
-                                                      False),
+                'product_sales_priority': product.get('product_sales_priority', False),
                 'price_with_taxes': price_with_taxes,
                 'change_average_cost': change_average_cost,
                 'percentage_change_average_cost': round(percentage_change_average_cost, 2),
-                'standar_price_old': round(template.standar_price_old, 3),
-                'avg_standar_price_old': round(template.avg_standar_price_old,
-                                               3) if template.avg_standar_price_old > 0 else template.standar_price_old,
-                # Cantidad calculada de reabastecimiento para Bodega Matilde
-                'matilde_qty_to_order': matilde_qty_to_order,
-                # Orderpoint asociado en Bodega Matilde (para ejecutar action_replenish)
-                'matilde_orderpoint_id': matilde_orderpoint_id,
-
+                'standar_price_old': round(standar_price_old, 3),
+                'avg_standar_price_old': round(avg_standar_price_old, 3) if avg_standar_price_old > 0 else standar_price_old,
+                'matilde_qty_to_order': matilde_qty_map.get(product_id, 0.0),
+                'matilde_orderpoint_id': matilde_op_map.get(product_id),
             })
 
-        # results.sort(key=lambda x: x['product_name'])
         results.sort(key=lambda x: (not x['product_sales_priority'],
                                     x['product_name'].lower()))
         end_time = time.time()
-        print(f"Tiempo de ejecución: {end_time - start_time} segundos")
+        _logger.info(f"get_total_sales_summary: {end_time - start_time:.3f}s para {len(results)} productos")
 
         return results
+
+    @api.model
+    def get_multibarcode_info(self, product_id, exclude_code=None):
+        """
+        Obtiene todos los códigos de barras alternativos de un producto.
+
+        Args:
+            product_id: ID del producto
+            exclude_code: Código a excluir (generalmente el product_code que ya se muestra)
+
+        Returns:
+            dict: {'long_codes': [], 'short_codes': []}
+            - long_codes: códigos con más de 6 dígitos (EAN-13, EAN-8, etc.)
+            - short_codes: códigos con 6 dígitos o menos (códigos internos)
+        """
+        result = {'long_codes': [], 'short_codes': []}
+
+        product = self.env['product.product'].browse(product_id)
+
+        if not product:
+            return result
+
+        # Obtener todos los códigos de barras
+        all_barcodes = product.multi_barcode_ids.filtered(
+            lambda b: b.product_multi_barcode
+        )
+
+        if not all_barcodes:
+            return result
+
+        # Excluir el código que ya aparece en product_code (si se proporciona)
+        if exclude_code:
+            exclude_code_clean = exclude_code.strip()
+            all_barcodes = all_barcodes.filtered(
+                lambda b: b.product_multi_barcode.strip() != exclude_code_clean
+            )
+
+        if not all_barcodes:
+            return result
+
+        # Separar códigos por longitud
+        for barcode in all_barcodes:
+            code = barcode.product_multi_barcode.strip()
+            if len(code) <= 6:
+                result['short_codes'].append(code)
+            else:
+                result['long_codes'].append(code)
+
+        # Ordenar cada lista: largos por longitud desc, cortos por longitud desc
+        result['long_codes'] = sorted(result['long_codes'], key=lambda x: (-len(x), x))
+        result['short_codes'] = sorted(result['short_codes'], key=lambda x: (-len(x), x))
+
+        return result
+
+
+    @api.model
+    def get_today_sales_summary(self, limit=20, offset=0, date_from=None, date_to=None):
+        """
+        Obtiene resumen de ventas con paginación para un rango de fechas.
+        Si no se especifican fechas, usa el día actual.
+
+        Args:
+            limit: Número máximo de productos a retornar (default 50)
+            offset: Número de productos a saltar para paginación (default 0)
+            date_from: Fecha inicio del rango (string 'YYYY-MM-DD' o None para hoy)
+            date_to: Fecha fin del rango (string 'YYYY-MM-DD' o None para hoy)
+
+        Returns:
+            dict: {
+                'records': [...],  # Lista de productos con datos de ventas
+                'has_more': bool,  # Si hay más resultados
+                'next_offset': int,  # Offset para la siguiente página
+                'total_count': int,  # Total de productos con ventas
+                'date_from': str,  # Fecha inicio del rango
+                'date_to': str  # Fecha fin del rango
+            }
+        """
+        start_time = time.time()
+        today = fields.Date.today()
+        print(date_from,date_to,'++++++++++++++')
+
+        # Procesar fechas: si no vienen, usar fecha actual
+        if date_from:
+            if isinstance(date_from, str):
+                date_from = fields.Date.from_string(date_from)
+        else:
+            date_from = today
+
+        if date_to:
+            if isinstance(date_to, str):
+                date_to = fields.Date.from_string(date_to)
+        else:
+            date_to = today
+
+        # Construir dominio de fechas
+        if date_from == date_to:
+            date_domain = [('date', '=', date_from)]
+        else:
+            date_domain = [('date', '>=', date_from), ('date', '<=', date_to)]
+        print(date_domain,limit,offset,'------------------')
+        # Constantes pre-calculadas
+        DISCOUNT_FACTOR = 0.1667
+        DEFAULT_SALES_DATA = {'quantity_sold': 0.0, 'amount_total': 0.0, 'costo_total': 0.0}
+
+        # =====================================================================
+        # PASO 1: Obtener productos con ventas ORDENADOS por quantity_sold
+        # =====================================================================
+        Summary = self.env['product.warehouse.sale.summary']
+
+        # Obtener todos los productos con ventas agregando todos los campos necesarios
+        base_domain = date_domain + [('is_legacy_system', '=', True)]
+        all_sales_data = Summary.read_group(
+            base_domain,
+            ['product_id', 'quantity_sold:sum', 'amount_total:sum', 'costo_total:sum'],
+            ['product_id'],
+            orderby='quantity_sold desc'
+        )
+
+        # Ordenar por quantity_sold descendente (respaldo si orderby no funciona en read_group)
+        all_sales_sorted = sorted(
+            all_sales_data,
+            key=lambda x: x.get('quantity_sold', 0) or 0,
+            reverse=True
+        )
+
+        total_count = len(all_sales_sorted)
+
+        if not all_sales_sorted:
+            return {
+                'records': [],
+                'has_more': False,
+                'next_offset': 0,
+                'total_count': 0,
+                'date_from': str(date_from),
+                'date_to': str(date_to)
+            }
+
+        # Aplicar paginación a la lista ordenada
+        paginated_sales = all_sales_sorted[offset:offset + limit + 1]
+        has_more = len(paginated_sales) > limit
+        page_sales = paginated_sales[:limit]
+
+        # Extraer IDs de productos para esta página (mantener orden)
+        product_ids_page = [s['product_id'][0] for s in page_sales if s.get('product_id')]
+
+        if not product_ids_page:
+            return {
+                'records': [],
+                'has_more': False,
+                'next_offset': offset,
+                'total_count': total_count,
+                'date_from': str(date_from),
+                'date_to': str(date_to)
+            }
+
+        # Crear mapa de ventas con todos los campos desde los datos ya obtenidos
+        summary_map = {
+            s['product_id'][0]: {
+                'quantity_sold': s.get('quantity_sold', 0) or 0,
+                'amount_total': s.get('amount_total', 0) or 0,
+                'costo_total': s.get('costo_total', 0) or 0,
+            } for s in page_sales if s.get('product_id')
+        }
+
+        # =====================================================================
+        # PASO 2: Leer productos con campos necesarios
+        # =====================================================================
+        Product = self.env['product.product']
+        products = Product.browse(product_ids_page).read([
+            'default_code', 'brand_id', 'laboratory_id', 'name', 'uom_id',
+            'uom_po_id', 'discount', 'standard_price', 'list_price', 'price_with_tax',
+            'product_sales_priority', 'currency_id', 'taxes_id', 'product_tmpl_id'
+        ])
+
+        # =====================================================================
+        # PASO 3: PRE-CARGAR TEMPLATES EN BATCH
+        # =====================================================================
+        template_ids = [p['product_tmpl_id'][0] for p in products if p.get('product_tmpl_id')]
+        if template_ids:
+            templates_data = self.env['product.template'].browse(template_ids).read([
+                'id', 'id_database_old', 'price_with_tax', 'standar_price_old',
+                'avg_standar_price_old', 'list_price', 'sales_stock_total'
+            ])
+            template_map = {t['id']: t for t in templates_data}
+        else:
+            template_map = {}
+
+        # =====================================================================
+        # PASO 4: PRE-CARGAR UOM RATIOS EN BATCH
+        # =====================================================================
+        uom_ids = [p['uom_po_id'][0] for p in products if p.get('uom_po_id')]
+        if uom_ids:
+            uom_data = self.env['uom.uom'].browse(uom_ids).read(['id', 'ratio'])
+            uom_ratio_map = {u['id']: u['ratio'] for u in uom_data}
+        else:
+            uom_ratio_map = {}
+
+        # =====================================================================
+        # PASO 5: Construir resultados (sin queries adicionales en el loop)
+        # =====================================================================
+        results = []
+        for product in products:
+            product_id = product['id']
+            data = summary_map.get(product_id, DEFAULT_SALES_DATA)
+            quantity_sold = data['quantity_sold']
+            costo_total = data['costo_total']
+            amount_total = data['amount_total']
+
+            # Obtener datos del template desde el mapa
+            tmpl_id = product.get('product_tmpl_id', (0,))[0] if product.get('product_tmpl_id') else 0
+            tmpl_data = template_map.get(tmpl_id, {})
+
+            # Obtener ratio de UoM desde el mapa
+            uom_po_id = product.get('uom_po_id', (0,))[0] if product.get('uom_po_id') else 0
+            uom_po_ratio = uom_ratio_map.get(uom_po_id, 1.0) or 1.0
+
+            # Calcular boxes/units basado en cantidad vendida
+            if uom_po_ratio and uom_po_ratio != 0:
+                boxes = quantity_sold // uom_po_ratio
+                units = quantity_sold % uom_po_ratio
+            else:
+                boxes = 0
+                units = quantity_sold
+
+            # Calcular utilidad
+            if quantity_sold == 0 or costo_total == 0:
+                product_utility = 0
+            else:
+                product_utility = (amount_total - costo_total) / costo_total
+
+            utility_percent = product_utility * 100
+            truncado = math.floor(round(utility_percent, 2) * 10) / 10
+
+            # Obtener valores del template
+            list_price = product.get('list_price', 0)
+            standar_price_old = tmpl_data.get('standar_price_old', 0) or 0
+            avg_standar_price_old = tmpl_data.get('avg_standar_price_old', 0) or 0
+            price_with_taxes = tmpl_data.get('price_with_tax', 0) or 0
+            stock_total = tmpl_data.get('sales_stock_total', 0.0) or 0.0
+
+            # Calcular PVF y cambio de costo promedio
+            pvf = 0
+            change_average_cost = 0
+            percentage_change_average_cost = 0
+
+            if avg_standar_price_old <= 0 and standar_price_old != 0:
+                pvf = list_price * (1 - DISCOUNT_FACTOR)
+                change_average_cost = (pvf - standar_price_old) / standar_price_old
+                percentage_change_average_cost = change_average_cost * 100
+            elif avg_standar_price_old <= 0 and standar_price_old <= 0:
+                percentage_change_average_cost = 0
+            elif avg_standar_price_old > 0:
+                pvf = list_price * (1 - DISCOUNT_FACTOR)
+                change_average_cost = (pvf - avg_standar_price_old) / avg_standar_price_old
+                percentage_change_average_cost = change_average_cost * 100
+
+            results.append({
+                'product_id': product_id,
+                'product_code': product.get('default_code', ''),
+                'id_database_old': tmpl_data.get('id_database_old', '') or '',
+                'brand': product.get('brand_id', (0, ''))[1] if isinstance(
+                    product.get('brand_id'), tuple) else '',
+                'brand_id': product.get('brand_id', (0, ''))[0] if isinstance(
+                    product.get('brand_id'), tuple) else 0,
+                'laboratory_id': product.get('laboratory_id', (0, ''))[0] if isinstance(
+                    product.get('laboratory_id'), tuple) else '',
+                'product_name': product.get('name', '').lower().title(),
+                'quantity_sold': quantity_sold,
+                'amount_total': round(amount_total, 3),
+                'total_cost': round(costo_total, 3),
+                'boxes': boxes,
+                'units': units,
+                'uom': product.get('uom_id', (0, ''))[1] if isinstance(
+                    product.get('uom_id'), tuple) else '',
+                'uom_po_id': product.get('uom_po_id', (0, ''))[1] if isinstance(
+                    product.get('uom_po_id'), tuple) else '',
+                'uom_factor': uom_po_ratio,
+                'stock_total': stock_total,
+                'standard_price': standar_price_old,
+                'list_price': list_price,
+                'discount': product.get('discount', 0),
+                'utility': truncado,
+                'pvf': round(pvf, 2),
+                'product_sales_priority': product.get('product_sales_priority', False),
+                'price_with_taxes': price_with_taxes,
+                'change_average_cost': change_average_cost,
+                'percentage_change_average_cost': round(percentage_change_average_cost, 2),
+                'standar_price_old': round(standar_price_old, 3),
+                'avg_standar_price_old': round(avg_standar_price_old, 3) if avg_standar_price_old > 0 else standar_price_old,
+            })
+
+        # Ordenar por cantidad vendida (mayor primero) y luego por nombre
+        results.sort(key=lambda x: (-x['quantity_sold'], x['product_name'].lower()))
+
+        end_time = time.time()
+        _logger.info(f"get_today_sales_summary: {end_time - start_time:.3f}s para {len(results)} productos")
+
+        return {
+            'records': results,
+            'has_more': has_more,
+            'next_offset': offset + limit if has_more else offset,
+            'total_count': total_count,
+            'date_from': str(date_from),
+            'date_to': str(date_to)
+        }
 
     def get_price_with_taxes(self, product_id, quantity=1):
         product = self.env['product.product'].browse(product_id)

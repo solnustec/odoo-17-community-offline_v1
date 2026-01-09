@@ -109,8 +109,8 @@ class StockPickingController(http.Controller):
         if 'note' in data:
             stock_picking_vals['note'] = data['note']
 
-        stock_picking = request.env['stock.picking'].sudo().with_context(
-            force_company=company_id_origin
+        stock_picking = request.env['stock.picking'].sudo().with_company(
+            company_id_origin
         ).create(stock_picking_vals)
 
         # Obtener configuración ANTES de crear los moves: si está activo, NO mover stock
@@ -176,8 +176,8 @@ class StockPickingController(http.Controller):
                     'company_id': company_id_origin,
                     'state': 'draft',
                 }
-                request.env['stock.move'].sudo().with_context(
-                    force_company=company_id_origin
+                request.env['stock.move'].sudo().with_company(
+                    company_id_origin
                 ).create(move_vals)
 
         # Aplicar el estado según los parámetros recibidos

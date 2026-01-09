@@ -96,7 +96,11 @@ export class ProductDetailsModal extends Component {
         })
         const price_with_discount = productData.product_tmpl_id.price_with_tax - (productData.product_tmpl_id.price_with_tax * (productData.product_discount / 100));
         const cost_include_taxes = productData.product_tmpl_id.avg_standar_price_old * (1 + (productData.product_tmpl_id.supplier_taxes_info.amount / 100))
-        const utility = ((price_with_discount - cost_include_taxes) / cost_include_taxes) * 100
+        const utility = 0.0
+        if (productData.product_tmpl_id.avg_standar_price_old > 0.01) {
+            const utility = ((price_with_discount - cost_include_taxes) / cost_include_taxes) * 100
+        }
+        // const utility = ((price_with_discount - cost_include_taxes) / cost_include_taxes) * 100
         //Programs
         const programs = productData.loyalty_program || [];
         //Program_type
@@ -165,7 +169,7 @@ export class ProductDetailsModal extends Component {
             //"loyalty_program_date_from": promotion_program?.date_from || loyalty_card_program?.date_from || null,
             //"loyalty_program_date_to": promotion_program?.date_to || loyalty_card_program?.date_to || null,
             "loyalty_program_discount_date_from": promotion_reward_discount?.date_from || loyalty_card_reward_discount?.date_from || promotion_temporary_reward_discount?.date_from || loyalty_card_temporary_reward_discount?.date_from || null,
-            "loyalty_program_discount_date_to": promotion_reward_discount?.date_to || loyalty_card_reward_discount?.date_to || promotion_temporary_reward_discount?.date_to || loyalty_card_temporary_reward_discount?.date_to|| null,
+            "loyalty_program_discount_date_to": promotion_reward_discount?.date_to || loyalty_card_reward_discount?.date_to || promotion_temporary_reward_discount?.date_to || loyalty_card_temporary_reward_discount?.date_to || null,
             "loyalty_program_product_date_from": promotion_reward_product?.date_from || loyalty_card_reward_product?.date_from || null,
             "loyalty_program_product_date_to": promotion_reward_product?.date_to || loyalty_card_reward_product?.date_to || null,
             "program_mandatory": promotion_program?.mandatory_promotion || loyalty_card_program?.mandatory_promotion || false,
@@ -390,7 +394,7 @@ export class ProductDetailsModal extends Component {
 
         // Si se ingresa descuento normal mayor a cero y el temporal es mayor a cero:
         // Se borra el descuento temporal y las fechas.
-        if (this.state.selectedProduct.discount_percentage>0 && this.state.selectedProduct.temporary_discount_percentage>0) {
+        if (this.state.selectedProduct.discount_percentage > 0 && this.state.selectedProduct.temporary_discount_percentage > 0) {
             this.state.selectedProduct.temporary_discount_percentage = 0;
             this.state.selectedProduct.loyalty_program_discount_date_from = null;
             this.state.selectedProduct.loyalty_program_discount_date_to = null;
@@ -405,7 +409,7 @@ export class ProductDetailsModal extends Component {
 
         // Si se ingresa descuento temporal mayor a cero y el normal es mayor a cero:
         // Se borra el descuento normal y las fechas.
-        if (this.state.selectedProduct.temporary_discount_percentage>0 && this.state.selectedProduct.discount_percentage>0) {
+        if (this.state.selectedProduct.temporary_discount_percentage > 0 && this.state.selectedProduct.discount_percentage > 0) {
             this.state.selectedProduct.discount_percentage = 0;
             this.state.selectedProduct.loyalty_program_discount_date_from = null;
             this.state.selectedProduct.loyalty_program_discount_date_to = null;
@@ -457,7 +461,13 @@ export class ProductDetailsModal extends Component {
             )
         ;
         const cost_incluce_tax = this.state.selectedProduct.avg_standard_price * (1 + (this.state.selectedProduct.supplier_tax / 100));
-        const utility = ((pvp_include_discount - cost_incluce_tax) / cost_incluce_tax) * 100;
+        let utility = 0
+        if (this.state.selectedProduct.avg_standard_price > 0.01) {
+            utility = ((pvp_include_discount - cost_incluce_tax) / cost_incluce_tax) * 100;
+        }else{
+            this.notification.add("El costo promedio del producto es cero, no se puede calcular la utilidad.", {type: "warning"});
+        }
+
         this.state.selectedProduct.price_with_discount = pvp_include_discount.toFixed(4);
         this.state.selectedProduct.utility_percentage = utility.toFixed(2);
         // } else {

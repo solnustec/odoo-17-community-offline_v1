@@ -198,7 +198,7 @@ class ResConfigSettings(models.TransientModel):
 
     def remove_account_chart(self):
         company_id = self.env.company.id
-        self = self.with_context(force_company=company_id, company_id=company_id)
+        self = self.with_company(company_id)
         to_removes = [
             'res.partner.bank',
             'account.move.line',

@@ -1,7 +1,7 @@
 # -*- coding: utf-8 -*-
 {
     'name': 'POS Offline Sync',
-    'version': '17.0.2.6.1',
+    'version': '17.0.2.5.0',
     'category': 'Point of Sale',
     'summary': 'Sistema de sincronización offline para Point of Sale',
     'description': """
@@ -120,7 +120,6 @@
         'loyalty',
         'pos_custom_check',
         'pos_sale_order',  # IMPORTANTE: Para que nuestro override de is_delivery_order funcione
-        'migration',  # IMPORTANTE: Define los modelos base institution e institution.client
     ],
     'data': [
         'security/ir.model.access.csv',

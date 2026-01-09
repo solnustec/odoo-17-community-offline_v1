@@ -24,6 +24,7 @@ class SurveyUserInput(models.Model):
     anonymous_token = fields.Char('Token Anónimo', index=True)
     campaign_id = fields.Many2one('in.survey.campaign', string='Campaña')
     assignment_id = fields.Many2one('in.survey.campaign.assignment', string='Asignación')
+    branch_visit_id = fields.Many2one('survey.branch.visit', string='Visita a Sucursal')
 
     @staticmethod
     def generar_token_anonimo(identificador, survey_id, clave='secreto'):
@@ -156,11 +157,16 @@ class SurveyUserInput(models.Model):
         if 'state' in vals and vals['state'] == 'done':
             for record in self:
                 try:
-                    # Vincular user_input a la asignación y marcar como respondida
+                    # Vincular user_input a la asignación de campaña y marcar como respondida
                     if record.assignment_id:
                         record.assignment_id.user_input_id = record.id
                         record.assignment_id.state = 'answered'
-                    
+
+                    # Vincular user_input a la visita a sucursal y marcar como completada
+                    if record.branch_visit_id:
+                        record.branch_visit_id.user_input_id = record.id
+                        record.branch_visit_id.state = 'completada'
+
                     record._compute_and_save_metrics()
                     if record.survey_id.is_anonymous:
                         record.write({

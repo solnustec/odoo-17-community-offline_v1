@@ -1,113 +1,433 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <templates id="template" xml:space="preserve">
     <t t-name="api_client_proassislife.OrderLinePopup" owl="1">
-        <div class="popup popup-CheckInfoPopup modal-content"
-             style="max-width: 1100px;border-radius: 10px; box-shadow: 0 5px 15px rgba(0, 0, 0, 0.3); position: fixed; top: 50%; left: 50%; transform: translate(-50%, -50%);">
+        <style>
+            @import url('https://fonts.googleapis.com/css2?family=DM+Sans:wght@400;500;600;700&amp;family=Space+Mono:wght@400;700&amp;display=swap');
 
-            <div class="modal-header bg-primary text-white text-center">
-                <h5 class="modal-title">Información del Cliente</h5>
+            .pharmacy-modal * {
+                font-family: 'DM Sans', sans-serif;
+            }
+
+            .pharmacy-modal-header {
+                background: linear-gradient(135deg, #003D8B 0%, #0052B4 100%);
+                position: relative;
+                overflow: hidden;
+            }
+
+            .pharmacy-modal-header::before {
+                content: '';
+                position: absolute;
+                top: -50%;
+                right: -20%;
+                width: 300px;
+                height: 300px;
+                background: radial-gradient(circle, rgba(255,255,255,0.15) 0%, transparent 70%);
+                border-radius: 50%;
+            }
+
+            .info-card {
+                background: #ffffff;
+                border-radius: 12px;
+                transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+                border: 1px solid #E3F2FD;
+                position: relative;
+                overflow: hidden;
+            }
+
+            .info-card::before {
+                content: '';
+                position: absolute;
+                top: 0;
+                left: 0;
+                width: 4px;
+                height: 100%;
+                background: linear-gradient(180deg, #003D8B 0%, #0052B4 100%);
+            }
+
+            .info-card:hover {
+                transform: translateY(-2px);
+                box-shadow: 0 8px 24px rgba(0, 61, 139, 0.15);
+                border-color: #003D8B;
+            }
+
+            .section-badge {
+                display: inline-flex;
+                align-items: center;
+                gap: 6px;
+                background: linear-gradient(135deg, #E3F2FD 0%, #BBDEFB 100%);
+                color: #003D8B;
+                padding: 6px 14px;
+                border-radius: 20px;
+                font-size: 11px;
+                font-weight: 700;
+                text-transform: uppercase;
+                letter-spacing: 1.2px;
+                border: 1px solid #90CAF9;
+            }
+
+            .data-row {
+                display: flex;
+                justify-content: space-between;
+                align-items: flex-start;
+                padding: 12px 0;
+                border-bottom: 1px solid #F5F5F5;
+            }
+
+            .data-row:last-child {
+                border-bottom: none;
+            }
+
+            .data-label {
+                color: #64748b;
+                font-size: 12px;
+                font-weight: 500;
+                text-transform: uppercase;
+                letter-spacing: 0.5px;
+            }
+
+            .data-value {
+                color: #0f172a;
+                font-size: 15px;
+                font-weight: 600;
+                text-align: right;
+            }
+
+            .status-badge {
+                display: inline-block;
+                padding: 6px 14px;
+                border-radius: 8px;
+                font-size: 12px;
+                font-weight: 700;
+                letter-spacing: 0.5px;
+                text-transform: uppercase;
+            }
+
+            .status-active {
+                background: linear-gradient(135d, #d1fae5 0%, #a7f3d0 100%);
+                color: #065f46;
+                border: 1px solid #6ee7b7;
+            }
+
+            .status-mora {
+                background: linear-gradient(135deg, #fee2e2 0%, #fecaca 100%);
+                color: #991b1b;
+                border: 1px solid #fca5a5;
+            }
+
+            .beneficiaries-table {
+                width: 100%;
+                border-collapse: separate;
+                border-spacing: 0;
+                background: #ffffff;
+                border-radius: 12px;
+                overflow: hidden;
+                box-shadow: 0 1px 3px rgba(0,0,0,0.06);
+            }
+
+            .beneficiaries-table thead {
+                background: linear-gradient(135deg, #003D8B 0%, #0052B4 100%);
+            }
+
+            .beneficiaries-table thead th {
+                color: #ffffff;
+                font-size: 12px;
+                font-weight: 700;
+                text-transform: uppercase;
+                letter-spacing: 0.8px;
+                padding: 16px 20px;
+                text-align: left;
+            }
+
+            .beneficiaries-table tbody tr {
+                border-bottom: 1px solid #f1f5f9;
+                transition: background-color 0.2s;
+            }
+
+            .beneficiaries-table tbody tr:hover {
+                background-color: #E3F2FD;
+            }
+
+            .beneficiaries-table tbody tr:last-child {
+                border-bottom: none;
+            }
+
+            .beneficiaries-table tbody td {
+                padding: 16px 20px;
+                color: #334155;
+                font-size: 14px;
+            }
+
+            .relation-badge {
+                background: linear-gradient(135deg, #E3F2FD 0%, #BBDEFB 100%);
+                color: #003D8B;
+                padding: 5px 12px;
+                border-radius: 6px;
+                font-size: 11px;
+                font-weight: 700;
+                text-transform: uppercase;
+                letter-spacing: 0.5px;
+                display: inline-block;
+                border: 1px solid #90CAF9;
+            }
+
+            .benefit-item {
+                display: flex;
+                align-items: center;
+                gap: 8px;
+                color: #475569;
+                font-size: 13px;
+                padding: 4px 0;
+            }
+
+            .benefit-item::before {
+                content: '✓';
+                display: inline-flex;
+                align-items: center;
+                justify-content: center;
+                width: 18px;
+                height: 18px;
+                background: linear-gradient(135deg, #10b981 0%, #059669 100%);
+                color: white;
+                border-radius: 50%;
+                font-size: 10px;
+                font-weight: 700;
+                flex-shrink: 0;
+            }
+
+            .close-button {
+                background: linear-gradient(135deg, #003D8B 0%, #0052B4 100%);
+                color: white;
+                border: none;
+                padding: 12px 32px;
+                border-radius: 8px;
+                font-size: 14px;
+                font-weight: 600;
+                cursor: pointer;
+                transition: all 0.3s;
+                box-shadow: 0 4px 14px rgba(0, 61, 139, 0.35);
+                text-transform: uppercase;
+                letter-spacing: 0.5px;
+            }
+
+            .close-button:hover {
+                transform: translateY(-2px);
+                box-shadow: 0 6px 20px rgba(0, 61, 139, 0.45);
+                background: linear-gradient(135deg, #002A63 0%, #003D8B 100%);
+            }
+
+            .empty-state {
+                text-align: center;
+                padding: 60px 40px;
+                background: linear-gradient(135deg, #f8fafc 0%, #f1f5f9 100%);
+                border-radius: 16px;
+                border: 2px dashed #cbd5e1;
+            }
+
+            .medical-icon {
+                font-size: 64px;
+                background: linear-gradient(135deg, #003D8B 0%, #0052B4 100%);
+                -webkit-background-clip: text;
+                -webkit-text-fill-color: transparent;
+                background-clip: text;
+                margin-bottom: 20px;
+            }
+        </style>
+
+        <div class="popup popup-CheckInfoPopup modal-content pharmacy-modal"
+             style="max-width: 1200px; border-radius: 20px; box-shadow: 0 20px 60px rgba(0, 61, 139, 0.25); position: fixed; top: 50%; left: 50%; transform: translate(-50%, -50%); background: #f8fafc; border: none;">
+
+            <!-- Header -->
+            <div class="modal-header pharmacy-modal-header" style="border-radius: 20px 20px 0 0; padding: 28px 40px; border: none; position: relative; z-index: 1;">
+                <h5 class="modal-title" style="color: #ffffff; font-size: 26px; font-weight: 700; margin: 0; letter-spacing: -0.5px; text-shadow: 0 2px 8px rgba(0,0,0,0.2);">
+                    <span style="font-size: 28px; margin-right: 12px;">⚕️</span>
+                    Información del Cliente
+                </h5>
+                <div style="color: rgba(255,255,255,0.95); font-size: 13px; margin-top: 6px; font-weight: 500;">
+                    Farmacias Cuxibamba
+                </div>
             </div>
 
-            <div class="modal-body container" style="max-height: 500px; overflow-y: auto;">
+            <!-- Body -->
+            <div class="modal-body container" style="max-height: 580px; overflow-y: auto; padding: 32px 40px; background: #f8fafc;">
                 <t t-if="contractData.length > 0">
                     <t t-foreach="contractData" t-as="plan" t-key="plan.Codigo">
 
-                        <div class="row mb-2">
-                            <div class="col-4">
-                                <h6 class="text-primary">Datos del Titular</h6>
-                                <table class="table table-sm table-bordered">
-                                    <tbody>
-                                        <tr><td><strong>Nombre</strong></td>
-                                            <td><t t-esc="plan.Titular[0].Nombres"/>
-                                                <t t-esc="plan.Titular[0].Apellidos"/></td>
-                                        </tr>
-                                        <tr><td><strong>Documento</strong></td>
-                                            <td><t t-esc="plan.Titular[0].NumeroDocumento"/></td></tr>
-                                        <tr><td><strong>Edad</strong></td>
-                                            <td><t t-esc="plan.Titular[0].Edad"/>
-                                                años</td></tr>
-                                        <tr>
-                                        <td><strong>Fecha Nacimiento</strong></td>
-                                            <td><t t-esc="new Date(plan.Titular[0].FechaNacimiento).toLocaleDateString()"/></td>
-                                    </tr>
-                                    </tbody>
-                                </table>
+                        <!-- Main Info Grid -->
+                        <div class="row g-4 mb-4">
+                            <!-- Titular Card -->
+                            <div class="col-md-4">
+                                <div class="info-card" style="padding: 24px; height: 100%;">
+                                    <div style="margin-bottom: 20px;">
+                                        <span class="section-badge">
+                                            <span>👤</span>
+                                            <span>Titular</span>
+                                        </span>
+                                    </div>
+                                    <div>
+                                        <div class="data-row">
+                                            <span class="data-label">Nombre</span>
+                                            <span class="data-value">
+                                                <t t-esc="plan.Titular.Nombres"/> <t t-esc="plan.Titular.Apellidos"/>
+                                            </span>
+                                        </div>
+                                        <div class="data-row">
+                                            <span class="data-label">Documento</span>
+                                            <span class="data-value" style="font-family: 'Space Mono', monospace;">
+                                                <t t-esc="plan.Titular.NumeroDocumento"/>
+                                            </span>
+                                        </div>
+                                        <div class="data-row">
+                                            <span class="data-label">Edad</span>
+                                            <span class="data-value">
+                                                <t t-esc="plan.Titular.Edad"/> años
+                                            </span>
+                                        </div>
+                                        <div class="data-row">
+                                            <span class="data-label">Nacimiento</span>
+                                            <span class="data-value">
+                                                <t t-esc="new Date(plan.Titular.FechaNacimiento).toLocaleDateString()"/>
+                                            </span>
+                                        </div>
+                                    </div>
+                                </div>
                             </div>
-                            <div class="col-4">
-                                <h6 class="text-primary">Datos del Plan</h6>
-                                <table class="table table-sm table-bordered">
-                                    <tbody>
-                                        <tr><td><strong>Nombre</strong></td>
-                                            <td><t t-esc="plan.NombrePlan"/></td></tr>
-                                        <tr><td><strong>Producto</strong></td>
-                                            <td><t t-esc="plan.Producto"/></td></tr>
-                                        <tr><td><strong>Estado</strong></td>
-                                            <td><t t-esc="plan.Estado"/></td></tr>
-                                        <tr><td><strong>Cobertura</strong></td>
-                                            <td><t t-esc="plan.CoberturaMaxima"/></td></tr>
-                                    </tbody>
-                                </table>
+
+                            <!-- Plan Card -->
+                            <div class="col-md-4">
+                                <div class="info-card" style="padding: 24px; height: 100%;">
+                                    <div style="margin-bottom: 20px;">
+                                        <span class="section-badge">
+                                            <span>🏥</span>
+                                            <span>Plan de Salud</span>
+                                        </span>
+                                    </div>
+                                    <div>
+                                        <div class="data-row">
+                                            <span class="data-label">Plan</span>
+                                            <span class="data-value">
+                                                <t t-esc="plan.NombrePlan"/>
+                                            </span>
+                                        </div>
+                                        <div class="data-row">
+                                            <span class="data-label">Producto</span>
+                                            <span class="data-value">
+                                                <t t-esc="plan.Producto"/>
+                                            </span>
+                                        </div>
+                                        <div class="data-row">
+                                            <span class="data-label">Estado</span>
+                                            <span class="data-value">
+                                                <span class="status-badge status-active">
+                                                    <t t-esc="plan.Estado"/>
+                                                </span>
+                                            </span>
+                                        </div>
+                                        <div class="data-row">
+                                            <span class="data-label">Cobertura</span>
+                                            <span class="data-value" style="color: #003D8B; font-weight: 700;">
+                                                <t t-esc="plan.CoberturaMaxima"/>
+                                            </span>
+                                        </div>
+                                    </div>
+                                </div>
                             </div>
-                            <div class="col-4">
-                                <h6 class="text-primary">Detalles del Plan</h6>
-                                <table class="table table-sm table-bordered">
-                                    <tbody>
-                                        <tr><td><strong>Deducible</strong></td>
-                                            <td><t t-esc="plan.DeducibleTotal"/></td></tr>
-                                        <tr>
-                                            <td><strong>Es Moroso</strong></td>
-                                            <td>
-                                                <t t-if="plan.EsMoroso">Sí</t>
-                                                <t t-else="">No</t>
-                                            </td>
-                                        </tr>
-                                        <tr>
-                                            <td><strong>Fecha Inicio</strong></td>
-                                            <td><t t-esc="new Date(plan.FechaInicio).toLocaleDateString()"/></td>
-                                        </tr>
-                                        <tr>
-                                            <td><strong>Fecha Fin</strong></td>
-                                            <td><t t-esc="new Date(plan.FechaVigencia).toLocaleDateString()"/></td>
-                                        </tr>
-                                        </tbody>
-                                </table>
+
+                            <!-- Details Card -->
+                            <div class="col-md-4">
+                                <div class="info-card" style="padding: 24px; height: 100%;">
+                                    <div style="margin-bottom: 20px;">
+                                        <span class="section-badge">
+                                            <span>📋</span>
+                                            <span>Detalles</span>
+                                        </span>
+                                    </div>
+                                    <div>
+                                        <div class="data-row">
+                                            <span class="data-label">Deducible</span>
+                                            <span class="data-value">
+                                                <t t-esc="plan.DeducibleTotal"/>
+                                            </span>
+                                        </div>
+                                        <div class="data-row">
+                                            <span class="data-label">Pago</span>
+                                            <span class="data-value">
+                                                <t t-if="plan.EsMoroso">
+                                                    <span class="status-badge status-mora">Mora</span>
+                                                </t>
+                                                <t t-else="">
+                                                    <span class="status-badge status-active">Al día</span>
+                                                </t>
+                                            </span>
+                                        </div>
+                                        <div class="data-row">
+                                            <span class="data-label">Inicio</span>
+                                            <span class="data-value">
+                                                <t t-esc="new Date(plan.FechaInicio).toLocaleDateString()"/>
+                                            </span>
+                                        </div>
+                                        <div class="data-row">
+                                            <span class="data-label">Vence</span>
+                                            <span class="data-value">
+                                                <t t-esc="new Date(plan.FechaVigencia).toLocaleDateString()"/>
+                                            </span>
+                                        </div>
+                                    </div>
+                                </div>
                             </div>
                         </div>
 
+                        <!-- Beneficiaries Section -->
                         <t t-if="plan.Beneficiarios.length > 0">
-                            <div class="row mb-2">
-                                <div class="col-12">
-                                    <h6 class="text-primary">Beneficiarios</h6>
-                                    <table class="table table-sm table-bordered">
-                                        <thead class="table-light">
+                            <div class="info-card" style="padding: 28px; margin-top: 20px;">
+                                <div style="margin-bottom: 24px;">
+                                    <span class="section-badge">
+                                        <span>👨‍👩‍👧‍👦</span>
+                                        <span>Beneficiarios del Plan</span>
+                                    </span>
+                                </div>
+                                <div style="overflow-x: auto;">
+                                    <table class="beneficiaries-table">
+                                        <thead>
                                             <tr>
-                                                <th>Nombre</th>
+                                                <th>Nombre Completo</th>
                                                 <th>Identificación</th>
                                                 <th>Relación</th>
                                                 <th>Edad</th>
-                                                <th>Valor</th>
+                                                <th>Beneficios</th>
                                             </tr>
                                         </thead>
                                         <tbody>
                                             <t t-foreach="plan.Beneficiarios" t-as="beneficiario"
                                                t-key="beneficiario.NumeroDocumento">
                                                 <tr>
-                                                    <td><t t-esc="beneficiario.Nombres"/>
-                                                        <t t-esc="beneficiario.Apellidos"/></td>
-                                                    <td><t t-esc="beneficiario.NumeroDocumento"/></td>
-                                                    <td><t t-esc="beneficiario.RelacionDependiente"/></td>
-                                                    <td><t t-esc="beneficiario.Edad"/>
-                                                        años</td>
+                                                    <td style="font-weight: 600; color: #0f172a;">
+                                                        <t t-esc="beneficiario.Nombres"/> <t t-esc="beneficiario.Apellidos"/>
+                                                    </td>
+                                                    <td style="font-family: 'Space Mono', monospace; color: #64748b;">
+                                                        <t t-esc="beneficiario.NumeroDocumento"/>
+                                                    </td>
+                                                    <td>
+                                                        <span class="relation-badge">
+                                                            <t t-esc="beneficiario.RelacionDependiente"/>
+                                                        </span>
+                                                    </td>
+                                                    <td style="color: #475569;">
+                                                        <t t-esc="beneficiario.Edad"/> años
+                                                    </td>
                                                     <td>
                                                         <t t-if="beneficiario.BeneficiosPlan.length > 0">
-                                                            <ul class="mb-0">
+                                                            <div>
                                                                 <t t-foreach="beneficiario.BeneficiosPlan"
                                                                    t-as="beneficio" t-key="beneficio.Nombre">
-                                                                    <li> <t t-esc="beneficio.Valor"/></li>
+                                                                    <div class="benefit-item">
+                                                                        <t t-esc="beneficio.Valor"/>
+                                                                    </div>
                                                                 </t>
-                                                            </ul>
+                                                            </div>
                                                         </t>
-                                                        <t t-else="">No aplica</t>
+                                                        <t t-else="">
+                                                            <span style="color: #94a3b8; font-style: italic;">Sin beneficios</span>
+                                                        </t>
                                                     </td>
                                                 </tr>
                                             </t>
@@ -120,12 +440,23 @@
                     </t>
                 </t>
                 <t t-else="">
-                    <p class="text-danger text-center">No hay información disponible.</p>
+                    <div class="empty-state">
+                        <div class="medical-icon">⚕️</div>
+                        <h6 style="color: #334155; font-size: 20px; font-weight: 700; margin-bottom: 12px;">
+                            No hay información disponible
+                        </h6>
+                        <p style="color: #64748b; font-size: 15px; margin: 0;">
+                            Por favor, verifica el número de documento del cliente
+                        </p>
+                    </div>
                 </t>
             </div>
 
-            <div class="modal-footer d-flex justify-content-right">
-                <button class="btn btn-secondary btn-sm" t-on-click="cancel">Cerrar</button>
+            <!-- Footer -->
+            <div class="modal-footer" style="border-top: 1px solid #e2e8f0; padding: 20px 40px; background: #ffffff; border-radius: 0 0 20px 20px;">
+                <button class="close-button" t-on-click="cancel">
+                    Cerrar
+                </button>
             </div>
         </div>
     </t>

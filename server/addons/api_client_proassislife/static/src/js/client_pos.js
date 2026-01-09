@@ -48,9 +48,8 @@ patch(PartnerLine.prototype, {
 
                 this.isLoading = false;
 
-                if (contractInfo?.datos?.length > 0) {
-                    this.contractData = contractInfo.datos;
-
+                if (contractInfo?.dato?.length > 0) {
+                    this.contractData = contractInfo.dato;
                     this.popup.add(PopupGetApi, {contractData: this.contractData});
                 }
             }
@@ -100,6 +99,7 @@ patch(PartnerLine.prototype, {
 
             if (!response.ok) throw new Error(`Error: ${response.status} - ${response.statusText}`);
             const data = await response.json();
+            console.log(data)
             return data;
         } catch (error) {
             console.error("Error al obtener la información del contrato:", error);

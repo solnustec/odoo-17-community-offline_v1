@@ -222,6 +222,52 @@ class StockWarehouseOrderpoint(models.Model):
         return warehouse.code == 'BODMA'
 
     # -------------------------------------------------------------------------
+    # Cálculo de qty_to_order basado en configuración del almacén
+    # -------------------------------------------------------------------------
+    @api.depends('qty_multiple', 'product_min_qty', 'product_max_qty', 'visibility_days',
+                 'product_id', 'location_id', 'product_id.seller_ids.delay',
+                 'point_reorder', 'warehouse_id.replenishment_alert_based_on')
+    def _compute_qty_to_order(self):
+        """
+        Sobrescribe el cálculo de qty_to_order para usar la configuración del almacén.
+
+        Si el almacén está configurado para usar 'reorder_point', compara con point_reorder.
+        Si está configurado para usar 'min_qty' (default), compara con product_min_qty.
+        """
+        from odoo.tools import float_compare, float_is_zero
+
+        for orderpoint in self:
+            if not orderpoint.product_id or not orderpoint.location_id:
+                orderpoint.qty_to_order = False
+                continue
+
+            qty_to_order = 0.0
+            rounding = orderpoint.product_uom.rounding
+
+            # Determinar qué valor usar según la configuración del almacén
+            alert_based_on = orderpoint.warehouse_id.replenishment_alert_based_on or 'min_qty'
+
+            if alert_based_on == 'reorder_point':
+                threshold = orderpoint.point_reorder
+            else:
+                threshold = orderpoint.product_min_qty
+
+            # Comparar forecast con el umbral configurado
+            if float_compare(orderpoint.qty_forecast, threshold, precision_rounding=rounding) < 0:
+                # Calcular cantidad a ordenar considerando visibility_days
+                product_context = orderpoint._get_product_context(visibility_days=orderpoint.visibility_days)
+                qty_forecast_with_visibility = orderpoint.product_id.with_context(product_context).read(['virtual_available'])[0]['virtual_available'] + orderpoint._quantity_in_progress()[orderpoint.id]
+                qty_to_order = max(threshold, orderpoint.product_max_qty) - qty_forecast_with_visibility
+
+                # Aplicar múltiplo de cantidad
+                remainder = orderpoint.qty_multiple > 0.0 and qty_to_order % orderpoint.qty_multiple or 0.0
+                if (float_compare(remainder, 0.0, precision_rounding=rounding) > 0
+                        and float_compare(orderpoint.qty_multiple - remainder, 0.0, precision_rounding=rounding) > 0):
+                    qty_to_order += orderpoint.qty_multiple - remainder
+
+            orderpoint.qty_to_order = qty_to_order
+
+    # -------------------------------------------------------------------------
     # Desactivar cotizaciones automáticas para Bodega Matilde
     # -------------------------------------------------------------------------
     def _procure_orderpoint_confirm(self, use_new_cursor=False, company_id=None, raise_user_error=True):

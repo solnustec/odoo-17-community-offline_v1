@@ -36,7 +36,7 @@ patch(ClosePosPopup.prototype, {
       model: "pos.session",
       method: "write",
       args: [[sessionId], { out_money_point_of_sale: outValue }],
-      kwargs: { context: { force_company: true } },
+      kwargs: { context: {} },
     });
 
     // 2) ConfirmPopup and only return once the user clicks “De acuerdo” or “Cancelar”.

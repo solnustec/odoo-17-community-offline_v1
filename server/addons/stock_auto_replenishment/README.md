@@ -10,7 +10,8 @@ Genera **transferencias automáticas** cuando un producto necesita reabastecimie
 - Solo se encolan los orderpoints que realmente necesitan reabastecimiento
 - Procesamiento batch con bloqueo optimista (FOR UPDATE SKIP LOCKED)
 - Dedupe key para evitar duplicados en el mismo día
-- Dos modos: Individual (1 producto = 1 transferencia) o Agrupado (estándar Odoo)
+- Dos modos: Individual (1 producto = 1 transferencia) o Agrupado (múltiples productos por transferencia)
+- **Modo Agrupado:** Agrupa por ubicación destino con límite configurable de items
 - Dashboard con estadísticas en tiempo real
 
 ---
@@ -59,7 +60,8 @@ replenishment_inventory          stock_auto_replenishment
 - Buscar **"Reabastecimiento Automático"**
 - Activar el módulo y seleccionar el modo:
   - **Individual:** 1 transferencia por producto (recomendado para trazabilidad)
-  - **Agrupado:** Usa procurement.group estándar de Odoo
+  - **Agrupado:** Agrupa múltiples productos en una transferencia por ubicación destino
+- Si seleccionas **Agrupado**, configura el **Límite de items por transferencia** (default: 50)
 
 ### 2. Configurar el Almacén Principal
 
@@ -117,7 +119,8 @@ En **Inventario → Configuración → Reglas de Reordenamiento**:
 |--------|-------------|---------|
 | Habilitado | Activa el módulo | No |
 | Modo | Individual o Agrupado | Individual |
-| Límite por batch | Máximo de items por ejecución | 100 |
+| Límite por ejecución | Máximo de items de la cola a procesar por ejecución del cron | 100 |
+| **Límite items agrupados** | Máximo de productos/líneas por transferencia agrupada (0 = sin límite) | 50 |
 | Verificar stock | Solo crear si hay stock disponible | Sí |
 | Auto-confirmar | Confirmar y reservar automáticamente | Sí |
 | Días para cancelar | Cancelar transferencias no validadas después de X días (0 = desactivado) | 5 |
@@ -168,6 +171,45 @@ El estado de los crons se puede monitorear desde el Dashboard.
 **¿Dónde veo las transferencias automáticas?** En Inventario → Operaciones → Transferencias, usando el filtro "Automáticas".
 
 **¿Qué pasa si no valido una transferencia?** Después de X días configurados (default 5), se cancela automáticamente. Esto evita transferencias obsoletas.
+
+---
+
+## Modo Agrupado en Detalle
+
+El modo **Agrupado** crea transferencias con múltiples productos, agrupando por ubicación destino:
+
+### Comportamiento
+
+1. **Agrupación por ubicación destino:** Todos los orderpoints con la misma ubicación destino se procesan juntos
+2. **Límite de items:** Si hay más productos que el límite configurado, se crean múltiples pickings
+3. **Verificación de stock:** Cada producto se verifica individualmente (si está activado)
+
+### Ejemplo
+
+Si tienes 120 productos necesitando reabastecimiento para la misma ubicación destino y el límite es 50:
+
+```
+Ubicación: Sucursal A / Stock
+Productos pendientes: 120
+
+Resultado:
+├── Picking 1: 50 líneas de movimiento
+├── Picking 2: 50 líneas de movimiento
+└── Picking 3: 20 líneas de movimiento
+```
+
+### Ventajas del Modo Agrupado
+
+- **Menos pickings:** Reduce el número de transferencias a gestionar
+- **Eficiencia operativa:** Un picker puede procesar varios productos en una sola transferencia
+- **Control de volumen:** El límite de items evita transferencias demasiado grandes
+
+### Cuándo usar cada modo
+
+| Modo | Recomendado para |
+|------|------------------|
+| Individual | Alta trazabilidad, productos de alto valor, pocas reglas |
+| Agrupado | Alto volumen, operaciones eficientes, muchas reglas por ubicación |
 
 ---
 
