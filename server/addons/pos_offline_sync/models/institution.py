@@ -167,45 +167,83 @@ class InstitutionClient(models.Model):
 
         Esto permite que las eliminaciones se propaguen a otros servidores.
         """
+        # IMPORTANTE: Print para debug - siempre aparece en stdout
+        print(f"\n{'='*60}")
+        print(f"[POS_OFFLINE_SYNC] institution.client.unlink() LLAMADO!")
+        print(f"[POS_OFFLINE_SYNC] Records a eliminar: {self.ids}")
+        print(f"[POS_OFFLINE_SYNC] Context skip_sync_queue: {self.env.context.get('skip_sync_queue')}")
+        print(f"{'='*60}\n")
+
+        _logger.warning(
+            f'institution.client.unlink() INVOCADO - IDs: {self.ids}, '
+            f'skip_sync_queue: {self.env.context.get("skip_sync_queue")}'
+        )
+
         if self.env.context.get('skip_sync_queue'):
+            print("[POS_OFFLINE_SYNC] Saltando cola de sync (skip_sync_queue=True)")
             return super().unlink()
 
         # Capturar datos antes de eliminar para poder identificar el registro en otros servidores
-        SyncQueue = self.env['pos.sync.queue'].sudo()
-        sync_config = self.env['pos.sync.config'].sudo().search([
-            ('active', '=', True)
-        ], limit=1)
+        try:
+            SyncQueue = self.env['pos.sync.queue'].sudo()
+            sync_config = self.env['pos.sync.config'].sudo().search([
+                ('active', '=', True)
+            ], limit=1)
 
-        if sync_config:
-            for record in self:
-                try:
-                    # Datos mínimos para identificar el registro en el servidor destino
-                    data = {
-                        'id': record.id,
-                        'partner_id': record.partner_id.id,
-                        'partner_vat': record.partner_id.vat,
-                        'institution_id': record.institution_id.id,
-                        'institution_id_institutions': record.institution_id.id_institutions,
-                        '_operation': 'unlink',
-                    }
+            print(f"[POS_OFFLINE_SYNC] sync_config encontrado: {sync_config.id if sync_config else 'NO'}")
 
-                    queue_record = SyncQueue.add_to_queue(
-                        model_name='institution.client',
-                        record_id=record.id,
-                        operation='unlink',
-                        data=data,
-                        warehouse_id=sync_config.warehouse_id.id,
-                        record_ref=f'DELETE: {record.partner_id.name} - {record.institution_id.name}',
-                        priority='2',
-                    )
+            if sync_config:
+                for record in self:
+                    try:
+                        partner_name = record.partner_id.name if record.partner_id else 'N/A'
+                        partner_vat = record.partner_id.vat if record.partner_id else 'N/A'
+                        institution_name = record.institution_id.name if record.institution_id else 'N/A'
+                        institution_code = record.institution_id.id_institutions if record.institution_id else 'N/A'
 
-                    _logger.info(
-                        f'institution.client ELIMINACIÓN registrada para sync: '
-                        f'queue_id={queue_record.id}, partner={record.partner_id.name}, '
-                        f'institution={record.institution_id.name}'
-                    )
-                except Exception as e:
-                    _logger.error(f'Error registrando eliminación de institution.client: {e}')
+                        print(f"[POS_OFFLINE_SYNC] Procesando eliminación:")
+                        print(f"  - Record ID: {record.id}")
+                        print(f"  - Partner: {partner_name} (VAT: {partner_vat})")
+                        print(f"  - Institution: {institution_name} (Code: {institution_code})")
+
+                        # Datos mínimos para identificar el registro en el servidor destino
+                        data = {
+                            'id': record.id,
+                            'partner_id': record.partner_id.id if record.partner_id else None,
+                            'partner_vat': partner_vat,
+                            'institution_id': record.institution_id.id if record.institution_id else None,
+                            'institution_id_institutions': institution_code,
+                            '_operation': 'unlink',
+                        }
+
+                        queue_record = SyncQueue.add_to_queue(
+                            model_name='institution.client',
+                            record_id=record.id,
+                            operation='unlink',
+                            data=data,
+                            warehouse_id=sync_config.warehouse_id.id,
+                            record_ref=f'DELETE: {partner_name} - {institution_name}',
+                            priority='2',
+                        )
+
+                        print(f"[POS_OFFLINE_SYNC] ÉXITO - Queue record creado: {queue_record.id}")
+
+                        _logger.info(
+                            f'institution.client ELIMINACIÓN registrada para sync: '
+                            f'queue_id={queue_record.id}, partner={partner_name}, '
+                            f'institution={institution_name}'
+                        )
+                    except Exception as e:
+                        print(f"[POS_OFFLINE_SYNC] ERROR procesando record {record.id}: {e}")
+                        _logger.error(f'Error registrando eliminación de institution.client: {e}')
+                        import traceback
+                        traceback.print_exc()
+            else:
+                print("[POS_OFFLINE_SYNC] No hay sync_config activa - no se registrará eliminación")
+        except Exception as e:
+            print(f"[POS_OFFLINE_SYNC] ERROR GLOBAL en unlink: {e}")
+            _logger.error(f'Error global en unlink de institution.client: {e}')
+            import traceback
+            traceback.print_exc()
 
         return super().unlink()
 
