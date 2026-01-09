@@ -3684,12 +3684,67 @@ class PosSyncManager(models.Model):
 
         # Preparar valores para actualizar
         vals = {}
+        cloud_available = data.get('available_amount')
+        cloud_sale = data.get('sale')
 
-        # Solo actualizar available_amount y sale, las relaciones se mantienen
-        if data.get('available_amount') is not None:
-            vals['available_amount'] = data['available_amount']
-        if data.get('sale') is not None:
-            vals['sale'] = data['sale']
+        # Verificar si hay cambios pendientes en la cola de sync para este registro
+        # Esto indica que el local tiene cambios que aún no se han enviado al cloud
+        has_pending_sync = False
+        if existing:
+            SyncQueue = self.env['pos.sync.queue'].sudo()
+            pending = SyncQueue.search([
+                ('model_name', '=', 'institution.client'),
+                ('record_id', '=', existing.id),
+                ('state', 'in', ['pending', 'processing'])
+            ], limit=1)
+            has_pending_sync = bool(pending)
+            if has_pending_sync:
+                _logger.info(
+                    f'institution.client tiene cambios pendientes de sync: '
+                    f'queue_id={pending.id}, state={pending.state}'
+                )
+
+        # Lógica de actualización inteligente para available_amount:
+        # - Si hay cambios locales pendientes → NO sobrescribir (el local es más reciente)
+        # - Si el local es menor que el cloud y no hay pendientes → el cloud puede haber aumentado (admin)
+        # - Si el local es mayor que el cloud → actualizar (consumo en otro punto o admin redujo)
+        if existing and cloud_available is not None:
+            local_available = existing.available_amount
+
+            if has_pending_sync:
+                # HAY CAMBIOS PENDIENTES: proteger el valor local
+                _logger.info(
+                    f'PROTEGIENDO available_amount local (hay sync pendiente): '
+                    f'local={local_available}, cloud={cloud_available}'
+                )
+                # NO agregamos available_amount a vals
+            elif local_available < cloud_available:
+                # Local es MENOR: podría ser consumo local no sincronizado
+                # Verificar si el cupo (sale) cambió - si cambió, el admin modificó algo
+                if cloud_sale is not None and existing.sale != cloud_sale:
+                    # El cupo cambió, probablemente el admin ajustó todo
+                    vals['available_amount'] = cloud_available
+                    _logger.info(
+                        f'Actualizando available_amount (cupo cambió): '
+                        f'local={local_available} -> cloud={cloud_available}'
+                    )
+                else:
+                    # El cupo es igual pero available_amount local es menor = consumo local
+                    _logger.info(
+                        f'PROTEGIENDO available_amount local (consumo no sincronizado): '
+                        f'local={local_available}, cloud={cloud_available}'
+                    )
+                    # NO agregamos available_amount a vals
+            else:
+                # Local es MAYOR o IGUAL: actualizar con valor del cloud
+                vals['available_amount'] = cloud_available
+        elif cloud_available is not None:
+            # No existe registro local, usar el valor del cloud
+            vals['available_amount'] = cloud_available
+
+        # El cupo (sale) siempre se actualiza desde el cloud (el admin lo controla)
+        if cloud_sale is not None:
+            vals['sale'] = cloud_sale
 
         if existing:
             # ACTUALIZAR registro existente
