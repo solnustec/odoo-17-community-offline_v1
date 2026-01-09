@@ -192,7 +192,21 @@ class InstitutionClient(models.Model):
 
             print(f"[POS_OFFLINE_SYNC] sync_config encontrado: {sync_config.id if sync_config else 'NO'}")
 
+            # Determinar warehouse_id: primero de sync_config, si no, cualquier warehouse
+            warehouse_id = None
             if sync_config:
+                warehouse_id = sync_config.warehouse_id.id
+                print(f"[POS_OFFLINE_SYNC] Usando warehouse de sync_config: {warehouse_id}")
+            else:
+                # Servidor cloud sin sync_config - usar cualquier warehouse disponible
+                default_warehouse = self.env['stock.warehouse'].sudo().search([], limit=1)
+                if default_warehouse:
+                    warehouse_id = default_warehouse.id
+                    print(f"[POS_OFFLINE_SYNC] Sin sync_config - usando warehouse por defecto: {warehouse_id} ({default_warehouse.name})")
+                else:
+                    print("[POS_OFFLINE_SYNC] ERROR: No hay warehouses disponibles")
+
+            if warehouse_id:
                 for record in self:
                     try:
                         partner_name = record.partner_id.name if record.partner_id else 'N/A'
@@ -206,6 +220,7 @@ class InstitutionClient(models.Model):
                         print(f"  - Institution: {institution_name} (Code: {institution_code})")
 
                         # Datos mínimos para identificar el registro en el servidor destino
+                        # Incluir _cloud_deletion=True para indicar que esta eliminación vino del cloud
                         data = {
                             'id': record.id,
                             'partner_id': record.partner_id.id if record.partner_id else None,
@@ -213,6 +228,7 @@ class InstitutionClient(models.Model):
                             'institution_id': record.institution_id.id if record.institution_id else None,
                             'institution_id_institutions': institution_code,
                             '_operation': 'unlink',
+                            '_cloud_deletion': not bool(sync_config),  # True si no hay sync_config (servidor cloud)
                         }
 
                         queue_record = SyncQueue.add_to_queue(
@@ -220,7 +236,7 @@ class InstitutionClient(models.Model):
                             record_id=record.id,
                             operation='unlink',
                             data=data,
-                            warehouse_id=sync_config.warehouse_id.id,
+                            warehouse_id=warehouse_id,
                             record_ref=f'DELETE: {partner_name} - {institution_name}',
                             priority='2',
                         )
@@ -230,7 +246,7 @@ class InstitutionClient(models.Model):
                         _logger.info(
                             f'institution.client ELIMINACIÓN registrada para sync: '
                             f'queue_id={queue_record.id}, partner={partner_name}, '
-                            f'institution={institution_name}'
+                            f'institution={institution_name}, cloud_deletion={not bool(sync_config)}'
                         )
                     except Exception as e:
                         print(f"[POS_OFFLINE_SYNC] ERROR procesando record {record.id}: {e}")
@@ -238,7 +254,7 @@ class InstitutionClient(models.Model):
                         import traceback
                         traceback.print_exc()
             else:
-                print("[POS_OFFLINE_SYNC] No hay sync_config activa - no se registrará eliminación")
+                print("[POS_OFFLINE_SYNC] No se puede registrar eliminación - no hay warehouse disponible")
         except Exception as e:
             print(f"[POS_OFFLINE_SYNC] ERROR GLOBAL en unlink: {e}")
             _logger.error(f'Error global en unlink de institution.client: {e}')

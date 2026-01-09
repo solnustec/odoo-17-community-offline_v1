@@ -1755,9 +1755,13 @@ class PosOfflineSyncController(http.Controller):
         Busca registros en pos.sync.queue con operation='unlink' que necesitan
         ser propagados a otros servidores.
 
+        IMPORTANTE: Las eliminaciones son GLOBALES - no se filtra por warehouse_id.
+        Si un registro se elimina en el servidor cloud, TODOS los servidores offline
+        deben recibir esa eliminación.
+
         Args:
             model_name: Nombre del modelo
-            warehouse_id: ID del almacén
+            warehouse_id: ID del almacén (usado solo para logging, no para filtrar)
             last_sync_dt: Fecha de última sincronización
 
         Returns:
@@ -1766,11 +1770,11 @@ class PosOfflineSyncController(http.Controller):
         try:
             SyncQueue = request.env['pos.sync.queue'].sudo()
 
-            # Buscar eliminaciones pendientes o sincronizadas recientemente
+            # Buscar eliminaciones pendientes - NO filtrar por warehouse_id
+            # porque las eliminaciones son globales (aplican a todos los servidores)
             domain = [
                 ('model_name', '=', model_name),
                 ('operation', '=', 'unlink'),
-                ('warehouse_id', '=', warehouse_id),
             ]
 
             # Si hay fecha de última sync, solo las más recientes
@@ -1783,6 +1787,11 @@ class PosOfflineSyncController(http.Controller):
 
             deletions = SyncQueue.search(domain, limit=100)
 
+            _logger.info(
+                f'PULL deletions: Buscando eliminaciones de {model_name}, '
+                f'encontradas: {len(deletions)}, last_sync_dt: {last_sync_dt}'
+            )
+
             result = []
             for deletion in deletions:
                 try:
@@ -1794,7 +1803,8 @@ class PosOfflineSyncController(http.Controller):
 
                     _logger.info(
                         f'Eliminación pendiente encontrada: {model_name} '
-                        f'id={data.get("id")}, queue_id={deletion.id}'
+                        f'id={data.get("id")}, queue_id={deletion.id}, '
+                        f'cloud_deletion={data.get("_cloud_deletion", False)}'
                     )
                 except Exception as e:
                     _logger.error(f'Error procesando eliminación {deletion.id}: {e}')
