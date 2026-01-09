@@ -30,10 +30,12 @@ class PosSyncManager(models.Model):
         'loyalty.reward': 6,
         'hr.employee': 7,
         'pos.payment.method': 8,
-        'pos.session': 9,
-        'pos.order': 10,
-        'json.storage': 11,  # Sincronizar después de pos.order
-        'json.note.credit': 12,
+        'institution': 9,  # Instituciones de crédito/descuento
+        'institution.client': 10,  # Relación cliente-institución con saldo
+        'pos.session': 11,
+        'pos.order': 12,
+        'json.storage': 13,  # Sincronizar después de pos.order
+        'json.note.credit': 14,
     }
 
     # Campos para serialización por modelo
@@ -493,6 +495,18 @@ class PosSyncManager(models.Model):
         if model_name == 'json.note.credit':
             data['id'] = cloud_id
             self.deserialize_json_note_credit(data, sync_config)
+            return 1
+
+        # Manejo especial para institution
+        if model_name == 'institution':
+            data['id'] = cloud_id
+            self.deserialize_institution(data, sync_config)
+            return 1
+
+        # Manejo especial para institution.client
+        if model_name == 'institution.client':
+            data['id'] = cloud_id
+            self.deserialize_institution_client(data, sync_config)
             return 1
 
         # Crear o actualizar otros modelos
@@ -3466,6 +3480,268 @@ class PosSyncManager(models.Model):
                 vals['sync_state'] = 'synced'
             record = JsonNoteCredit.with_context(skip_sync_queue=True).create(vals)
             _logger.info(f'json.note.credit creado: {record.id} (cloud_id={cloud_id})')
+            return record
+
+    # ==================== SERIALIZADORES DE INSTITUTION ====================
+
+    @api.model
+    def serialize_institution(self, institution):
+        """
+        Serializa una institución para sincronización.
+
+        Args:
+            institution: Registro institution
+
+        Returns:
+            dict: Datos serializados de la institución
+        """
+        return {
+            'id': institution.id,
+            'id_institutions': institution.id_institutions,
+            'name': institution.name,
+            'ruc_institution': institution.ruc_institution,
+            'agreement_date': institution.agreement_date.isoformat() if institution.agreement_date else None,
+            'address': institution.address,
+            'type_credit_institution': institution.type_credit_institution,
+            'cellphone': institution.cellphone,
+            'court_day': institution.court_day,
+            'additional_discount_percentage': institution.additional_discount_percentage,
+            'pvp': institution.pvp,
+            'cloud_sync_id': institution.cloud_sync_id if hasattr(institution, 'cloud_sync_id') and institution.cloud_sync_id else None,
+            'id_database_old': institution.id_database_old if hasattr(institution, 'id_database_old') else None,
+        }
+
+    @api.model
+    def deserialize_institution(self, data, sync_config=None):
+        """
+        Deserializa datos de institución recibidos.
+
+        Args:
+            data: Diccionario con datos del registro institution
+            sync_config: Configuración de sincronización (opcional)
+
+        Returns:
+            institution: Registro creado o actualizado
+        """
+        Institution = self.env['institution'].sudo()
+        cloud_id = data.get('id')
+
+        _logger.info(f'Deserializando institution cloud_id={cloud_id}, name={data.get("name")}')
+
+        # Buscar registro existente por múltiples criterios
+        existing = None
+
+        # 1. Por cloud_sync_id
+        if cloud_id and 'cloud_sync_id' in Institution._fields:
+            existing = Institution.search([('cloud_sync_id', '=', cloud_id)], limit=1)
+
+        # 2. Por ID directo (mismo servidor)
+        if not existing and cloud_id:
+            direct = Institution.browse(cloud_id)
+            if direct.exists():
+                existing = direct
+
+        # 3. Por id_institutions (identificador único de negocio)
+        if not existing and data.get('id_institutions'):
+            existing = Institution.search([
+                ('id_institutions', '=', data.get('id_institutions'))
+            ], limit=1)
+
+        # 4. Por nombre + tipo
+        if not existing and data.get('name'):
+            existing = Institution.search([
+                ('name', '=', data.get('name')),
+                ('type_credit_institution', '=', data.get('type_credit_institution'))
+            ], limit=1)
+
+        # Preparar valores
+        vals = {
+            'id_institutions': data.get('id_institutions'),
+            'name': data.get('name'),
+            'ruc_institution': data.get('ruc_institution'),
+            'address': data.get('address'),
+            'type_credit_institution': data.get('type_credit_institution'),
+            'cellphone': data.get('cellphone'),
+            'court_day': data.get('court_day'),
+            'additional_discount_percentage': data.get('additional_discount_percentage', 0),
+            'pvp': data.get('pvp', '1'),
+        }
+
+        # Parsear fecha
+        if data.get('agreement_date'):
+            from datetime import date as date_type
+            try:
+                vals['agreement_date'] = date_type.fromisoformat(data['agreement_date'])
+            except (ValueError, TypeError):
+                pass
+
+        if existing:
+            existing.with_context(skip_sync_queue=True).write(vals)
+            if cloud_id and 'cloud_sync_id' in Institution._fields and not existing.cloud_sync_id:
+                existing.with_context(skip_sync_queue=True).write({'cloud_sync_id': cloud_id})
+            _logger.info(f'institution actualizada: {existing.name} (ID={existing.id})')
+            return existing
+        else:
+            if cloud_id and 'cloud_sync_id' in Institution._fields:
+                vals['cloud_sync_id'] = cloud_id
+            record = Institution.with_context(skip_sync_queue=True).create(vals)
+            _logger.info(f'institution creada: {record.name} (ID={record.id})')
+            return record
+
+    @api.model
+    def serialize_institution_client(self, institution_client):
+        """
+        Serializa una relación institución-cliente para sincronización.
+
+        Args:
+            institution_client: Registro institution.client
+
+        Returns:
+            dict: Datos serializados
+        """
+        return {
+            'id': institution_client.id,
+            'institution_id': institution_client.institution_id.id,
+            'institution_id_institutions': institution_client.institution_id.id_institutions,
+            'institution_name': institution_client.institution_id.name,
+            'partner_id': institution_client.partner_id.id,
+            'partner_vat': institution_client.partner_id.vat,
+            'partner_name': institution_client.partner_id.name,
+            'available_amount': institution_client.available_amount,
+            'sale': institution_client.sale,
+            'cloud_sync_id': institution_client.cloud_sync_id if hasattr(institution_client, 'cloud_sync_id') and institution_client.cloud_sync_id else None,
+        }
+
+    @api.model
+    def deserialize_institution_client(self, data, sync_config=None):
+        """
+        Deserializa datos de relación institución-cliente recibidos.
+
+        IMPORTANTE: Este método sincroniza los cambios de crédito/saldo entre
+        offline y cloud, asegurando que el available_amount refleje
+        los consumos realizados en cualquier punto.
+
+        Args:
+            data: Diccionario con datos del registro institution.client
+            sync_config: Configuración de sincronización (opcional)
+
+        Returns:
+            institution.client: Registro creado o actualizado
+        """
+        InstitutionClient = self.env['institution.client'].sudo()
+        cloud_id = data.get('id')
+
+        _logger.info(
+            f'Deserializando institution.client cloud_id={cloud_id}, '
+            f'partner={data.get("partner_vat")}, amount={data.get("available_amount")}'
+        )
+
+        # Buscar registro existente por múltiples criterios
+        existing = None
+
+        # 1. Por cloud_sync_id
+        if cloud_id and 'cloud_sync_id' in InstitutionClient._fields:
+            existing = InstitutionClient.search([('cloud_sync_id', '=', cloud_id)], limit=1)
+
+        # 2. Por ID directo (mismo servidor)
+        if not existing and cloud_id:
+            direct = InstitutionClient.browse(cloud_id)
+            if direct.exists():
+                existing = direct
+
+        # 3. Buscar por institución + partner (relación única)
+        if not existing:
+            # Primero encontrar la institución
+            institution = None
+            if data.get('institution_id'):
+                institution = self.env['institution'].sudo().browse(data['institution_id'])
+                if not institution.exists():
+                    institution = None
+
+            if not institution and data.get('institution_id_institutions'):
+                institution = self.env['institution'].sudo().search([
+                    ('id_institutions', '=', data['institution_id_institutions'])
+                ], limit=1)
+
+            # Buscar partner por VAT o ID
+            partner = None
+            if data.get('partner_vat'):
+                partner = self.env['res.partner'].sudo().search([
+                    ('vat', '=', data['partner_vat'])
+                ], limit=1)
+            if not partner and data.get('partner_id'):
+                partner = self.env['res.partner'].sudo().browse(data['partner_id'])
+                if not partner.exists():
+                    partner = None
+
+            if institution and partner:
+                existing = InstitutionClient.search([
+                    ('institution_id', '=', institution.id),
+                    ('partner_id', '=', partner.id)
+                ], limit=1)
+
+        # Preparar valores
+        vals = {}
+
+        # Solo actualizar available_amount y sale, las relaciones se mantienen
+        if data.get('available_amount') is not None:
+            vals['available_amount'] = data['available_amount']
+        if data.get('sale') is not None:
+            vals['sale'] = data['sale']
+
+        if existing:
+            if vals:
+                existing.with_context(skip_sync_queue=True).write(vals)
+            if cloud_id and 'cloud_sync_id' in InstitutionClient._fields and not existing.cloud_sync_id:
+                existing.with_context(skip_sync_queue=True).write({'cloud_sync_id': cloud_id})
+            _logger.info(
+                f'institution.client actualizado: partner={existing.partner_id.name}, '
+                f'available_amount={existing.available_amount}'
+            )
+            return existing
+        else:
+            # Necesitamos institution_id y partner_id para crear
+            institution = None
+            if data.get('institution_id_institutions'):
+                institution = self.env['institution'].sudo().search([
+                    ('id_institutions', '=', data['institution_id_institutions'])
+                ], limit=1)
+            if not institution and data.get('institution_id'):
+                institution = self.env['institution'].sudo().browse(data['institution_id'])
+                if not institution.exists():
+                    institution = None
+
+            partner = None
+            if data.get('partner_vat'):
+                partner = self.env['res.partner'].sudo().search([
+                    ('vat', '=', data['partner_vat'])
+                ], limit=1)
+            if not partner and data.get('partner_id'):
+                partner = self.env['res.partner'].sudo().browse(data['partner_id'])
+                if not partner.exists():
+                    partner = None
+
+            if not institution or not partner:
+                _logger.warning(
+                    f'No se puede crear institution.client: institution={institution}, partner={partner}'
+                )
+                return None
+
+            vals['institution_id'] = institution.id
+            vals['partner_id'] = partner.id
+            if 'available_amount' not in vals:
+                vals['available_amount'] = data.get('sale', 0)
+            if 'sale' not in vals:
+                vals['sale'] = data.get('sale', 0)
+
+            if cloud_id and 'cloud_sync_id' in InstitutionClient._fields:
+                vals['cloud_sync_id'] = cloud_id
+
+            record = InstitutionClient.with_context(skip_sync_queue=True).create(vals)
+            _logger.info(
+                f'institution.client creado: partner={record.partner_id.name}, '
+                f'institution={record.institution_id.name}'
+            )
             return record
 
     # ==================== SERIALIZADORES DE TRANSFERENCIAS DE STOCK ====================

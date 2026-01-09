@@ -259,6 +259,14 @@ class PosOfflineSyncController(http.Controller):
             if model_name == 'res.partner':
                 return self._process_res_partner(queue_id, local_id, data, operation)
 
+            # Manejo especial para institution
+            if model_name == 'institution':
+                return self._process_institution(queue_id, local_id, data, operation)
+
+            # Manejo especial para institution.client
+            if model_name == 'institution.client':
+                return self._process_institution_client(queue_id, local_id, data, operation)
+
             Model = request.env[model_name].sudo()
             cloud_id = None
 
@@ -942,6 +950,167 @@ class PosOfflineSyncController(http.Controller):
                 'error': str(e),
             }
 
+    def _process_institution(self, queue_id, local_id, data, operation):
+        """
+        Procesa una institución de crédito/descuento (PUSH: offline -> cloud).
+
+        Args:
+            queue_id: ID en la cola de sincronización
+            local_id: ID local de la institución
+            data: Datos de la institución
+            operation: Tipo de operación ('create', 'write', 'unlink')
+
+        Returns:
+            dict: Resultado del procesamiento
+        """
+        try:
+            SyncManager = request.env['pos.sync.manager'].sudo()
+
+            _logger.info(
+                f'Procesando institution (PUSH): name={data.get("name")}, '
+                f'id_institutions={data.get("id_institutions")}, operation={operation}'
+            )
+
+            if operation == 'unlink':
+                Institution = request.env['institution'].sudo()
+                existing = None
+                if data.get('id_institutions'):
+                    existing = Institution.search([
+                        ('id_institutions', '=', data['id_institutions'])
+                    ], limit=1)
+                if not existing and local_id:
+                    existing = Institution.browse(local_id)
+                    if not existing.exists():
+                        existing = None
+
+                if existing:
+                    cloud_id = existing.id
+                    existing.unlink()
+                    return {
+                        'success': True,
+                        'queue_id': queue_id,
+                        'local_id': local_id,
+                        'cloud_id': cloud_id,
+                        'message': 'Institution eliminada',
+                    }
+                return {
+                    'success': True,
+                    'queue_id': queue_id,
+                    'local_id': local_id,
+                    'message': 'Institution no encontrada para eliminar',
+                }
+
+            # Usar el deserializador del SyncManager
+            data['id'] = local_id
+            institution = SyncManager.deserialize_institution(data)
+
+            return {
+                'success': True,
+                'queue_id': queue_id,
+                'local_id': local_id,
+                'cloud_id': institution.id if institution else None,
+                'institution_name': institution.name if institution else None,
+            }
+
+        except Exception as e:
+            _logger.error(f'Error procesando institution#{local_id}: {str(e)}')
+            import traceback
+            _logger.error(traceback.format_exc())
+            return {
+                'success': False,
+                'queue_id': queue_id,
+                'local_id': local_id,
+                'error': str(e),
+            }
+
+    def _process_institution_client(self, queue_id, local_id, data, operation):
+        """
+        Procesa una relación institución-cliente (PUSH: offline -> cloud).
+
+        IMPORTANTE: Este método sincroniza los cambios de crédito/saldo (available_amount)
+        desde el offline al cloud, asegurando que los consumos de crédito se reflejen.
+
+        Args:
+            queue_id: ID en la cola de sincronización
+            local_id: ID local del registro
+            data: Datos del registro
+            operation: Tipo de operación ('create', 'write', 'unlink')
+
+        Returns:
+            dict: Resultado del procesamiento
+        """
+        try:
+            SyncManager = request.env['pos.sync.manager'].sudo()
+
+            _logger.info(
+                f'Procesando institution.client (PUSH): partner={data.get("partner_vat")}, '
+                f'available_amount={data.get("available_amount")}, operation={operation}'
+            )
+
+            if operation == 'unlink':
+                InstitutionClient = request.env['institution.client'].sudo()
+                existing = None
+
+                # Buscar por institution + partner
+                if data.get('partner_vat') and data.get('institution_id_institutions'):
+                    partner = request.env['res.partner'].sudo().search([
+                        ('vat', '=', data['partner_vat'])
+                    ], limit=1)
+                    institution = request.env['institution'].sudo().search([
+                        ('id_institutions', '=', data['institution_id_institutions'])
+                    ], limit=1)
+                    if partner and institution:
+                        existing = InstitutionClient.search([
+                            ('partner_id', '=', partner.id),
+                            ('institution_id', '=', institution.id)
+                        ], limit=1)
+
+                if not existing and local_id:
+                    existing = InstitutionClient.browse(local_id)
+                    if not existing.exists():
+                        existing = None
+
+                if existing:
+                    cloud_id = existing.id
+                    existing.unlink()
+                    return {
+                        'success': True,
+                        'queue_id': queue_id,
+                        'local_id': local_id,
+                        'cloud_id': cloud_id,
+                        'message': 'institution.client eliminado',
+                    }
+                return {
+                    'success': True,
+                    'queue_id': queue_id,
+                    'local_id': local_id,
+                    'message': 'institution.client no encontrado para eliminar',
+                }
+
+            # Usar el deserializador del SyncManager
+            data['id'] = local_id
+            inst_client = SyncManager.deserialize_institution_client(data)
+
+            return {
+                'success': True,
+                'queue_id': queue_id,
+                'local_id': local_id,
+                'cloud_id': inst_client.id if inst_client else None,
+                'partner_name': inst_client.partner_id.name if inst_client else None,
+                'available_amount': inst_client.available_amount if inst_client else None,
+            }
+
+        except Exception as e:
+            _logger.error(f'Error procesando institution.client#{local_id}: {str(e)}')
+            import traceback
+            _logger.error(traceback.format_exc())
+            return {
+                'success': False,
+                'queue_id': queue_id,
+                'local_id': local_id,
+                'error': str(e),
+            }
+
     def _prepare_partner_vals_from_push(self, data):
         """
         Prepara valores para crear/actualizar un partner desde PUSH (offline -> cloud).
@@ -1582,6 +1751,18 @@ class PosOfflineSyncController(http.Controller):
                 result.append(SyncManager.serialize_fiscal_position(record))
             return result
 
+        # Para institution usar serializer especializado
+        if model_name == 'institution':
+            for record in records:
+                result.append(SyncManager.serialize_institution(record))
+            return result
+
+        # Para institution.client usar serializer especializado
+        if model_name == 'institution.client':
+            for record in records:
+                result.append(SyncManager.serialize_institution_client(record))
+            return result
+
         # Para otros modelos, serialización genérica en lotes
         record_ids = records.ids
         for i in range(0, len(record_ids), batch_size):
@@ -1660,6 +1841,18 @@ class PosOfflineSyncController(http.Controller):
         if model_name == 'account.fiscal.position':
             for record in records:
                 result.append(SyncManager.serialize_fiscal_position(record))
+            return result
+
+        # Usar serializer especializado para institution
+        if model_name == 'institution':
+            for record in records:
+                result.append(SyncManager.serialize_institution(record))
+            return result
+
+        # Usar serializer especializado para institution.client
+        if model_name == 'institution.client':
+            for record in records:
+                result.append(SyncManager.serialize_institution_client(record))
             return result
 
         # Campos por modelo para otros modelos
@@ -3274,6 +3467,10 @@ class PosOfflineSyncController(http.Controller):
             return SyncManager.serialize_fiscal_position(record)
         elif model_name == 'loyalty.program':
             return SyncManager.serialize_loyalty_program(record)
+        elif model_name == 'institution':
+            return SyncManager.serialize_institution(record)
+        elif model_name == 'institution.client':
+            return SyncManager.serialize_institution_client(record)
 
         # Serialización genérica para otros modelos
         return self._serialize_generic(record, model_name)
