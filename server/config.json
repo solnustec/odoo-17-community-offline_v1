@@ -1,0 +1,14 @@
+{
+    "cloud_url": "http://192.168.0.6:8069",
+    "branch_uuid": "a51b319942950d5b0a881018c783a072",
+    "api_key": "eJfafeoNOBgkqkNI6IbvihM82mITdAjtLu9yHWa1dvU",
+    "addons_path": "C:\\Users\\sanan\\Documents\\Github\\odoo-17-community-offline_v1\\server\\addons",
+    "odoo_service_name": "OdooService",
+    "check_interval": 300,
+    "auto_apply": true,
+    "backup_before_update": true,
+    "update_window_start": 2,
+    "update_window_end": 6,
+    "log_file": "C:\\Users\\sanan\\Documents\\Github\\odoo-17-community-offline_v1\\server\\update_agent.log"
+}
+
