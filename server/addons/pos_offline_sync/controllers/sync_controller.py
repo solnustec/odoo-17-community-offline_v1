@@ -1061,21 +1061,59 @@ class PosOfflineSyncController(http.Controller):
             _logger.info(f'json.storage ya existe para orden {order.name}: ID={existing.id}')
             return existing
 
-        # VERIFICACIÓN 2: Por cloud_sync_id (ID original del offline)
+        # VERIFICACIÓN 2: Por ID directo del json.storage (mismo servidor/BD)
+        # Si el json.storage original existe con el mismo ID, reutilizar
         original_id = json_storage_data.get('id')
         if original_id:
-            existing_by_old_id = JsonStorage.search([
+            # Primero buscar por cloud_sync_id
+            existing_by_cloud_id = JsonStorage.search([
                 ('cloud_sync_id', '=', original_id)
             ], limit=1)
-            if existing_by_old_id:
-                _logger.info(f'json.storage ya sincronizado (cloud_sync_id={original_id}): ID={existing_by_old_id.id}')
+            if existing_by_cloud_id:
+                _logger.info(f'json.storage ya sincronizado (cloud_sync_id={original_id}): ID={existing_by_cloud_id.id}')
                 # Actualizar la referencia a la orden actual si es necesario
-                if existing_by_old_id.pos_order.id != order.id:
-                    existing_by_old_id.write({'pos_order': order.id})
+                if existing_by_cloud_id.pos_order.id != order.id:
+                    existing_by_cloud_id.write({'pos_order': order.id})
                     _logger.info(f'json.storage actualizado con nueva orden: {order.id}')
-                return existing_by_old_id
+                return existing_by_cloud_id
 
-        # VERIFICACIÓN 3: Por client_invoice + identificador único de la transacción
+            # Buscar por ID directo (cuando offline y cloud comparten BD)
+            existing_by_id = JsonStorage.browse(original_id)
+            if existing_by_id.exists():
+                _logger.info(f'json.storage encontrado por ID directo={original_id}: ya existe localmente')
+                # Actualizar cloud_sync_id y pos_order si es necesario
+                update_vals = {}
+                if not existing_by_id.cloud_sync_id:
+                    update_vals['cloud_sync_id'] = original_id
+                if existing_by_id.pos_order.id != order.id:
+                    update_vals['pos_order'] = order.id
+                if update_vals:
+                    existing_by_id.with_context(skip_sync_queue=True).write(update_vals)
+                return existing_by_id
+
+        # VERIFICACIÓN 3: Por orden LOCAL original (usando id_database_old de la orden)
+        # Esto detecta json.storage creado para la orden antes de sincronizar
+        if order.id_database_old:
+            local_order = request.env['pos.order'].sudo().search([
+                ('id', '=', int(order.id_database_old))
+            ], limit=1)
+            if local_order:
+                existing_by_local = JsonStorage.search([
+                    ('pos_order', '=', local_order.id)
+                ], limit=1)
+                if existing_by_local:
+                    _logger.info(
+                        f'json.storage encontrado para orden local {local_order.name} '
+                        f'(id_database_old={order.id_database_old}): ID={existing_by_local.id}'
+                    )
+                    # Actualizar referencia a la orden nueva
+                    existing_by_local.with_context(skip_sync_queue=True).write({
+                        'pos_order': order.id,
+                        'cloud_sync_id': original_id if original_id else existing_by_local.cloud_sync_id,
+                    })
+                    return existing_by_local
+
+        # VERIFICACIÓN 4: Por client_invoice + identificador único de la transacción
         # Esto previene duplicados si se sincroniza la misma transacción múltiples veces
         client_invoice = json_storage_data.get('client_invoice')
         if client_invoice and order.pos_reference:
@@ -1094,6 +1132,24 @@ class PosOfflineSyncController(http.Controller):
                         f'pos_reference={order.pos_reference}: ID={existing_by_client.id}'
                     )
                     return existing_by_client
+
+        # VERIFICACIÓN 5: Por client_invoice + id_database_old_invoice_client (última opción)
+        id_db_old_client = json_storage_data.get('id_database_old_invoice_client')
+        if client_invoice and id_db_old_client:
+            existing_by_client_data = JsonStorage.search([
+                ('client_invoice', '=', client_invoice),
+                ('id_database_old_invoice_client', '=', id_db_old_client),
+            ], limit=1)
+            if existing_by_client_data:
+                _logger.info(
+                    f'json.storage encontrado por client_invoice={client_invoice} y '
+                    f'id_database_old_invoice_client={id_db_old_client}: ID={existing_by_client_data.id}'
+                )
+                # Actualizar referencia a la orden nueva
+                existing_by_client_data.with_context(skip_sync_queue=True).write({
+                    'pos_order': order.id,
+                })
+                return existing_by_client_data
 
         # Buscar el pos.config para el campo pos_order_id
         # Primero intentar por config_name (nombre original del POS de la sucursal)
