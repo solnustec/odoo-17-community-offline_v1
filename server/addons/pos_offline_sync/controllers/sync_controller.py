@@ -1310,43 +1310,25 @@ class PosOfflineSyncController(http.Controller):
                     })
                     return existing_by_local
 
-        # VERIFICACIÓN 4: Por client_invoice + identificador único de la transacción
-        # Esto previene duplicados si se sincroniza la misma transacción múltiples veces
+        # VERIFICACIÓN 4: Por client_invoice + pos_reference EXACTO de esta orden
+        # Solo buscar si hay otra orden con el MISMO pos_reference (duplicado real)
         client_invoice = json_storage_data.get('client_invoice')
         if client_invoice and order.pos_reference:
-            # Buscar json.storage con mismo cliente y que pertenezca a una orden con el mismo pos_reference
-            existing_orders = request.env['pos.order'].sudo().search([
-                ('pos_reference', '=', order.pos_reference)
-            ])
-            if existing_orders:
-                existing_by_client = JsonStorage.search([
-                    ('client_invoice', '=', client_invoice),
-                    ('pos_order', 'in', existing_orders.ids)
-                ], limit=1)
-                if existing_by_client:
-                    _logger.info(
-                        f'json.storage encontrado por client_invoice={client_invoice} y '
-                        f'pos_reference={order.pos_reference}: ID={existing_by_client.id}'
-                    )
-                    return existing_by_client
-
-        # VERIFICACIÓN 5: Por client_invoice + id_database_old_invoice_client (última opción)
-        id_db_old_client = json_storage_data.get('id_database_old_invoice_client')
-        if client_invoice and id_db_old_client:
-            existing_by_client_data = JsonStorage.search([
+            # Buscar json.storage que ya esté vinculado a ESTA orden específica
+            existing_by_ref = JsonStorage.search([
                 ('client_invoice', '=', client_invoice),
-                ('id_database_old_invoice_client', '=', id_db_old_client),
+                ('pos_order', '=', order.id)  # Debe ser la misma orden, no cualquier orden
             ], limit=1)
-            if existing_by_client_data:
+            if existing_by_ref:
                 _logger.info(
-                    f'json.storage encontrado por client_invoice={client_invoice} y '
-                    f'id_database_old_invoice_client={id_db_old_client}: ID={existing_by_client_data.id}'
+                    f'json.storage encontrado para esta orden {order.name} '
+                    f'con client_invoice={client_invoice}: ID={existing_by_ref.id}'
                 )
-                # Actualizar referencia a la orden nueva
-                existing_by_client_data.with_context(skip_sync_queue=True).write({
-                    'pos_order': order.id,
-                })
-                return existing_by_client_data
+                return existing_by_ref
+
+        # NOTA: Se eliminó la verificación por client_invoice + id_database_old_invoice_client
+        # porque esos valores son del CLIENTE, no de la TRANSACCIÓN, y causaba que
+        # se encontraran json.storage de transacciones anteriores del mismo cliente.
 
         # Buscar el pos.config para el campo pos_order_id
         # Primero intentar por config_name (nombre original del POS de la sucursal)
