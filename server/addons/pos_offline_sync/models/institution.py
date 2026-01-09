@@ -78,25 +78,29 @@ class Institution(models.Model):
             ], limit=1)
 
             if not sync_config:
+                _logger.warning(f'No se encontró configuración de sync activa para institution: {record.name}')
                 return
 
             # Serializar datos
             data = SyncManager.serialize_institution(record)
 
-            # Crear registro en cola
-            SyncQueue.create({
-                'model_name': 'institution',
-                'record_id': record.id,
-                'record_ref': record.name,
-                'operation': operation,
-                'data': data,
-                'sync_config_id': sync_config.id,
-            })
+            # Crear registro en cola usando add_to_queue
+            queue_record = SyncQueue.add_to_queue(
+                model_name='institution',
+                record_id=record.id,
+                operation=operation,
+                data=data,
+                warehouse_id=sync_config.warehouse_id.id,
+                record_ref=record.name,
+                priority='1',
+            )
 
-            _logger.info(f'Institution {record.name} agregada a cola de sync ({operation})')
+            _logger.info(f'Institution {record.name} agregada a cola de sync ({operation}), queue_id={queue_record.id}')
 
         except Exception as e:
-            _logger.warning(f'Error agregando institution a cola de sync: {e}')
+            _logger.error(f'Error agregando institution a cola de sync: {e}')
+            import traceback
+            _logger.error(traceback.format_exc())
 
 
 class InstitutionClient(models.Model):
@@ -185,15 +189,16 @@ class InstitutionClient(models.Model):
                 f'available_amount={record.available_amount}'
             )
 
-            # Crear registro en cola
-            queue_record = SyncQueue.create({
-                'model_name': 'institution.client',
-                'record_id': record.id,
-                'record_ref': f'{record.partner_id.name} - {record.institution_id.name}',
-                'operation': operation,
-                'data': data,
-                'sync_config_id': sync_config.id,
-            })
+            # Crear registro en cola usando add_to_queue
+            queue_record = SyncQueue.add_to_queue(
+                model_name='institution.client',
+                record_id=record.id,
+                operation=operation,
+                data=data,
+                warehouse_id=sync_config.warehouse_id.id,
+                record_ref=f'{record.partner_id.name} - {record.institution_id.name}',
+                priority='2',  # Alta prioridad para cambios de crédito
+            )
 
             _logger.info(
                 f'institution.client agregado a cola de sync ({operation}): '
