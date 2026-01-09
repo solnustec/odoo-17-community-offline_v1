@@ -3629,58 +3629,60 @@ class PosSyncManager(models.Model):
             institution.client: Registro creado o actualizado
         """
         InstitutionClient = self.env['institution.client'].sudo()
-        cloud_id = data.get('id')
+        source_id = data.get('id')  # ID del servidor origen (offline o cloud)
 
         _logger.info(
-            f'Deserializando institution.client cloud_id={cloud_id}, '
-            f'partner={data.get("partner_vat")}, amount={data.get("available_amount")}'
+            f'Deserializando institution.client source_id={source_id}, '
+            f'institution_id_institutions={data.get("institution_id_institutions")}, '
+            f'partner_vat={data.get("partner_vat")}, '
+            f'available_amount={data.get("available_amount")}, sale={data.get("sale")}'
         )
 
         # Buscar registro existente por múltiples criterios
+        # IMPORTANTE: Priorizar búsqueda por institution+partner que es la clave natural
         existing = None
+        institution = None
+        partner = None
 
-        # 1. Por cloud_sync_id
-        if cloud_id and 'cloud_sync_id' in InstitutionClient._fields:
-            existing = InstitutionClient.search([('cloud_sync_id', '=', cloud_id)], limit=1)
+        # 1. PRIMERO buscar por institución + partner (relación única y más confiable)
+        # Encontrar la institución por id_institutions (código único)
+        if data.get('institution_id_institutions'):
+            institution = self.env['institution'].sudo().search([
+                ('id_institutions', '=', data['institution_id_institutions'])
+            ], limit=1)
+            if institution:
+                _logger.debug(f'Institución encontrada por id_institutions: {institution.name}')
 
-        # 2. Por ID directo (mismo servidor)
-        if not existing and cloud_id:
-            direct = InstitutionClient.browse(cloud_id)
-            if direct.exists():
-                existing = direct
+        # Buscar partner por VAT (cédula/RUC - único)
+        if data.get('partner_vat'):
+            partner = self.env['res.partner'].sudo().search([
+                ('vat', '=', data['partner_vat'])
+            ], limit=1)
+            if partner:
+                _logger.debug(f'Partner encontrado por VAT: {partner.name}')
 
-        # 3. Buscar por institución + partner (relación única)
-        if not existing:
-            # Primero encontrar la institución
-            institution = None
-            if data.get('institution_id'):
-                institution = self.env['institution'].sudo().browse(data['institution_id'])
-                if not institution.exists():
-                    institution = None
+        # Buscar institution.client por la combinación única
+        if institution and partner:
+            existing = InstitutionClient.search([
+                ('institution_id', '=', institution.id),
+                ('partner_id', '=', partner.id)
+            ], limit=1)
+            if existing:
+                _logger.info(
+                    f'institution.client encontrado por institution+partner: '
+                    f'id={existing.id}, partner={partner.name}, institution={institution.name}'
+                )
 
-            if not institution and data.get('institution_id_institutions'):
-                institution = self.env['institution'].sudo().search([
-                    ('id_institutions', '=', data['institution_id_institutions'])
-                ], limit=1)
+        # 2. Si no encontramos por institution+partner, buscar por cloud_sync_id
+        if not existing and source_id and 'cloud_sync_id' in InstitutionClient._fields:
+            existing = InstitutionClient.search([('cloud_sync_id', '=', source_id)], limit=1)
+            if existing:
+                _logger.info(f'institution.client encontrado por cloud_sync_id: {existing.id}')
 
-            # Buscar partner por VAT o ID
-            partner = None
-            if data.get('partner_vat'):
-                partner = self.env['res.partner'].sudo().search([
-                    ('vat', '=', data['partner_vat'])
-                ], limit=1)
-            if not partner and data.get('partner_id'):
-                partner = self.env['res.partner'].sudo().browse(data['partner_id'])
-                if not partner.exists():
-                    partner = None
+        # NOTA: NO buscamos por ID directo porque los IDs pueden ser diferentes
+        # entre servidores offline y cloud
 
-            if institution and partner:
-                existing = InstitutionClient.search([
-                    ('institution_id', '=', institution.id),
-                    ('partner_id', '=', partner.id)
-                ], limit=1)
-
-        # Preparar valores
+        # Preparar valores para actualizar
         vals = {}
 
         # Solo actualizar available_amount y sale, las relaciones se mantienen
@@ -3690,40 +3692,27 @@ class PosSyncManager(models.Model):
             vals['sale'] = data['sale']
 
         if existing:
+            # ACTUALIZAR registro existente
+            old_amount = existing.available_amount
             if vals:
                 existing.with_context(skip_sync_queue=True).write(vals)
-            if cloud_id and 'cloud_sync_id' in InstitutionClient._fields and not existing.cloud_sync_id:
-                existing.with_context(skip_sync_queue=True).write({'cloud_sync_id': cloud_id})
+            # Guardar el source_id como cloud_sync_id si no está configurado
+            if source_id and 'cloud_sync_id' in InstitutionClient._fields and not existing.cloud_sync_id:
+                existing.with_context(skip_sync_queue=True).write({'cloud_sync_id': source_id})
             _logger.info(
-                f'institution.client actualizado: partner={existing.partner_id.name}, '
-                f'available_amount={existing.available_amount}'
+                f'institution.client ACTUALIZADO: partner={existing.partner_id.name}, '
+                f'institution={existing.institution_id.name}, '
+                f'available_amount: {old_amount} -> {existing.available_amount}'
             )
             return existing
         else:
-            # Necesitamos institution_id y partner_id para crear
-            institution = None
-            if data.get('institution_id_institutions'):
-                institution = self.env['institution'].sudo().search([
-                    ('id_institutions', '=', data['institution_id_institutions'])
-                ], limit=1)
-            if not institution and data.get('institution_id'):
-                institution = self.env['institution'].sudo().browse(data['institution_id'])
-                if not institution.exists():
-                    institution = None
-
-            partner = None
-            if data.get('partner_vat'):
-                partner = self.env['res.partner'].sudo().search([
-                    ('vat', '=', data['partner_vat'])
-                ], limit=1)
-            if not partner and data.get('partner_id'):
-                partner = self.env['res.partner'].sudo().browse(data['partner_id'])
-                if not partner.exists():
-                    partner = None
-
+            # CREAR nuevo registro - usar institution y partner ya encontrados
             if not institution or not partner:
                 _logger.warning(
-                    f'No se puede crear institution.client: institution={institution}, partner={partner}'
+                    f'No se puede crear institution.client: '
+                    f'institution={institution}, partner={partner}, '
+                    f'institution_id_institutions={data.get("institution_id_institutions")}, '
+                    f'partner_vat={data.get("partner_vat")}'
                 )
                 return None
 
@@ -3734,13 +3723,14 @@ class PosSyncManager(models.Model):
             if 'sale' not in vals:
                 vals['sale'] = data.get('sale', 0)
 
-            if cloud_id and 'cloud_sync_id' in InstitutionClient._fields:
-                vals['cloud_sync_id'] = cloud_id
+            if source_id and 'cloud_sync_id' in InstitutionClient._fields:
+                vals['cloud_sync_id'] = source_id
 
             record = InstitutionClient.with_context(skip_sync_queue=True).create(vals)
             _logger.info(
-                f'institution.client creado: partner={record.partner_id.name}, '
-                f'institution={record.institution_id.name}'
+                f'institution.client CREADO: partner={record.partner_id.name}, '
+                f'institution={record.institution_id.name}, '
+                f'available_amount={record.available_amount}'
             )
             return record
 

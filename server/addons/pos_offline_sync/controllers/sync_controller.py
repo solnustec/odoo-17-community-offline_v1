@@ -1043,8 +1043,13 @@ class PosOfflineSyncController(http.Controller):
             SyncManager = request.env['pos.sync.manager'].sudo()
 
             _logger.info(
-                f'Procesando institution.client (PUSH): partner={data.get("partner_vat")}, '
-                f'available_amount={data.get("available_amount")}, operation={operation}'
+                f'=== Procesando institution.client (PUSH) ===\n'
+                f'  queue_id={queue_id}, local_id={local_id}\n'
+                f'  operation={operation}\n'
+                f'  partner_vat={data.get("partner_vat")}\n'
+                f'  institution_id_institutions={data.get("institution_id_institutions")}\n'
+                f'  available_amount={data.get("available_amount")}\n'
+                f'  sale={data.get("sale")}'
             )
 
             if operation == 'unlink':
@@ -1091,14 +1096,37 @@ class PosOfflineSyncController(http.Controller):
             data['id'] = local_id
             inst_client = SyncManager.deserialize_institution_client(data)
 
-            return {
-                'success': True,
-                'queue_id': queue_id,
-                'local_id': local_id,
-                'cloud_id': inst_client.id if inst_client else None,
-                'partner_name': inst_client.partner_id.name if inst_client else None,
-                'available_amount': inst_client.available_amount if inst_client else None,
-            }
+            if inst_client:
+                _logger.info(
+                    f'=== institution.client PROCESADO (PUSH) ===\n'
+                    f'  cloud_id={inst_client.id}\n'
+                    f'  partner={inst_client.partner_id.name}\n'
+                    f'  institution={inst_client.institution_id.name}\n'
+                    f'  available_amount={inst_client.available_amount}\n'
+                    f'  sale={inst_client.sale}'
+                )
+                return {
+                    'success': True,
+                    'queue_id': queue_id,
+                    'local_id': local_id,
+                    'cloud_id': inst_client.id,
+                    'partner_name': inst_client.partner_id.name,
+                    'institution_name': inst_client.institution_id.name,
+                    'available_amount': inst_client.available_amount,
+                    'sale': inst_client.sale,
+                }
+            else:
+                _logger.warning(
+                    f'institution.client NO PROCESADO: deserialize_institution_client retornó None\n'
+                    f'  partner_vat={data.get("partner_vat")}\n'
+                    f'  institution_id_institutions={data.get("institution_id_institutions")}'
+                )
+                return {
+                    'success': False,
+                    'queue_id': queue_id,
+                    'local_id': local_id,
+                    'error': 'No se pudo encontrar/crear institution.client',
+                }
 
         except Exception as e:
             _logger.error(f'Error procesando institution.client#{local_id}: {str(e)}')

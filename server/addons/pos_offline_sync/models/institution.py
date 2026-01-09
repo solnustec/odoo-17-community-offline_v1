@@ -169,13 +169,24 @@ class InstitutionClient(models.Model):
             ], limit=1)
 
             if not sync_config:
+                _logger.warning(
+                    f'No se encontró configuración de sync activa para institution.client: '
+                    f'partner={record.partner_id.name}, institution={record.institution_id.name}'
+                )
                 return
 
             # Serializar datos
             data = SyncManager.serialize_institution_client(record)
 
+            _logger.info(
+                f'Serializando institution.client para sync: '
+                f'id={record.id}, partner_vat={record.partner_id.vat}, '
+                f'institution_id_institutions={record.institution_id.id_institutions}, '
+                f'available_amount={record.available_amount}'
+            )
+
             # Crear registro en cola
-            SyncQueue.create({
+            queue_record = SyncQueue.create({
                 'model_name': 'institution.client',
                 'record_id': record.id,
                 'record_ref': f'{record.partner_id.name} - {record.institution_id.name}',
@@ -186,8 +197,15 @@ class InstitutionClient(models.Model):
 
             _logger.info(
                 f'institution.client agregado a cola de sync ({operation}): '
-                f'partner={record.partner_id.name}, amount={record.available_amount}'
+                f'queue_id={queue_record.id}, partner={record.partner_id.name}, '
+                f'institution={record.institution_id.name}, amount={record.available_amount}'
             )
 
         except Exception as e:
-            _logger.warning(f'Error agregando institution.client a cola de sync: {e}')
+            _logger.error(
+                f'Error agregando institution.client a cola de sync: {e}. '
+                f'Partner={record.partner_id.name if record.partner_id else "N/A"}, '
+                f'Institution={record.institution_id.name if record.institution_id else "N/A"}'
+            )
+            import traceback
+            _logger.error(traceback.format_exc())
