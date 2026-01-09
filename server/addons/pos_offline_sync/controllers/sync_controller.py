@@ -1714,6 +1714,16 @@ class PosOfflineSyncController(http.Controller):
             elif model_name == 'product.pricelist':
                 domain.append(('active', '=', True))
 
+            # Logging específico para institution.client
+            if model_name == 'institution.client':
+                total_count = Model.search_count([])
+                filtered_count = Model.search_count(domain) if domain else total_count
+                _logger.info(
+                    f'PULL institution.client: total={total_count}, '
+                    f'con filtro={filtered_count}, domain={domain}, '
+                    f'last_sync_dt={last_sync_dt}'
+                )
+
             # Obtener registros con paginación
             # Pedimos 1 extra para saber si hay más
             records = Model.search(domain, limit=limit + 1, offset=offset, order='write_date asc')
