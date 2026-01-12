@@ -1,0 +1,9 @@
+id,name,model_id:id,group_id:id,perm_read,perm_write,perm_create,perm_unlink
+access_api_gateway_branch_manager,api.gateway.branch.manager,model_api_gateway_branch,base.group_system,1,1,1,1
+access_api_gateway_branch_user,api.gateway.branch.user,model_api_gateway_branch,base.group_user,1,0,0,0
+access_api_gateway_config_manager,api.gateway.config.manager,model_api_gateway_config,base.group_system,1,1,1,1
+access_api_gateway_config_user,api.gateway.config.user,model_api_gateway_config,base.group_user,1,0,0,0
+access_api_gateway_log_manager,api.gateway.log.manager,model_api_gateway_log,base.group_system,1,1,1,1
+access_api_gateway_log_user,api.gateway.log.user,model_api_gateway_log,base.group_user,1,0,0,0
+access_api_gateway_webhook_manager,api.gateway.webhook.manager,model_api_gateway_webhook,base.group_system,1,1,1,1
+access_api_gateway_webhook_user,api.gateway.webhook.user,model_api_gateway_webhook,base.group_user,1,0,0,0

@@ -1,0 +1,292 @@
+<?xml version="1.0" encoding="utf-8"?>
+<odoo>
+    <!-- Vista Tree de Sucursales -->
+    <record id="view_branch_registry_tree" model="ir.ui.view">
+        <field name="name">branch.registry.tree</field>
+        <field name="model">branch.registry</field>
+        <field name="arch" type="xml">
+            <tree decoration-success="online_status == 'online'"
+                  decoration-warning="online_status == 'offline'"
+                  decoration-muted="state != 'active'">
+                <field name="code"/>
+                <field name="name"/>
+                <field name="state" widget="badge"
+                       decoration-info="state == 'pending'"
+                       decoration-success="state == 'active'"
+                       decoration-warning="state == 'suspended'"
+                       decoration-danger="state == 'inactive'"/>
+                <field name="online_status" widget="badge"
+                       decoration-success="online_status == 'online'"
+                       decoration-danger="online_status == 'offline'"
+                       decoration-warning="online_status == 'unknown'"/>
+                <field name="last_connection"/>
+                <field name="current_version"/>
+                <field name="pending_update_count"/>
+                <field name="city"/>
+                <field name="warehouse_id"/>
+            </tree>
+        </field>
+    </record>
+
+    <!-- Vista Kanban de Sucursales -->
+    <record id="view_branch_registry_kanban" model="ir.ui.view">
+        <field name="name">branch.registry.kanban</field>
+        <field name="model">branch.registry</field>
+        <field name="arch" type="xml">
+            <kanban class="o_kanban_mobile">
+                <field name="name"/>
+                <field name="code"/>
+                <field name="state"/>
+                <field name="online_status"/>
+                <field name="current_version"/>
+                <field name="pending_update_count"/>
+                <field name="last_connection"/>
+                <templates>
+                    <t t-name="kanban-box">
+                        <div class="oe_kanban_card oe_kanban_global_click">
+                            <div class="oe_kanban_content">
+                                <div class="o_kanban_record_top">
+                                    <div class="o_kanban_record_headings">
+                                        <strong class="o_kanban_record_title">
+                                            <field name="name"/>
+                                        </strong>
+                                        <span class="o_kanban_record_subtitle text-muted">
+                                            <field name="code"/>
+                                        </span>
+                                    </div>
+                                    <div class="o_dropdown_kanban dropdown">
+                                        <span t-if="record.online_status.raw_value == 'online'"
+                                              class="badge rounded-pill text-bg-success">Online</span>
+                                        <span t-elif="record.online_status.raw_value == 'offline'"
+                                              class="badge rounded-pill text-bg-danger">Offline</span>
+                                        <span t-else="" class="badge rounded-pill text-bg-warning">Unknown</span>
+                                    </div>
+                                </div>
+                                <div class="o_kanban_record_body">
+                                    <div>
+                                        <strong>Version:</strong> <field name="current_version"/>
+                                    </div>
+                                    <div t-if="record.pending_update_count.raw_value > 0">
+                                        <span class="badge text-bg-warning">
+                                            <field name="pending_update_count"/> pending updates
+                                        </span>
+                                    </div>
+                                </div>
+                                <div class="o_kanban_record_bottom">
+                                    <div class="oe_kanban_bottom_left">
+                                        <em>Last seen: <field name="last_connection"/></em>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    </t>
+                </templates>
+            </kanban>
+        </field>
+    </record>
+
+    <!-- Vista Form de Sucursales -->
+    <record id="view_branch_registry_form" model="ir.ui.view">
+        <field name="name">branch.registry.form</field>
+        <field name="model">branch.registry</field>
+        <field name="arch" type="xml">
+            <form>
+                <header>
+                    <button name="action_activate" type="object"
+                            string="Activate" class="btn-primary"
+                            invisible="state != 'pending'"/>
+                    <button name="action_suspend" type="object"
+                            string="Suspend"
+                            invisible="state != 'active'"/>
+                    <button name="action_deactivate" type="object"
+                            string="Deactivate"
+                            invisible="state == 'inactive'"/>
+                    <button name="action_regenerate_api_key" type="object"
+                            string="Regenerate API Key"
+                            groups="branch_update_manager.group_branch_update_admin"/>
+                    <field name="state" widget="statusbar"
+                           statusbar_visible="pending,active"/>
+                </header>
+                <sheet>
+                    <div class="oe_button_box" name="button_box">
+                        <button name="action_view_logs" type="object"
+                                class="oe_stat_button" icon="fa-history">
+                            <field name="log_count" widget="statinfo" string="Logs"/>
+                        </button>
+                        <button class="oe_stat_button" type="object"
+                                name="action_force_update_check" icon="fa-refresh">
+                            <span>Check Updates</span>
+                        </button>
+                    </div>
+                    <widget name="web_ribbon" title="Offline"
+                            invisible="online_status != 'offline'"
+                            bg_color="bg-danger"/>
+                    <widget name="web_ribbon" title="Online"
+                            invisible="online_status != 'online'"
+                            bg_color="bg-success"/>
+                    <div class="oe_title">
+                        <h1>
+                            <field name="name" placeholder="Branch Name"/>
+                        </h1>
+                        <h2>
+                            <field name="code" placeholder="SUC001"/>
+                        </h2>
+                    </div>
+                    <group>
+                        <group string="Identification">
+                            <field name="branch_uuid" readonly="1"/>
+                            <field name="api_key" readonly="1" password="True"
+                                   groups="branch_update_manager.group_branch_update_admin"/>
+                        </group>
+                        <group string="Status">
+                            <field name="online_status"/>
+                            <field name="last_connection"/>
+                            <field name="last_ip_address"/>
+                            <field name="connection_count"/>
+                        </group>
+                    </group>
+
+                    <notebook>
+                        <page string="System Info" name="system">
+                            <group>
+                                <group>
+                                    <field name="odoo_version"/>
+                                    <field name="python_version"/>
+                                    <field name="os_info"/>
+                                    <field name="hostname"/>
+                                </group>
+                                <group>
+                                    <field name="database_name"/>
+                                    <field name="database_size"/>
+                                    <field name="warehouse_id"/>
+                                    <field name="company_id"/>
+                                </group>
+                            </group>
+                        </page>
+
+                        <page string="Updates" name="updates">
+                            <group>
+                                <group>
+                                    <field name="current_package_id"/>
+                                    <field name="current_version"/>
+                                    <field name="last_update_date"/>
+                                    <field name="last_update_status"/>
+                                </group>
+                                <group>
+                                    <field name="auto_update"/>
+                                    <field name="update_window_start" widget="float_time"/>
+                                    <field name="update_window_end" widget="float_time"/>
+                                    <field name="priority"/>
+                                </group>
+                            </group>
+                            <group string="Pending Updates">
+                                <field name="pending_update_ids" nolabel="1">
+                                    <tree>
+                                        <field name="reference"/>
+                                        <field name="name"/>
+                                        <field name="version"/>
+                                        <field name="priority"/>
+                                        <field name="publish_date"/>
+                                    </tree>
+                                </field>
+                            </group>
+                        </page>
+
+                        <page string="Location" name="location">
+                            <group>
+                                <group>
+                                    <field name="address"/>
+                                    <field name="city"/>
+                                    <field name="state_id"/>
+                                    <field name="country_id"/>
+                                </group>
+                                <group>
+                                    <field name="timezone"/>
+                                    <field name="contact_name"/>
+                                    <field name="contact_phone"/>
+                                    <field name="contact_email"/>
+                                </group>
+                            </group>
+                        </page>
+
+                        <page string="Tags" name="tags">
+                            <field name="tag_ids" widget="many2many_tags"/>
+                            <field name="description" placeholder="Additional notes..."/>
+                        </page>
+
+                        <page string="Installed Modules" name="modules">
+                            <field name="installed_modules" readonly="1"/>
+                        </page>
+                    </notebook>
+                </sheet>
+                <div class="oe_chatter">
+                    <field name="message_follower_ids"/>
+                    <field name="activity_ids"/>
+                    <field name="message_ids"/>
+                </div>
+            </form>
+        </field>
+    </record>
+
+    <!-- Vista Search de Sucursales -->
+    <record id="view_branch_registry_search" model="ir.ui.view">
+        <field name="name">branch.registry.search</field>
+        <field name="model">branch.registry</field>
+        <field name="arch" type="xml">
+            <search>
+                <field name="name"/>
+                <field name="code"/>
+                <field name="city"/>
+                <separator/>
+                <filter name="filter_active" string="Active" domain="[('state', '=', 'active')]"/>
+                <filter name="filter_pending" string="Pending" domain="[('state', '=', 'pending')]"/>
+                <filter name="filter_suspended" string="Suspended" domain="[('state', '=', 'suspended')]"/>
+                <separator/>
+                <filter name="filter_online" string="Online" domain="[('is_online', '=', True)]"/>
+                <filter name="filter_offline" string="Offline" domain="[('is_online', '=', False)]"/>
+                <group expand="0" string="Group By">
+                    <filter name="group_state" string="State" context="{'group_by': 'state'}"/>
+                    <filter name="group_city" string="City" context="{'group_by': 'city'}"/>
+                    <filter name="group_warehouse" string="Warehouse" context="{'group_by': 'warehouse_id'}"/>
+                </group>
+            </search>
+        </field>
+    </record>
+
+    <!-- Action -->
+    <record id="action_branch_registry" model="ir.actions.act_window">
+        <field name="name">Branches</field>
+        <field name="res_model">branch.registry</field>
+        <field name="view_mode">tree,kanban,form</field>
+        <field name="search_view_id" ref="view_branch_registry_search"/>
+        <field name="context">{'search_default_filter_active': 1}</field>
+        <field name="help" type="html">
+            <p class="o_view_nocontent_smiling_face">
+                Register your first branch
+            </p>
+            <p>
+                Branches are the remote locations that will receive updates
+                from this central server.
+            </p>
+        </field>
+    </record>
+
+    <!-- Tag Views -->
+    <record id="view_branch_registry_tag_tree" model="ir.ui.view">
+        <field name="name">branch.registry.tag.tree</field>
+        <field name="model">branch.registry.tag</field>
+        <field name="arch" type="xml">
+            <tree editable="bottom">
+                <field name="name"/>
+                <field name="color" widget="color_picker"/>
+            </tree>
+        </field>
+    </record>
+
+    <record id="action_branch_registry_tags" model="ir.actions.act_window">
+        <field name="name">Branch Tags</field>
+        <field name="res_model">branch.registry.tag</field>
+        <field name="view_mode">tree</field>
+    </record>
+
+</odoo>

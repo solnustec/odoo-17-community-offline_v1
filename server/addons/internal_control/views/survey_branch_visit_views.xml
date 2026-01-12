@@ -1,0 +1,338 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<odoo>
+
+    <!-- ============================================= -->
+    <!-- VISTAS PARA VISITAS A SUCURSALES -->
+    <!-- ============================================= -->
+
+    <!-- Vista Tree para Visitas -->
+    <record id="view_survey_branch_visit_tree" model="ir.ui.view">
+        <field name="name">survey.branch.visit.tree</field>
+        <field name="model">survey.branch.visit</field>
+        <field name="arch" type="xml">
+            <tree decoration-danger="is_overdue" decoration-success="state == 'completada'" decoration-muted="state in ('vencida', 'cancelada')">
+                <field name="scheduled_date"/>
+                <field name="employee_id"/>
+                <field name="branch_id"/>
+                <field name="survey_id"/>
+                <field name="days_until" optional="show"/>
+                <field name="state" widget="badge" decoration-info="state == 'programada'" decoration-success="state == 'completada'" decoration-danger="state == 'vencida'" decoration-muted="state == 'cancelada'"/>
+                <field name="is_overdue" column_invisible="True"/>
+                <field name="scheduled_by_id" optional="hide"/>
+            </tree>
+        </field>
+    </record>
+
+    <!-- Vista Form para Visitas -->
+    <record id="view_survey_branch_visit_form" model="ir.ui.view">
+        <field name="name">survey.branch.visit.form</field>
+        <field name="model">survey.branch.visit</field>
+        <field name="arch" type="xml">
+            <form>
+                <header>
+                    <button name="action_open_survey" type="object" string="Evaluar Sucursal" class="btn-primary" invisible="state != 'programada'"/>
+                    <button name="action_view_response" type="object" string="Ver Evaluaci&#243;n" class="btn-secondary" invisible="state != 'completada'"/>
+                    <button name="action_cancel" type="object" string="Cancelar" class="btn-secondary" invisible="state in ('completada', 'cancelada')"/>
+                    <field name="state" widget="statusbar" statusbar_visible="programada,completada"/>
+                </header>
+                <sheet>
+                    <div class="oe_button_box" name="button_box">
+                        <button name="action_view_response" type="object" class="oe_stat_button" icon="fa-file-text-o" invisible="not user_input_id">
+                            <field name="user_input_id" widget="statinfo" string="Respuesta"/>
+                        </button>
+                    </div>
+                    <widget name="web_ribbon" title="Vencida" bg_color="bg-danger" invisible="state != 'vencida'"/>
+                    <widget name="web_ribbon" title="Completada" bg_color="bg-success" invisible="state != 'completada'"/>
+                    <widget name="web_ribbon" title="Cancelada" bg_color="bg-secondary" invisible="state != 'cancelada'"/>
+                    <div class="oe_title">
+                        <h1>
+                            <field name="display_name" readonly="1"/>
+                        </h1>
+                    </div>
+                    <group>
+                        <group string="Visita">
+                            <field name="employee_id" options="{'no_create': True}" readonly="state != 'programada'"/>
+                            <field name="branch_id" options="{'no_create': True}" readonly="state != 'programada'"/>
+                            <field name="scheduled_date" readonly="state != 'programada'"/>
+                        </group>
+                        <group string="Encuesta">
+                            <field name="survey_id" options="{'no_create': True}" readonly="state != 'programada'"/>
+                            <field name="days_until" invisible="state != 'programada'"/>
+                        </group>
+                    </group>
+                    <group>
+                        <group string="Informaci&#243;n Adicional">
+                            <field name="department_id"/>
+                            <field name="scheduled_by_id"/>
+                        </group>
+                        <group string="Estado">
+                            <field name="is_overdue" invisible="1"/>
+                        </group>
+                    </group>
+                    <group string="Notas" invisible="not notes">
+                        <field name="notes" nolabel="1" colspan="2"/>
+                    </group>
+                </sheet>
+                <div class="oe_chatter">
+                    <field name="message_follower_ids"/>
+                    <field name="activity_ids"/>
+                    <field name="message_ids"/>
+                </div>
+            </form>
+        </field>
+    </record>
+
+    <!-- Vista Search para Visitas -->
+    <record id="view_survey_branch_visit_search" model="ir.ui.view">
+        <field name="name">survey.branch.visit.search</field>
+        <field name="model">survey.branch.visit</field>
+        <field name="arch" type="xml">
+            <search>
+                <field name="employee_id"/>
+                <field name="branch_id"/>
+                <field name="survey_id"/>
+                <field name="scheduled_date"/>
+                <separator/>
+                <filter string="Mis Visitas" name="my_visits" domain="[('employee_id.user_id', '=', uid)]"/>
+                <filter string="Programadas por M&#237;" name="scheduled_by_me" domain="[('scheduled_by_id', '=', uid)]"/>
+                <separator/>
+                <filter string="Programadas" name="programada" domain="[('state', '=', 'programada')]"/>
+                <filter string="Completadas" name="completada" domain="[('state', '=', 'completada')]"/>
+                <filter string="Vencidas" name="vencida" domain="[('state', '=', 'vencida')]"/>
+                <filter string="Canceladas" name="cancelada" domain="[('state', '=', 'cancelada')]"/>
+                <separator/>
+                <filter string="Esta Semana" name="this_week" domain="[('scheduled_date', '&gt;=', (context_today() - datetime.timedelta(days=context_today().weekday())).strftime('%Y-%m-%d')), ('scheduled_date', '&lt;=', (context_today() + datetime.timedelta(days=6-context_today().weekday())).strftime('%Y-%m-%d'))]"/>
+                <filter string="Este Mes" name="this_month" domain="[('scheduled_date', '&gt;=', context_today().strftime('%Y-%m-01'))]"/>
+                <filter string="Pr&#243;ximos 7 d&#237;as" name="next_7_days" domain="[('scheduled_date', '&gt;=', context_today().strftime('%Y-%m-%d')), ('scheduled_date', '&lt;=', (context_today() + datetime.timedelta(days=7)).strftime('%Y-%m-%d'))]"/>
+                <separator/>
+                <group expand="0" string="Agrupar por">
+                    <filter string="Empleado" name="group_employee" context="{'group_by': 'employee_id'}"/>
+                    <filter string="Sucursal" name="group_branch" context="{'group_by': 'branch_id'}"/>
+                    <filter string="Encuesta" name="group_survey" context="{'group_by': 'survey_id'}"/>
+                    <filter string="Estado" name="group_state" context="{'group_by': 'state'}"/>
+                    <filter string="Fecha" name="group_date" context="{'group_by': 'scheduled_date:month'}"/>
+                    <filter string="Departamento" name="group_department" context="{'group_by': 'department_id'}"/>
+                </group>
+            </search>
+        </field>
+    </record>
+
+    <!-- Vista Kanban para Visitas -->
+    <record id="view_survey_branch_visit_kanban" model="ir.ui.view">
+        <field name="name">survey.branch.visit.kanban</field>
+        <field name="model">survey.branch.visit</field>
+        <field name="arch" type="xml">
+            <kanban default_group_by="state" class="o_kanban_small_column">
+                <field name="display_name"/>
+                <field name="employee_id"/>
+                <field name="branch_id"/>
+                <field name="scheduled_date"/>
+                <field name="state"/>
+                <field name="is_overdue"/>
+                <field name="days_until"/>
+                <field name="survey_id"/>
+                <templates>
+                    <t t-name="kanban-box">
+                        <div t-attf-class="oe_kanban_card oe_kanban_global_click #{record.is_overdue.raw_value ? 'oe_kanban_color_9' : ''}">
+                            <div class="oe_kanban_content">
+                                <div class="o_kanban_record_top">
+                                    <div class="o_kanban_record_headings">
+                                        <strong class="o_kanban_record_title">
+                                            <field name="branch_id"/>
+                                        </strong>
+                                    </div>
+                                </div>
+                                <div class="o_kanban_record_body">
+                                    <div><i class="fa fa-user"/> <field name="employee_id"/></div>
+                                    <div><i class="fa fa-calendar"/> <field name="scheduled_date"/></div>
+                                    <div class="text-muted small">
+                                        <i class="fa fa-clipboard"/> <field name="survey_id"/>
+                                    </div>
+                                </div>
+                                <div class="o_kanban_record_bottom">
+                                    <div class="oe_kanban_bottom_left">
+                                        <span t-if="record.state.raw_value == 'programada' and record.days_until.raw_value >= 0">
+                                            <i class="fa fa-clock-o"/> <field name="days_until"/> d&#237;as
+                                        </span>
+                                        <span t-elif="record.is_overdue.raw_value" class="text-danger">
+                                            <i class="fa fa-exclamation-circle"/> Vencida
+                                        </span>
+                                    </div>
+                                    <div class="oe_kanban_bottom_right">
+                                        <field name="state" widget="label_selection" options="{'classes': {'programada': 'info', 'completada': 'success', 'vencida': 'danger', 'cancelada': 'secondary'}}"/>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    </t>
+                </templates>
+            </kanban>
+        </field>
+    </record>
+
+    <!-- Vista Calendar para Visitas -->
+    <record id="view_survey_branch_visit_calendar" model="ir.ui.view">
+        <field name="name">survey.branch.visit.calendar</field>
+        <field name="model">survey.branch.visit</field>
+        <field name="arch" type="xml">
+            <calendar string="Visitas Programadas" date_start="scheduled_date" color="employee_id" mode="month">
+                <field name="branch_id"/>
+                <field name="employee_id"/>
+                <field name="state"/>
+            </calendar>
+        </field>
+    </record>
+
+    <!-- Vista Pivot para Reportes -->
+    <record id="view_survey_branch_visit_pivot" model="ir.ui.view">
+        <field name="name">survey.branch.visit.pivot</field>
+        <field name="model">survey.branch.visit</field>
+        <field name="arch" type="xml">
+            <pivot string="An&#225;lisis de Visitas">
+                <field name="employee_id" type="row"/>
+                <field name="state" type="col"/>
+                <field name="id" type="measure"/>
+            </pivot>
+        </field>
+    </record>
+
+    <!-- Vista Graph para Reportes -->
+    <record id="view_survey_branch_visit_graph" model="ir.ui.view">
+        <field name="name">survey.branch.visit.graph</field>
+        <field name="model">survey.branch.visit</field>
+        <field name="arch" type="xml">
+            <graph string="Visitas por Estado" type="bar">
+                <field name="employee_id"/>
+                <field name="state" type="col"/>
+            </graph>
+        </field>
+    </record>
+
+    <!-- ============================================= -->
+    <!-- WIZARD PARA PROGRAMAR VISITAS EN LOTE -->
+    <!-- ============================================= -->
+
+    <record id="view_survey_branch_visit_wizard_form" model="ir.ui.view">
+        <field name="name">survey.branch.visit.wizard.form</field>
+        <field name="model">survey.branch.visit.wizard</field>
+        <field name="arch" type="xml">
+            <form>
+                <group>
+                    <group>
+                        <field name="survey_id" options="{'no_create': True}"/>
+                        <field name="visit_count" readonly="1"/>
+                    </group>
+                    <group string="Importar desde Archivo">
+                        <div class="text-muted mb-2" colspan="2">
+                            <small>
+                                <i class="fa fa-info-circle"/> Descargue la plantilla, complete los datos y cargue el archivo.
+                                <br/>Use identificaci&#243;n del empleado y c&#243;digo de sucursal.
+                            </small>
+                        </div>
+                        <field name="import_file" filename="import_filename"/>
+                        <field name="import_filename" invisible="1"/>
+                        <div colspan="2">
+                            <button name="action_download_template" string="&#x21e9; Descargar Plantilla" type="object" class="btn-link btn-sm" icon="fa-download"/>
+                            <button name="action_import_file" string="Importar Archivo" type="object" class="btn-secondary btn-sm ms-2" icon="fa-upload" invisible="not import_file"/>
+                        </div>
+                        <!-- Resultado de importación -->
+                        <div colspan="2" invisible="not import_result" class="alert alert-info mt-2">
+                            <field name="import_result" nolabel="1" readonly="1" class="mb-0"/>
+                        </div>
+                    </group>
+                </group>
+                <separator string="Visitas a Programar"/>
+                <field name="line_ids" nolabel="1">
+                    <tree editable="bottom">
+                        <field name="employee_id" options="{'no_create': True}"/>
+                        <field name="branch_id" options="{'no_create': True}"/>
+                        <field name="scheduled_date"/>
+                        <field name="notes" optional="hide"/>
+                    </tree>
+                </field>
+                <footer>
+                    <button name="action_schedule_visits" string="Programar Visitas" type="object" class="btn-primary"/>
+                    <button string="Cancelar" class="btn-secondary" special="cancel"/>
+                </footer>
+            </form>
+        </field>
+    </record>
+
+    <!-- ============================================= -->
+    <!-- ACCIONES -->
+    <!-- ============================================= -->
+
+    <!-- Acci&#243;n para ver todas las visitas (administrativo) -->
+    <record id="action_survey_branch_visit_all" model="ir.actions.act_window">
+        <field name="name">Todas las Visitas</field>
+        <field name="res_model">survey.branch.visit</field>
+        <field name="view_mode">tree,kanban,calendar,pivot,graph,form</field>
+        <field name="search_view_id" ref="view_survey_branch_visit_search"/>
+        <field name="context">{}</field>
+        <field name="help" type="html">
+            <p class="o_view_nocontent_smiling_face">
+                Programar visitas a sucursales
+            </p>
+            <p>
+                Use el wizard para programar visitas de evaluaci&#243;n a las sucursales.
+            </p>
+        </field>
+    </record>
+
+    <!-- Acci&#243;n para mis visitas (empleado) -->
+    <record id="action_survey_branch_visit_my" model="ir.actions.act_window">
+        <field name="name">Mis Visitas Programadas</field>
+        <field name="res_model">survey.branch.visit</field>
+        <field name="view_mode">tree,kanban,calendar,form</field>
+        <field name="search_view_id" ref="view_survey_branch_visit_search"/>
+        <field name="domain">[('employee_id.user_id', '=', uid)]</field>
+        <field name="context">{'search_default_programada': 1}</field>
+        <field name="help" type="html">
+            <p class="o_view_nocontent_smiling_face">
+                No tienes visitas programadas
+            </p>
+            <p>
+                Cuando te asignen visitas a sucursales, aparecer&#225;n aqu&#237;.
+            </p>
+        </field>
+    </record>
+
+    <!-- Acci&#243;n para abrir wizard de programaci&#243;n -->
+    <record id="action_survey_branch_visit_wizard" model="ir.actions.act_window">
+        <field name="name">Programar Visitas</field>
+        <field name="res_model">survey.branch.visit.wizard</field>
+        <field name="view_mode">form</field>
+        <field name="target">new</field>
+        <field name="context">{}</field>
+    </record>
+
+    <!-- ============================================= -->
+    <!-- MEN&#218;S -->
+    <!-- ============================================= -->
+
+    <!-- Men&#250; padre para Visitas a Sucursales -->
+    <menuitem id="menu_survey_branch_visits"
+              name="Visitas a Sucursales"
+              parent="survey.menu_surveys"
+              sequence="15"/>
+
+    <!-- Submen&#250;s -->
+    <menuitem id="menu_survey_branch_visit_wizard"
+              name="Programar Visitas"
+              parent="menu_survey_branch_visits"
+              action="action_survey_branch_visit_wizard"
+              sequence="1"/>
+
+    <menuitem id="menu_survey_branch_visit_all"
+              name="Todas las Visitas"
+              parent="menu_survey_branch_visits"
+              action="action_survey_branch_visit_all"
+              sequence="2"/>
+
+    <menuitem id="menu_survey_branch_visit_my"
+              name="Mis Visitas"
+              parent="menu_survey_branch_visits"
+              action="action_survey_branch_visit_my"
+              sequence="3"/>
+
+</odoo>

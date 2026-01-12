@@ -1,0 +1,111 @@
+<?xml version="1.0" encoding="utf-8"?>
+<odoo>
+
+    <!-- Extend hr.leave.type form view to add group validation fields -->
+    <record id="view_hr_leave_type_form_inherit_group_validation" model="ir.ui.view">
+        <field name="name">hr.leave.type.form.inherit.group.validation</field>
+        <field name="model">hr.leave.type</field>
+        <field name="inherit_id" ref="hr_holidays.edit_holiday_status_form"/>
+        <field name="arch" type="xml">
+            <!-- Add group fields after leave_validation_type -->
+            <xpath expr="//field[@name='leave_validation_type']" position="after">
+                <field name="first_validator_group_id"
+                       invisible="leave_validation_type != 'both'"
+                       required="leave_validation_type == 'both' and second_validator_group_id"/>
+                <field name="second_validator_group_id"
+                       invisible="leave_validation_type != 'both'"
+                       required="leave_validation_type == 'both' and first_validator_group_id"/>
+            </xpath>
+        </field>
+    </record>
+
+    <!-- Extend hr.leave form view to fix button visibility for group validation -->
+    <record id="view_hr_leave_form_inherit_group_validation" model="ir.ui.view">
+        <field name="name">hr.leave.form.inherit.group.validation</field>
+        <field name="model">hr.leave</field>
+        <field name="inherit_id" ref="hr_holidays.hr_leave_view_form"/>
+        <field name="priority">20</field>
+        <field name="arch" type="xml">
+            <!-- Add computed fields for visibility conditions -->
+            <xpath expr="//field[@name='can_cancel']" position="after">
+                <field name="use_group_validation" invisible="1"/>
+                <field name="is_user_first_validator" invisible="1"/>
+                <field name="is_user_second_validator" invisible="1"/>
+            </xpath>
+
+            <!-- Replace action_validate button: hide standard when group validation is active -->
+            <xpath expr="//button[@name='action_validate']" position="attributes">
+                <attribute name="invisible">state != 'validate1' or use_group_validation</attribute>
+            </xpath>
+
+            <!-- Replace Rechazar button: show in validate1 only for second validators -->
+            <xpath expr="//button[@name='action_refuse']" position="attributes">
+                <attribute name="invisible">state in ('draft', 'refuse', 'validate') or (state == 'validate1' and (not use_group_validation or not is_user_second_validator)) or (state == 'confirm' and use_group_validation and not is_user_second_validator)</attribute>
+            </xpath>
+
+            <!-- Add Segunda Validacion button: only for second validators in validate1 -->
+            <xpath expr="//button[@name='action_validate']" position="after">
+                <button string="Segunda Validacion" name="action_validate" type="object"
+                        class="oe_highlight"
+                        invisible="state != 'validate1' or not use_group_validation or not is_user_second_validator"/>
+            </xpath>
+
+            <!-- Modify Cancelar button: for group validation, second validators can always cancel; otherwise use standard logic -->
+            <xpath expr="//button[@name='action_cancel']" position="attributes">
+                <attribute name="invisible">not active or (use_group_validation and not is_user_second_validator) or (not use_group_validation and not can_cancel)</attribute>
+            </xpath>
+
+            <!-- Add validation tracking fields in a new group at the bottom -->
+            <xpath expr="//sheet" position="inside">
+                <group string="Historial de Validaciones"
+                       invisible="not use_group_validation or state in ('draft', 'confirm')">
+                    <group>
+                        <field name="first_validator_id" readonly="1"/>
+                        <field name="first_validation_date" readonly="1"/>
+                    </group>
+                    <group>
+                        <field name="second_validator_id" readonly="1"/>
+                        <field name="second_validation_date" readonly="1"/>
+                    </group>
+                </group>
+            </xpath>
+        </field>
+    </record>
+
+    <!-- Extend hr.leave tree view to show validators and fix button visibility -->
+    <record id="view_hr_leave_tree_inherit_group_validation" model="ir.ui.view">
+        <field name="name">hr.leave.tree.inherit.group.validation</field>
+        <field name="model">hr.leave</field>
+        <field name="inherit_id" ref="hr_holidays.hr_leave_view_tree"/>
+        <field name="priority">20</field>
+        <field name="arch" type="xml">
+            <!-- Add computed fields at the beginning for visibility conditions -->
+            <xpath expr="//tree" position="inside">
+                <field name="use_group_validation" column_invisible="1"/>
+                <field name="is_user_first_validator" column_invisible="1"/>
+                <field name="is_user_second_validator" column_invisible="1"/>
+            </xpath>
+
+            <!-- Add validator fields before state -->
+            <xpath expr="//field[@name='state']" position="before">
+                <field name="first_validator_id" optional="hide"/>
+                <field name="second_validator_id" optional="hide"/>
+            </xpath>
+
+            <!-- Replace Validate button completely -->
+            <xpath expr="//button[@name='action_validate']" position="replace">
+                <button string="Validate" name="action_validate" type="object" icon="fa-check"
+                        invisible="state != 'validate1' or (use_group_validation and not is_user_second_validator)"
+                        groups="hr_holidays.group_hr_holidays_responsible"/>
+            </xpath>
+
+            <!-- Replace Refuse button completely -->
+            <xpath expr="//button[@name='action_refuse']" position="replace">
+                <button string="Refuse" name="action_refuse" type="object" icon="fa-times"
+                        invisible="state not in ('confirm', 'validate1') or (state == 'validate1' and use_group_validation and not is_user_second_validator)"
+                        groups="hr_holidays.group_hr_holidays_responsible"/>
+            </xpath>
+        </field>
+    </record>
+
+</odoo>

@@ -1,0 +1,47 @@
+<?xml version="1.0" encoding="utf-8"?>
+<odoo>
+
+    <!-- Menu Principal -->
+    <menuitem id="api_gateway_menu_root"
+              name="API Gateway"
+              web_icon="api_gateway,static/description/icon.png"
+              groups="base.group_system"
+              sequence="100"/>
+
+    <!-- Submenu Configuracion -->
+    <menuitem id="api_gateway_menu_config"
+              name="Configuracion"
+              parent="api_gateway_menu_root"
+              sequence="10"/>
+
+    <menuitem id="api_gateway_menu_config_apis"
+              name="APIs Configuradas"
+              parent="api_gateway_menu_config"
+              action="api_gateway_config_action"
+              sequence="10"/>
+
+    <menuitem id="api_gateway_menu_config_branches"
+              name="Sucursales"
+              parent="api_gateway_menu_config"
+              action="api_gateway_branch_action"
+              sequence="20"/>
+
+    <!-- Submenu Monitoreo -->
+    <menuitem id="api_gateway_menu_monitoring"
+              name="Monitoreo"
+              parent="api_gateway_menu_root"
+              sequence="20"/>
+
+    <menuitem id="api_gateway_menu_logs"
+              name="Logs de Transacciones"
+              parent="api_gateway_menu_monitoring"
+              action="api_gateway_log_action"
+              sequence="10"/>
+
+    <menuitem id="api_gateway_menu_webhooks"
+              name="Webhooks Recibidos"
+              parent="api_gateway_menu_monitoring"
+              action="api_gateway_webhook_action"
+              sequence="20"/>
+
+</odoo>

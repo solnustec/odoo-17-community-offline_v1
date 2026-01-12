@@ -1,0 +1,17 @@
+{
+    "cloud_url": "https://erp.empresa.com",
+    "branch_uuid": "YOUR_BRANCH_UUID_HERE",
+    "api_key": "YOUR_API_KEY_HERE",
+    "addons_path": "C:\\odoo-17\\server\\addons",
+    "odoo_service_name": "OdooService",
+    "check_interval": 300,
+    "auto_apply": true,
+    "backup_before_update": true,
+    "update_window_start": 2,
+    "update_window_end": 6,
+    "retry_count": 3,
+    "retry_delay": 60,
+    "timeout": 30,
+    "log_file": "C:\\odoo-17\\logs\\update_agent.log",
+    "current_version": "0.0.0"
+}

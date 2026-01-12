@@ -1,0 +1,230 @@
+<?xml version="1.0" encoding="utf-8"?>
+<odoo>
+    <!-- Vista Tree de Paquetes -->
+    <record id="view_update_package_tree" model="ir.ui.view">
+        <field name="name">branch.update.package.tree</field>
+        <field name="model">branch.update.package</field>
+        <field name="arch" type="xml">
+            <tree decoration-info="state == 'draft'"
+                  decoration-warning="state == 'packaging'"
+                  decoration-success="state == 'published'"
+                  decoration-muted="state in ('deprecated', 'cancelled')">
+                <field name="reference"/>
+                <field name="name"/>
+                <field name="version"/>
+                <field name="update_type"/>
+                <field name="priority"/>
+                <field name="state" widget="badge"
+                       decoration-info="state == 'draft'"
+                       decoration-warning="state == 'packaging'"
+                       decoration-success="state in ('ready', 'published')"
+                       decoration-danger="state == 'cancelled'"/>
+                <field name="package_size_display"/>
+                <field name="publish_date"/>
+                <field name="download_count"/>
+                <field name="install_count"/>
+                <field name="failure_count"/>
+                <field name="pending_count"/>
+            </tree>
+        </field>
+    </record>
+
+    <!-- Vista Form de Paquetes -->
+    <record id="view_update_package_form" model="ir.ui.view">
+        <field name="name">branch.update.package.form</field>
+        <field name="model">branch.update.package</field>
+        <field name="arch" type="xml">
+            <form>
+                <header>
+                    <button name="action_generate_package" type="object"
+                            string="Generate Package" class="btn-primary"
+                            invisible="state != 'draft'"/>
+                    <button name="action_publish" type="object"
+                            string="Publish" class="btn-primary"
+                            invisible="state != 'ready'"/>
+                    <button name="action_deprecate" type="object"
+                            string="Deprecate"
+                            invisible="state != 'published'"/>
+                    <button name="action_cancel" type="object"
+                            string="Cancel"
+                            invisible="state not in ('draft', 'ready')"/>
+                    <button name="action_reset_to_draft" type="object"
+                            string="Reset to Draft"
+                            invisible="state not in ('ready', 'cancelled')"/>
+                    <field name="state" widget="statusbar"
+                           statusbar_visible="draft,ready,published"/>
+                </header>
+                <sheet>
+                    <div class="oe_button_box" name="button_box">
+                        <button name="%(action_update_logs)d" type="action"
+                                class="oe_stat_button" icon="fa-history">
+                            <field name="install_count" widget="statinfo" string="Installs"/>
+                        </button>
+                    </div>
+                    <div class="oe_title">
+                        <h1>
+                            <field name="reference" readonly="1"/>
+                        </h1>
+                    </div>
+                    <group>
+                        <group>
+                            <field name="name"/>
+                            <field name="version"/>
+                            <field name="update_type"/>
+                            <field name="priority"/>
+                        </group>
+                        <group>
+                            <field name="package_date"/>
+                            <field name="publish_date"/>
+                            <field name="expiry_date"/>
+                            <field name="min_odoo_version"/>
+                        </group>
+                    </group>
+
+                    <notebook>
+                        <page string="Modules" name="modules">
+                            <field name="module_ids" widget="many2many_tags"
+                                   options="{'no_create': True}"/>
+                            <field name="module_version_ids" readonly="1">
+                                <tree>
+                                    <field name="module_name"/>
+                                    <field name="version"/>
+                                    <field name="checksum"/>
+                                </tree>
+                            </field>
+                        </page>
+
+                        <page string="Target Branches" name="branches">
+                            <group>
+                                <field name="all_branches"/>
+                            </group>
+                            <field name="target_branch_ids" widget="many2many_tags"
+                                   invisible="all_branches"/>
+                        </page>
+
+                        <page string="Description" name="description">
+                            <field name="description" placeholder="Descripción de los cambios..."/>
+                            <separator string="Release Notes"/>
+                            <field name="release_notes"/>
+                        </page>
+
+                        <page string="Package" name="package">
+                            <group>
+                                <group>
+                                    <field name="package_file" filename="package_file_name"/>
+                                    <field name="package_file_name" invisible="1"/>
+                                    <field name="package_size_display"/>
+                                </group>
+                                <group>
+                                    <field name="checksum_sha256"/>
+                                    <field name="checksum_md5"/>
+                                </group>
+                            </group>
+                            <group>
+                                <field name="additional_files" filename="additional_files_name"/>
+                                <field name="additional_files_name" invisible="1"/>
+                            </group>
+                        </page>
+
+                        <page string="Configuration" name="config">
+                            <group>
+                                <group string="Application Settings">
+                                    <field name="requires_restart"/>
+                                    <field name="backup_required"/>
+                                    <field name="depends_on_package_id"/>
+                                </group>
+                            </group>
+                            <group string="Pre-Update Script">
+                                <field name="pre_update_script" nolabel="1"
+                                       placeholder="# Python script to execute before update"/>
+                            </group>
+                            <group string="Post-Update Script">
+                                <field name="post_update_script" nolabel="1"
+                                       placeholder="# Python script to execute after update"/>
+                            </group>
+                        </page>
+
+                        <page string="Statistics" name="stats">
+                            <group>
+                                <group>
+                                    <field name="download_count"/>
+                                    <field name="install_count"/>
+                                </group>
+                                <group>
+                                    <field name="failure_count"/>
+                                    <field name="pending_count"/>
+                                </group>
+                            </group>
+                        </page>
+
+                        <page string="Logs" name="logs">
+                            <field name="log_ids" readonly="1">
+                                <tree>
+                                    <field name="branch_id"/>
+                                    <field name="state" widget="badge"/>
+                                    <field name="action"/>
+                                    <field name="start_time"/>
+                                    <field name="end_time"/>
+                                    <field name="duration"/>
+                                    <field name="success"/>
+                                </tree>
+                            </field>
+                        </page>
+                    </notebook>
+                </sheet>
+                <div class="oe_chatter">
+                    <field name="message_follower_ids"/>
+                    <field name="activity_ids"/>
+                    <field name="message_ids"/>
+                </div>
+            </form>
+        </field>
+    </record>
+
+    <!-- Vista Search de Paquetes -->
+    <record id="view_update_package_search" model="ir.ui.view">
+        <field name="name">branch.update.package.search</field>
+        <field name="model">branch.update.package</field>
+        <field name="arch" type="xml">
+            <search>
+                <field name="reference"/>
+                <field name="name"/>
+                <field name="version"/>
+                <separator/>
+                <filter name="filter_draft" string="Draft" domain="[('state', '=', 'draft')]"/>
+                <filter name="filter_ready" string="Ready" domain="[('state', '=', 'ready')]"/>
+                <filter name="filter_published" string="Published" domain="[('state', '=', 'published')]"/>
+                <separator/>
+                <filter name="filter_critical" string="Critical" domain="[('priority', '=', 'critical')]"/>
+                <filter name="filter_high" string="High Priority" domain="[('priority', '=', 'high')]"/>
+                <separator/>
+                <filter name="filter_full" string="Full Package" domain="[('update_type', '=', 'full')]"/>
+                <filter name="filter_hotfix" string="Hotfix" domain="[('update_type', '=', 'hotfix')]"/>
+                <group expand="0" string="Group By">
+                    <filter name="group_state" string="State" context="{'group_by': 'state'}"/>
+                    <filter name="group_type" string="Update Type" context="{'group_by': 'update_type'}"/>
+                    <filter name="group_priority" string="Priority" context="{'group_by': 'priority'}"/>
+                </group>
+            </search>
+        </field>
+    </record>
+
+    <!-- Action -->
+    <record id="action_update_packages" model="ir.actions.act_window">
+        <field name="name">Update Packages</field>
+        <field name="res_model">branch.update.package</field>
+        <field name="view_mode">tree,form</field>
+        <field name="search_view_id" ref="view_update_package_search"/>
+        <field name="context">{'search_default_filter_published': 1}</field>
+        <field name="help" type="html">
+            <p class="o_view_nocontent_smiling_face">
+                Create your first update package
+            </p>
+            <p>
+                Update packages contain module changes that will be distributed
+                to all connected branches.
+            </p>
+        </field>
+    </record>
+
+</odoo>

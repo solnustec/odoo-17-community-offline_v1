@@ -1,0 +1,462 @@
+<?xml version="1.0" encoding="utf-8"?>
+<odoo>
+
+    <!-- ====================== API GATEWAY BRANCH ====================== -->
+
+    <!-- Tree View -->
+    <record id="api_gateway_branch_view_tree" model="ir.ui.view">
+        <field name="name">api.gateway.branch.view.tree</field>
+        <field name="model">api.gateway.branch</field>
+        <field name="arch" type="xml">
+            <tree>
+                <field name="name"/>
+                <field name="code"/>
+                <field name="api_key"/>
+                <field name="ip_address"/>
+                <field name="last_connection"/>
+                <field name="request_count"/>
+                <field name="active"/>
+            </tree>
+        </field>
+    </record>
+
+    <!-- Form View -->
+    <record id="api_gateway_branch_view_form" model="ir.ui.view">
+        <field name="name">api.gateway.branch.view.form</field>
+        <field name="model">api.gateway.branch</field>
+        <field name="arch" type="xml">
+            <form>
+                <sheet>
+                    <div class="oe_button_box" name="button_box">
+                        <button name="toggle_active" type="object"
+                                class="oe_stat_button" icon="fa-archive">
+                            <field name="active" widget="boolean_button"
+                                   options='{"terminology": "archive"}'/>
+                        </button>
+                    </div>
+                    <div class="oe_title">
+                        <h1>
+                            <field name="name" placeholder="Nombre de la sucursal"/>
+                        </h1>
+                    </div>
+                    <group>
+                        <group string="Identificacion">
+                            <field name="code"/>
+                            <field name="description"/>
+                        </group>
+                        <group string="Autenticacion">
+                            <field name="api_key"/>
+                            <button name="action_regenerate_api_key" type="object"
+                                    string="Regenerar API Key" class="btn-secondary"
+                                    confirm="Esta seguro de regenerar la API key? La sucursal debera actualizar su configuracion."/>
+                        </group>
+                    </group>
+                    <group>
+                        <group string="Conexion">
+                            <field name="ip_address" readonly="1"/>
+                            <field name="last_connection" readonly="1"/>
+                            <field name="request_count" readonly="1"/>
+                        </group>
+                    </group>
+                </sheet>
+            </form>
+        </field>
+    </record>
+
+    <!-- Search View -->
+    <record id="api_gateway_branch_view_search" model="ir.ui.view">
+        <field name="name">api.gateway.branch.view.search</field>
+        <field name="model">api.gateway.branch</field>
+        <field name="arch" type="xml">
+            <search>
+                <field name="name"/>
+                <field name="code"/>
+                <filter string="Activos" name="active" domain="[('active', '=', True)]"/>
+                <filter string="Conectados hoy" name="connected_today"
+                        domain="[('last_connection', '>=', (context_today()).strftime('%%Y-%%m-%%d'))]"/>
+            </search>
+        </field>
+    </record>
+
+    <!-- Action -->
+    <record id="api_gateway_branch_action" model="ir.actions.act_window">
+        <field name="name">Sucursales</field>
+        <field name="res_model">api.gateway.branch</field>
+        <field name="view_mode">tree,form</field>
+        <field name="context">{'search_default_active': 1}</field>
+        <field name="help" type="html">
+            <p class="o_view_nocontent_smiling_face">
+                Registrar una sucursal OFFLINE
+            </p>
+            <p>
+                Registre las sucursales que pueden acceder al API Gateway.
+                Cada sucursal recibira una API key unica para autenticacion.
+            </p>
+        </field>
+    </record>
+
+    <!-- ====================== API GATEWAY CONFIG ====================== -->
+
+    <!-- Tree View -->
+    <record id="api_gateway_config_view_tree" model="ir.ui.view">
+        <field name="name">api.gateway.config.view.tree</field>
+        <field name="model">api.gateway.config</field>
+        <field name="arch" type="xml">
+            <tree>
+                <field name="sequence" widget="handle"/>
+                <field name="name"/>
+                <field name="code"/>
+                <field name="base_url"/>
+                <field name="auth_type"/>
+                <field name="webhook_enabled"/>
+                <field name="active"/>
+            </tree>
+        </field>
+    </record>
+
+    <!-- Form View -->
+    <record id="api_gateway_config_view_form" model="ir.ui.view">
+        <field name="name">api.gateway.config.view.form</field>
+        <field name="model">api.gateway.config</field>
+        <field name="arch" type="xml">
+            <form>
+                <sheet>
+                    <div class="oe_button_box" name="button_box">
+                        <button name="toggle_active" type="object"
+                                class="oe_stat_button" icon="fa-archive">
+                            <field name="active" widget="boolean_button"
+                                   options='{"terminology": "archive"}'/>
+                        </button>
+                    </div>
+                    <div class="oe_title">
+                        <h1>
+                            <field name="name" placeholder="Nombre de la API"/>
+                        </h1>
+                    </div>
+                    <group>
+                        <group string="Configuracion General">
+                            <field name="code"/>
+                            <field name="sequence"/>
+                            <field name="description"/>
+                        </group>
+                        <group string="URLs">
+                            <field name="base_url" placeholder="https://api.ejemplo.com"/>
+                            <field name="allowed_endpoints" placeholder="*"/>
+                            <field name="timeout"/>
+                        </group>
+                    </group>
+                    <notebook>
+                        <page string="Autenticacion" name="auth">
+                            <group>
+                                <group>
+                                    <field name="auth_type"/>
+                                </group>
+                            </group>
+                            <group invisible="auth_type == 'none'">
+                                <group string="API Key / Bearer">
+                                    <field name="api_key_header" invisible="auth_type not in ['api_key']"/>
+                                    <field name="api_key_value" password="True"/>
+                                </group>
+                                <group string="API Secret" invisible="auth_type != 'api_key'">
+                                    <field name="api_secret_header"/>
+                                    <field name="api_secret_value" password="True"/>
+                                </group>
+                            </group>
+                        </page>
+                        <page string="Webhooks" name="webhooks">
+                            <group>
+                                <group>
+                                    <field name="webhook_enabled"/>
+                                    <field name="webhook_path" invisible="not webhook_enabled"/>
+                                    <field name="webhook_secret" password="True" invisible="not webhook_enabled"/>
+                                </group>
+                            </group>
+                        </page>
+                        <page string="Seguridad" name="security">
+                            <group>
+                                <group>
+                                    <field name="require_api_key"/>
+                                </group>
+                            </group>
+                            <group>
+                                <field name="allowed_branch_ids" widget="many2many_tags"/>
+                            </group>
+                        </page>
+                    </notebook>
+                </sheet>
+            </form>
+        </field>
+    </record>
+
+    <!-- Search View -->
+    <record id="api_gateway_config_view_search" model="ir.ui.view">
+        <field name="name">api.gateway.config.view.search</field>
+        <field name="model">api.gateway.config</field>
+        <field name="arch" type="xml">
+            <search>
+                <field name="name"/>
+                <field name="code"/>
+                <filter string="Activos" name="active" domain="[('active', '=', True)]"/>
+                <filter string="Con Webhooks" name="with_webhooks" domain="[('webhook_enabled', '=', True)]"/>
+                <group expand="0" string="Agrupar por">
+                    <filter string="Tipo Auth" name="group_auth" context="{'group_by': 'auth_type'}"/>
+                </group>
+            </search>
+        </field>
+    </record>
+
+    <!-- Action -->
+    <record id="api_gateway_config_action" model="ir.actions.act_window">
+        <field name="name">Configuracion APIs</field>
+        <field name="res_model">api.gateway.config</field>
+        <field name="view_mode">tree,form</field>
+        <field name="context">{'search_default_active': 1}</field>
+        <field name="help" type="html">
+            <p class="o_view_nocontent_smiling_face">
+                Crear configuracion de API
+            </p>
+            <p>
+                Configure las APIs externas que pueden ser accedidas a traves del gateway.
+            </p>
+        </field>
+    </record>
+
+    <!-- ====================== API GATEWAY LOG ====================== -->
+
+    <!-- Tree View -->
+    <record id="api_gateway_log_view_tree" model="ir.ui.view">
+        <field name="name">api.gateway.log.view.tree</field>
+        <field name="model">api.gateway.log</field>
+        <field name="arch" type="xml">
+            <tree decoration-danger="state == 'error'" decoration-warning="state == 'timeout'">
+                <field name="create_date"/>
+                <field name="api_code"/>
+                <field name="request_method"/>
+                <field name="request_endpoint"/>
+                <field name="response_status"/>
+                <field name="response_time"/>
+                <field name="source_ip"/>
+                <field name="source_branch_id"/>
+                <field name="transaction_type"/>
+                <field name="state"/>
+            </tree>
+        </field>
+    </record>
+
+    <!-- Form View -->
+    <record id="api_gateway_log_view_form" model="ir.ui.view">
+        <field name="name">api.gateway.log.view.form</field>
+        <field name="model">api.gateway.log</field>
+        <field name="arch" type="xml">
+            <form create="0" edit="0">
+                <sheet>
+                    <div class="oe_title">
+                        <h1>
+                            <field name="name"/>
+                        </h1>
+                    </div>
+                    <group>
+                        <group string="Informacion General">
+                            <field name="api_config_id"/>
+                            <field name="api_code"/>
+                            <field name="transaction_type"/>
+                            <field name="state"/>
+                            <field name="create_date"/>
+                        </group>
+                        <group string="Origen">
+                            <field name="source_ip"/>
+                            <field name="source_branch_id"/>
+                            <field name="source_user_id"/>
+                        </group>
+                    </group>
+                    <notebook>
+                        <page string="Request" name="request">
+                            <group>
+                                <group>
+                                    <field name="request_method"/>
+                                    <field name="request_endpoint"/>
+                                    <field name="request_url"/>
+                                </group>
+                            </group>
+                            <group string="Headers">
+                                <field name="request_headers" nolabel="1"/>
+                            </group>
+                            <group string="Body">
+                                <field name="request_body" nolabel="1"/>
+                            </group>
+                        </page>
+                        <page string="Response" name="response">
+                            <group>
+                                <group>
+                                    <field name="response_status"/>
+                                    <field name="response_time"/>
+                                </group>
+                            </group>
+                            <group string="Headers">
+                                <field name="response_headers" nolabel="1"/>
+                            </group>
+                            <group string="Body">
+                                <field name="response_body" nolabel="1"/>
+                            </group>
+                        </page>
+                        <page string="Errores" name="errors" invisible="not error_message">
+                            <group>
+                                <field name="error_message" nolabel="1"/>
+                            </group>
+                        </page>
+                    </notebook>
+                </sheet>
+            </form>
+        </field>
+    </record>
+
+    <!-- Search View -->
+    <record id="api_gateway_log_view_search" model="ir.ui.view">
+        <field name="name">api.gateway.log.view.search</field>
+        <field name="model">api.gateway.log</field>
+        <field name="arch" type="xml">
+            <search>
+                <field name="api_code"/>
+                <field name="request_endpoint"/>
+                <field name="source_ip"/>
+                <field name="source_branch_id"/>
+                <filter string="Exitosos" name="success" domain="[('state', '=', 'success')]"/>
+                <filter string="Errores" name="errors" domain="[('state', '=', 'error')]"/>
+                <filter string="Timeouts" name="timeouts" domain="[('state', '=', 'timeout')]"/>
+                <separator/>
+                <filter string="Proxy" name="proxy" domain="[('transaction_type', '=', 'proxy')]"/>
+                <filter string="Webhooks" name="webhooks" domain="[('transaction_type', '=', 'webhook')]"/>
+                <separator/>
+                <filter string="Hoy" name="today" domain="[('create_date', '>=', (context_today()).strftime('%%Y-%%m-%%d'))]"/>
+                <group expand="0" string="Agrupar por">
+                    <filter string="API" name="group_api" context="{'group_by': 'api_code'}"/>
+                    <filter string="Sucursal" name="group_branch" context="{'group_by': 'source_branch_id'}"/>
+                    <filter string="Estado" name="group_state" context="{'group_by': 'state'}"/>
+                    <filter string="Metodo" name="group_method" context="{'group_by': 'request_method'}"/>
+                    <filter string="Fecha" name="group_date" context="{'group_by': 'create_date:day'}"/>
+                </group>
+            </search>
+        </field>
+    </record>
+
+    <!-- Action -->
+    <record id="api_gateway_log_action" model="ir.actions.act_window">
+        <field name="name">Logs de API</field>
+        <field name="res_model">api.gateway.log</field>
+        <field name="view_mode">tree,form</field>
+        <field name="context">{'search_default_today': 1}</field>
+        <field name="help" type="html">
+            <p class="o_view_nocontent_smiling_face">
+                No hay logs de transacciones
+            </p>
+            <p>
+                Aqui aparecera el historial de todas las llamadas al API Gateway.
+            </p>
+        </field>
+    </record>
+
+    <!-- ====================== API GATEWAY WEBHOOK ====================== -->
+
+    <!-- Tree View -->
+    <record id="api_gateway_webhook_view_tree" model="ir.ui.view">
+        <field name="name">api.gateway.webhook.view.tree</field>
+        <field name="model">api.gateway.webhook</field>
+        <field name="arch" type="xml">
+            <tree decoration-info="state == 'pending'" decoration-success="state in ('processed', 'synced')" decoration-danger="state == 'error'">
+                <field name="create_date"/>
+                <field name="api_code"/>
+                <field name="transaction_id"/>
+                <field name="event_type"/>
+                <field name="order_reference"/>
+                <field name="state"/>
+                <field name="sync_date"/>
+            </tree>
+        </field>
+    </record>
+
+    <!-- Form View -->
+    <record id="api_gateway_webhook_view_form" model="ir.ui.view">
+        <field name="name">api.gateway.webhook.view.form</field>
+        <field name="model">api.gateway.webhook</field>
+        <field name="arch" type="xml">
+            <form>
+                <header>
+                    <field name="state" widget="statusbar"/>
+                </header>
+                <sheet>
+                    <div class="oe_title">
+                        <h1>
+                            <field name="name"/>
+                        </h1>
+                    </div>
+                    <group>
+                        <group string="Informacion">
+                            <field name="api_code"/>
+                            <field name="transaction_id"/>
+                            <field name="event_type"/>
+                            <field name="order_reference"/>
+                        </group>
+                        <group string="Sincronizacion">
+                            <field name="source_ip"/>
+                            <field name="sync_date"/>
+                            <field name="synced_to_branch_ids" widget="many2many_tags"/>
+                        </group>
+                    </group>
+                    <notebook>
+                        <page string="Payload" name="payload">
+                            <field name="payload" widget="ace" options="{'mode': 'json'}"/>
+                        </page>
+                        <page string="Headers" name="headers">
+                            <field name="headers"/>
+                        </page>
+                        <page string="Errores" name="errors" invisible="not error_message">
+                            <field name="error_message"/>
+                        </page>
+                    </notebook>
+                </sheet>
+            </form>
+        </field>
+    </record>
+
+    <!-- Search View -->
+    <record id="api_gateway_webhook_view_search" model="ir.ui.view">
+        <field name="name">api.gateway.webhook.view.search</field>
+        <field name="model">api.gateway.webhook</field>
+        <field name="arch" type="xml">
+            <search>
+                <field name="api_code"/>
+                <field name="transaction_id"/>
+                <field name="event_type"/>
+                <field name="order_reference"/>
+                <filter string="Pendientes" name="pending" domain="[('state', '=', 'pending')]"/>
+                <filter string="Procesados" name="processed" domain="[('state', '=', 'processed')]"/>
+                <filter string="Sincronizados" name="synced" domain="[('state', '=', 'synced')]"/>
+                <filter string="Errores" name="errors" domain="[('state', '=', 'error')]"/>
+                <separator/>
+                <filter string="Hoy" name="today" domain="[('create_date', '>=', (context_today()).strftime('%%Y-%%m-%%d'))]"/>
+                <group expand="0" string="Agrupar por">
+                    <filter string="API" name="group_api" context="{'group_by': 'api_code'}"/>
+                    <filter string="Estado" name="group_state" context="{'group_by': 'state'}"/>
+                    <filter string="Tipo Evento" name="group_event" context="{'group_by': 'event_type'}"/>
+                </group>
+            </search>
+        </field>
+    </record>
+
+    <!-- Action -->
+    <record id="api_gateway_webhook_action" model="ir.actions.act_window">
+        <field name="name">Webhooks Recibidos</field>
+        <field name="res_model">api.gateway.webhook</field>
+        <field name="view_mode">tree,form</field>
+        <field name="context">{'search_default_pending': 1}</field>
+        <field name="help" type="html">
+            <p class="o_view_nocontent_smiling_face">
+                No hay webhooks pendientes
+            </p>
+            <p>
+                Los webhooks recibidos de las APIs externas apareceran aqui.
+            </p>
+        </field>
+    </record>
+
+</odoo>

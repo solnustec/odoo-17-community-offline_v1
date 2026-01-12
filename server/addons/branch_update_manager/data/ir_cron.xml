@@ -1,0 +1,57 @@
+<?xml version="1.0" encoding="utf-8"?>
+<odoo>
+    <data noupdate="1">
+        <!-- Cron: Verificar actualizaciones (para sucursales) -->
+        <record id="cron_check_updates" model="ir.cron">
+            <field name="name">Branch Update: Check for Updates</field>
+            <field name="model_id" ref="model_branch_update_agent"/>
+            <field name="state">code</field>
+            <field name="code">model.check_for_updates()</field>
+            <field name="interval_number">5</field>
+            <field name="interval_type">minutes</field>
+            <field name="numbercall">-1</field>
+            <field name="active">True</field>
+            <field name="priority">5</field>
+        </record>
+
+        <!-- Cron: Limpiar logs antiguos -->
+        <record id="cron_cleanup_logs" model="ir.cron">
+            <field name="name">Branch Update: Cleanup Old Logs</field>
+            <field name="model_id" ref="model_branch_update_log"/>
+            <field name="state">code</field>
+            <field name="code">model.cleanup_old_logs(days=90)</field>
+            <field name="interval_number">1</field>
+            <field name="interval_type">weeks</field>
+            <field name="numbercall">-1</field>
+            <field name="active">True</field>
+            <field name="priority">100</field>
+        </record>
+
+        <!-- Cron: Verificar sucursales offline -->
+        <record id="cron_check_offline_branches" model="ir.cron">
+            <field name="name">Branch Update: Check Offline Branches</field>
+            <field name="model_id" ref="model_branch_registry"/>
+            <field name="state">code</field>
+            <field name="code">model.cron_check_offline_branches()</field>
+            <field name="interval_number">6</field>
+            <field name="interval_type">hours</field>
+            <field name="numbercall">-1</field>
+            <field name="active">True</field>
+            <field name="priority">50</field>
+        </record>
+
+        <!-- Cron: Deprecar paquetes expirados -->
+        <record id="cron_deprecate_expired" model="ir.cron">
+            <field name="name">Branch Update: Deprecate Expired Packages</field>
+            <field name="model_id" ref="model_branch_update_package"/>
+            <field name="state">code</field>
+            <field name="code">model.cron_deprecate_expired_packages()</field>
+            <field name="interval_number">1</field>
+            <field name="interval_type">days</field>
+            <field name="numbercall">-1</field>
+            <field name="active">True</field>
+            <field name="priority">100</field>
+        </record>
+
+    </data>
+</odoo>

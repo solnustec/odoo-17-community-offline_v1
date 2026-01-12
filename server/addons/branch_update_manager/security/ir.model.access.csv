@@ -1,0 +1,16 @@
+id,name,model_id:id,group_id:id,perm_read,perm_write,perm_create,perm_unlink
+access_branch_update_package_user,branch.update.package.user,model_branch_update_package,group_branch_update_user,1,0,0,0
+access_branch_update_package_manager,branch.update.package.manager,model_branch_update_package,group_branch_update_manager,1,1,1,0
+access_branch_update_package_admin,branch.update.package.admin,model_branch_update_package,group_branch_update_admin,1,1,1,1
+access_branch_registry_user,branch.registry.user,model_branch_registry,group_branch_update_user,1,0,0,0
+access_branch_registry_manager,branch.registry.manager,model_branch_registry,group_branch_update_manager,1,1,1,0
+access_branch_registry_admin,branch.registry.admin,model_branch_registry,group_branch_update_admin,1,1,1,1
+access_branch_registry_tag_user,branch.registry.tag.user,model_branch_registry_tag,group_branch_update_user,1,0,0,0
+access_branch_registry_tag_manager,branch.registry.tag.manager,model_branch_registry_tag,group_branch_update_manager,1,1,1,1
+access_branch_update_log_user,branch.update.log.user,model_branch_update_log,group_branch_update_user,1,0,0,0
+access_branch_update_log_manager,branch.update.log.manager,model_branch_update_log,group_branch_update_manager,1,1,1,0
+access_branch_update_log_admin,branch.update.log.admin,model_branch_update_log,group_branch_update_admin,1,1,1,1
+access_branch_module_version_user,branch.module.version.user,model_branch_module_version,group_branch_update_user,1,0,0,0
+access_branch_module_version_manager,branch.module.version.manager,model_branch_module_version,group_branch_update_manager,1,1,1,1
+access_branch_update_agent_user,branch.update.agent.user,model_branch_update_agent,group_branch_update_user,1,0,0,0
+access_branch_update_agent_admin,branch.update.agent.admin,model_branch_update_agent,group_branch_update_admin,1,1,1,1

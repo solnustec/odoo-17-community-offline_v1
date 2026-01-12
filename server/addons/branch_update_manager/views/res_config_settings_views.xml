@@ -1,0 +1,173 @@
+<?xml version="1.0" encoding="utf-8"?>
+<odoo>
+    <record id="view_res_config_settings_branch_update" model="ir.ui.view">
+        <field name="name">res.config.settings.view.form.inherit.branch.update</field>
+        <field name="model">res.config.settings</field>
+        <field name="priority">50</field>
+        <field name="inherit_id" ref="base.res_config_settings_view_form"/>
+        <field name="arch" type="xml">
+            <xpath expr="//form" position="inside">
+                <div class="app_settings_block" data-string="Branch Updates" string="Branch Updates"
+                     data-key="branch_update_manager"
+                     groups="branch_update_manager.group_branch_update_admin">
+                    <block title="Operation Mode" name="operation_mode">
+                        <setting string="Mode" help="Select how this Odoo instance operates">
+                            <field name="branch_update_mode" widget="radio"/>
+                        </setting>
+                    </block>
+
+                    <block title="Central Server Configuration" name="server_config"
+                           invisible="branch_update_mode != 'server'">
+                        <setting string="Master API Key"
+                                 help="Key for administrative operations">
+                            <div class="content-group">
+                                <div class="row mt16">
+                                    <field name="branch_update_master_api_key" class="o_light_label"
+                                           password="True"/>
+                                    <button name="action_regenerate_master_key" type="object"
+                                            string="Regenerate" class="btn-link"/>
+                                </div>
+                            </div>
+                        </setting>
+                        <setting string="Package Storage"
+                                 help="Directory where update packages are stored">
+                            <field name="branch_update_package_path"/>
+                        </setting>
+                        <setting string="Maximum Package Size"
+                                 help="Maximum allowed package size in MB">
+                            <field name="branch_update_max_package_size"/> MB
+                        </setting>
+                        <setting string="Log Retention"
+                                 help="Number of days to keep update logs">
+                            <field name="branch_update_retention_days"/> days
+                        </setting>
+                    </block>
+
+                    <block title="Branch Configuration" name="branch_config"
+                           invisible="branch_update_mode != 'branch'">
+                        <setting string="Cloud Server URL"
+                                 help="URL of the central server">
+                            <field name="branch_update_cloud_url"
+                                   placeholder="https://erp.empresa.com"/>
+                        </setting>
+                        <setting string="Branch UUID"
+                                 help="Unique identifier for this branch (auto-generated)">
+                            <field name="branch_update_branch_uuid" readonly="1"/>
+                        </setting>
+                        <setting string="API Key"
+                                 help="Authentication key for this branch">
+                            <field name="branch_update_api_key" password="True"/>
+                        </setting>
+                        <setting string="Branch Name"
+                                 help="Name of this branch">
+                            <field name="branch_update_branch_name"/>
+                        </setting>
+                        <div class="mt16">
+                            <button name="action_register_branch" type="object"
+                                    string="Register Branch" class="btn-primary"
+                                    invisible="branch_update_branch_uuid"/>
+                            <button name="action_check_updates" type="object"
+                                    string="Check for Updates" class="btn-secondary ms-2"
+                                    invisible="not branch_update_branch_uuid"/>
+                        </div>
+                    </block>
+
+                    <block title="Update Settings" name="update_settings">
+                        <setting string="Check Interval"
+                                 help="How often to check for updates">
+                            Every <field name="branch_update_check_interval" class="o_light_label"/> minutes
+                        </setting>
+                        <setting string="Auto Apply Updates"
+                                 help="Automatically apply updates when available">
+                            <field name="branch_update_auto_apply"/>
+                        </setting>
+                        <setting string="Backup Before Update"
+                                 help="Create a backup before applying updates">
+                            <field name="branch_update_backup_before"/>
+                        </setting>
+                        <setting string="Update Window"
+                                 help="Time window for applying updates (to avoid disruptions)">
+                            <div class="content-group">
+                                <div class="row">
+                                    <label for="branch_update_window_start" class="col-lg-3"/>
+                                    <field name="branch_update_window_start" widget="float_time"/>
+                                    <label for="branch_update_window_end" class="col-lg-3 ms-4"/>
+                                    <field name="branch_update_window_end" widget="float_time"/>
+                                </div>
+                            </div>
+                        </setting>
+                    </block>
+
+                    <block title="Network Settings" name="network_settings">
+                        <setting string="Connection Timeout"
+                                 help="Timeout for network connections">
+                            <field name="branch_update_timeout"/> seconds
+                        </setting>
+                        <setting string="Retry Count"
+                                 help="Number of retries for failed operations">
+                            <field name="branch_update_retry_count"/>
+                        </setting>
+                        <setting string="Retry Delay"
+                                 help="Time between retries">
+                            <field name="branch_update_retry_delay"/> seconds
+                        </setting>
+                    </block>
+
+                    <block title="Statistics" name="statistics"
+                           invisible="branch_update_mode != 'server'">
+                        <div class="content-group">
+                            <div class="row">
+                                <div class="col-lg-3">
+                                    <div class="card">
+                                        <div class="card-body text-center">
+                                            <h3><field name="branch_update_total_branches"/></h3>
+                                            <p class="text-muted">Total Branches</p>
+                                        </div>
+                                    </div>
+                                </div>
+                                <div class="col-lg-3">
+                                    <div class="card">
+                                        <div class="card-body text-center">
+                                            <h3><field name="branch_update_active_branches"/></h3>
+                                            <p class="text-muted">Active Branches</p>
+                                        </div>
+                                    </div>
+                                </div>
+                                <div class="col-lg-3">
+                                    <div class="card">
+                                        <div class="card-body text-center">
+                                            <h3><field name="branch_update_online_branches"/></h3>
+                                            <p class="text-muted">Online Now</p>
+                                        </div>
+                                    </div>
+                                </div>
+                                <div class="col-lg-3">
+                                    <div class="card">
+                                        <div class="card-body text-center">
+                                            <h3><field name="branch_update_pending_updates"/></h3>
+                                            <p class="text-muted">Pending Packages</p>
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+                            <div class="row mt16">
+                                <button name="action_view_branches" type="object"
+                                        string="View Branches" class="btn-link"/>
+                                <button name="action_view_packages" type="object"
+                                        string="View Packages" class="btn-link ms-4"/>
+                            </div>
+                        </div>
+                    </block>
+                </div>
+            </xpath>
+        </field>
+    </record>
+
+    <record id="action_branch_update_config" model="ir.actions.act_window">
+        <field name="name">Settings</field>
+        <field name="res_model">res.config.settings</field>
+        <field name="view_mode">form</field>
+        <field name="target">inline</field>
+        <field name="context">{'module': 'branch_update_manager'}</field>
+    </record>
+</odoo>

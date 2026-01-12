@@ -1,0 +1,181 @@
+<?xml version="1.0" encoding="utf-8"?>
+<odoo>
+    <!-- Vista Tree de Logs -->
+    <record id="view_update_log_tree" model="ir.ui.view">
+        <field name="name">branch.update.log.tree</field>
+        <field name="model">branch.update.log</field>
+        <field name="arch" type="xml">
+            <tree decoration-success="state == 'success'"
+                  decoration-danger="state == 'failed'"
+                  decoration-info="state in ('pending', 'downloading', 'applying')"
+                  decoration-warning="state == 'rolled_back'">
+                <field name="name"/>
+                <field name="branch_id"/>
+                <field name="package_id"/>
+                <field name="action"/>
+                <field name="state" widget="badge"
+                       decoration-info="state in ('pending', 'downloading', 'downloaded', 'verifying', 'applying')"
+                       decoration-success="state == 'success'"
+                       decoration-danger="state == 'failed'"
+                       decoration-warning="state == 'rolled_back'"/>
+                <field name="start_time"/>
+                <field name="end_time"/>
+                <field name="duration" widget="float_time"/>
+                <field name="success"/>
+                <field name="retry_count"/>
+            </tree>
+        </field>
+    </record>
+
+    <!-- Vista Form de Logs -->
+    <record id="view_update_log_form" model="ir.ui.view">
+        <field name="name">branch.update.log.form</field>
+        <field name="model">branch.update.log</field>
+        <field name="arch" type="xml">
+            <form>
+                <header>
+                    <button name="action_retry" type="object"
+                            string="Retry" class="btn-primary"
+                            invisible="state != 'failed'"/>
+                    <button name="action_rollback" type="object"
+                            string="Rollback"
+                            invisible="not rollback_available or state != 'success'"/>
+                    <field name="state" widget="statusbar"
+                           statusbar_visible="pending,downloading,applying,success"/>
+                </header>
+                <sheet>
+                    <group>
+                        <group string="General">
+                            <field name="name"/>
+                            <field name="branch_id"/>
+                            <field name="package_id"/>
+                            <field name="action"/>
+                        </group>
+                        <group string="Status">
+                            <field name="state"/>
+                            <field name="success"/>
+                            <field name="checksum_verified"/>
+                            <field name="rollback_available"/>
+                        </group>
+                    </group>
+                    <group>
+                        <group string="Timing">
+                            <field name="start_time"/>
+                            <field name="end_time"/>
+                            <field name="duration" widget="float_time"/>
+                        </group>
+                        <group string="Download">
+                            <field name="download_progress" widget="progressbar"/>
+                            <field name="bytes_downloaded"/>
+                        </group>
+                    </group>
+                    <group>
+                        <group string="Retries">
+                            <field name="retry_count"/>
+                            <field name="max_retries"/>
+                            <field name="next_retry_time"/>
+                        </group>
+                        <group string="Connection">
+                            <field name="ip_address"/>
+                            <field name="user_agent"/>
+                        </group>
+                    </group>
+
+                    <notebook invisible="not error_message and not error_traceback and not applied_modules">
+                        <page string="Error Details" name="error"
+                              invisible="not error_message">
+                            <group>
+                                <field name="error_message" readonly="1"/>
+                            </group>
+                            <group string="Traceback" invisible="not error_traceback">
+                                <field name="error_traceback" readonly="1" widget="text"/>
+                            </group>
+                        </page>
+                        <page string="Applied Modules" name="modules"
+                              invisible="not applied_modules">
+                            <field name="applied_modules" readonly="1"/>
+                        </page>
+                        <page string="Rollback" name="rollback"
+                              invisible="not rollback_available">
+                            <group>
+                                <field name="rollback_package_path"/>
+                            </group>
+                        </page>
+                        <page string="Metadata" name="metadata"
+                              invisible="not metadata">
+                            <field name="metadata" readonly="1"/>
+                        </page>
+                    </notebook>
+                </sheet>
+            </form>
+        </field>
+    </record>
+
+    <!-- Vista Search de Logs -->
+    <record id="view_update_log_search" model="ir.ui.view">
+        <field name="name">branch.update.log.search</field>
+        <field name="model">branch.update.log</field>
+        <field name="arch" type="xml">
+            <search>
+                <field name="name"/>
+                <field name="branch_id"/>
+                <field name="package_id"/>
+                <separator/>
+                <filter name="filter_pending" string="Pending"
+                        domain="[('state', '=', 'pending')]"/>
+                <filter name="filter_in_progress" string="In Progress"
+                        domain="[('state', 'in', ('downloading', 'applying'))]"/>
+                <filter name="filter_success" string="Success"
+                        domain="[('state', '=', 'success')]"/>
+                <filter name="filter_failed" string="Failed"
+                        domain="[('state', '=', 'failed')]"/>
+                <separator/>
+                <filter name="filter_today" string="Today"
+                        domain="[('create_date', '>=', (context_today()).strftime('%Y-%m-%d'))]"/>
+                <filter name="filter_week" string="This Week"
+                        domain="[('create_date', '>=', (context_today() - relativedelta(days=7)).strftime('%Y-%m-%d'))]"/>
+                <group expand="0" string="Group By">
+                    <filter name="group_branch" string="Branch" context="{'group_by': 'branch_id'}"/>
+                    <filter name="group_package" string="Package" context="{'group_by': 'package_id'}"/>
+                    <filter name="group_state" string="State" context="{'group_by': 'state'}"/>
+                    <filter name="group_date" string="Date" context="{'group_by': 'create_date:day'}"/>
+                </group>
+            </search>
+        </field>
+    </record>
+
+    <!-- Vista Pivot de Logs -->
+    <record id="view_update_log_pivot" model="ir.ui.view">
+        <field name="name">branch.update.log.pivot</field>
+        <field name="model">branch.update.log</field>
+        <field name="arch" type="xml">
+            <pivot>
+                <field name="branch_id" type="row"/>
+                <field name="state" type="col"/>
+                <field name="id" type="measure"/>
+            </pivot>
+        </field>
+    </record>
+
+    <!-- Vista Graph de Logs -->
+    <record id="view_update_log_graph" model="ir.ui.view">
+        <field name="name">branch.update.log.graph</field>
+        <field name="model">branch.update.log</field>
+        <field name="arch" type="xml">
+            <graph type="bar">
+                <field name="create_date" interval="day"/>
+                <field name="state" type="col"/>
+            </graph>
+        </field>
+    </record>
+
+    <!-- Action -->
+    <record id="action_update_logs" model="ir.actions.act_window">
+        <field name="name">Update Logs</field>
+        <field name="res_model">branch.update.log</field>
+        <field name="view_mode">tree,form,pivot,graph</field>
+        <field name="search_view_id" ref="view_update_log_search"/>
+        <field name="context">{'search_default_filter_today': 1}</field>
+    </record>
+
+</odoo>

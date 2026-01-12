@@ -1,0 +1,98 @@
+<?xml version="1.0" encoding="utf-8"?>
+<odoo>
+
+    <!-- Tree View -->
+    <record id="coupon_bin_tc_view_tree" model="ir.ui.view">
+        <field name="name">coupon.bin.tc.view.tree</field>
+        <field name="model">coupon.bin.tc</field>
+        <field name="arch" type="xml">
+            <tree string="Cadenas BIN TC para Duplicación de Cupones">
+                <field name="name"/>
+                <field name="bin_pattern"/>
+                <field name="active"/>
+                <field name="description" optional="hide"/>
+            </tree>
+        </field>
+    </record>
+
+    <!-- Form View -->
+    <record id="coupon_bin_tc_view_form" model="ir.ui.view">
+        <field name="name">coupon.bin.tc.view.form</field>
+        <field name="model">coupon.bin.tc</field>
+        <field name="arch" type="xml">
+            <form string="Cadena BIN TC para Duplicación de Cupones">
+                <sheet>
+                    <div class="oe_button_box" name="button_box"/>
+                    <widget name="web_ribbon" title="Archivado" bg_color="text-bg-danger"
+                            invisible="active"/>
+                    <div class="oe_title">
+                        <label for="name"/>
+                        <h1>
+                            <field name="name" placeholder="Nombre de la cadena..."/>
+                        </h1>
+                    </div>
+                    <group>
+                        <group>
+                            <field name="bin_pattern" placeholder="Ej: 411111"/>
+                            <field name="active"/>
+                        </group>
+                    </group>
+                    <group>
+                        <field name="description" placeholder="Descripción opcional..."/>
+                    </group>
+                    <div class="alert alert-info" role="alert">
+                        <strong>Nota:</strong> Si el BIN TC de un pago con tarjeta comienza con esta cadena
+                        y la opción "Impresión de Cupones" está habilitada en la compañía,
+                        los cupones se imprimirán <strong>duplicados</strong> (el doble de la cantidad normal).
+                    </div>
+                </sheet>
+            </form>
+        </field>
+    </record>
+
+    <!-- Search View -->
+    <record id="coupon_bin_tc_view_search" model="ir.ui.view">
+        <field name="name">coupon.bin.tc.view.search</field>
+        <field name="model">coupon.bin.tc</field>
+        <field name="arch" type="xml">
+            <search string="Buscar Cadenas BIN TC">
+                <field name="name"/>
+                <field name="bin_pattern"/>
+                <filter string="Activos" name="active" domain="[('active', '=', True)]"/>
+                <filter string="Archivados" name="inactive" domain="[('active', '=', False)]"/>
+            </search>
+        </field>
+    </record>
+
+    <!-- Action -->
+    <record id="coupon_bin_tc_action" model="ir.actions.act_window">
+        <field name="name">BIN TC Duplicación Cupones</field>
+        <field name="res_model">coupon.bin.tc</field>
+        <field name="view_mode">tree,form</field>
+        <field name="search_view_id" ref="coupon_bin_tc_view_search"/>
+        <field name="context">{'search_default_active': 1}</field>
+        <field name="help" type="html">
+            <p class="o_view_nocontent_smiling_face">
+                Crear primera cadena de BIN TC
+            </p>
+            <p>
+                Agregue las cadenas de BIN TC que activarán la duplicación de cupones.
+                Cuando un pago con tarjeta tenga un BIN TC que comience con alguna de estas cadenas,
+                y la "Impresión de Cupones" esté habilitada, los cupones se imprimirán al doble.
+            </p>
+            <p>
+                <strong>Ejemplo:</strong> Si agrega la cadena "4111", cualquier tarjeta cuyo BIN TC
+                comience con "4111" (como "411111") activará la duplicación de cupones.
+            </p>
+        </field>
+    </record>
+
+    <!-- Menu Item under Point of Sale > Configuration -->
+    <menuitem
+        id="menu_coupon_bin_tc"
+        name="BIN TC Duplicación Cupones"
+        action="coupon_bin_tc_action"
+        parent="point_of_sale.menu_point_config_product"
+        sequence="100"/>
+
+</odoo>
