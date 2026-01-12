@@ -102,14 +102,39 @@ class ProductProduct(models.Model):
 
             # Search in product.purchase.history (purchase_history module) with limit and offset for pagination
             # Incluir tanto compras normales como notas de crédito
+            # Search in product.purchase.history (purchase_history module)
+            # Obtener más registros para compensar posibles duplicados
+            fetch_limit = limit * 3 if limit else 100
+            fetch_offset = 0
+
+            # Para paginación correcta, necesitamos procesar desde el inicio
+            # y saltar los primeros 'offset' registros únicos
             purchase_history = self.env['product.purchase.history'].search([
-                ('product_tmpl_id', '=', product.product_tmpl_id.id)
-            ], order='date_order desc', limit=limit, offset=offset)
+                ('product_tmpl_id', '=', product.product_tmpl_id.id),
+                ('credit_note', '=', False)
+            ], order='date_order desc', limit=fetch_limit + offset)
 
             result = []
+            seen_purchase_ids = set()  # Para eliminar duplicados por id_purchase_old
+            skipped = 0  # Contador de registros únicos saltados (para offset)
 
             # Process purchase history records and map to expected format
             for line in purchase_history:
+                # Verificar duplicados por id_purchase_old
+                id_purchase_old = line.id_purchase_old
+                if id_purchase_old:
+                    if id_purchase_old in seen_purchase_ids:
+                        continue  # Saltar duplicado
+                    seen_purchase_ids.add(id_purchase_old)
+
+                # Aplicar offset: saltar los primeros 'offset' registros únicos
+                if skipped < offset:
+                    skipped += 1
+                    continue
+
+                # Limitar resultados
+                if len(result) >= limit:
+                    break
                 # Obtener las facturas donde el PRODUCTO ESPECÍFICO aparece en las líneas
                 # No todas las facturas de la PO, solo las que contienen este producto
                 invoices_list = []
@@ -125,7 +150,6 @@ class ProductProduct(models.Model):
                             # Buscar líneas de factura que:
                             # 1. Pertenezcan a facturas con invoice_origin = nombre de la PO
                             # 2. Contengan el producto específico (por product_tmpl_id)
-                            # Incluir facturas (in_invoice) y notas de crédito (in_refund)
                             invoice_lines = self.env['account.move.line'].search([
                                 ('move_id.invoice_origin', '=', po.name),
                                 ('move_id.move_type', 'in', ['in_invoice', 'in_refund']),

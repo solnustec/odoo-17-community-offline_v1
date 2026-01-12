@@ -9,23 +9,24 @@ class ConsumableIntake(models.Model):
 
     company_id = fields.Many2one(
         'res.company', string='Compañía',
-        default=lambda self: self.env.company, required=True)
+        default=lambda self: self.env.company, required=True, index=True)
 
-    vendor_id = fields.Many2one('res.partner', string='Proveedor', domain=[('supplier_rank', '>', 0)])
+    vendor_id = fields.Many2one('res.partner', string='Proveedor', domain=[('supplier_rank', '>', 0)], index=True)
     manufacturer_id = fields.Many2one('res.partner', string='Fabricante')
 
     location = fields.Many2one(
         'stock.warehouse',
         string='Almacén destino',
-        required=True
+        required=True,
+        index=True
     )
     category = fields.Char(string='Categoría')
     order_number = fields.Char(string='Número de orden')
-    bill_number = fields.Char(string='No. Factura / Nota')
+    bill_number = fields.Char(string='No. Factura / Nota', index=True)
     model_no = fields.Char(string='Modelo No.')
     article_no = fields.Char(string='Artículo No.')
 
-    date_purchase = fields.Date(string='Fecha de compra', default=fields.Date.context_today)
+    date_purchase = fields.Date(string='Fecha de compra', default=fields.Date.context_today, required=True, index=True)
     currency_id = fields.Many2one(
         'res.currency', string='Moneda',
         default=lambda self: self.env.company.currency_id.id, required=True)
@@ -39,10 +40,18 @@ class ConsumableIntake(models.Model):
 
     @api.depends('line_ids.subtotal')
     def _compute_amounts(self):
+        """Calcula los totales de la factura sumando los subtotales de las líneas."""
         for rec in self:
             subtotal = sum(rec.line_ids.mapped('subtotal'))
             rec.amount_untaxed = subtotal
             rec.amount_total = subtotal
+
+    @api.constrains('date_purchase')
+    def _check_date_purchase(self):
+        """Valida que la fecha de compra no sea futura."""
+        for rec in self:
+            if rec.date_purchase and rec.date_purchase > fields.Date.today():
+                raise ValidationError('La fecha de compra no puede ser futura.')
 
 
 class ConsumableIntakeLine(models.Model):
@@ -51,15 +60,15 @@ class ConsumableIntakeLine(models.Model):
     _order = 'id'
 
     intake_id = fields.Many2one(
-        'allocations.consumable.intake', string='Ingreso', required=True, ondelete='cascade'
+        'allocations.consumable.intake', string='Ingreso', required=True, ondelete='cascade', index=True
     )
 
     product_id = fields.Many2one(
-        'allocations.consumable.products', string='Consumible', required=True, ondelete='restrict'
+        'allocations.consumable.products', string='Consumible', required=True, ondelete='restrict', index=True
     )
 
     qty = fields.Float(string='Cantidad ingresada', required=True, default=1.0, digits=(16, 3))
-    qty_moved = fields.Float(string='Cantidad movida', default=0.0, readonly=True)
+    qty_moved = fields.Float(string='Cantidad movida', default=0.0, readonly=True, digits=(16, 3))
     qty_available = fields.Float(
         string='Cantidad disponible',
         compute='_compute_qty_available',
@@ -90,18 +99,34 @@ class ConsumableIntakeLine(models.Model):
     )
 
     bill_number = fields.Char(
-        related='intake_id.bill_number', store=True, readonly=True
+        related='intake_id.bill_number', store=True, readonly=True, index=True
     )
     date_purchase = fields.Date(
-        related='intake_id.date_purchase', store=True, readonly=True
+        related='intake_id.date_purchase', store=True, readonly=True, index=True
     )
 
     @api.depends('qty', 'qty_moved')
     def _compute_qty_available(self):
+        """Calcula la cantidad disponible restando la cantidad movida de la ingresada."""
         for line in self:
             line.qty_available = max((line.qty or 0.0) - (line.qty_moved or 0.0), 0.0)
 
     @api.depends('unit_cost', 'qty')
     def _compute_subtotal(self):
+        """Calcula el subtotal multiplicando costo unitario por cantidad."""
         for line in self:
             line.subtotal = (line.unit_cost or 0.0) * (line.qty or 0.0)
+
+    @api.constrains('qty')
+    def _check_qty_positive(self):
+        """Valida que la cantidad ingresada sea positiva."""
+        for line in self:
+            if line.qty <= 0:
+                raise ValidationError('La cantidad ingresada debe ser mayor a 0.')
+
+    @api.constrains('unit_cost')
+    def _check_unit_cost_positive(self):
+        """Valida que el costo unitario no sea negativo."""
+        for line in self:
+            if line.unit_cost < 0:
+                raise ValidationError('El costo unitario no puede ser negativo.')

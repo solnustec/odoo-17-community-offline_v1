@@ -259,6 +259,14 @@ class PosOfflineSyncController(http.Controller):
             if model_name == 'res.partner':
                 return self._process_res_partner(queue_id, local_id, data, operation)
 
+            # Manejo especial para institution
+            if model_name == 'institution':
+                return self._process_institution(queue_id, local_id, data, operation)
+
+            # Manejo especial para institution.client
+            if model_name == 'institution.client':
+                return self._process_institution_client(queue_id, local_id, data, operation)
+
             Model = request.env[model_name].sudo()
             cloud_id = None
 
@@ -328,11 +336,13 @@ class PosOfflineSyncController(http.Controller):
             session_name = data.get('session_name')
             order_state = data.get('state', 'draft')
             invoice_data = data.get('invoice_data')
+            json_storage_data = data.get('json_storage_data')
 
             _logger.info(
                 f'Procesando orden POS COMPLETA: name={order_name}, '
                 f'pos_reference={pos_reference}, session={session_name}, '
-                f'state={order_state}, tiene_factura={bool(invoice_data)}'
+                f'state={order_state}, tiene_factura={bool(invoice_data)}, '
+                f'tiene_json_storage={bool(json_storage_data)}'
             )
 
             # Verificar si la orden ya existe por pos_reference
@@ -655,10 +665,26 @@ class PosOfflineSyncController(http.Controller):
                 except Exception as e:
                     _logger.error(f'Error al crear factura normal: {e}', exc_info=True)
 
+            # ==================== PASO 5: CREAR JSON.STORAGE ====================
+            json_storage_created = False
+            json_storage_id = None
+
+            if json_storage_data:
+                try:
+                    json_storage_record = self._create_json_storage_for_order(
+                        order, json_storage_data, session
+                    )
+                    if json_storage_record:
+                        json_storage_created = True
+                        json_storage_id = json_storage_record.id
+                        _logger.info(f'json.storage creado: ID={json_storage_id}')
+                except Exception as e:
+                    _logger.error(f'Error al crear json.storage: {e}', exc_info=True)
+
             _logger.info(
                 f'Orden POS COMPLETA sincronizada: {order.name} '
                 f'(estado: {order.state}, pagos: {len(order.payment_ids)}, '
-                f'factura: {invoice_name or "N/A"})'
+                f'factura: {invoice_name or "N/A"}, json_storage: {json_storage_id or "N/A"})'
             )
 
             return {
@@ -673,6 +699,8 @@ class PosOfflineSyncController(http.Controller):
                 'payments_count': len(order.payment_ids),
                 'invoice_created': invoice_created,
                 'invoice_name': invoice_name,
+                'json_storage_created': json_storage_created,
+                'json_storage_id': json_storage_id,
             }
 
         except Exception as e:
@@ -922,6 +950,195 @@ class PosOfflineSyncController(http.Controller):
                 'error': str(e),
             }
 
+    def _process_institution(self, queue_id, local_id, data, operation):
+        """
+        Procesa una institución de crédito/descuento (PUSH: offline -> cloud).
+
+        Args:
+            queue_id: ID en la cola de sincronización
+            local_id: ID local de la institución
+            data: Datos de la institución
+            operation: Tipo de operación ('create', 'write', 'unlink')
+
+        Returns:
+            dict: Resultado del procesamiento
+        """
+        try:
+            SyncManager = request.env['pos.sync.manager'].sudo()
+
+            _logger.info(
+                f'Procesando institution (PUSH): name={data.get("name")}, '
+                f'id_institutions={data.get("id_institutions")}, operation={operation}'
+            )
+
+            if operation == 'unlink':
+                Institution = request.env['institution'].sudo()
+                existing = None
+                if data.get('id_institutions'):
+                    existing = Institution.search([
+                        ('id_institutions', '=', data['id_institutions'])
+                    ], limit=1)
+                if not existing and local_id:
+                    existing = Institution.browse(local_id)
+                    if not existing.exists():
+                        existing = None
+
+                if existing:
+                    cloud_id = existing.id
+                    existing.unlink()
+                    return {
+                        'success': True,
+                        'queue_id': queue_id,
+                        'local_id': local_id,
+                        'cloud_id': cloud_id,
+                        'message': 'Institution eliminada',
+                    }
+                return {
+                    'success': True,
+                    'queue_id': queue_id,
+                    'local_id': local_id,
+                    'message': 'Institution no encontrada para eliminar',
+                }
+
+            # Usar el deserializador del SyncManager
+            data['id'] = local_id
+            institution = SyncManager.deserialize_institution(data)
+
+            return {
+                'success': True,
+                'queue_id': queue_id,
+                'local_id': local_id,
+                'cloud_id': institution.id if institution else None,
+                'institution_name': institution.name if institution else None,
+            }
+
+        except Exception as e:
+            _logger.error(f'Error procesando institution#{local_id}: {str(e)}')
+            import traceback
+            _logger.error(traceback.format_exc())
+            return {
+                'success': False,
+                'queue_id': queue_id,
+                'local_id': local_id,
+                'error': str(e),
+            }
+
+    def _process_institution_client(self, queue_id, local_id, data, operation):
+        """
+        Procesa una relación institución-cliente (PUSH: offline -> cloud).
+
+        IMPORTANTE: Este método sincroniza los cambios de crédito/saldo (available_amount)
+        desde el offline al cloud, asegurando que los consumos de crédito se reflejen.
+
+        Args:
+            queue_id: ID en la cola de sincronización
+            local_id: ID local del registro
+            data: Datos del registro
+            operation: Tipo de operación ('create', 'write', 'unlink')
+
+        Returns:
+            dict: Resultado del procesamiento
+        """
+        try:
+            SyncManager = request.env['pos.sync.manager'].sudo()
+
+            _logger.info(
+                f'=== Procesando institution.client (PUSH) ===\n'
+                f'  queue_id={queue_id}, local_id={local_id}\n'
+                f'  operation={operation}\n'
+                f'  partner_vat={data.get("partner_vat")}\n'
+                f'  institution_id_institutions={data.get("institution_id_institutions")}\n'
+                f'  available_amount={data.get("available_amount")}\n'
+                f'  sale={data.get("sale")}'
+            )
+
+            if operation == 'unlink':
+                InstitutionClient = request.env['institution.client'].sudo()
+                existing = None
+
+                # Buscar por institution + partner
+                if data.get('partner_vat') and data.get('institution_id_institutions'):
+                    partner = request.env['res.partner'].sudo().search([
+                        ('vat', '=', data['partner_vat'])
+                    ], limit=1)
+                    institution = request.env['institution'].sudo().search([
+                        ('id_institutions', '=', data['institution_id_institutions'])
+                    ], limit=1)
+                    if partner and institution:
+                        existing = InstitutionClient.search([
+                            ('partner_id', '=', partner.id),
+                            ('institution_id', '=', institution.id)
+                        ], limit=1)
+
+                if not existing and local_id:
+                    existing = InstitutionClient.browse(local_id)
+                    if not existing.exists():
+                        existing = None
+
+                if existing:
+                    cloud_id = existing.id
+                    existing.unlink()
+                    return {
+                        'success': True,
+                        'queue_id': queue_id,
+                        'local_id': local_id,
+                        'cloud_id': cloud_id,
+                        'message': 'institution.client eliminado',
+                    }
+                return {
+                    'success': True,
+                    'queue_id': queue_id,
+                    'local_id': local_id,
+                    'message': 'institution.client no encontrado para eliminar',
+                }
+
+            # Usar el deserializador del SyncManager
+            data['id'] = local_id
+            inst_client = SyncManager.deserialize_institution_client(data)
+
+            if inst_client:
+                _logger.info(
+                    f'=== institution.client PROCESADO (PUSH) ===\n'
+                    f'  cloud_id={inst_client.id}\n'
+                    f'  partner={inst_client.partner_id.name}\n'
+                    f'  institution={inst_client.institution_id.name}\n'
+                    f'  available_amount={inst_client.available_amount}\n'
+                    f'  sale={inst_client.sale}'
+                )
+                return {
+                    'success': True,
+                    'queue_id': queue_id,
+                    'local_id': local_id,
+                    'cloud_id': inst_client.id,
+                    'partner_name': inst_client.partner_id.name,
+                    'institution_name': inst_client.institution_id.name,
+                    'available_amount': inst_client.available_amount,
+                    'sale': inst_client.sale,
+                }
+            else:
+                _logger.warning(
+                    f'institution.client NO PROCESADO: deserialize_institution_client retornó None\n'
+                    f'  partner_vat={data.get("partner_vat")}\n'
+                    f'  institution_id_institutions={data.get("institution_id_institutions")}'
+                )
+                return {
+                    'success': False,
+                    'queue_id': queue_id,
+                    'local_id': local_id,
+                    'error': 'No se pudo encontrar/crear institution.client',
+                }
+
+        except Exception as e:
+            _logger.error(f'Error procesando institution.client#{local_id}: {str(e)}')
+            import traceback
+            _logger.error(traceback.format_exc())
+            return {
+                'success': False,
+                'queue_id': queue_id,
+                'local_id': local_id,
+                'error': str(e),
+            }
+
     def _prepare_partner_vals_from_push(self, data):
         """
         Prepara valores para crear/actualizar un partner desde PUSH (offline -> cloud).
@@ -1002,6 +1219,168 @@ class PosOfflineSyncController(http.Controller):
                 pass  # El modelo puede no existir
 
         return vals
+
+    def _create_json_storage_for_order(self, order, json_storage_data, session):
+        """
+        Crea un registro json.storage en el servidor principal a partir de los datos
+        sincronizados de la orden.
+
+        IMPORTANTE: Este método verifica múltiples criterios para evitar duplicados:
+        1. Por pos_order (orden actual en el cloud)
+        2. Por cloud_sync_id (ID original del offline)
+        3. Por client_invoice + pos_reference (identificador único de la transacción)
+
+        Args:
+            order: pos.order recién creado
+            json_storage_data: Diccionario con datos del json.storage del offline
+            session: pos.session de la orden
+
+        Returns:
+            json.storage: Registro creado o existente, o None si no debe crearse
+        """
+        JsonStorage = request.env['json.storage'].sudo()
+
+        # Si el json.storage ya fue enviado/procesado en el offline, no crear en el cloud
+        # El campo 'sent' indica que ya fue sincronizado con el sistema externo
+        if json_storage_data.get('sent'):
+            _logger.info(
+                f'json.storage para orden {order.name}: ya fue enviado en offline (sent=True), '
+                f'omitiendo creación en cloud'
+            )
+            return None
+
+        # VERIFICACIÓN 1: Por pos_order (orden actual)
+        existing = JsonStorage.search([
+            ('pos_order', '=', order.id)
+        ], limit=1)
+
+        if existing:
+            _logger.info(f'json.storage ya existe para orden {order.name}: ID={existing.id}')
+            return existing
+
+        # VERIFICACIÓN 2: Por ID directo del json.storage (mismo servidor/BD)
+        # Si el json.storage original existe con el mismo ID, reutilizar
+        original_id = json_storage_data.get('id')
+        if original_id:
+            # Primero buscar por cloud_sync_id
+            existing_by_cloud_id = JsonStorage.search([
+                ('cloud_sync_id', '=', original_id)
+            ], limit=1)
+            if existing_by_cloud_id:
+                _logger.info(f'json.storage ya sincronizado (cloud_sync_id={original_id}): ID={existing_by_cloud_id.id}')
+                # Actualizar la referencia a la orden actual si es necesario
+                if existing_by_cloud_id.pos_order.id != order.id:
+                    existing_by_cloud_id.write({'pos_order': order.id})
+                    _logger.info(f'json.storage actualizado con nueva orden: {order.id}')
+                return existing_by_cloud_id
+
+            # Buscar por ID directo (cuando offline y cloud comparten BD)
+            existing_by_id = JsonStorage.browse(original_id)
+            if existing_by_id.exists():
+                _logger.info(f'json.storage encontrado por ID directo={original_id}: ya existe localmente')
+                # Actualizar cloud_sync_id y pos_order si es necesario
+                update_vals = {}
+                if not existing_by_id.cloud_sync_id:
+                    update_vals['cloud_sync_id'] = original_id
+                if existing_by_id.pos_order.id != order.id:
+                    update_vals['pos_order'] = order.id
+                if update_vals:
+                    existing_by_id.with_context(skip_sync_queue=True).write(update_vals)
+                return existing_by_id
+
+        # VERIFICACIÓN 3: Por orden LOCAL original (usando id_database_old de la orden)
+        # Esto detecta json.storage creado para la orden antes de sincronizar
+        if order.id_database_old:
+            local_order = request.env['pos.order'].sudo().search([
+                ('id', '=', int(order.id_database_old))
+            ], limit=1)
+            if local_order:
+                existing_by_local = JsonStorage.search([
+                    ('pos_order', '=', local_order.id)
+                ], limit=1)
+                if existing_by_local:
+                    _logger.info(
+                        f'json.storage encontrado para orden local {local_order.name} '
+                        f'(id_database_old={order.id_database_old}): ID={existing_by_local.id}'
+                    )
+                    # Actualizar referencia a la orden nueva
+                    existing_by_local.with_context(skip_sync_queue=True).write({
+                        'pos_order': order.id,
+                        'cloud_sync_id': original_id if original_id else existing_by_local.cloud_sync_id,
+                    })
+                    return existing_by_local
+
+        # VERIFICACIÓN 4: Por client_invoice + pos_reference EXACTO de esta orden
+        # Solo buscar si hay otra orden con el MISMO pos_reference (duplicado real)
+        client_invoice = json_storage_data.get('client_invoice')
+        if client_invoice and order.pos_reference:
+            # Buscar json.storage que ya esté vinculado a ESTA orden específica
+            existing_by_ref = JsonStorage.search([
+                ('client_invoice', '=', client_invoice),
+                ('pos_order', '=', order.id)  # Debe ser la misma orden, no cualquier orden
+            ], limit=1)
+            if existing_by_ref:
+                _logger.info(
+                    f'json.storage encontrado para esta orden {order.name} '
+                    f'con client_invoice={client_invoice}: ID={existing_by_ref.id}'
+                )
+                return existing_by_ref
+
+        # NOTA: Se eliminó la verificación por client_invoice + id_database_old_invoice_client
+        # porque esos valores son del CLIENTE, no de la TRANSACCIÓN, y causaba que
+        # se encontraran json.storage de transacciones anteriores del mismo cliente.
+
+        # Buscar el pos.config para el campo pos_order_id
+        # Primero intentar por config_name (nombre original del POS de la sucursal)
+        pos_config = None
+        config_name = json_storage_data.get('config_name')
+        if config_name:
+            pos_config = request.env['pos.config'].sudo().search([
+                ('name', '=', config_name)
+            ], limit=1)
+            if pos_config:
+                _logger.info(f'json.storage: pos.config encontrado por nombre "{config_name}": ID={pos_config.id}')
+
+        # Fallback a session.config_id si no se encontró por nombre
+        if not pos_config:
+            pos_config = session.config_id if session else None
+            if pos_config:
+                _logger.info(f'json.storage: usando pos.config de sesión (fallback): ID={pos_config.id}')
+
+        # Preparar valores para crear json.storage
+        storage_vals = {
+            'json_data': json_storage_data.get('json_data'),
+            'employee': json_storage_data.get('employee', ''),
+            'id_point_of_sale': json_storage_data.get('id_point_of_sale', ''),
+            'client_invoice': json_storage_data.get('client_invoice', ''),
+            'id_database_old_invoice_client': json_storage_data.get('id_database_old_invoice_client', ''),
+            'is_access_key': json_storage_data.get('is_access_key', False),
+            'sent': json_storage_data.get('sent', False),
+            'db_key': json_storage_data.get('db_key'),
+            'pos_order': order.id,  # Referencia a la orden recién creada
+        }
+
+        # Agregar pos_order_id (pos.config) si tenemos uno válido
+        if pos_config:
+            storage_vals['pos_order_id'] = pos_config.id
+
+        # Agregar cloud_sync_id si viene el id original
+        if original_id:
+            storage_vals['cloud_sync_id'] = original_id
+
+        try:
+            # Crear con skip_sync_queue para evitar que se re-agregue a la cola
+            new_storage = JsonStorage.with_context(skip_sync_queue=True).create(storage_vals)
+
+            _logger.info(
+                f'json.storage creado exitosamente para orden {order.name}: '
+                f'ID={new_storage.id}, cloud_sync_id={original_id}'
+            )
+            return new_storage
+
+        except Exception as e:
+            _logger.error(f'Error creando json.storage para orden {order.name}: {e}', exc_info=True)
+            raise
 
     def _find_or_create_session_for_sync(self, data, warehouse_id):
         """
@@ -1226,6 +1605,7 @@ class PosOfflineSyncController(http.Controller):
 
             response_data = {}
             has_more = {}  # Indica si hay más registros disponibles
+            deletions = {}  # Eliminaciones pendientes por modelo
 
             for entity in entities:
                 # Obtener límite específico para esta entidad o usar global
@@ -1239,16 +1619,24 @@ class PosOfflineSyncController(http.Controller):
                     if more_available:
                         has_more[entity] = True
 
+                # Obtener eliminaciones pendientes para este modelo
+                entity_deletions = self._get_pending_deletions(entity, warehouse_id, last_sync_dt)
+                if entity_deletions:
+                    deletions[entity] = entity_deletions
+                    _logger.info(f'PULL: {len(entity_deletions)} eliminaciones pendientes para {entity}')
+
             # Registrar en log
             total_records = sum(len(v) for v in response_data.values())
+            total_deletions = sum(len(v) for v in deletions.values())
             self._log_sync_operation(
                 warehouse_id, 'pull',
-                f'Enviados {total_records} registros para {len(entities)} entidades'
+                f'Enviados {total_records} registros y {total_deletions} eliminaciones para {len(entities)} entidades'
             )
 
             return self._json_response({
                 'success': True,
                 'data': response_data,
+                'deletions': deletions,  # Eliminaciones pendientes
                 'sync_date': fields.Datetime.now().isoformat(),
                 'has_more': has_more,  # Indica si hay más registros
                 'pagination': {
@@ -1317,6 +1705,16 @@ class PosOfflineSyncController(http.Controller):
             elif model_name == 'product.pricelist':
                 domain.append(('active', '=', True))
 
+            # Logging específico para institution.client
+            if model_name == 'institution.client':
+                total_count = Model.search_count([])
+                filtered_count = Model.search_count(domain) if domain else total_count
+                _logger.info(
+                    f'PULL institution.client: total={total_count}, '
+                    f'con filtro={filtered_count}, domain={domain}, '
+                    f'last_sync_dt={last_sync_dt}'
+                )
+
             # Obtener registros con paginación
             # Pedimos 1 extra para saber si hay más
             records = Model.search(domain, limit=limit + 1, offset=offset, order='write_date asc')
@@ -1331,6 +1729,73 @@ class PosOfflineSyncController(http.Controller):
         except Exception as e:
             _logger.error(f'Error obteniendo {model_name}: {str(e)}')
             return [], False
+
+    def _get_pending_deletions(self, model_name, warehouse_id, last_sync_dt):
+        """
+        Obtiene eliminaciones pendientes de la cola de sincronización.
+
+        Busca registros en pos.sync.queue con operation='unlink' que necesitan
+        ser propagados a otros servidores.
+
+        IMPORTANTE: Las eliminaciones son GLOBALES - no se filtra por warehouse_id.
+        Si un registro se elimina en el servidor cloud, TODOS los servidores offline
+        deben recibir esa eliminación.
+
+        Args:
+            model_name: Nombre del modelo
+            warehouse_id: ID del almacén (usado solo para logging, no para filtrar)
+            last_sync_dt: Fecha de última sincronización
+
+        Returns:
+            list: Lista de datos de registros a eliminar
+        """
+        try:
+            SyncQueue = request.env['pos.sync.queue'].sudo()
+
+            # Buscar eliminaciones pendientes - NO filtrar por warehouse_id
+            # porque las eliminaciones son globales (aplican a todos los servidores)
+            domain = [
+                ('model_name', '=', model_name),
+                ('operation', '=', 'unlink'),
+            ]
+
+            # Si hay fecha de última sync, solo las más recientes
+            if last_sync_dt:
+                domain.append(('create_date', '>', last_sync_dt))
+
+            # Buscar eliminaciones en cualquier estado (pending, synced)
+            # porque necesitamos propagarlas a otros servidores
+            domain.append(('state', 'in', ['pending', 'synced', 'processing']))
+
+            deletions = SyncQueue.search(domain, limit=100)
+
+            _logger.info(
+                f'PULL deletions: Buscando eliminaciones de {model_name}, '
+                f'encontradas: {len(deletions)}, last_sync_dt: {last_sync_dt}'
+            )
+
+            result = []
+            for deletion in deletions:
+                try:
+                    import json
+                    data = json.loads(deletion.data_json) if deletion.data_json else {}
+                    data['_queue_id'] = deletion.id
+                    data['_operation'] = 'unlink'
+                    result.append(data)
+
+                    _logger.info(
+                        f'Eliminación pendiente encontrada: {model_name} '
+                        f'id={data.get("id")}, queue_id={deletion.id}, '
+                        f'cloud_deletion={data.get("_cloud_deletion", False)}'
+                    )
+                except Exception as e:
+                    _logger.error(f'Error procesando eliminación {deletion.id}: {e}')
+
+            return result
+
+        except Exception as e:
+            _logger.error(f'Error obteniendo eliminaciones de {model_name}: {str(e)}')
+            return []
 
     def _serialize_records_batched(self, model_name, records, batch_size=100):
         """
@@ -1380,6 +1845,18 @@ class PosOfflineSyncController(http.Controller):
         if model_name == 'account.fiscal.position':
             for record in records:
                 result.append(SyncManager.serialize_fiscal_position(record))
+            return result
+
+        # Para institution usar serializer especializado
+        if model_name == 'institution':
+            for record in records:
+                result.append(SyncManager.serialize_institution(record))
+            return result
+
+        # Para institution.client usar serializer especializado
+        if model_name == 'institution.client':
+            for record in records:
+                result.append(SyncManager.serialize_institution_client(record))
             return result
 
         # Para otros modelos, serialización genérica en lotes
@@ -1460,6 +1937,18 @@ class PosOfflineSyncController(http.Controller):
         if model_name == 'account.fiscal.position':
             for record in records:
                 result.append(SyncManager.serialize_fiscal_position(record))
+            return result
+
+        # Usar serializer especializado para institution
+        if model_name == 'institution':
+            for record in records:
+                result.append(SyncManager.serialize_institution(record))
+            return result
+
+        # Usar serializer especializado para institution.client
+        if model_name == 'institution.client':
+            for record in records:
+                result.append(SyncManager.serialize_institution_client(record))
             return result
 
         # Campos por modelo para otros modelos
@@ -3074,6 +3563,10 @@ class PosOfflineSyncController(http.Controller):
             return SyncManager.serialize_fiscal_position(record)
         elif model_name == 'loyalty.program':
             return SyncManager.serialize_loyalty_program(record)
+        elif model_name == 'institution':
+            return SyncManager.serialize_institution(record)
+        elif model_name == 'institution.client':
+            return SyncManager.serialize_institution_client(record)
 
         # Serialización genérica para otros modelos
         return self._serialize_generic(record, model_name)
@@ -3172,6 +3665,207 @@ class PosOfflineSyncController(http.Controller):
             data['program_name'] = record.program_id.name if record.program_id else False
 
         return data
+
+    # ==================== ENDPOINTS DE INSTITUCIONES (CRÉDITOS) ====================
+
+    @http.route('/pos_offline_sync/pull_institutions', type='http', auth='public',
+                methods=['POST'], csrf=False, cors='*')
+    def pull_institutions(self, **kwargs):
+        """
+        Endpoint para descargar instituciones (créditos/descuentos) desde el cloud.
+
+        Las instituciones tienen información sobre:
+        - Descuentos adicionales para clientes institucionales
+        - Créditos con día de corte y cupo asignado
+        - Relación con puntos de venta autorizados
+
+        Payload esperado:
+        {
+            "warehouse_id": 1,
+            "last_sync": "2024-01-15T10:30:00",
+            "limit": 100,
+            "offset": 0,
+            "pos_config_id": 1  // Opcional: filtrar por POS específico
+        }
+
+        Returns:
+            dict: Instituciones con sus clientes asociados
+        """
+        try:
+            # Parsear JSON del body
+            try:
+                data = json.loads(request.httprequest.data.decode('utf-8'))
+            except (json.JSONDecodeError, UnicodeDecodeError):
+                data = kwargs
+
+            if not self._validate_api_auth(data):
+                return self._json_response({'success': False, 'error': 'Autenticación inválida'})
+
+            warehouse_id = data.get('warehouse_id')
+            last_sync = data.get('last_sync')
+            limit = data.get('limit', 100)
+            offset = data.get('offset', 0)
+            pos_config_id = data.get('pos_config_id')
+
+            # Construir dominio
+            domain = [('pvp', '=', '1')]  # Solo instituciones activas
+
+            # Filtrar por pos.config si se especifica
+            if pos_config_id:
+                domain.append(('pos_ids', 'in', [pos_config_id]))
+
+            if last_sync:
+                try:
+                    last_sync_dt = datetime.fromisoformat(last_sync)
+                    domain.append(('write_date', '>', last_sync_dt))
+                except ValueError:
+                    pass
+
+            Institution = request.env['institution'].sudo()
+
+            total = Institution.search_count(domain)
+            institutions = Institution.search(domain, limit=limit, offset=offset, order='write_date asc')
+
+            # Serializar instituciones
+            institutions_data = []
+            for inst in institutions:
+                inst_data = {
+                    'id': inst.id,
+                    'id_institutions': inst.id_institutions,
+                    'name': inst.name,
+                    'ruc_institution': inst.ruc_institution,
+                    'agreement_date': inst.agreement_date.isoformat() if inst.agreement_date else None,
+                    'address': inst.address,
+                    'type_credit_institution': inst.type_credit_institution,
+                    'cellphone': inst.cellphone,
+                    'court_day': inst.court_day,
+                    'additional_discount_percentage': inst.additional_discount_percentage,
+                    'pvp': inst.pvp,
+                    'pos_ids': inst.pos_ids.ids,
+                    'write_date': inst.write_date.isoformat() if inst.write_date else None,
+                    # Lista de clientes asociados con sus cupos
+                    'clients': []
+                }
+
+                # Agregar clientes de la institución
+                for client in inst.institution_client_ids:
+                    client_data = {
+                        'id': client.id,
+                        'partner_id': client.partner_id.id,
+                        'partner_vat': client.partner_id.vat,
+                        'partner_name': client.partner_id.name,
+                        'available_amount': client.available_amount,
+                        'sale': client.sale,
+                    }
+                    inst_data['clients'].append(client_data)
+
+                institutions_data.append(inst_data)
+
+            # Registrar en log
+            if warehouse_id:
+                self._log_sync_operation(
+                    warehouse_id, 'pull_institutions',
+                    f'Enviadas {len(institutions_data)} instituciones'
+                )
+
+            return self._json_response({
+                'success': True,
+                'total': total,
+                'count': len(institutions_data),
+                'offset': offset,
+                'institutions': institutions_data,
+                'sync_date': fields.Datetime.now().isoformat(),
+            })
+
+        except Exception as e:
+            _logger.error(f'Error obteniendo instituciones: {str(e)}')
+            import traceback
+            _logger.error(traceback.format_exc())
+            return self._json_response({'success': False, 'error': str(e)})
+
+    @http.route('/pos_offline_sync/pull_institution_clients', type='http', auth='public',
+                methods=['POST'], csrf=False, cors='*')
+    def pull_institution_clients(self, **kwargs):
+        """
+        Endpoint para descargar clientes de instituciones específicas.
+
+        Útil para sincronizar solo los clientes de una institución sin
+        descargar toda la información de instituciones.
+
+        Payload esperado:
+        {
+            "warehouse_id": 1,
+            "institution_id": 5,  // ID de la institución
+            "partner_vat": "1234567890"  // Opcional: filtrar por VAT del cliente
+        }
+
+        Returns:
+            dict: Clientes de la institución
+        """
+        try:
+            # Parsear JSON del body
+            try:
+                data = json.loads(request.httprequest.data.decode('utf-8'))
+            except (json.JSONDecodeError, UnicodeDecodeError):
+                data = kwargs
+
+            if not self._validate_api_auth(data):
+                return self._json_response({'success': False, 'error': 'Autenticación inválida'})
+
+            warehouse_id = data.get('warehouse_id')
+            institution_id = data.get('institution_id')
+            partner_vat = data.get('partner_vat')
+
+            InstitutionClient = request.env['institution.client'].sudo()
+
+            # Construir dominio
+            domain = []
+
+            if institution_id:
+                domain.append(('institution_id', '=', institution_id))
+
+            if partner_vat:
+                domain.append(('partner_id.vat', '=', partner_vat))
+
+            clients = InstitutionClient.search(domain)
+
+            # Serializar clientes
+            clients_data = []
+            for client in clients:
+                client_data = {
+                    'id': client.id,
+                    'institution_id': client.institution_id.id,
+                    'institution_name': client.institution_id.name,
+                    'institution_type': client.institution_id.type_credit_institution,
+                    'institution_discount': client.institution_id.additional_discount_percentage,
+                    'court_day': client.institution_id.court_day,
+                    'partner_id': client.partner_id.id,
+                    'partner_vat': client.partner_id.vat,
+                    'partner_name': client.partner_id.name,
+                    'available_amount': client.available_amount,
+                    'sale': client.sale,
+                }
+                clients_data.append(client_data)
+
+            # Registrar en log
+            if warehouse_id:
+                self._log_sync_operation(
+                    warehouse_id, 'pull_institution_clients',
+                    f'Enviados {len(clients_data)} clientes institucionales'
+                )
+
+            return self._json_response({
+                'success': True,
+                'count': len(clients_data),
+                'clients': clients_data,
+                'sync_date': fields.Datetime.now().isoformat(),
+            })
+
+        except Exception as e:
+            _logger.error(f'Error obteniendo clientes institucionales: {str(e)}')
+            import traceback
+            _logger.error(traceback.format_exc())
+            return self._json_response({'success': False, 'error': str(e)})
 
     # ==================== MÉTODOS AUXILIARES ====================
 

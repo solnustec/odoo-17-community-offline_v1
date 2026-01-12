@@ -58,6 +58,15 @@ class ResConfigSettings(models.TransientModel):
         help='Cancelar automáticamente transferencias no validadas después de X días. 0 = desactivado.',
     )
 
+    # Límite de items por transferencia agrupada
+    auto_replenishment_grouped_items_limit = fields.Integer(
+        string='Límite de items por transferencia agrupada',
+        config_parameter='stock_auto_replenishment.grouped_items_limit',
+        default=50,
+        help='Número máximo de productos/líneas por transferencia cuando se usa el modo Agrupado. '
+             '0 = sin límite (agrupa todo en una sola transferencia).',
+    )
+
     @api.model
     def get_values(self):
         """Obtiene los valores de configuración."""
@@ -77,6 +86,8 @@ class ResConfigSettings(models.TransientModel):
                 'stock_auto_replenishment.auto_confirm', 'True') == 'True',
             'auto_replenishment_expiration_days': int(ICP.get_param(
                 'stock_auto_replenishment.expiration_days', '5')),
+            'auto_replenishment_grouped_items_limit': int(ICP.get_param(
+                'stock_auto_replenishment.grouped_items_limit', '50')),
         })
         return res
 
@@ -108,4 +119,8 @@ class ResConfigSettings(models.TransientModel):
         ICP.set_param(
             'stock_auto_replenishment.expiration_days',
             str(self.auto_replenishment_expiration_days)
+        )
+        ICP.set_param(
+            'stock_auto_replenishment.grouped_items_limit',
+            str(self.auto_replenishment_grouped_items_limit)
         )

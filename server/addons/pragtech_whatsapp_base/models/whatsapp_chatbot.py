@@ -52,26 +52,35 @@ class WhatsappChatbot(models.Model):
             rec = self.env["whatsapp.contact"].sudo().create({"chat_id": chat_id, "custom_name": display_name})
         return {"chatId": chat_id, "displayName": rec.custom_name}
 
+    def _get_local_now(self):
+        """Obtiene la hora local actual (America/Guayaquil) como datetime naive"""
+        user_tz = pytz.timezone('America/Guayaquil')
+        now_utc = datetime.utcnow().replace(tzinfo=pytz.UTC)
+        now_local = now_utc.astimezone(user_tz)
+        return now_local.replace(tzinfo=None)
+
     def create(self, vals):
-        vals['last_activity'] = fields.Datetime.now()
+        vals['last_activity'] = self._get_local_now()
         vals['inactivity_notified'] = False
         return super().create(vals)
 
     def write(self, vals):
         # Si hay cambio de estado a un estado activo (no cerrado),
         # resetear el flag de notificación de inactividad
-        closed_states = ['salir', 'salir_conversacion', 'cerrar_chat', 'canceled']
+        closed_states = ['salir', 'salir_conversacion', 'cerrar_chat','canceled']
         if 'state' in vals and vals['state'] not in closed_states:
             vals['inactivity_notified'] = False
 
         if 'last_activity' not in vals:
-            vals['last_activity'] = fields.Datetime.now()
+            vals['last_activity'] = self._get_local_now()
         else:
             la = vals['last_activity']
             if isinstance(la, str):
                 la = fields.Datetime.from_string(la)
             elif isinstance(la, datetime) and la.tzinfo:
-                la = la.astimezone(pytz.UTC).replace(tzinfo=None)
+                # Convertir a hora local si tiene timezone
+                user_tz = pytz.timezone('America/Guayaquil')
+                la = la.astimezone(user_tz).replace(tzinfo=None)
             vals['last_activity'] = la
         return super().write(vals)
 
@@ -220,20 +229,22 @@ class WhatsappChatbot(models.Model):
     def _cron_check_inactivity(self):
         """
         Cron job para verificar inactividad de sesiones de chatbot.
-        - Cancela órdenes en estado 'to invoice' tras 15 minutos de inactividad
+        - Cancela órdenes en estado 'to invoice' tras 40 minutos de inactividad
         - Cierra sesiones inactivas por más de 60 minutos
         - Cancela órdenes asociadas si no han sido facturadas
         - Envía mensaje de despedida (si está habilitado)
 
         Mejoras aplicadas:
         - Flag inactivity_notified para evitar mensajes duplicados
-        - Manejo especial de órdenes 'to invoice' con timeout de 15 minutos
+        - Manejo especial de órdenes 'to invoice' con timeout de 40 minutos
         - Manejo correcto de órdenes en estado 'to invoice'
         """
         try:
-            now_utc_naive = fields.Datetime.now()
+            # Usar hora local (America/Guayaquil) para las comparaciones
+            # ya que last_activity se guarda en hora local
             user_tz = pytz.timezone('America/Guayaquil')
-            now_local = pytz.UTC.localize(now_utc_naive).astimezone(user_tz)
+            now_utc = datetime.utcnow().replace(tzinfo=pytz.UTC)
+            now_local = now_utc.astimezone(user_tz)
 
             sessions = self.sudo().search([
                 ('state', 'not in', ['salir', 'salir_conversacion', 'cerrar_chat']),
@@ -244,6 +255,7 @@ class WhatsappChatbot(models.Model):
                     if not session.last_activity:
                         continue
 
+                    # Comparar en hora local
                     tiempo_transcurrido = now_local.replace(tzinfo=None) - session.last_activity
 
                     # Obtener datos de la orden asociada a la sesión
@@ -256,13 +268,13 @@ class WhatsappChatbot(models.Model):
                         if not sale_order.exists():
                             sale_order = None
 
-                    # FILTRO ESPECIAL: Órdenes con estado 'to invoice' - 15 minutos de inactividad
+                    # FILTRO ESPECIAL: Órdenes con estado 'to invoice' - 40 minutos de inactividad
                     if sale_order and sale_order.invoice_status == 'to invoice':
                         if tiempo_transcurrido >= timedelta(minutes=40):
                             self._cancel_sale_order_safely(sale_order, session)
 
-                            # Enviar mensaje específico para timeout de 15 min
-                            mensaje = "Tu orden ha sido cancelada por inactividad de 15 minutos. Si deseas continuar, por favor inicia una nueva conversación."
+                            # Enviar mensaje específico para timeout
+                            mensaje = "Tu orden ha sido cancelada por inactividad. Si deseas continuar, por favor inicia una nueva conversación."
                             MetaAPi.enviar_mensaje_texto(session.number, mensaje, env=self.env)
 
                             # Cerrar la sesión
@@ -363,7 +375,6 @@ class WhatsappChatbot(models.Model):
             if sale_order.state == 'cancel':
                 sale_order.write({'invoice_status': 'no'})
                 session.sudo().write({"state": "canceled"})
-                _logger.info(f"Orden {sale_order.name} cancelada exitosamente")
 
         except Exception as e:
             _logger.error(f"Error al cancelar la orden {sale_order.name}: {str(e)}")

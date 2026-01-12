@@ -13,6 +13,9 @@
                             <field name="replenishment_based_on_transfers"/>
                             <field name="is_main_warehouse"/>
                         </group>
+                        <group>
+                            <field name="replenishment_alert_based_on"/>
+                        </group>
                     </group>
                 </xpath>
             </field>

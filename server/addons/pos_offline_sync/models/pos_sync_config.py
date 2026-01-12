@@ -126,6 +126,11 @@ class PosSyncConfig(models.Model):
         default=True,
         help='Sincronizar transferencias de stock internas con la nube'
     )
+    sync_institutions = fields.Boolean(
+        string='Sincronizar Instituciones de Crédito',
+        default=True,
+        help='Sincronizar instituciones de crédito/descuento y saldos de clientes (institution, institution.client)'
+    )
 
     # Restricciones Contables
     skip_accounting = fields.Boolean(
@@ -379,6 +384,11 @@ class PosSyncConfig(models.Model):
             entities.append('pos.session')
         if self.sync_stock_transfers:
             entities.append('stock.picking')
+        if self.sync_institutions:
+            entities.extend([
+                'institution',
+                'institution.client',
+            ])
         return entities
 
     @api.model

@@ -18,13 +18,12 @@ class StockWarehouseOrderpoint(models.Model):
 
     @api.depends_context('uid')
     def _compute_hide_order_once(self):
-        """Oculta botón 'Ordenar una vez' si modo individual está activo."""
+        """Oculta botón 'Ordenar una vez' cuando el módulo está habilitado."""
         ICP = self.env['ir.config_parameter'].sudo()
         enabled = ICP.get_param('stock_auto_replenishment.enabled', 'False') == 'True'
-        mode = ICP.get_param('stock_auto_replenishment.mode', 'individual')
-        hide = enabled and mode == 'individual'
+        # Ocultar el botón de Odoo cuando nuestro módulo está habilitado (cualquier modo)
         for op in self:
-            op.hide_order_once = hide
+            op.hide_order_once = enabled
 
     @api.depends_context('uid')
     def _compute_has_pending_queue(self):

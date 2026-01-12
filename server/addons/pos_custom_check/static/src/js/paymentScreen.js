@@ -80,7 +80,9 @@ patch(PaymentScreen.prototype, {
         }
 
         // Validar montos de métodos de pago no efectivo
-        const totalOrder = parseFloat(Math.abs(order.get_total_with_tax() + (order.get_rounding_applied() || 0)).toFixed(2));
+        const totalWithTax = order.get_total_with_tax() + (order.get_rounding_applied() || 0);
+        const isRefund = totalWithTax < 0;
+        const totalOrder = parseFloat(Math.abs(totalWithTax).toFixed(2));
 
         for (const line of paymentlines) {
             const paymentMethod = line.payment_method;
@@ -91,8 +93,8 @@ patch(PaymentScreen.prototype, {
 
             // Solo validar métodos que NO son efectivo
             if (!isCash) {
-                // Validar que el monto no sea menor a 0
-                if (amount < 0) {
+                // Validar que el monto no sea menor a 0 (excepto en reembolsos)
+                if (amount < 0 && !isRefund) {
                     await this.popup.add(ErrorPopup, {
                         title: _t("Monto inválido"),
                         body: _t(`El método de pago "${paymentName}" no puede tener un monto menor a 0.`),
@@ -100,8 +102,8 @@ patch(PaymentScreen.prototype, {
                     return;
                 }
 
-                // Validar que el monto no sea mayor al total de la factura
-                if (amount > totalOrder) {
+                // Validar que el monto no sea mayor al total de la factura (solo para ventas normales)
+                if (!isRefund && amount > totalOrder) {
                     await this.popup.add(ErrorPopup, {
                         title: _t("Monto excede el total"),
                         body: _t(`El método de pago "${paymentName}" no puede tener un monto mayor al total de la factura ($${totalOrder.toFixed(2)}). Solo el efectivo puede exceder el total.`),

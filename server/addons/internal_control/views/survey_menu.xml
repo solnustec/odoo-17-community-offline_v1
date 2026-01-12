@@ -120,12 +120,12 @@
               action="action_survey_campaign"
               sequence="3"/>
 
-    <!-- Menú para empleados ver sus asignaciones -->
+    <!-- Menú para empleados ver sus asignaciones de campañas -->
     <menuitem id="menu_my_survey_assignments"
               name="Mis Encuestas Asignadas"
               parent="survey.menu_survey_form"
               action="action_my_survey_assignments"
-              sequence="6"/>
+              sequence="4"/>
 
     <!-- ======================================== -->
     <!-- SUBMENÚS DE REPORTES -->

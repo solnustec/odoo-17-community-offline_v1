@@ -168,10 +168,35 @@ patch(OrderReceipt.prototype, {
         };
 
         const threshold = 10;
-        const times = Math.floor(mainRef.props.data.amount_total / threshold);
+        let times = Math.floor(mainRef.props.data.amount_total / threshold);
         let dynamicTemplates = [];
 
         const enableCouponPrinting = mainRef.pos.company.enable_coupon_printing;
+
+        // Check if any payment line has a BIN TC that matches the configured patterns
+        const binPatterns = mainRef.pos.coupon_bin_tc || [];
+        const paymentlines = mainRef.props.data.paymentlines || [];
+
+        let shouldDuplicateCoupons = false;
+        for (const line of paymentlines) {
+            const binTc = line.bin_tc || '';
+            if (binTc) {
+                for (const patternObj of binPatterns) {
+                    const pattern = patternObj.bin_pattern || '';
+                    if (pattern && binTc.startsWith(pattern)) {
+                        shouldDuplicateCoupons = true;
+                        break;
+                    }
+                }
+            }
+            if (shouldDuplicateCoupons) break;
+        }
+
+        // Duplicate coupons if BIN TC matches any pattern
+        if (shouldDuplicateCoupons) {
+            times = times * 2;
+        }
+
         if (showCoupons && enableCouponPrinting) {
             for (let i = 0; i < times; i++) {
                 dynamicTemplates.push(generateTemplate2());

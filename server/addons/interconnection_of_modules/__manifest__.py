@@ -36,6 +36,7 @@
         'views/stock_return_picking_view.xml',
         'views/pos_config_views.xml',
         'views/hr_employee_pos_views.xml',
+        'views/purchase_order_view.xml',
     ],
     # 'external_dependencies': {
         # 'python': ['pandas'],

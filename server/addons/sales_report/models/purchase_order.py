@@ -1,4 +1,5 @@
-from odoo import api, fields, models
+from odoo import api, fields, models, _
+from odoo.exceptions import UserError
 
 
 class PurchaseOrder(models.Model):
@@ -145,3 +146,17 @@ class PurchaseOrder(models.Model):
         """
         self._auto_fill_brand_laboratory()
         return True
+
+    def button_confirm(self):
+        """
+        Sobrescribe button_confirm para validar que se haya seleccionado un proveedor
+        antes de confirmar la orden. Esto evita errores al crear registros en
+        product.supplierinfo que requieren partner_id.
+        """
+        for order in self:
+            if not order.partner_id:
+                raise UserError(_(
+                    "No se puede confirmar la orden de compra '%s' sin un proveedor.\n\n"
+                    "Por favor, seleccione un proveedor antes de confirmar."
+                ) % order.name)
+        return super().button_confirm()

@@ -49,6 +49,13 @@ class PosOrder(models.Model):
         copy=False,
         help='Indica si la orden fue creada en modo offline'
     )
+    id_database_old = fields.Char(
+        string='ID Base Datos Original',
+        readonly=True,
+        copy=False,
+        index=True,
+        help='ID del registro en la base de datos original (offline)'
+    )
 
     @api.model
     def create(self, vals):

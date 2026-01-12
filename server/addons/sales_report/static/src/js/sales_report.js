@@ -1,7 +1,7 @@
 /** @odoo-module **/
 
 import {registry} from "@web/core/registry";
-import {Component, onPatched, onWillStart, onWillUnmount, useState} from "@odoo/owl";
+import {Component, onPatched, onWillStart, onWillUnmount, useState, onRendered, onMounted} from "@odoo/owl";
 import {useService} from "@web/core/utils/hooks";
 import {ProductDetailsModal} from "./product_details_modal";
 import {RecordSelector} from "@web/core/record_selectors/record_selector";
@@ -21,14 +21,17 @@ export class SalesReport extends Component {
         this.state = useState({
             isSorted: false,
             isSortedReab: false,
+            range_active: false,
             sortColumn: null,
             sortDirection: null, // 'asc', 'desc', or null
             is_promotion_user: false,
             is_purchase_admin: false,
             isfilterWarehouse: false,
             isSortedWarehouse: false,
+            offset: 0,
             product_code: "",
-            product_id_old: "",
+            extra_long_codes: "",
+            short_codes: "",
             loading: false,
             error: {
                 status: false,
@@ -106,6 +109,14 @@ export class SalesReport extends Component {
             showMultiBrandWarning: false,
             cartBrands: [],
             selectedBrandsToRemove: [],
+            // Datos de ventas del día actual
+            today_sales_summary: [],
+            today_sales_loading: false,
+            today_sales_has_more: false,
+            today_sales_next_offset: 0,
+            today_sales_total_count: 0,
+            today_sales_date_from: null,
+            today_sales_date_to: null,
         });
         this.closeModal = () => {
             this.state.modalOpen = false;
@@ -132,16 +143,25 @@ export class SalesReport extends Component {
             await this.get_brands();
             await this.get_laboratories();
             await this.get_warehouses();
-            await this.fetchLastPurchaseOrders();
+
             await this.google_spreadsheet_api_init();
             this.state.is_promotion_user = await userInGroupByName(this.orm, this.user, 'Promociones Admin', 'Punto de venta');
             this.state.is_purchase_admin = await userInGroupByName(this.orm, this.user, 'Administrador', 'Compra');
+
         });
-        onPatched(() => {
+        onMounted(async () => {
+            await this.loadTodaySalesSummary(100, 0);
+            await this.fetchLastPurchaseOrders();
+        });
+        onPatched(async () => {
             //     aqui va el coneteino  de scroll para cargar mas datos;
-            this.setupScrollListener();
+            await this.setupScrollListener();
+
         });
+
+
         onWillUnmount(() => {
+
             // Limpar listener de scroll ao destruir o componente
             if (this.scrollListener) {
                 const container = this.__owl__.refs.container;
@@ -188,6 +208,72 @@ export class SalesReport extends Component {
         this.state.google_spreadsheet_url = await this.orm.call("product.warehouse.sale.summary", "get_google_spreadsheet_api_key", []);
     }
 
+    /**
+     * Carga el resumen de ventas para un rango de fechas
+     * @param {number} limit - Límite de registros a cargar (default: 50)
+     * @param {number} offset - Offset para paginación (default: 0)
+     * @param {string|null} dateFrom - Fecha inicio (YYYY-MM-DD) o null para hoy
+     * @param {string|null} dateTo - Fecha fin (YYYY-MM-DD) o null para hoy
+     */
+    async loadTodaySalesSummary(limit = 100, offset = 0, dateFrom = null, dateTo = null) {
+        try {
+            this.state.today_sales_loading = true;
+            const result = await this.orm.call(
+                "product.warehouse.sale.summary",
+                "get_today_sales_summary",
+                [limit, offset, dateFrom, dateTo],
+                // { limit: limit }
+            );
+
+
+            if (offset === 0) {
+                // Primera carga - reemplazar datos
+                // this.state.base_products_filtered = result.records || [];
+                this.state.products_filtered = result.records || [];
+                this.calculate_totals()
+            } else {
+                // Cargar más - agregar a datos existentes
+                this.state.products_filtered = [
+                    ...this.state.products_filtered,
+                    ...(result.records || [])
+                ];
+                this.calculate_totals()
+
+            }
+
+
+            this.state.today_sales_has_more = result.has_more || false;
+            // this.state.today_sales_next_offset = result.next_offset || 0;
+            // this.state.today_sales_total_count = result.total_count || 0;
+            // this.state.today_sales_date_from = result.date_from || null;
+            // this.state.today_sales_date_to = result.date_to || null;
+            this.state.today_sales_date = result.date || null;
+            // this.state.loading = false;
+            setTimeout(() => this.setupScrollListener(), 100);
+            // this.state.today_sales_loading = false;
+        } catch (error) {
+            // this.state.loading = false;
+            this.state.today_sales_has_more = false
+            this.notification.add(
+                "Error al cargar el resumen de ventas del día" + error,
+                {type: "danger"}
+            );
+        }
+    }
+
+    /**
+     * Cargar más registros de ventas
+     */
+    async loadMoreTodaySales(start_date = null, end_date = null) {
+
+        if (this.state.today_sales_has_more) {
+            this.state.offset += 100;
+            await this.loadTodaySalesSummary(100, this.state.offset, start_date, end_date);
+            this.calculate_totals()
+        }
+
+    }
+
     async sendToSpreedSheet() {
 
         const product_data = await this.state.products_filtered.find(
@@ -209,12 +295,15 @@ export class SalesReport extends Component {
     async onUpdateSelectedLaboratory(selectedWO) {
         this.state.selectedLaboratory = selectedWO;
         this.state.brand_id = false;
+         // this.state.state.selectedWarehouse = null;
         this.state.isfilterWarehouse = false
         this.state.isSortedWarehouse = false
         this.state.isSorted = false
         this.state.isSortedReab = false
         const laboratory_name = selectedWO;
         const selectedLaboratory = this.state.laboratories.find(opt => opt.id === laboratory_name);
+        this.state.range_active =false
+        this.state.today_sales_loading = false
         if (selectedLaboratory) {
             this.state.laboratory_id = selectedLaboratory.id;
             this.state.warehouses = [];
@@ -226,6 +315,8 @@ export class SalesReport extends Component {
             this.state.laboratory_id = false;
             this.state.warehouses = [];
             this.state.products_filtered = [];
+
+            await this.loadTodaySalesSummary(100, 0);
         }
         this.state.selectedBrand = false;
 
@@ -233,12 +324,15 @@ export class SalesReport extends Component {
 
     async onUpdateSelectedBrand(selectedWO) {
         this.state.laboratory_id = false
+        // this.state.state.selectedWarehouse = null;
         this.state.isfilterWarehouse = false
         this.state.isSortedWarehouse = false
         this.state.isSorted = false
         this.state.isSortedReab = false
         const brand_name = selectedWO;
         const selectedBrand = this.state.brands.find(opt => opt.id === brand_name)
+        this.state.range_active =false
+        this.state.today_sales_loading = false
         if (selectedBrand) {
             this.state.warehouses = []
             this.state.brand_id = selectedBrand.id
@@ -248,6 +342,7 @@ export class SalesReport extends Component {
             this.state.brand_id = false;
             this.state.warehouses = [];
             this.state.products_filtered = [];
+            await this.loadTodaySalesSummary(100, 0);
         }
         this.state.selectedLaboratory = false;
         this.state.selectedBrand = selectedWO
@@ -256,10 +351,15 @@ export class SalesReport extends Component {
 
     async getSalesInformation() {
         if (!this.state.laboratory_id && !this.state.brand_id) {
-            this.notification.add("Por favor, seleccione un Laboratorio o Marca para continuar.", {type: 'warning'});
-            return
+
+            this.state.range_active = true
+            await this.loadTodaySalesSummary(100, 0, this.start_date,
+                this.end_date,)
+        } else {
+
+            await this.get_products(this.state.laboratory_id, this.state.brand_id);
         }
-        await this.get_products(this.state.laboratory_id, this.state.brand_id);
+
 
         // Si hay un producto seleccionado, refrescar la tabla de bodegas con las nuevas fechas
         if (this.state.selected_product_id) {
@@ -277,6 +377,10 @@ export class SalesReport extends Component {
 
 
     async get_warehouseId(warehouse) {
+
+        this.state.products_filtered = [];
+
+        // await this.loadTodaySalesSummary(20, 0);
         if (this.state.selected_warehouse_id === warehouse.warehouse_id) {
             // Deselecciona
             this.state.selected_warehouse_id = null
@@ -379,6 +483,8 @@ export class SalesReport extends Component {
     }
 
     async get_products(laboratory_id, brand_id, sales_priority = false) {
+        this.state.today_sales_has_more = false
+        this.state.offset = 0
         try {
             this.state.loading = true
             this.state.products_filtered = await this.orm.call(
@@ -502,10 +608,13 @@ export class SalesReport extends Component {
     }
 
     // alterar modo de busca
-    onSearchModeChange(ev) {
+    async onSearchModeChange(ev) {
         this.state.search_mode = ev.target.value;
         // limpar query quando mudar de modo
         this.state.product_query = "";
+        this.state.products_filtered = []
+        this.state.products = []
+        this.state.offset = 0
         if (this.state.search_mode === 'laboratory') {
             // Limpiar filtros dependientes para evitar inconsistencias
             this.state.brand_id = null;
@@ -524,7 +633,8 @@ export class SalesReport extends Component {
             this.state.selected_laboratory_row_id = null;
             this.state.labs_has_more = false;
             this.state.labs_next_offset = 0;
-            this.get_laboratory_sales();
+            await this.get_laboratory_sales();
+
         } else if (this.state.search_mode === 'product') {
             // Remover listener de scroll quando sair do modo laboratório
             if (this.scrollListener) {
@@ -537,7 +647,9 @@ export class SalesReport extends Component {
             // Solo recargar productos si hay filtros activos (laboratorio o marca)
             // Si no hay filtros, limpiar la lista para evitar cargar todos los productos
             if (this.state.laboratory_id || this.state.brand_id) {
-                this.get_products(this.state.laboratory_id, this.state.brand_id);
+                await this.get_products(this.state.laboratory_id, this.state.brand_id);
+            } else if (!this.state.laboratory_id && !this.state.brand_id) {
+                await this.loadTodaySalesSummary(100, 0)
             } else {
                 // Sin filtros activos: limpiar lista en lugar de cargar todos los productos
                 this.state.products_filtered = [];
@@ -552,7 +664,7 @@ export class SalesReport extends Component {
     // Método para cambiar modo de búsqueda desde botones
     setSearchMode(mode) {
         if (this.state.search_mode === mode) return;
-        this.onSearchModeChange({ target: { value: mode } });
+        this.onSearchModeChange({target: {value: mode}});
     }
 
     async get_laboratory_sales() {
@@ -574,12 +686,12 @@ export class SalesReport extends Component {
                 this.state.labs_next_offset = resp.next_offset;
                 this.calculate_totals();
             } else {
-                console.error('Respuesta inesperada del backend:', resp);
+
                 this.state.products_filtered = [];
                 this.state.base_products_filtered = [];
                 this.state.labs_has_more = false;
                 this.state.labs_next_offset = 0;
-                this.showError('Formato de respuesta inválido del servidor');
+
             }
 
             this.state.loading = false;
@@ -676,7 +788,7 @@ export class SalesReport extends Component {
         this.state.labs_loading_more = false;
     }
 
-    setupScrollListener() {
+    async setupScrollListener() {
         const container = this.__owl__.refs.container;
         if (!container) return;
         if (this.scrollListener) {
@@ -703,6 +815,17 @@ export class SalesReport extends Component {
                         this.load_more_products_by_query();
                     }
                 }
+
+
+                if (!this.state.laboratory_id && !this.state.brand_id && this.state.search_mode === 'product' && this.state.range_active) {
+
+                    this.loadMoreTodaySales(this.start_date, this.end_date);
+                }
+                if (!this.state.laboratory_id && !this.state.brand_id && this.state.search_mode === 'product' && !this.state.range_active) {
+
+                    this.loadMoreTodaySales();
+                }
+
             }, 100); // debounce de 100ms
         };
 
@@ -855,6 +978,19 @@ export class SalesReport extends Component {
     //     this.state.isfilterWarehouse = false
     //     this.state.isSortedWarehouse = false
     // }
+    async getMultibarcode(product_id) {
+            await this.orm.call(
+                "product.warehouse.sale.summary",
+                "get_multibarcode_info",
+                [product_id, this.state.product_code]
+            ).then((result) => {
+                this.state.extra_long_codes = (result?.long_codes || []).join(' | ');
+                this.state.short_codes = (result?.short_codes || []).join(' | ');
+                this.state.showMultibarcodeModal = true;
+            }).catch((error) => {
+                this.showError(`Error al cargar los códigos de barras: ${error.message || error}`);
+            });
+    }
 
     //obtener el detalle de ventas del producto por almacen
     async selectProduct(productId) {
@@ -862,13 +998,39 @@ export class SalesReport extends Component {
         if (productId === this.state.selected_product_id) return;
         this.state.warehouses = []
         this.state.loading_warehouses = true
+
         if (this.state.selected_product_id !== productId || this.state.selected_product_id === null) {
             this.state.selected_product_id = productId;
             const selectedProduct = this.state.products_filtered.find(
                 (p) => p.product_id === productId
             );
+
             this.state.product_code = selectedProduct.product_code;
-            this.state.product_id_old = selectedProduct.id_database_old || '';
+            
+            /**
+             * CARGAR CÓDIGOS DE BARRAS ALTERNATIVOS AUTOMÁTICAMENTE
+             *
+             * El backend retorna {long_codes: [], short_codes: []}
+             * - long_codes: códigos con más de 6 dígitos (EAN-13, EAN-8, etc.)
+             * - short_codes: códigos con 6 dígitos o menos (códigos internos)
+             *
+             * Visualización:
+             * - product_code (principal) + extra_long_codes: con icono fa-barcode
+             * - short_codes: con icono fa-coins
+             */
+            try {
+                const multibarcodeResult = await this.orm.call(
+                    "product.warehouse.sale.summary",
+                    "get_multibarcode_info",
+                    [productId, this.state.product_code]
+                );
+                this.state.extra_long_codes = (multibarcodeResult?.long_codes || []).join(' | ');
+                this.state.short_codes = (multibarcodeResult?.short_codes || []).join(' | ');
+            } catch (error) {
+                this.state.extra_long_codes = '';
+                this.state.short_codes = '';
+            }
+            
             this.state.warehouses = await this.orm.call("product.warehouse.sale.summary", "get_stock_by_warehouse", [this.state.selected_product_id, this.start_date, this.end_date])
             this.state.warehouses_base = [...this.state.warehouses];
             this.state.warehouse_query = "";
@@ -884,6 +1046,7 @@ export class SalesReport extends Component {
     // actualizar bodega global seleccionada
     async onUpdateSelectedWarehouse(selectedWO) {
         this.state.selectedWarehouse = selectedWO;
+        this.state.today_sales_loading = false
         const selectedWarehouse = this.state.warehouseOptions.find(opt => opt.id === selectedWO);
         if (selectedWarehouse) {
             this.state.selected_global_warehouse_id = selectedWarehouse.id;
@@ -1028,7 +1191,7 @@ export class SalesReport extends Component {
         ]);
         const productTmplId = productData[0].product_tmpl_id[0];
         const templateData = await this.orm.read("product.template", [productTmplId], [
-            "min_stock", "max_stock", "standard_price", "list_price", "tax_string",
+            "min_stock", "max_stock", "standard_price", "list_price", "tax_string", "avg_standar_price_old",
             "qty_available", "uom_id", "uom_po_id", "taxes_id",
         ]);
         const umo_po_id = await this.orm.read("uom.uom", [templateData[0].uom_po_id[0]], ["name", "factor_inv"]);
@@ -1656,8 +1819,8 @@ export class SalesReport extends Component {
             }
             return;
         }
-        // console.log("this.state.po_brand_id: ", this.state.po_brand_id)
-        let provider_id = await this.orm.call(
+        // Obtener el partner_id del laboratorio si existe
+        let laboratoryData = await this.orm.call(
             "product.laboratory",
             "search_read",
             [[["id", "=", this.state.po_brand_id]]],
@@ -1670,14 +1833,21 @@ export class SalesReport extends Component {
             ["id"]
         ]);
 
-        // Crear orden sin proveedor - el usuario lo seleccionará manualmente
-        // Las marcas y laboratorios se actualizarán después de agregar las líneas
+        // Preparar datos de la orden
+        // Si el laboratorio tiene un proveedor asociado, usarlo; sino el usuario lo seleccionará manualmente
+        const orderData = {
+            picking_type_id: picking_type_id[0].id,
+        };
+
+        // Solo agregar partner_id si el laboratorio tiene uno asociado
+        if (laboratoryData.length > 0 && laboratoryData[0].partner_id) {
+            orderData.partner_id = laboratoryData[0].partner_id[0];
+        }
+
         const orderId = await this.orm.call(
             "purchase.order",
             "create",
-            [{
-                picking_type_id: picking_type_id[0].id,
-            }]
+            [orderData]
         );
         const order_lines = []
         for (const item of this.state.cart) {
@@ -2634,7 +2804,7 @@ export class SalesReport extends Component {
                 this.showWarning("No hay una regla de reabastecimiento configurada para Bodega Matilde.");
                 return;
             }
-            
+
             // Mostrar cuadro de confirmación
             const productName = product.product_name || 'este producto';
             const qtyToOrder = product.matilde_qty_to_order || 0;
@@ -2643,11 +2813,11 @@ export class SalesReport extends Component {
                 `Cantidad a reabastecer: ${qtyToOrder}\n\n` +
                 `Esto generará una orden de compra para Bodega Matilde.`
             );
-            
+
             if (!confirmed) {
                 return; // El usuario canceló
             }
-            
+
             const orderpointId = product.matilde_orderpoint_id;
             const result = await this.orm.call(
                 "stock.warehouse.orderpoint",

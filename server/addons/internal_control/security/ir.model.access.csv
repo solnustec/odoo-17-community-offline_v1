@@ -18,3 +18,6 @@ access_survey_participation_summary_base,survey.participation.summary.base,model
 access_survey_tag_base,survey.tag.base,model_survey_tag,,1,1,1,1
 access_survey_export_report_base,survey.export.report.base,model_survey_export_report,,1,1,1,1
 access_survey_create_by_category_wizard_base,survey.create.by.category.wizard.base,model_survey_create_by_category_wizard,,1,1,1,1
+access_survey_branch_visit_base,survey.branch.visit.base,model_survey_branch_visit,,1,1,1,1
+access_survey_branch_visit_wizard_base,survey.branch.visit.wizard.base,model_survey_branch_visit_wizard,,1,1,1,1
+access_survey_branch_visit_wizard_line_base,survey.branch.visit.wizard.line.base,model_survey_branch_visit_wizard_line,,1,1,1,1

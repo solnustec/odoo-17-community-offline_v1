@@ -30,8 +30,12 @@ class PosSyncManager(models.Model):
         'loyalty.reward': 6,
         'hr.employee': 7,
         'pos.payment.method': 8,
-        'pos.session': 9,
-        'pos.order': 10,
+        'institution': 9,  # Instituciones de crédito/descuento
+        'institution.client': 10,  # Relación cliente-institución con saldo
+        'pos.session': 11,
+        'pos.order': 12,
+        'json.storage': 13,  # Sincronizar después de pos.order
+        'json.note.credit': 14,
     }
 
     # Campos para serialización por modelo
@@ -62,6 +66,15 @@ class PosSyncManager(models.Model):
             'product_id', 'location_id', 'quantity', 'reserved_quantity',
             'lot_id',
         ],
+        'json.storage': [
+            'json_data', 'pos_order_id', 'pos_order', 'employee',
+            'id_point_of_sale', 'sync_date', 'db_key', 'sent',
+            'client_invoice', 'id_database_old_invoice_client', 'is_access_key',
+        ],
+        'json.note.credit': [
+            'json_data', 'pos_order_id', 'id_point_of_sale',
+            'sync_date', 'date_invoices', 'db_key', 'sent', 'is_access_key',
+        ],
     }
 
     @api.model
@@ -85,8 +98,23 @@ class PosSyncManager(models.Model):
             'start_time': datetime.now(),
         }
 
+        sync_config_id = sync_config.id
+        error_occurred = False
+        error_message = None
+
         try:
-            sync_config.write({'sync_status': 'syncing'})
+            # Usar sudo() para evitar problemas de permisos
+            sync_config_sudo = sync_config.sudo()
+            sync_config_sudo.write({'sync_status': 'syncing'})
+
+            # 0. Limpiar registros json.storage de la cola (ahora se sincronizan como parte de pos.order)
+            try:
+                SyncQueue = self.env['pos.sync.queue'].sudo()
+                cleaned = SyncQueue.cleanup_json_storage_queue()
+                if cleaned > 0:
+                    _logger.info(f'Limpiados {cleaned} registros json.storage/json.note.credit de la cola')
+            except Exception as e:
+                _logger.warning(f'Error limpiando cola de json.storage: {e}')
 
             # 1. Subir datos locales al cloud (PUSH)
             if sync_config.operation_mode in ['hybrid', 'sync_on_demand']:
@@ -102,8 +130,8 @@ class PosSyncManager(models.Model):
                 if pull_result.get('errors'):
                     result['errors'].extend(pull_result['errors'])
 
-            # Actualizar estado
-            sync_config.write({
+            # Actualizar estado exitoso
+            sync_config_sudo.write({
                 'sync_status': 'success' if not result['errors'] else 'error',
                 'last_sync_date': fields.Datetime.now(),
                 'last_error_message': '\n'.join(result['errors']) if result['errors'] else False,
@@ -120,15 +148,32 @@ class PosSyncManager(models.Model):
 
         except Exception as e:
             _logger.error(f'Error en sincronización: {str(e)}')
-            sync_config.write({
-                'sync_status': 'error',
-                'last_error_message': str(e),
-            })
+            error_occurred = True
+            error_message = str(e)
             result['success'] = False
             result['errors'].append(str(e))
 
+        # Si hubo error, intentar actualizar el estado usando un nuevo cursor
+        # para evitar problemas con transacciones abortadas
+        if error_occurred:
+            try:
+                # Intentar rollback para limpiar la transacción abortada
+                self.env.cr.rollback()
+                # Ahora podemos escribir el estado de error
+                sync_config_fresh = self.env['pos.sync.config'].sudo().browse(sync_config_id)
+                if sync_config_fresh.exists():
+                    sync_config_fresh.write({
+                        'sync_status': 'error',
+                        'last_error_message': error_message,
+                    })
+            except Exception as write_error:
+                _logger.error(f'No se pudo actualizar estado de error: {str(write_error)}')
+
         # Registrar en log
-        self._create_sync_log(sync_config, result)
+        try:
+            self._create_sync_log(sync_config, result)
+        except Exception as log_error:
+            _logger.error(f'Error creando log de sincronización: {str(log_error)}')
 
         return result
 
@@ -287,12 +332,23 @@ class PosSyncManager(models.Model):
             )
 
             if response.get('success'):
+                # Procesar actualizaciones normales
                 for model_name, records in response.get('data', {}).items():
                     try:
                         count = self._apply_cloud_updates(model_name, records, sync_config)
                         result['count'] += count
                     except Exception as e:
                         error_msg = f'Error aplicando {model_name}: {str(e)}'
+                        _logger.error(error_msg)
+                        result['errors'].append(error_msg)
+
+                # Procesar eliminaciones
+                for model_name, deletions in response.get('deletions', {}).items():
+                    try:
+                        deleted_count = self._apply_cloud_deletions(model_name, deletions, sync_config)
+                        _logger.info(f'Aplicadas {deleted_count} eliminaciones de {model_name}')
+                    except Exception as e:
+                        error_msg = f'Error aplicando eliminaciones de {model_name}: {str(e)}'
                         _logger.error(error_msg)
                         result['errors'].append(error_msg)
             else:
@@ -339,6 +395,19 @@ class PosSyncManager(models.Model):
         unique_records_list = list(unique_records.values())
 
         _logger.info(f'Procesando {len(unique_records_list)} registros únicos de {model_name} (de {len(records)} totales)')
+
+        # Logging específico para institution.client
+        if model_name == 'institution.client' and unique_records_list:
+            _logger.info(
+                f'=== PULL institution.client - Recibidos {len(unique_records_list)} registros ===\n'
+                f'  IDs: {[r.get("id") for r in unique_records_list[:10]]}...'
+            )
+            for rec in unique_records_list[:5]:  # Mostrar primeros 5
+                _logger.info(
+                    f'  - id={rec.get("id")}, partner_vat={rec.get("partner_vat")}, '
+                    f'institution={rec.get("institution_id_institutions")}, '
+                    f'amount={rec.get("available_amount")}'
+                )
 
         # OPTIMIZACIÓN: Procesar en lotes con savepoint para atomicidad
         batch_size = 50  # Tamaño de lote para transacciones
@@ -440,6 +509,30 @@ class PosSyncManager(models.Model):
             self.deserialize_stock_picking(data, sync_config)
             return 1
 
+        # Manejo especial para json.storage
+        if model_name == 'json.storage':
+            data['id'] = cloud_id
+            self.deserialize_json_storage(data, sync_config)
+            return 1
+
+        # Manejo especial para json.note.credit
+        if model_name == 'json.note.credit':
+            data['id'] = cloud_id
+            self.deserialize_json_note_credit(data, sync_config)
+            return 1
+
+        # Manejo especial para institution
+        if model_name == 'institution':
+            data['id'] = cloud_id
+            self.deserialize_institution(data, sync_config)
+            return 1
+
+        # Manejo especial para institution.client
+        if model_name == 'institution.client':
+            data['id'] = cloud_id
+            self.deserialize_institution_client(data, sync_config)
+            return 1
+
         # Crear o actualizar otros modelos
         local = self._find_local_record(Model, cloud_id, data)
         if local:
@@ -451,6 +544,87 @@ class PosSyncManager(models.Model):
             if vals:
                 Model.create(vals)
         return 1
+
+    def _apply_cloud_deletions(self, model_name, deletions, sync_config):
+        """
+        Aplica eliminaciones recibidas del cloud.
+
+        Args:
+            model_name: Nombre del modelo
+            deletions: Lista de registros a eliminar
+            sync_config: Configuración de sincronización
+
+        Returns:
+            int: Número de registros eliminados
+        """
+        if not deletions:
+            return 0
+
+        count = 0
+        Model = self.env[model_name].sudo()
+
+        for deletion_data in deletions:
+            try:
+                # Buscar el registro local usando los identificadores
+                local_record = None
+
+                if model_name == 'institution.client':
+                    # Buscar por institution + partner
+                    partner_vat = deletion_data.get('partner_vat')
+                    institution_code = deletion_data.get('institution_id_institutions')
+
+                    if partner_vat and institution_code:
+                        partner = self.env['res.partner'].sudo().search([
+                            ('vat', '=', partner_vat)
+                        ], limit=1)
+                        institution = self.env['institution'].sudo().search([
+                            ('id_institutions', '=', institution_code)
+                        ], limit=1)
+
+                        if partner and institution:
+                            local_record = Model.search([
+                                ('partner_id', '=', partner.id),
+                                ('institution_id', '=', institution.id)
+                            ], limit=1)
+
+                    # Fallback: buscar por cloud_sync_id
+                    if not local_record and deletion_data.get('id'):
+                        if 'cloud_sync_id' in Model._fields:
+                            local_record = Model.search([
+                                ('cloud_sync_id', '=', deletion_data['id'])
+                            ], limit=1)
+                else:
+                    # Para otros modelos, buscar por id o cloud_sync_id
+                    record_id = deletion_data.get('id')
+                    if record_id:
+                        if 'cloud_sync_id' in Model._fields:
+                            local_record = Model.search([
+                                ('cloud_sync_id', '=', record_id)
+                            ], limit=1)
+                        if not local_record:
+                            local_record = Model.browse(record_id)
+                            if not local_record.exists():
+                                local_record = None
+
+                if local_record:
+                    record_ref = f'{local_record.partner_id.name} - {local_record.institution_id.name}' if model_name == 'institution.client' else str(local_record.id)
+                    _logger.info(
+                        f'Eliminando {model_name} local: {record_ref} '
+                        f'(recibido del cloud)'
+                    )
+                    local_record.with_context(skip_sync_queue=True).unlink()
+                    count += 1
+                else:
+                    _logger.debug(
+                        f'Registro {model_name} a eliminar no encontrado localmente: '
+                        f'{deletion_data}'
+                    )
+
+            except Exception as e:
+                _logger.error(f'Error eliminando {model_name}: {str(e)}')
+                continue
+
+        return count
 
     def _find_local_record(self, Model, cloud_id, record_data):
         """Busca un registro local por diferentes criterios."""
@@ -822,7 +996,7 @@ class PosSyncManager(models.Model):
 
             data['lines'].append(line_data)
 
-        # Serializar pagos
+        # Serializar pagos con todos los campos adicionales (cheque, tarjeta, crédito)
         _logger.info(f'Serializando {len(order.payment_ids)} pagos para orden {order.name}')
         for payment in order.payment_ids:
             payment_data = {
@@ -830,11 +1004,60 @@ class PosSyncManager(models.Model):
                 'payment_method_name': payment.payment_method_id.name,
                 'amount': payment.amount,
                 'payment_date': payment.payment_date.isoformat() if hasattr(payment, 'payment_date') and payment.payment_date else None,
+                # Campos de CHEQUE
+                'check_number': getattr(payment, 'check_number', None),
+                'check_bank_account': getattr(payment, 'check_bank_account', None),
+                'check_owner': getattr(payment, 'check_owner', None),
+                'bank_id': payment.bank_id.id if hasattr(payment, 'bank_id') and payment.bank_id else None,
+                'bank_name': payment.bank_id.name if hasattr(payment, 'bank_id') and payment.bank_id else None,
+                'date': payment.date.isoformat() if hasattr(payment, 'date') and payment.date else None,
+                'institution_cheque': getattr(payment, 'institution_cheque', None),
+                'institution_discount': getattr(payment, 'institution_discount', None),
+                # Campos de TARJETA
+                'number_voucher': getattr(payment, 'number_voucher', None),
+                'type_card': payment.type_card.id if hasattr(payment, 'type_card') and payment.type_card else None,
+                'type_card_name': payment.type_card.name if hasattr(payment, 'type_card') and payment.type_card else None,
+                'number_lote': getattr(payment, 'number_lote', None),
+                'holder_card': getattr(payment, 'holder_card', None),
+                'bin_tc': getattr(payment, 'bin_tc', None),
+                'institution_card': getattr(payment, 'institution_card', None),
+                # Campos de CREDITO
+                'selecteInstitutionCredit': getattr(payment, 'selecteInstitutionCredit', None),
             }
             data['payments'].append(payment_data)
-            _logger.info(f'Pago serializado: {payment_data}')
+            _logger.info(f'Pago serializado: método={payment.payment_method_id.name}, monto={payment.amount}')
 
         _logger.info(f'Orden {order.name} serializada con {len(data["payments"])} pagos, estado: {order.state}')
+
+        # NUEVO: Serializar json.storage (registro de factura para sistema externo)
+        # Incluido en la orden para evitar problemas de foreign key al sincronizar
+        data['json_storage_data'] = None
+        try:
+            JsonStorage = self.env['json.storage'].sudo()
+            json_storage_record = JsonStorage.search([
+                ('pos_order', '=', order.id)
+            ], limit=1)
+
+            if json_storage_record:
+                data['json_storage_data'] = {
+                    'id': json_storage_record.id,
+                    'json_data': json_storage_record.json_data,
+                    'employee': json_storage_record.employee,
+                    'id_point_of_sale': json_storage_record.id_point_of_sale,
+                    'client_invoice': json_storage_record.client_invoice,
+                    'id_database_old_invoice_client': json_storage_record.id_database_old_invoice_client,
+                    'is_access_key': json_storage_record.is_access_key,
+                    'sent': json_storage_record.sent,
+                    'db_key': json_storage_record.db_key,
+                    'pos_order_id': json_storage_record.pos_order_id.id if json_storage_record.pos_order_id else False,
+                    # NUEVO: Agregar nombre del pos.config para identificarlo en el cloud
+                    'config_name': json_storage_record.pos_order_id.name if json_storage_record.pos_order_id else None,
+                    'create_date': json_storage_record.create_date.isoformat() if json_storage_record.create_date else None,
+                }
+                _logger.info(f'json.storage serializado para orden {order.name}: id={json_storage_record.id}')
+        except Exception as e:
+            _logger.warning(f'Error serializando json.storage para orden {order.name}: {e}')
+
         return data
 
     @api.model
@@ -1091,13 +1314,20 @@ class PosSyncManager(models.Model):
                     product = None
 
             if product:
-                lines.append((0, 0, {
+                line_vals = {
                     'product_id': product.id,
                     'full_product_name': line_data.get('product_name', product.name),
+                    'name': line_data.get('product_name', product.name),
                     'qty': line_data.get('qty', 1),
                     'price_unit': line_data.get('price_unit'),
                     'discount': line_data.get('discount', 0),
-                }))
+                    'price_subtotal': line_data.get('price_subtotal', 0.0),
+                    'price_subtotal_incl': line_data.get('price_subtotal_incl', 0.0),
+                }
+                # Agregar product_free si existe
+                if 'product_free' in line_data:
+                    line_vals['product_free'] = line_data.get('product_free', False)
+                lines.append((0, 0, line_vals))
 
         # Generar pos_reference, name y sequence_number
         # IMPORTANTE: Buscar el último sequence_number de TODO el config_id (punto de venta)
@@ -1123,9 +1353,10 @@ class PosSyncManager(models.Model):
             'session_id': session.id,
             'partner_id': partner.id if partner else None,
             'lines': lines,
-            'amount_total': data.get('amount_total'),
-            'amount_paid': data.get('amount_paid'),
-            'amount_return': data.get('amount_return'),
+            'amount_total': data.get('amount_total', 0.0),
+            'amount_tax': data.get('amount_tax', 0.0),  # REQUIRED: NOT NULL constraint
+            'amount_paid': data.get('amount_paid', 0.0),
+            'amount_return': data.get('amount_return', 0.0),
             'note': data.get('note'),
             'to_invoice': True,  # Permitir facturación
             'is_delivery_order': False,  # NO es orden de entrega
@@ -1156,6 +1387,10 @@ class PosSyncManager(models.Model):
             employee = self.env['hr.employee'].sudo().browse(data['employee_id'])
             if employee.exists():
                 order_vals['employee_id'] = employee.id
+
+        # CRÍTICO: Guardar el ID original del offline para poder vincular json.storage
+        if data.get('id'):
+            order_vals['id_database_old'] = str(data['id'])
 
         order = PosOrder.with_context(skip_sync_queue=True).create(order_vals)
 
@@ -1246,6 +1481,18 @@ class PosSyncManager(models.Model):
             f'   Pagos: {len(order.payment_ids)}'
         )
 
+        # ============================================================
+        # PASO 5: Crear json.storage si viene en los datos de la orden
+        # Esto evita problemas de foreign key al sincronizar separadamente
+        # ============================================================
+        json_storage_data = data.get('json_storage_data')
+        if json_storage_data:
+            try:
+                _logger.info(f'=== PASO 5: Creando json.storage para orden {order.name} ===')
+                self._create_json_storage_from_order(order, json_storage_data, session)
+            except Exception as e:
+                _logger.error(f'Error creando json.storage para orden {order.name}: {e}', exc_info=True)
+
         return order
 
     def _create_order_payments(self, order, payments_data, session):
@@ -1284,6 +1531,16 @@ class PosSyncManager(models.Model):
                 else:
                     payment_method = None
 
+            # Verificar si el método de pago está permitido en la sesión
+            # Si no está permitido, usar el primer método de pago de la sesión
+            if payment_method and session.config_id.payment_method_ids:
+                if payment_method.id not in session.config_id.payment_method_ids.ids:
+                    _logger.warning(
+                        f'Método de pago {payment_method.name} no está permitido en sesión {session.name}. '
+                        f'Usando método de pago de la sesión.'
+                    )
+                    payment_method = session.config_id.payment_method_ids[:1]
+
             # Si no se encuentra, usar el primer método de pago de la sesión
             if not payment_method:
                 payment_method = session.config_id.payment_method_ids[:1]
@@ -1300,11 +1557,253 @@ class PosSyncManager(models.Model):
                     'amount': payment_data.get('amount', 0),
                     'session_id': session.id,
                 }
-                _logger.info(f'Creando pago con valores: {payment_vals}')
-                payment = PosPayment.create(payment_vals)
+
+                # Campos de CHEQUE
+                if payment_data.get('check_number'):
+                    payment_vals['check_number'] = payment_data.get('check_number')
+                if payment_data.get('check_bank_account'):
+                    payment_vals['check_bank_account'] = payment_data.get('check_bank_account')
+                if payment_data.get('check_owner'):
+                    payment_vals['check_owner'] = payment_data.get('check_owner')
+                if payment_data.get('institution_cheque'):
+                    payment_vals['institution_cheque'] = payment_data.get('institution_cheque')
+                if payment_data.get('institution_discount'):
+                    payment_vals['institution_discount'] = payment_data.get('institution_discount')
+
+                # Buscar banco por nombre si no existe el ID
+                if payment_data.get('bank_name'):
+                    bank = self.env['res.bank'].sudo().search([
+                        ('name', '=', payment_data.get('bank_name'))
+                    ], limit=1)
+                    if bank:
+                        payment_vals['bank_id'] = bank.id
+                elif payment_data.get('bank_id'):
+                    bank = self.env['res.bank'].sudo().browse(payment_data['bank_id'])
+                    if bank.exists():
+                        payment_vals['bank_id'] = bank.id
+
+                # Fecha del cheque
+                if payment_data.get('date'):
+                    from datetime import date as date_type
+                    try:
+                        payment_vals['date'] = date_type.fromisoformat(payment_data['date'])
+                    except (ValueError, TypeError):
+                        pass
+
+                # Campos de TARJETA
+                if payment_data.get('number_voucher'):
+                    payment_vals['number_voucher'] = payment_data.get('number_voucher')
+                if payment_data.get('number_lote'):
+                    payment_vals['number_lote'] = payment_data.get('number_lote')
+                if payment_data.get('holder_card'):
+                    payment_vals['holder_card'] = payment_data.get('holder_card')
+                if payment_data.get('bin_tc'):
+                    payment_vals['bin_tc'] = payment_data.get('bin_tc')
+                if payment_data.get('institution_card'):
+                    payment_vals['institution_card'] = payment_data.get('institution_card')
+
+                # Buscar tipo de tarjeta por nombre
+                if payment_data.get('type_card_name'):
+                    credit_card = self.env['credit.card'].sudo().search([
+                        ('name', '=', payment_data.get('type_card_name'))
+                    ], limit=1)
+                    if credit_card:
+                        payment_vals['type_card'] = credit_card.id
+                elif payment_data.get('type_card'):
+                    credit_card = self.env['credit.card'].sudo().browse(payment_data['type_card'])
+                    if credit_card.exists():
+                        payment_vals['type_card'] = credit_card.id
+
+                # Campos de CREDITO
+                if payment_data.get('selecteInstitutionCredit'):
+                    payment_vals['selecteInstitutionCredit'] = payment_data.get('selecteInstitutionCredit')
+
+                _logger.info(f'Creando pago con valores: método={payment_method.name}, monto={payment_vals.get("amount")}')
+
+                # Usar contexto para bypasear validaciones de método de pago
+                payment = PosPayment.with_context(
+                    skip_payment_method_check=True,
+                    from_pos_sync=True
+                ).create(payment_vals)
                 _logger.info(f'Pago creado exitosamente: ID={payment.id}, monto={payment.amount}')
             except Exception as e:
                 _logger.error(f'Error creando pago: {e}', exc_info=True)
+
+    def _create_json_storage_from_order(self, order, json_storage_data, session):
+        """
+        Crea un registro json.storage en el servidor principal a partir de los datos
+        sincronizados de la orden.
+
+        IMPORTANTE: Este método verifica múltiples criterios para evitar duplicados:
+        1. Por pos_order (orden actual)
+        2. Por cloud_sync_id (ID original del offline)
+        3. Por client_invoice + pos_reference (identificador único de la transacción)
+
+        Args:
+            order: pos.order recién creado
+            json_storage_data: Diccionario con datos del json.storage del offline
+            session: pos.session de la orden
+
+        Returns:
+            json.storage: Registro creado o existente, o None si no debe crearse
+        """
+        JsonStorage = self.env['json.storage'].sudo()
+
+        # Si el json.storage ya fue enviado/procesado en el offline, no crear
+        if json_storage_data.get('sent'):
+            _logger.info(
+                f'json.storage para orden {order.name}: ya fue enviado en offline (sent=True), '
+                f'omitiendo creación'
+            )
+            return None
+
+        # VERIFICACIÓN 1: Por pos_order (orden actual)
+        existing = JsonStorage.search([
+            ('pos_order', '=', order.id)
+        ], limit=1)
+
+        if existing:
+            _logger.info(f'json.storage ya existe para orden {order.name}: ID={existing.id}')
+            return existing
+
+        # VERIFICACIÓN 2: Por ID directo del json.storage (mismo servidor/BD)
+        # Si el json.storage original existe con el mismo ID, reutilizar
+        original_id = json_storage_data.get('id')
+        if original_id:
+            # Primero buscar por cloud_sync_id
+            existing_by_cloud_id = JsonStorage.search([
+                ('cloud_sync_id', '=', original_id)
+            ], limit=1)
+            if existing_by_cloud_id:
+                _logger.info(f'json.storage ya sincronizado (cloud_sync_id={original_id}): ID={existing_by_cloud_id.id}')
+                # Actualizar la referencia a la orden actual si es necesario
+                if existing_by_cloud_id.pos_order.id != order.id:
+                    existing_by_cloud_id.write({'pos_order': order.id})
+                    _logger.info(f'json.storage actualizado con nueva orden: {order.id}')
+                return existing_by_cloud_id
+
+            # Buscar por ID directo (cuando offline y cloud comparten BD)
+            existing_by_id = JsonStorage.browse(original_id)
+            if existing_by_id.exists():
+                _logger.info(f'json.storage encontrado por ID directo={original_id}: ya existe localmente')
+                # Actualizar cloud_sync_id y pos_order si es necesario
+                update_vals = {}
+                if not existing_by_id.cloud_sync_id:
+                    update_vals['cloud_sync_id'] = original_id
+                if existing_by_id.pos_order.id != order.id:
+                    update_vals['pos_order'] = order.id
+                if update_vals:
+                    existing_by_id.with_context(skip_sync_queue=True).write(update_vals)
+                return existing_by_id
+
+        # VERIFICACIÓN 3: Por orden LOCAL original (usando id_database_old de la orden)
+        # Esto detecta json.storage creado para la orden antes de sincronizar
+        if order.id_database_old:
+            local_order = self.env['pos.order'].sudo().search([
+                ('id', '=', int(order.id_database_old))
+            ], limit=1)
+            if local_order:
+                existing_by_local = JsonStorage.search([
+                    ('pos_order', '=', local_order.id)
+                ], limit=1)
+                if existing_by_local:
+                    _logger.info(
+                        f'json.storage encontrado para orden local {local_order.name} '
+                        f'(id_database_old={order.id_database_old}): ID={existing_by_local.id}'
+                    )
+                    # Actualizar referencia a la orden nueva
+                    existing_by_local.with_context(skip_sync_queue=True).write({
+                        'pos_order': order.id,
+                        'cloud_sync_id': original_id if original_id else existing_by_local.cloud_sync_id,
+                    })
+                    return existing_by_local
+
+        # VERIFICACIÓN 4: Por client_invoice + esta orden específica
+        # Solo buscar si ya hay un json.storage vinculado a ESTA orden
+        client_invoice = json_storage_data.get('client_invoice')
+        if client_invoice and order:
+            existing_by_order = JsonStorage.search([
+                ('client_invoice', '=', client_invoice),
+                ('pos_order', '=', order.id)  # Debe ser la misma orden
+            ], limit=1)
+            if existing_by_order:
+                _logger.info(
+                    f'json.storage encontrado para esta orden {order.name} '
+                    f'con client_invoice={client_invoice}: ID={existing_by_order.id}'
+                )
+                return existing_by_order
+
+        # NOTA: Se eliminó la verificación por client_invoice + id_database_old_invoice_client
+        # porque esos valores son del CLIENTE, no de la TRANSACCIÓN
+
+        # Buscar el pos.config para el campo pos_order_id
+        # Primero intentar por config_name (nombre original del POS de la sucursal)
+        pos_config = None
+        config_name = json_storage_data.get('config_name')
+        if config_name:
+            pos_config = self.env['pos.config'].sudo().search([
+                ('name', '=', config_name)
+            ], limit=1)
+            if pos_config:
+                _logger.info(f'json.storage: pos.config encontrado por nombre "{config_name}": ID={pos_config.id}')
+
+        # Si no se encontró por nombre, intentar por pos_order_id
+        if not pos_config and json_storage_data.get('pos_order_id'):
+            offline_pos_config_id = json_storage_data.get('pos_order_id')
+            pos_config = self.env['pos.config'].sudo().search([
+                '|',
+                ('id', '=', offline_pos_config_id),
+                ('point_of_sale_id', '=', offline_pos_config_id)
+            ], limit=1)
+            if pos_config:
+                _logger.info(f'json.storage: pos.config encontrado por ID {offline_pos_config_id}: {pos_config.name}')
+
+        # Fallback a session.config_id si no se encontró
+        if not pos_config:
+            pos_config = session.config_id if session else None
+            if pos_config:
+                _logger.info(f'json.storage: usando pos.config de sesión (fallback): {pos_config.name}')
+
+        # Preparar valores para crear json.storage
+        storage_vals = {
+            'json_data': json_storage_data.get('json_data'),
+            'employee': json_storage_data.get('employee', ''),
+            'id_point_of_sale': json_storage_data.get('id_point_of_sale', ''),
+            'client_invoice': json_storage_data.get('client_invoice', ''),
+            'id_database_old_invoice_client': json_storage_data.get('id_database_old_invoice_client', ''),
+            'is_access_key': json_storage_data.get('is_access_key', False),
+            'sent': json_storage_data.get('sent', False),
+            'db_key': json_storage_data.get('db_key'),
+            'pos_order': order.id,  # CRÍTICO: Referencia a la orden recién creada
+        }
+
+        # Agregar pos_order_id (pos.config) si tenemos uno válido
+        if pos_config:
+            storage_vals['pos_order_id'] = pos_config.id
+
+        # Agregar cloud_sync_id si viene el id original
+        if original_id:
+            storage_vals['cloud_sync_id'] = original_id
+
+        try:
+            # Crear con skip_sync_queue para evitar que se re-agregue a la cola
+            new_storage = JsonStorage.with_context(skip_sync_queue=True).create(storage_vals)
+
+            # Marcar como sincronizado
+            new_storage.with_context(skip_sync_queue=True).write({
+                'sync_state': 'synced',
+                'last_sync_date': fields.Datetime.now(),
+            })
+
+            _logger.info(
+                f'json.storage creado exitosamente para orden {order.name}: '
+                f'ID={new_storage.id}, cloud_sync_id={original_id}'
+            )
+            return new_storage
+
+        except Exception as e:
+            _logger.error(f'Error creando json.storage para orden {order.name}: {e}', exc_info=True)
+            raise
 
     def _create_invoice_from_offline(self, order, invoice_data):
         """
@@ -1671,6 +2170,9 @@ class PosSyncManager(models.Model):
         Returns:
             dict: Datos serializados
         """
+        # Obtener el template relacionado
+        template = product.product_tmpl_id
+
         data = {
             'id': product.id,
             'name': product.name,
@@ -1696,9 +2198,13 @@ class PosSyncManager(models.Model):
             'description_sale': product.description_sale,
             'weight': product.weight,
             'volume': product.volume,
-            # Campos de sincronización
+            # Campos de sincronización del producto
             'cloud_sync_id': product.cloud_sync_id if hasattr(product, 'cloud_sync_id') else None,
             'id_database_old': product.id_database_old if hasattr(product, 'id_database_old') else None,
+            # Campos de sincronización del template
+            'product_tmpl_id': template.id if template else None,
+            'template_cloud_sync_id': template.cloud_sync_id if template and hasattr(template, 'cloud_sync_id') else None,
+            'template_id_database_old': template.id_database_old if template and hasattr(template, 'id_database_old') else None,
             # Impuestos
             'taxes_id': product.taxes_id.ids if product.taxes_id else [],
             'supplier_taxes_id': product.supplier_taxes_id.ids if product.supplier_taxes_id else [],
@@ -1747,6 +2253,34 @@ class PosSyncManager(models.Model):
         # Marcar el cloud_sync_id si viene del cloud
         if data.get('id') and not product.cloud_sync_id:
             product.write({'cloud_sync_id': data['id']})
+
+        # Sincronizar también el product.template
+        # En Odoo, product.product hereda de product.template via _inherits
+        # Por lo que debemos actualizar los campos de sincronización en el template
+        if product.product_tmpl_id:
+            template = product.product_tmpl_id
+            template_vals = {}
+
+            # Actualizar cloud_sync_id del template si viene
+            template_cloud_id = data.get('template_cloud_sync_id') or data.get('product_tmpl_id')
+            if template_cloud_id and not template.cloud_sync_id:
+                template_vals['cloud_sync_id'] = template_cloud_id
+
+            # Actualizar id_database_old del template si viene
+            template_db_old = data.get('template_id_database_old')
+            if template_db_old and not template.id_database_old:
+                template_vals['id_database_old'] = str(template_db_old)
+
+            # Marcar como sincronizado
+            template_vals['sync_state'] = 'synced'
+            template_vals['last_sync_date'] = fields.Datetime.now()
+
+            if template_vals:
+                template.write(template_vals)
+                _logger.info(
+                    f'Template actualizado: {template.name} (ID: {template.id}), '
+                    f'cloud_sync_id={template.cloud_sync_id}'
+                )
 
         return product
 
@@ -2805,6 +3339,535 @@ class PosSyncManager(models.Model):
             vals['id_database_old'] = str(data['id_database_old'])
 
         return vals
+
+    # ==================== SERIALIZADORES DE JSON.STORAGE ====================
+
+    @api.model
+    def deserialize_json_storage(self, data, sync_config=None):
+        """
+        Deserializa datos de json.storage recibidos de una sucursal.
+
+        Args:
+            data: Diccionario con datos del registro json.storage
+            sync_config: Configuración de sincronización (opcional)
+
+        Returns:
+            json.storage: Registro creado o actualizado
+        """
+        JsonStorage = self.env['json.storage'].sudo()
+        cloud_id = data.get('id')
+
+        _logger.info(f'Deserializando json.storage cloud_id={cloud_id}')
+
+        # Buscar registro existente con múltiples verificaciones
+        existing = None
+
+        # VERIFICACIÓN 1: Por cloud_sync_id
+        if cloud_id and 'cloud_sync_id' in JsonStorage._fields:
+            existing = JsonStorage.search([
+                ('cloud_sync_id', '=', cloud_id)
+            ], limit=1)
+            if existing:
+                _logger.info(f'json.storage encontrado por cloud_sync_id={cloud_id}')
+
+        # VERIFICACIÓN 2: Por ID directo (cuando offline y cloud comparten BD)
+        if not existing and cloud_id:
+            existing_by_id = JsonStorage.browse(cloud_id)
+            if existing_by_id.exists():
+                existing = existing_by_id
+                _logger.info(f'json.storage encontrado por ID directo={cloud_id}')
+
+        # VERIFICACIÓN 3: Por pos_order si está disponible
+        if not existing and data.get('pos_order'):
+            pos_order_id = data['pos_order']
+            # Buscar la orden por cloud_sync_id o id_database_old
+            PosOrder = self.env['pos.order'].sudo()
+            order = None
+            if 'cloud_sync_id' in PosOrder._fields:
+                order = PosOrder.search([('cloud_sync_id', '=', pos_order_id)], limit=1)
+            if not order:
+                order = PosOrder.search([('id_database_old', '=', str(pos_order_id))], limit=1)
+            # También buscar por ID directo
+            if not order:
+                direct_order = PosOrder.browse(pos_order_id)
+                if direct_order.exists():
+                    order = direct_order
+            if order:
+                existing = JsonStorage.search([('pos_order', '=', order.id)], limit=1)
+                if existing:
+                    _logger.info(f'json.storage encontrado por pos_order={order.name}')
+
+        # NOTA: Se eliminó la verificación por client_invoice + id_database_old_invoice_client
+        # porque esos valores son del CLIENTE, no de la TRANSACCIÓN, y causaba duplicados.
+        # Las verificaciones válidas son: cloud_sync_id, ID directo, y pos_order.
+
+        # Preparar valores
+        vals = {
+            'json_data': data.get('json_data'),
+            'employee': data.get('employee'),
+            'id_point_of_sale': data.get('id_point_of_sale'),
+            'client_invoice': data.get('client_invoice'),
+            'id_database_old_invoice_client': data.get('id_database_old_invoice_client'),
+            'is_access_key': data.get('is_access_key', False),
+            'sent': data.get('sent', False),
+            'db_key': data.get('db_key'),
+        }
+
+        # Resolver pos_order_id (Many2one a pos.config)
+        if data.get('pos_order_id'):
+            config_id = data['pos_order_id']
+            pos_config = self.env['pos.config'].sudo().browse(config_id)
+            if pos_config.exists():
+                vals['pos_order_id'] = pos_config.id
+            else:
+                # Intentar buscar por cloud_sync_id
+                if 'cloud_sync_id' in self.env['pos.config']._fields:
+                    pos_config = self.env['pos.config'].sudo().search([
+                        ('cloud_sync_id', '=', config_id)
+                    ], limit=1)
+                    if pos_config:
+                        vals['pos_order_id'] = pos_config.id
+
+        # Resolver pos_order (Many2one a pos.order)
+        # CRÍTICO: El ID del offline NO existe en el cloud, debemos buscar por otros criterios
+        pos_order = None
+        PosOrder = self.env['pos.order'].sudo()
+        order_id = data.get('pos_order')
+
+        _logger.info(f'Resolviendo pos_order para json.storage: offline_id={order_id}, ref={data.get("_pos_order_ref")}')
+
+        if order_id:
+            # 1. Buscar por id_database_old (el ID original del offline guardado en el cloud)
+            pos_order = PosOrder.search([('id_database_old', '=', str(order_id))], limit=1)
+            if pos_order:
+                _logger.info(f'pos_order encontrado por id_database_old: {pos_order.name} (ID: {pos_order.id})')
+
+            # 2. Buscar por cloud_sync_id (si el cloud asignó este ID)
+            if not pos_order and 'cloud_sync_id' in PosOrder._fields:
+                pos_order = PosOrder.search([('cloud_sync_id', '=', order_id)], limit=1)
+                if pos_order:
+                    _logger.info(f'pos_order encontrado por cloud_sync_id: {pos_order.name}')
+
+            # 3. Buscar por ID directo (solo si es el mismo servidor)
+            if not pos_order:
+                direct_order = PosOrder.browse(order_id)
+                if direct_order.exists():
+                    pos_order = direct_order
+                    _logger.info(f'pos_order encontrado por ID directo: {pos_order.name}')
+
+        # 4. Buscar por referencia de nombre si está disponible
+        if not pos_order and data.get('_pos_order_ref'):
+            pos_order = PosOrder.search([('name', '=', data['_pos_order_ref'])], limit=1)
+            if pos_order:
+                _logger.info(f'pos_order encontrado por nombre: {pos_order.name}')
+
+        # 5. Si aún no se encuentra, buscar la orden más reciente que coincida con client_invoice
+        if not pos_order and data.get('client_invoice'):
+            pos_order = PosOrder.search([
+                ('partner_id.vat', '=', data['client_invoice']),
+            ], order='create_date desc', limit=1)
+            if pos_order:
+                _logger.info(f'pos_order encontrado por partner VAT: {pos_order.name}')
+
+        if pos_order:
+            vals['pos_order'] = pos_order.id
+        else:
+            _logger.warning(
+                f'No se pudo encontrar pos_order para json.storage. '
+                f'offline_id={order_id}, ref={data.get("_pos_order_ref")}, '
+                f'client={data.get("client_invoice")}. '
+                f'El registro se creará SIN referencia a pos.order.'
+            )
+
+        if existing:
+            # Actualizar registro existente
+            existing.with_context(skip_sync_queue=True).write(vals)
+            if 'sync_state' in JsonStorage._fields:
+                existing.with_context(skip_sync_queue=True).write({'sync_state': 'synced'})
+            _logger.info(f'json.storage actualizado: {existing.id}')
+            return existing
+        else:
+            # Crear nuevo registro
+            if cloud_id and 'cloud_sync_id' in JsonStorage._fields:
+                vals['cloud_sync_id'] = cloud_id
+            if 'sync_state' in JsonStorage._fields:
+                vals['sync_state'] = 'synced'
+            record = JsonStorage.with_context(skip_sync_queue=True).create(vals)
+            _logger.info(f'json.storage creado: {record.id} (cloud_id={cloud_id})')
+            return record
+
+    @api.model
+    def deserialize_json_note_credit(self, data, sync_config=None):
+        """
+        Deserializa datos de json.note.credit recibidos de una sucursal.
+
+        Args:
+            data: Diccionario con datos del registro json.note.credit
+            sync_config: Configuración de sincronización (opcional)
+
+        Returns:
+            json.note.credit: Registro creado o actualizado
+        """
+        JsonNoteCredit = self.env['json.note.credit'].sudo()
+        cloud_id = data.get('id')
+
+        _logger.info(f'Deserializando json.note.credit cloud_id={cloud_id}')
+
+        # Buscar registro existente
+        existing = None
+        if cloud_id and 'cloud_sync_id' in JsonNoteCredit._fields:
+            existing = JsonNoteCredit.search([
+                ('cloud_sync_id', '=', cloud_id)
+            ], limit=1)
+
+        # Preparar valores
+        vals = {
+            'json_data': data.get('json_data'),
+            'id_point_of_sale': data.get('id_point_of_sale'),
+            'date_invoices': data.get('date_invoices'),
+            'is_access_key': data.get('is_access_key', False),
+            'sent': data.get('sent', False),
+            'db_key': data.get('db_key'),
+        }
+
+        # Resolver pos_order_id (Many2one a pos.config)
+        if data.get('pos_order_id'):
+            config_id = data['pos_order_id']
+            pos_config = self.env['pos.config'].sudo().browse(config_id)
+            if pos_config.exists():
+                vals['pos_order_id'] = pos_config.id
+            else:
+                # Intentar buscar por cloud_sync_id
+                if 'cloud_sync_id' in self.env['pos.config']._fields:
+                    pos_config = self.env['pos.config'].sudo().search([
+                        ('cloud_sync_id', '=', config_id)
+                    ], limit=1)
+                    if pos_config:
+                        vals['pos_order_id'] = pos_config.id
+
+        if existing:
+            # Actualizar registro existente
+            existing.with_context(skip_sync_queue=True).write(vals)
+            if 'sync_state' in JsonNoteCredit._fields:
+                existing.with_context(skip_sync_queue=True).write({'sync_state': 'synced'})
+            _logger.info(f'json.note.credit actualizado: {existing.id}')
+            return existing
+        else:
+            # Crear nuevo registro
+            if cloud_id and 'cloud_sync_id' in JsonNoteCredit._fields:
+                vals['cloud_sync_id'] = cloud_id
+            if 'sync_state' in JsonNoteCredit._fields:
+                vals['sync_state'] = 'synced'
+            record = JsonNoteCredit.with_context(skip_sync_queue=True).create(vals)
+            _logger.info(f'json.note.credit creado: {record.id} (cloud_id={cloud_id})')
+            return record
+
+    # ==================== SERIALIZADORES DE INSTITUTION ====================
+
+    @api.model
+    def serialize_institution(self, institution):
+        """
+        Serializa una institución para sincronización.
+
+        Args:
+            institution: Registro institution
+
+        Returns:
+            dict: Datos serializados de la institución
+        """
+        return {
+            'id': institution.id,
+            'id_institutions': institution.id_institutions,
+            'name': institution.name,
+            'ruc_institution': institution.ruc_institution,
+            'agreement_date': institution.agreement_date.isoformat() if institution.agreement_date else None,
+            'address': institution.address,
+            'type_credit_institution': institution.type_credit_institution,
+            'cellphone': institution.cellphone,
+            'court_day': institution.court_day,
+            'additional_discount_percentage': institution.additional_discount_percentage,
+            'pvp': institution.pvp,
+            'cloud_sync_id': institution.cloud_sync_id if hasattr(institution, 'cloud_sync_id') and institution.cloud_sync_id else None,
+            'id_database_old': institution.id_database_old if hasattr(institution, 'id_database_old') else None,
+        }
+
+    @api.model
+    def deserialize_institution(self, data, sync_config=None):
+        """
+        Deserializa datos de institución recibidos.
+
+        Args:
+            data: Diccionario con datos del registro institution
+            sync_config: Configuración de sincronización (opcional)
+
+        Returns:
+            institution: Registro creado o actualizado
+        """
+        Institution = self.env['institution'].sudo()
+        cloud_id = data.get('id')
+
+        _logger.info(f'Deserializando institution cloud_id={cloud_id}, name={data.get("name")}')
+
+        # Buscar registro existente por múltiples criterios
+        existing = None
+
+        # 1. Por cloud_sync_id
+        if cloud_id and 'cloud_sync_id' in Institution._fields:
+            existing = Institution.search([('cloud_sync_id', '=', cloud_id)], limit=1)
+
+        # 2. Por ID directo (mismo servidor)
+        if not existing and cloud_id:
+            direct = Institution.browse(cloud_id)
+            if direct.exists():
+                existing = direct
+
+        # 3. Por id_institutions (identificador único de negocio)
+        if not existing and data.get('id_institutions'):
+            existing = Institution.search([
+                ('id_institutions', '=', data.get('id_institutions'))
+            ], limit=1)
+
+        # 4. Por nombre + tipo
+        if not existing and data.get('name'):
+            existing = Institution.search([
+                ('name', '=', data.get('name')),
+                ('type_credit_institution', '=', data.get('type_credit_institution'))
+            ], limit=1)
+
+        # Preparar valores
+        vals = {
+            'id_institutions': data.get('id_institutions'),
+            'name': data.get('name'),
+            'ruc_institution': data.get('ruc_institution'),
+            'address': data.get('address'),
+            'type_credit_institution': data.get('type_credit_institution'),
+            'cellphone': data.get('cellphone'),
+            'court_day': data.get('court_day'),
+            'additional_discount_percentage': data.get('additional_discount_percentage', 0),
+            'pvp': data.get('pvp', '1'),
+        }
+
+        # Parsear fecha
+        if data.get('agreement_date'):
+            from datetime import date as date_type
+            try:
+                vals['agreement_date'] = date_type.fromisoformat(data['agreement_date'])
+            except (ValueError, TypeError):
+                pass
+
+        if existing:
+            existing.with_context(skip_sync_queue=True).write(vals)
+            if cloud_id and 'cloud_sync_id' in Institution._fields and not existing.cloud_sync_id:
+                existing.with_context(skip_sync_queue=True).write({'cloud_sync_id': cloud_id})
+            _logger.info(f'institution actualizada: {existing.name} (ID={existing.id})')
+            return existing
+        else:
+            if cloud_id and 'cloud_sync_id' in Institution._fields:
+                vals['cloud_sync_id'] = cloud_id
+            record = Institution.with_context(skip_sync_queue=True).create(vals)
+            _logger.info(f'institution creada: {record.name} (ID={record.id})')
+            return record
+
+    @api.model
+    def serialize_institution_client(self, institution_client):
+        """
+        Serializa una relación institución-cliente para sincronización.
+
+        Args:
+            institution_client: Registro institution.client
+
+        Returns:
+            dict: Datos serializados
+        """
+        return {
+            'id': institution_client.id,
+            'institution_id': institution_client.institution_id.id,
+            'institution_id_institutions': institution_client.institution_id.id_institutions,
+            'institution_name': institution_client.institution_id.name,
+            'partner_id': institution_client.partner_id.id,
+            'partner_vat': institution_client.partner_id.vat,
+            'partner_name': institution_client.partner_id.name,
+            'available_amount': institution_client.available_amount,
+            'sale': institution_client.sale,
+            'cloud_sync_id': institution_client.cloud_sync_id if hasattr(institution_client, 'cloud_sync_id') and institution_client.cloud_sync_id else None,
+        }
+
+    @api.model
+    def deserialize_institution_client(self, data, sync_config=None):
+        """
+        Deserializa datos de relación institución-cliente recibidos.
+
+        IMPORTANTE: Este método sincroniza los cambios de crédito/saldo entre
+        offline y cloud, asegurando que el available_amount refleje
+        los consumos realizados en cualquier punto.
+
+        Args:
+            data: Diccionario con datos del registro institution.client
+            sync_config: Configuración de sincronización (opcional)
+
+        Returns:
+            institution.client: Registro creado o actualizado
+        """
+        InstitutionClient = self.env['institution.client'].sudo()
+        source_id = data.get('id')  # ID del servidor origen (offline o cloud)
+
+        _logger.info(
+            f'Deserializando institution.client source_id={source_id}, '
+            f'institution_id_institutions={data.get("institution_id_institutions")}, '
+            f'partner_vat={data.get("partner_vat")}, '
+            f'available_amount={data.get("available_amount")}, sale={data.get("sale")}'
+        )
+
+        # Buscar registro existente por múltiples criterios
+        # IMPORTANTE: Priorizar búsqueda por institution+partner que es la clave natural
+        existing = None
+        institution = None
+        partner = None
+
+        # 1. PRIMERO buscar por institución + partner (relación única y más confiable)
+        # Encontrar la institución por id_institutions (código único)
+        if data.get('institution_id_institutions'):
+            institution = self.env['institution'].sudo().search([
+                ('id_institutions', '=', data['institution_id_institutions'])
+            ], limit=1)
+            if institution:
+                _logger.debug(f'Institución encontrada por id_institutions: {institution.name}')
+
+        # Buscar partner por VAT (cédula/RUC - único)
+        if data.get('partner_vat'):
+            partner = self.env['res.partner'].sudo().search([
+                ('vat', '=', data['partner_vat'])
+            ], limit=1)
+            if partner:
+                _logger.debug(f'Partner encontrado por VAT: {partner.name}')
+
+        # Buscar institution.client por la combinación única
+        if institution and partner:
+            existing = InstitutionClient.search([
+                ('institution_id', '=', institution.id),
+                ('partner_id', '=', partner.id)
+            ], limit=1)
+            if existing:
+                _logger.info(
+                    f'institution.client encontrado por institution+partner: '
+                    f'id={existing.id}, partner={partner.name}, institution={institution.name}'
+                )
+
+        # 2. Si no encontramos por institution+partner, buscar por cloud_sync_id
+        if not existing and source_id and 'cloud_sync_id' in InstitutionClient._fields:
+            existing = InstitutionClient.search([('cloud_sync_id', '=', source_id)], limit=1)
+            if existing:
+                _logger.info(f'institution.client encontrado por cloud_sync_id: {existing.id}')
+
+        # NOTA: NO buscamos por ID directo porque los IDs pueden ser diferentes
+        # entre servidores offline y cloud
+
+        # Preparar valores para actualizar
+        vals = {}
+        cloud_available = data.get('available_amount')
+        cloud_sale = data.get('sale')
+
+        # Verificar si hay cambios pendientes en la cola de sync para este registro
+        # Esto indica que el local tiene cambios que aún no se han enviado al cloud
+        has_pending_sync = False
+        if existing:
+            SyncQueue = self.env['pos.sync.queue'].sudo()
+            pending = SyncQueue.search([
+                ('model_name', '=', 'institution.client'),
+                ('record_id', '=', existing.id),
+                ('state', 'in', ['pending', 'processing'])
+            ], limit=1)
+            has_pending_sync = bool(pending)
+            if has_pending_sync:
+                _logger.info(
+                    f'institution.client tiene cambios pendientes de sync: '
+                    f'queue_id={pending.id}, state={pending.state}'
+                )
+
+        # Lógica de actualización inteligente para available_amount:
+        # - Si hay cambios locales pendientes → NO sobrescribir (el local es más reciente)
+        # - Si el local es menor que el cloud y no hay pendientes → el cloud puede haber aumentado (admin)
+        # - Si el local es mayor que el cloud → actualizar (consumo en otro punto o admin redujo)
+        if existing and cloud_available is not None:
+            local_available = existing.available_amount
+
+            if has_pending_sync:
+                # HAY CAMBIOS PENDIENTES: proteger el valor local
+                _logger.info(
+                    f'PROTEGIENDO available_amount local (hay sync pendiente): '
+                    f'local={local_available}, cloud={cloud_available}'
+                )
+                # NO agregamos available_amount a vals
+            elif local_available < cloud_available:
+                # Local es MENOR: podría ser consumo local no sincronizado
+                # Verificar si el cupo (sale) cambió - si cambió, el admin modificó algo
+                if cloud_sale is not None and existing.sale != cloud_sale:
+                    # El cupo cambió, probablemente el admin ajustó todo
+                    vals['available_amount'] = cloud_available
+                    _logger.info(
+                        f'Actualizando available_amount (cupo cambió): '
+                        f'local={local_available} -> cloud={cloud_available}'
+                    )
+                else:
+                    # El cupo es igual pero available_amount local es menor = consumo local
+                    _logger.info(
+                        f'PROTEGIENDO available_amount local (consumo no sincronizado): '
+                        f'local={local_available}, cloud={cloud_available}'
+                    )
+                    # NO agregamos available_amount a vals
+            else:
+                # Local es MAYOR o IGUAL: actualizar con valor del cloud
+                vals['available_amount'] = cloud_available
+        elif cloud_available is not None:
+            # No existe registro local, usar el valor del cloud
+            vals['available_amount'] = cloud_available
+
+        # El cupo (sale) siempre se actualiza desde el cloud (el admin lo controla)
+        if cloud_sale is not None:
+            vals['sale'] = cloud_sale
+
+        if existing:
+            # ACTUALIZAR registro existente
+            old_amount = existing.available_amount
+            if vals:
+                existing.with_context(skip_sync_queue=True).write(vals)
+            # Guardar el source_id como cloud_sync_id si no está configurado
+            if source_id and 'cloud_sync_id' in InstitutionClient._fields and not existing.cloud_sync_id:
+                existing.with_context(skip_sync_queue=True).write({'cloud_sync_id': source_id})
+            _logger.info(
+                f'institution.client ACTUALIZADO: partner={existing.partner_id.name}, '
+                f'institution={existing.institution_id.name}, '
+                f'available_amount: {old_amount} -> {existing.available_amount}'
+            )
+            return existing
+        else:
+            # CREAR nuevo registro - usar institution y partner ya encontrados
+            if not institution or not partner:
+                _logger.warning(
+                    f'No se puede crear institution.client: '
+                    f'institution={institution}, partner={partner}, '
+                    f'institution_id_institutions={data.get("institution_id_institutions")}, '
+                    f'partner_vat={data.get("partner_vat")}'
+                )
+                return None
+
+            vals['institution_id'] = institution.id
+            vals['partner_id'] = partner.id
+            if 'available_amount' not in vals:
+                vals['available_amount'] = data.get('sale', 0)
+            if 'sale' not in vals:
+                vals['sale'] = data.get('sale', 0)
+
+            if source_id and 'cloud_sync_id' in InstitutionClient._fields:
+                vals['cloud_sync_id'] = source_id
+
+            record = InstitutionClient.with_context(skip_sync_queue=True).create(vals)
+            _logger.info(
+                f'institution.client CREADO: partner={record.partner_id.name}, '
+                f'institution={record.institution_id.name}, '
+                f'available_amount={record.available_amount}'
+            )
+            return record
 
     # ==================== SERIALIZADORES DE TRANSFERENCIAS DE STOCK ====================
 

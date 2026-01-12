@@ -41,6 +41,18 @@ class LoyaltyProgram(models.Model):
     ecommerce_ok = fields.Boolean(tracking=True)
     pos_ok = fields.Boolean(tracking=True)
     sale_ok = fields.Boolean(tracking=True)
+
+    # Campo para rastrear desactivación automática del POS por productos dados de baja
+    pos_auto_disabled_by_product_ids = fields.Many2many(
+        'product.product',
+        'loyalty_program_pos_disabled_product_rel',
+        'program_id',
+        'product_id',
+        string="POS desactivado automáticamente por",
+        help="Productos dados de baja que causaron la desactivación de este programa en POS. "
+             "Se usa para reactivación automática cuando el producto vuelve a estar disponible."
+    )
+
     reward_ids = fields.One2many(tracking=True)
     rule_ids = fields.One2many(tracking=True)
     program_type = fields.Selection(

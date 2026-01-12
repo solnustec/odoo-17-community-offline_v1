@@ -343,18 +343,22 @@
                                 <button class="btn btn-sm btn-success px-2" style="height: 31px;" t-on-click="()=> this.exportProductsToExcel()" title="Exportar a Excel">
                                     <i class="fa fa-file-excel-o"/>
                                 </button>
-                                <t t-if="this.state.product_code or this.state.product_id_old">
+                                <t t-if="this.state.product_code or this.state.extra_long_codes or this.state.short_codes">
                                     <div class="code-badge d-flex align-items-center">
-                                        <t t-if="this.state.product_code">
+                                        <t t-if="this.state.product_code or this.state.extra_long_codes">
                                             <span class="code-item">
                                                 <i class="fa fa-barcode"/>
                                                 <span t-esc="this.state.product_code"/>
+                                                <t t-if="this.state.extra_long_codes">
+                                                    <span> | </span>
+                                                    <span t-esc="this.state.extra_long_codes"/>
+                                                </t>
                                             </span>
                                         </t>
-                                        <t t-if="this.state.product_id_old">
+                                        <t t-if="this.state.short_codes">
                                             <span class="code-item">
-                                                <i class="fa fa-database"/>
-                                                <span t-esc="this.state.product_id_old"/>
+                                                <i class="fa fa-tag"/>
+                                                <span t-esc="this.state.short_codes"/>
                                             </span>
                                         </t>
                                     </div>
@@ -616,11 +620,15 @@
                                                                    id="product-not-available"
                                                                    t-att-checked="product.product_sales_priority"/>
                                                         </div>
-
-
                                                     </td>
                                                 </tr>
                                             </t>
+                                            <tr t-if="state.today_sales_loading" id="has_more" class="bg-white">
+                                                <td colspan="15" class="text-center py-2 text-primary">
+                                                    <i class="fa fa-spinner fa-spin text-primary"/>
+                                                    Cargando más ventas...
+                                                </td>
+                                            </tr>
                                         </t>
                                         <t t-else="">
                                             <t t-foreach="state.products_filtered" t-as="lab"
@@ -722,11 +730,16 @@
                                 </table>
                             </div>
                         </t>
-                        <t t-elif="this.state.brand_id != null and state.products_filtered.length == 0">
-                            <span class=" d-flex text-muted text-center text-warning">
-                                No se encontraron productos, intente con otra marca.
-                            </span>
-                        </t>
+<!--                        <t t-elif="this.state.brand_id == null and this.state.laboratory_id == null">-->
+<!--                            <span class=" d-flex text-muted text-center text-info">-->
+<!--                                Espere cargando ventas...-->
+<!--                            </span>-->
+<!--                        </t>-->
+<!--                        <t t-elif="this.state.brand_id != null and  state.products_filtered.length == 0">-->
+<!--                            <span class=" d-flex text-muted text-center text-warning">-->
+<!--                                No se encontraron productos, intente con otra marca.-->
+<!--                            </span>-->
+<!--                        </t>-->
                     </div>
 
                     <!--                table de almacenes-->
@@ -849,6 +862,7 @@
                                 </t>
                             </div>
                         </t>
+
                     </div>
                     <!--                        torales
                     -->
@@ -949,11 +963,11 @@
 
                                         </div>
                                         <div class="col-2">
-                                            <label>Costo Unid.
+                                            <label>Costo U.
                                                 <t t-if="state.cartProductData.lastPurchase.length > 0">
                                                     <small class="form-text text-muted">
                                                         (
-                                                        <t t-esc="state.cartProductData.lastPurchase[0].price_unit or '0'"/>
+                                                        <t t-esc="state.cartProductData.product.avg_standar_price_old.toFixed(2) or '0'"/>
                                                         )
                                                     </small>
                                                 </t>

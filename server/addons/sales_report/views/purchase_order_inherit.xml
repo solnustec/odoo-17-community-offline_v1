@@ -33,6 +33,15 @@
         <field name="model">purchase.order</field>
         <field name="inherit_id" ref="purchase.purchase_order_form"/>
         <field name="arch" type="xml">
+            <!-- Aviso cuando no hay proveedor seleccionado -->
+            <xpath expr="//form/sheet" position="before">
+                <div class="alert alert-warning text-center mb-0" role="alert"
+                     invisible="partner_id">
+                    <strong><i class="fa fa-exclamation-triangle"/> Atención:</strong>
+                    Debe seleccionar un <b>Proveedor</b> antes de confirmar esta orden.
+                </div>
+            </xpath>
+
             <!-- Mostrar marca y laboratorio después de partner_ref (campos relacionales) -->
             <xpath expr="//field[@name='partner_ref']" position="after">
                 <field name="brand_ids" string="Marcas" widget="many2many_tags" options="{'no_create': True}"/>

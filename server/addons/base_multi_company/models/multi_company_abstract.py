@@ -32,7 +32,6 @@ class MultiCompanyAbstract(models.AbstractModel):
             # - Otherwise, current company of the user.
             company_id = (
                 self.env.context.get("_check_company_source_id")
-                or self.env.context.get("force_company")
                 or self.env.company.id
             )
             if company_id in record.company_ids.ids:

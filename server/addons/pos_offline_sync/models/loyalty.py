@@ -157,16 +157,44 @@ class LoyaltyProgram(models.Model):
                 ('program_type', '=', data['program_type']),
             ], limit=1)
             if program:
-                # Verificar si ya tiene un cloud_sync_id diferente
-                if program.cloud_sync_id and program.cloud_sync_id != cloud_id:
-                    _logger.warning(
-                        "Programa encontrado por nombre '%s' pero tiene cloud_sync_id=%s diferente al esperado %s. Se creará nuevo.",
-                        data['name'], program.cloud_sync_id, cloud_id
+                # Si el programa NO tiene cloud_sync_id, es la primera sincronización
+                # y debemos vincularlo con el cloud
+                if not program.cloud_sync_id:
+                    _logger.info(
+                        "Programa encontrado por nombre=%s y tipo=%s: ID local %s. "
+                        "Primera sincronización, se vinculará con cloud_id=%s",
+                        data['name'], data['program_type'], program.id, cloud_id
                     )
-                    return None
-                _logger.info(
-                    "Programa encontrado por nombre=%s y tipo=%s: ID local %s (cloud_sync_id actual: %s)",
-                    data['name'], data['program_type'], program.id, program.cloud_sync_id
+                    return program
+
+                # Si el cloud_sync_id coincide, es el programa correcto
+                if program.cloud_sync_id == cloud_id:
+                    _logger.info(
+                        "Programa encontrado por nombre=%s y tipo=%s: ID local %s (cloud_sync_id=%s coincide)",
+                        data['name'], data['program_type'], program.id, program.cloud_sync_id
+                    )
+                    return program
+
+                # Si tiene un cloud_sync_id diferente, es un programa diferente
+                # pero con el mismo nombre. Buscamos si hay otro sin cloud_sync_id
+                program_without_sync = self.search([
+                    ('name', '=', data['name']),
+                    ('program_type', '=', data['program_type']),
+                    ('cloud_sync_id', '=', False),
+                ], limit=1)
+                if program_without_sync:
+                    _logger.info(
+                        "Encontrado programa sin cloud_sync_id con nombre='%s': ID local %s. Se usará este.",
+                        data['name'], program_without_sync.id
+                    )
+                    return program_without_sync
+
+                # Si llegamos aquí, el programa existente ya está vinculado a otro cloud
+                # En este caso, actualizamos el existente en lugar de crear duplicado
+                _logger.warning(
+                    "Programa '%s' tiene cloud_sync_id=%s diferente a %s. "
+                    "Se actualizará para evitar duplicados.",
+                    data['name'], program.cloud_sync_id, cloud_id
                 )
                 return program
 

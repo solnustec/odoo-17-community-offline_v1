@@ -359,8 +359,8 @@ patch(PaymentScreen.prototype, {
             const currentAmount = selectedPaymentLine.amount;
             const paymentName = selectedMethod.originalName || selectedMethod.name;
 
-            // Validar que el monto no sea menor a 0
-            if (currentAmount < 0) {
+            // Validar que el monto no sea menor a 0 (excepto en reembolsos)
+            if (currentAmount < 0 && !this.state.isRefund) {
                 this.popup.add(ErrorPopup, {
                     title: _t("Monto inválido"),
                     body: _t(`El método de pago "${paymentName}" no puede tener un monto menor a 0.`),
@@ -985,11 +985,9 @@ patch(PaymentScreen.prototype, {
         }
 
         const paymentline = this.pos.get_order().selected_paymentline;
-        if (paymentMethod.code_payment_method === "CREDITO") {
-            setTimeout(() => {
-                paymentline.set_selecteInstitutionCredit(dato.institution_id);
-                console.log("✅ Institution ID set for normal sale:", dato.institution_id);
-            }, 1000)
+        if (paymentMethod.code_payment_method === "CREDITO" && paymentline && dato) {
+            paymentline.set_selecteInstitutionCredit(dato.institution_id);
+            console.log("✅ Institution ID set for normal sale:", dato.institution_id);
         }
 
         await this.ordenate_paymentLines();
@@ -1263,9 +1261,26 @@ patch(PaymentScreen.prototype, {
         return true;
     },
 
-    validateOrder(isForceValidate) {
+    async validateOrder(isForceValidate) {
 
         const order = this.currentOrder;
+
+        // Validar que las líneas de pago CREDITO tengan la institución seteada
+        const creditPaymentLines = order.get_paymentlines().filter(
+            (line) => line.payment_method.code_payment_method === "CREDITO"
+        );
+
+        for (const creditLine of creditPaymentLines) {
+            const institutionId = creditLine.get_selecteInstitutionCredit();
+            if (!institutionId) {
+                await this.popup.add(ErrorPopup, {
+                    title: _t("Institución de crédito no seleccionada"),
+                    body: _t("Debe seleccionar una institución de crédito válida antes de validar el pago."),
+                });
+                order.remove_paymentline(creditLine);
+                return;
+            }
+        }
 
         const paymentLinesFavorCliente = order.get_paymentlines().filter(
             (line) => line.payment_method.code_payment_method === "CTACLIENTE"

@@ -5,6 +5,8 @@ from odoo import api, fields, models, _
 class CustomCalendarLeavesCustom(models.Model):
     _inherit = 'resource.calendar.leaves'
 
+    name = fields.Char(required=True)
+
     type_of_leave_holiday = fields.Selection(
         selection=[
             ('national', 'Nacional'),
