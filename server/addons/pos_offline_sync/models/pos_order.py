@@ -298,6 +298,10 @@ class PosOrder(models.Model):
 
         Este método es llamado cuando se crean órdenes desde la UI del POS.
         Verificamos si debemos omitir la generación de contabilidad.
+
+        IMPORTANTE: Después de que todos los módulos heredados (como pos_custom_check)
+        hayan terminado de procesar, re-serializamos la orden para incluir los datos
+        de cheque/tarjeta que se guardan DESPUÉS del super().
         """
         # Verificar configuración de sincronización
         created_orders = []
@@ -321,9 +325,74 @@ class PosOrder(models.Model):
                         order_data['data']['skip_invoice'] = True
 
         # Llamar al método padre
+        # NOTA: Aquí se crea la orden, se paga, se factura y se serializa INICIALMENTE
+        # Pero los datos de cheque/tarjeta se guardan DESPUÉS por pos_custom_check
         result = super().create_from_ui(orders, draft=draft)
 
+        # RE-SERIALIZAR las órdenes para incluir los datos de cheque/tarjeta
+        # que fueron guardados por otros módulos (pos_custom_check) DESPUÉS del super()
+        self._resync_orders_with_payment_data(result)
+
         return result
+
+    def _resync_orders_with_payment_data(self, order_results):
+        """
+        Re-serializa las órdenes para actualizar los datos de pago en la cola de sincronización.
+
+        Este método se llama DESPUÉS de que todos los módulos heredados hayan terminado
+        de guardar los datos de cheque/tarjeta en los pagos.
+
+        Args:
+            order_results: Lista de resultados de create_from_ui (diccionarios con 'id')
+        """
+        if not order_results:
+            return
+
+        SyncQueue = self.env['pos.sync.queue'].sudo()
+        SyncManager = self.env['pos.sync.manager'].sudo()
+
+        for order_result in order_results:
+            order_id = order_result.get('id')
+            if not order_id:
+                continue
+
+            order = self.browse(order_id)
+            if not order.exists():
+                continue
+
+            # Verificar si la orden tiene una cola de sincronización pendiente
+            queue_record = SyncQueue.search([
+                ('model_name', '=', 'pos.order'),
+                ('record_id', '=', order.id),
+                ('state', 'in', ['pending', 'error']),
+            ], limit=1, order='id desc')
+
+            if queue_record:
+                # Forzar flush para asegurar que los datos estén en la BD
+                self.env.flush_all()
+
+                # Re-serializar la orden con los datos actualizados
+                new_data = SyncManager.serialize_order(order)
+
+                # Verificar si hay datos de pago que actualizar
+                has_payment_data = False
+                for payment in new_data.get('payments', []):
+                    if (payment.get('check_number') or payment.get('check_owner') or
+                        payment.get('number_voucher') or payment.get('holder_card')):
+                        has_payment_data = True
+                        break
+
+                if has_payment_data or new_data.get('check_info_json') or new_data.get('card_info_json'):
+                    # Actualizar la cola con los nuevos datos
+                    import json
+                    queue_record.write({
+                        'data_json': json.dumps(new_data),
+                    })
+                    _logger.info(
+                        f'Orden {order.name} re-serializada con datos de pago actualizados. '
+                        f'check_info_json={bool(new_data.get("check_info_json"))}, '
+                        f'payments con datos={has_payment_data}'
+                    )
 
     def _generate_pos_order_invoice(self):
         """
