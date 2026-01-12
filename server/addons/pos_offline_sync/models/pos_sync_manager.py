@@ -1032,6 +1032,20 @@ class PosSyncManager(models.Model):
         card_info_idx = 0
 
         for payment in order.payment_ids:
+            # DEBUG: Log de valores RAW del pago antes de cualquier procesamiento
+            _logger.info(
+                f'=== DEBUG PAGO ID={payment.id} ===\n'
+                f'   payment.check_number = {repr(payment.check_number)}\n'
+                f'   payment.check_bank_account = {repr(payment.check_bank_account)}\n'
+                f'   payment.check_owner = {repr(payment.check_owner)}\n'
+                f'   payment.bank_id = {payment.bank_id.id if payment.bank_id else None} ({payment.bank_id.name if payment.bank_id else None})\n'
+                f'   payment.number_voucher = {repr(payment.number_voucher)}\n'
+                f'   payment.holder_card = {repr(payment.holder_card)}\n'
+                f'   payment.type_card = {payment.type_card.id if payment.type_card else None} ({payment.type_card.name if payment.type_card else None})\n'
+                f'   payment.institution_cheque = {repr(payment.institution_cheque)}\n'
+                f'   payment.institution_card = {repr(payment.institution_card)}'
+            )
+
             # Datos básicos del pago
             payment_data = {
                 'payment_method_id': payment.payment_method_id.id,
@@ -1041,11 +1055,12 @@ class PosSyncManager(models.Model):
             }
 
             # Obtener datos de cheque: primero del pago, luego de check_info_json
-            check_number = getattr(payment, 'check_number', None) or None
-            check_bank_account = getattr(payment, 'check_bank_account', None) or None
-            check_owner = getattr(payment, 'check_owner', None) or None
-            bank_id = payment.bank_id.id if hasattr(payment, 'bank_id') and payment.bank_id else None
-            bank_name = payment.bank_id.name if hasattr(payment, 'bank_id') and payment.bank_id else None
+            # Usar directamente el valor del campo, sin convertir False a None
+            check_number = payment.check_number if payment.check_number else None
+            check_bank_account = payment.check_bank_account if payment.check_bank_account else None
+            check_owner = payment.check_owner if payment.check_owner else None
+            bank_id = payment.bank_id.id if payment.bank_id else None
+            bank_name = payment.bank_id.name if payment.bank_id else None
 
             # Si no hay datos en el pago, buscar en check_info_json
             if not check_number and check_info_idx < len(check_info_list):
@@ -1068,18 +1083,19 @@ class PosSyncManager(models.Model):
                 'check_owner': check_owner,
                 'bank_id': bank_id,
                 'bank_name': bank_name,
-                'date': payment.date.isoformat() if hasattr(payment, 'date') and payment.date else None,
-                'institution_cheque': getattr(payment, 'institution_cheque', None) or None,
-                'institution_discount': getattr(payment, 'institution_discount', None) or None,
+                'date': payment.date.isoformat() if payment.date else None,
+                'institution_cheque': payment.institution_cheque if payment.institution_cheque else None,
+                'institution_discount': payment.institution_discount if payment.institution_discount else None,
             })
 
             # Obtener datos de tarjeta: primero del pago, luego de card_info_json
-            number_voucher = getattr(payment, 'number_voucher', None) or None
-            type_card = payment.type_card.id if hasattr(payment, 'type_card') and payment.type_card else None
-            type_card_name = payment.type_card.name if hasattr(payment, 'type_card') and payment.type_card else None
-            number_lote = getattr(payment, 'number_lote', None) or None
-            holder_card = getattr(payment, 'holder_card', None) or None
-            bin_tc = getattr(payment, 'bin_tc', None) or None
+            # Usar directamente el valor del campo
+            number_voucher = payment.number_voucher if payment.number_voucher else None
+            type_card = payment.type_card.id if payment.type_card else None
+            type_card_name = payment.type_card.name if payment.type_card else None
+            number_lote = payment.number_lote if payment.number_lote else None
+            holder_card = payment.holder_card if payment.holder_card else None
+            bin_tc = payment.bin_tc if payment.bin_tc else None
 
             # Si no hay datos en el pago, buscar en card_info_json
             if not number_voucher and card_info_idx < len(card_info_list):
@@ -1104,8 +1120,8 @@ class PosSyncManager(models.Model):
                 'number_lote': number_lote,
                 'holder_card': holder_card,
                 'bin_tc': bin_tc,
-                'institution_card': getattr(payment, 'institution_card', None) or None,
-                'selecteInstitutionCredit': getattr(payment, 'selecteInstitutionCredit', None) or None,
+                'institution_card': payment.institution_card if payment.institution_card else None,
+                'selecteInstitutionCredit': payment.selecteInstitutionCredit if payment.selecteInstitutionCredit else None,
             })
 
             data['payments'].append(payment_data)
