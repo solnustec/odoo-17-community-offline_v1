@@ -894,11 +894,6 @@ class PosSyncManager(models.Model):
             'check_info_json': order.check_info_json if hasattr(order, 'check_info_json') else None,
             'card_info_json': order.card_info_json if hasattr(order, 'card_info_json') else None,
             'key_order': order.key_order if hasattr(order, 'key_order') else None,
-            # Campos de transferencia bancaria (almacenados en pos.order)
-            'payment_transfer_number': order.payment_transfer_number if hasattr(order, 'payment_transfer_number') else None,
-            'payment_bank_name': order.payment_bank_name if hasattr(order, 'payment_bank_name') else None,
-            'payment_transaction_id': order.payment_transaction_id if hasattr(order, 'payment_transaction_id') else None,
-            'orderer_identification': order.orderer_identification if hasattr(order, 'orderer_identification') else None,
             # NUEVOS CAMPOS: Posición fiscal y reembolsos
             'fiscal_position_id': order.fiscal_position_id.id if order.fiscal_position_id else None,
             'fiscal_position_name': order.fiscal_position_id.name if order.fiscal_position_id else None,
@@ -1002,130 +997,35 @@ class PosSyncManager(models.Model):
             data['lines'].append(line_data)
 
         # Serializar pagos con todos los campos adicionales (cheque, tarjeta, crédito)
-        # Los datos pueden estar en los campos del pago O en check_info_json/card_info_json de la orden
         _logger.info(f'Serializando {len(order.payment_ids)} pagos para orden {order.name}')
-
-        # Parsear check_info_json y card_info_json de la orden para usar como fallback
-        import json as json_lib
-        check_info_list = []
-        card_info_list = []
-
-        if hasattr(order, 'check_info_json') and order.check_info_json:
-            try:
-                check_info_list = json_lib.loads(order.check_info_json) if isinstance(order.check_info_json, str) else order.check_info_json
-                if not isinstance(check_info_list, list):
-                    check_info_list = []
-            except (json_lib.JSONDecodeError, TypeError):
-                check_info_list = []
-
-        if hasattr(order, 'card_info_json') and order.card_info_json:
-            try:
-                card_info_list = json_lib.loads(order.card_info_json) if isinstance(order.card_info_json, str) else order.card_info_json
-                if not isinstance(card_info_list, list):
-                    card_info_list = []
-            except (json_lib.JSONDecodeError, TypeError):
-                card_info_list = []
-
-        _logger.info(f'check_info_json tiene {len(check_info_list)} registros, card_info_json tiene {len(card_info_list)} registros')
-
-        check_info_idx = 0
-        card_info_idx = 0
-
         for payment in order.payment_ids:
-            # DEBUG: Log de valores RAW del pago antes de cualquier procesamiento
-            _logger.info(
-                f'=== DEBUG PAGO ID={payment.id} ===\n'
-                f'   payment.check_number = {repr(payment.check_number)}\n'
-                f'   payment.check_bank_account = {repr(payment.check_bank_account)}\n'
-                f'   payment.check_owner = {repr(payment.check_owner)}\n'
-                f'   payment.bank_id = {payment.bank_id.id if payment.bank_id else None} ({payment.bank_id.name if payment.bank_id else None})\n'
-                f'   payment.number_voucher = {repr(payment.number_voucher)}\n'
-                f'   payment.holder_card = {repr(payment.holder_card)}\n'
-                f'   payment.type_card = {payment.type_card.id if payment.type_card else None} ({payment.type_card.name if payment.type_card else None})\n'
-                f'   payment.institution_cheque = {repr(payment.institution_cheque)}\n'
-                f'   payment.institution_card = {repr(payment.institution_card)}'
-            )
-
-            # Datos básicos del pago
             payment_data = {
                 'payment_method_id': payment.payment_method_id.id,
                 'payment_method_name': payment.payment_method_id.name,
                 'amount': payment.amount,
                 'payment_date': payment.payment_date.isoformat() if hasattr(payment, 'payment_date') and payment.payment_date else None,
+                # Campos de CHEQUE
+                'check_number': getattr(payment, 'check_number', None),
+                'check_bank_account': getattr(payment, 'check_bank_account', None),
+                'check_owner': getattr(payment, 'check_owner', None),
+                'bank_id': payment.bank_id.id if hasattr(payment, 'bank_id') and payment.bank_id else None,
+                'bank_name': payment.bank_id.name if hasattr(payment, 'bank_id') and payment.bank_id else None,
+                'date': payment.date.isoformat() if hasattr(payment, 'date') and payment.date else None,
+                'institution_cheque': getattr(payment, 'institution_cheque', None),
+                'institution_discount': getattr(payment, 'institution_discount', None),
+                # Campos de TARJETA
+                'number_voucher': getattr(payment, 'number_voucher', None),
+                'type_card': payment.type_card.id if hasattr(payment, 'type_card') and payment.type_card else None,
+                'type_card_name': payment.type_card.name if hasattr(payment, 'type_card') and payment.type_card else None,
+                'number_lote': getattr(payment, 'number_lote', None),
+                'holder_card': getattr(payment, 'holder_card', None),
+                'bin_tc': getattr(payment, 'bin_tc', None),
+                'institution_card': getattr(payment, 'institution_card', None),
+                # Campos de CREDITO
+                'selecteInstitutionCredit': getattr(payment, 'selecteInstitutionCredit', None),
             }
-
-            # Obtener datos de cheque: primero del pago, luego de check_info_json
-            # Usar directamente el valor del campo, sin convertir False a None
-            check_number = payment.check_number if payment.check_number else None
-            check_bank_account = payment.check_bank_account if payment.check_bank_account else None
-            check_owner = payment.check_owner if payment.check_owner else None
-            bank_id = payment.bank_id.id if payment.bank_id else None
-            bank_name = payment.bank_id.name if payment.bank_id else None
-
-            # Si no hay datos en el pago, buscar en check_info_json
-            if not check_number and check_info_idx < len(check_info_list):
-                check_info = check_info_list[check_info_idx]
-                check_number = check_info.get('check_number')
-                check_bank_account = check_info.get('check_bank_account')
-                check_owner = check_info.get('check_owner')
-                bank_id = check_info.get('bank_id')
-                # Buscar nombre del banco si tenemos ID
-                if bank_id and not bank_name:
-                    bank = self.env['res.bank'].sudo().browse(bank_id)
-                    if bank.exists():
-                        bank_name = bank.name
-                check_info_idx += 1
-                _logger.info(f'Usando datos de check_info_json: check_number={check_number}, check_owner={check_owner}')
-
-            payment_data.update({
-                'check_number': check_number,
-                'check_bank_account': check_bank_account,
-                'check_owner': check_owner,
-                'bank_id': bank_id,
-                'bank_name': bank_name,
-                'date': payment.date.isoformat() if payment.date else None,
-                'institution_cheque': payment.institution_cheque if payment.institution_cheque else None,
-                'institution_discount': payment.institution_discount if payment.institution_discount else None,
-            })
-
-            # Obtener datos de tarjeta: primero del pago, luego de card_info_json
-            # Usar directamente el valor del campo
-            number_voucher = payment.number_voucher if payment.number_voucher else None
-            type_card = payment.type_card.id if payment.type_card else None
-            type_card_name = payment.type_card.name if payment.type_card else None
-            number_lote = payment.number_lote if payment.number_lote else None
-            holder_card = payment.holder_card if payment.holder_card else None
-            bin_tc = payment.bin_tc if payment.bin_tc else None
-
-            # Si no hay datos en el pago, buscar en card_info_json
-            if not number_voucher and card_info_idx < len(card_info_list):
-                card_info = card_info_list[card_info_idx]
-                number_voucher = card_info.get('number_voucher')
-                type_card = card_info.get('type_card')
-                number_lote = card_info.get('number_lote')
-                holder_card = card_info.get('holder_card')
-                bin_tc = card_info.get('bin_tc')
-                # Buscar nombre del tipo de tarjeta si tenemos ID
-                if type_card and not type_card_name:
-                    credit_card = self.env['credit.card'].sudo().browse(type_card)
-                    if credit_card.exists():
-                        type_card_name = credit_card.name
-                card_info_idx += 1
-                _logger.info(f'Usando datos de card_info_json: number_voucher={number_voucher}, holder_card={holder_card}')
-
-            payment_data.update({
-                'number_voucher': number_voucher,
-                'type_card': type_card,
-                'type_card_name': type_card_name,
-                'number_lote': number_lote,
-                'holder_card': holder_card,
-                'bin_tc': bin_tc,
-                'institution_card': payment.institution_card if payment.institution_card else None,
-                'selecteInstitutionCredit': payment.selecteInstitutionCredit if payment.selecteInstitutionCredit else None,
-            })
-
             data['payments'].append(payment_data)
-            _logger.info(f'Pago serializado: método={payment.payment_method_id.name}, monto={payment.amount}, check_number={check_number}, number_voucher={number_voucher}')
+            _logger.info(f'Pago serializado: método={payment.payment_method_id.name}, monto={payment.amount}')
 
         _logger.info(f'Orden {order.name} serializada con {len(data["payments"])} pagos, estado: {order.state}')
 
@@ -1203,32 +1103,6 @@ class PosSyncManager(models.Model):
                     f'pagos={has_payments}, lineas={has_lines}, factura={has_invoice}, '
                     f'state={existing.state}, needs_invoice={needs_invoice}'
                 )
-
-                # ACTUALIZAR PAGOS EXISTENTES con datos de cheque/tarjeta
-                # Esto se hace en todos los casos donde la orden ya existe
-                payments_data = data.get('payments', [])
-                if has_payments and payments_data:
-                    _logger.info(f'Actualizando pagos existentes de orden {pos_reference}')
-                    self._update_existing_payments(existing, payments_data)
-
-                # Actualizar campos de transferencia en la orden si faltan
-                order_update_vals = {}
-                if data.get('payment_transfer_number') and not existing.payment_transfer_number:
-                    order_update_vals['payment_transfer_number'] = data.get('payment_transfer_number')
-                if data.get('payment_bank_name') and not existing.payment_bank_name:
-                    order_update_vals['payment_bank_name'] = data.get('payment_bank_name')
-                if data.get('payment_transaction_id') and not existing.payment_transaction_id:
-                    order_update_vals['payment_transaction_id'] = data.get('payment_transaction_id')
-                if data.get('orderer_identification') and not existing.orderer_identification:
-                    order_update_vals['orderer_identification'] = data.get('orderer_identification')
-                if data.get('check_info_json') and not existing.check_info_json:
-                    order_update_vals['check_info_json'] = data.get('check_info_json')
-                if data.get('card_info_json') and not existing.card_info_json:
-                    order_update_vals['card_info_json'] = data.get('card_info_json')
-
-                if order_update_vals:
-                    existing.with_context(skip_sync_queue=True).write(order_update_vals)
-                    _logger.info(f'Orden {pos_reference} actualizada con campos: {list(order_update_vals.keys())}')
 
                 # CASO 1: Si ya tiene factura, está completa
                 # Solo necesitamos asegurar que el estado sea 'invoiced'
@@ -1623,139 +1497,137 @@ class PosSyncManager(models.Model):
 
     def _create_order_payments(self, order, payments_data, session):
         """
-        Sincroniza los datos de pago (cheque/tarjeta) para una orden.
-
-        IMPORTANTE: Este método NUNCA crea nuevos pagos.
-        Los pagos (pos.payment) se crean automáticamente cuando se crea la orden.
-        Este método solo actualiza los pagos existentes con los datos de cheque/tarjeta.
+        Crea los pagos para una orden sincronizada.
 
         Args:
-            order: pos.order (ya tiene pagos creados automáticamente)
-            payments_data: Lista de diccionarios con datos de pagos sincronizados
+            order: pos.order
+            payments_data: Lista de diccionarios con datos de pagos
             session: pos.session
         """
-        _logger.info(f'Sincronizando datos de {len(payments_data)} pagos para orden {order.name}')
+        PosPayment = self.env['pos.payment'].sudo()
+        PaymentMethod = self.env['pos.payment.method'].sudo()
 
-        # Verificar que la orden tenga pagos
-        if not order.payment_ids:
-            _logger.warning(
-                f'Orden {order.name} no tiene pagos. '
-                f'Los pagos deberían haberse creado automáticamente al crear la orden.'
-            )
-            return
+        _logger.info(f'Creando {len(payments_data)} pagos para orden {order.name}')
 
-        _logger.info(f'Orden {order.name} tiene {len(order.payment_ids)} pagos existentes. Sincronizando campos...')
+        for i, payment_data in enumerate(payments_data):
+            _logger.info(f'Procesando pago {i+1}: {payment_data}')
 
-        # Actualizar los pagos existentes con los datos de cheque/tarjeta
-        self._update_existing_payments(order, payments_data)
-
-        _logger.info(f'Pagos sincronizados exitosamente. Total: {len(order.payment_ids)}')
-
-    def _update_existing_payments(self, order, payments_data):
-        """
-        Actualiza los pagos existentes de una orden con los datos de cheque/tarjeta.
-
-        Este método se llama cuando la orden ya tiene pagos creados (por ejemplo,
-        después de facturar) y necesitamos actualizar los campos adicionales.
-
-        Args:
-            order: pos.order con pagos existentes
-            payments_data: Lista de diccionarios con datos de pagos sincronizados
-        """
-        _logger.info(f'Actualizando {len(order.payment_ids)} pagos existentes para orden {order.name}')
-
-        # Mapear pagos por método de pago y monto para encontrar correspondencias
-        existing_payments = list(order.payment_ids)
-        used_payments = set()
-
-        for payment_data in payments_data:
+            # Buscar método de pago por nombre
+            payment_method = None
             payment_method_name = payment_data.get('payment_method_name')
-            payment_amount = payment_data.get('amount', 0)
 
-            # Buscar el pago existente que coincida
-            matching_payment = None
-            for payment in existing_payments:
-                if payment.id not in used_payments:
-                    # Coincidir por método de pago y monto (con tolerancia de 0.01)
-                    if (payment.payment_method_id.name == payment_method_name and
-                            abs(payment.amount - payment_amount) < 0.01):
-                        matching_payment = payment
-                        used_payments.add(payment.id)
-                        break
+            if payment_method_name:
+                payment_method = PaymentMethod.search([
+                    ('name', '=', payment_method_name)
+                ], limit=1)
+                if payment_method:
+                    _logger.info(f'Método de pago encontrado por nombre: {payment_method.name}')
 
-            # Si no coincide exactamente, usar el primer pago no usado
-            if not matching_payment:
-                for payment in existing_payments:
-                    if payment.id not in used_payments:
-                        matching_payment = payment
-                        used_payments.add(payment.id)
-                        break
+            # Buscar por ID si no se encontró por nombre
+            if not payment_method and payment_data.get('payment_method_id'):
+                payment_method = PaymentMethod.browse(payment_data['payment_method_id'])
+                if payment_method.exists():
+                    _logger.info(f'Método de pago encontrado por ID: {payment_method.name}')
+                else:
+                    payment_method = None
 
-            if matching_payment:
-                update_vals = {}
+            # Verificar si el método de pago está permitido en la sesión
+            # Si no está permitido, usar el primer método de pago de la sesión
+            if payment_method and session.config_id.payment_method_ids:
+                if payment_method.id not in session.config_id.payment_method_ids.ids:
+                    _logger.warning(
+                        f'Método de pago {payment_method.name} no está permitido en sesión {session.name}. '
+                        f'Usando método de pago de la sesión.'
+                    )
+                    payment_method = session.config_id.payment_method_ids[:1]
+
+            # Si no se encuentra, usar el primer método de pago de la sesión
+            if not payment_method:
+                payment_method = session.config_id.payment_method_ids[:1]
+                if payment_method:
+                    _logger.warning(f'Usando método de pago por defecto de sesión: {payment_method.name}')
+                else:
+                    _logger.error(f'No se encontró ningún método de pago para la sesión {session.name}')
+                    continue
+
+            try:
+                payment_vals = {
+                    'pos_order_id': order.id,
+                    'payment_method_id': payment_method.id,
+                    'amount': payment_data.get('amount', 0),
+                    'session_id': session.id,
+                }
 
                 # Campos de CHEQUE
-                if payment_data.get('check_number') and not matching_payment.check_number:
-                    update_vals['check_number'] = payment_data.get('check_number')
-                if payment_data.get('check_bank_account') and not matching_payment.check_bank_account:
-                    update_vals['check_bank_account'] = payment_data.get('check_bank_account')
-                if payment_data.get('check_owner') and not matching_payment.check_owner:
-                    update_vals['check_owner'] = payment_data.get('check_owner')
-                if payment_data.get('institution_cheque') and not matching_payment.institution_cheque:
-                    update_vals['institution_cheque'] = payment_data.get('institution_cheque')
-                if payment_data.get('institution_discount') and not matching_payment.institution_discount:
-                    update_vals['institution_discount'] = payment_data.get('institution_discount')
+                if payment_data.get('check_number'):
+                    payment_vals['check_number'] = payment_data.get('check_number')
+                if payment_data.get('check_bank_account'):
+                    payment_vals['check_bank_account'] = payment_data.get('check_bank_account')
+                if payment_data.get('check_owner'):
+                    payment_vals['check_owner'] = payment_data.get('check_owner')
+                if payment_data.get('institution_cheque'):
+                    payment_vals['institution_cheque'] = payment_data.get('institution_cheque')
+                if payment_data.get('institution_discount'):
+                    payment_vals['institution_discount'] = payment_data.get('institution_discount')
 
-                # Buscar y asignar banco
-                if payment_data.get('bank_name') and not matching_payment.bank_id:
+                # Buscar banco por nombre si no existe el ID
+                if payment_data.get('bank_name'):
                     bank = self.env['res.bank'].sudo().search([
                         ('name', '=', payment_data.get('bank_name'))
                     ], limit=1)
                     if bank:
-                        update_vals['bank_id'] = bank.id
-                elif payment_data.get('bank_id') and not matching_payment.bank_id:
+                        payment_vals['bank_id'] = bank.id
+                elif payment_data.get('bank_id'):
                     bank = self.env['res.bank'].sudo().browse(payment_data['bank_id'])
                     if bank.exists():
-                        update_vals['bank_id'] = bank.id
+                        payment_vals['bank_id'] = bank.id
+
+                # Fecha del cheque
+                if payment_data.get('date'):
+                    from datetime import date as date_type
+                    try:
+                        payment_vals['date'] = date_type.fromisoformat(payment_data['date'])
+                    except (ValueError, TypeError):
+                        pass
 
                 # Campos de TARJETA
-                if payment_data.get('number_voucher') and not matching_payment.number_voucher:
-                    update_vals['number_voucher'] = payment_data.get('number_voucher')
-                if payment_data.get('number_lote') and not matching_payment.number_lote:
-                    update_vals['number_lote'] = payment_data.get('number_lote')
-                if payment_data.get('holder_card') and not matching_payment.holder_card:
-                    update_vals['holder_card'] = payment_data.get('holder_card')
-                if payment_data.get('bin_tc') and not matching_payment.bin_tc:
-                    update_vals['bin_tc'] = payment_data.get('bin_tc')
-                if payment_data.get('institution_card') and not matching_payment.institution_card:
-                    update_vals['institution_card'] = payment_data.get('institution_card')
+                if payment_data.get('number_voucher'):
+                    payment_vals['number_voucher'] = payment_data.get('number_voucher')
+                if payment_data.get('number_lote'):
+                    payment_vals['number_lote'] = payment_data.get('number_lote')
+                if payment_data.get('holder_card'):
+                    payment_vals['holder_card'] = payment_data.get('holder_card')
+                if payment_data.get('bin_tc'):
+                    payment_vals['bin_tc'] = payment_data.get('bin_tc')
+                if payment_data.get('institution_card'):
+                    payment_vals['institution_card'] = payment_data.get('institution_card')
 
-                # Buscar y asignar tipo de tarjeta
-                if payment_data.get('type_card_name') and not matching_payment.type_card:
+                # Buscar tipo de tarjeta por nombre
+                if payment_data.get('type_card_name'):
                     credit_card = self.env['credit.card'].sudo().search([
                         ('name', '=', payment_data.get('type_card_name'))
                     ], limit=1)
                     if credit_card:
-                        update_vals['type_card'] = credit_card.id
-                elif payment_data.get('type_card') and not matching_payment.type_card:
+                        payment_vals['type_card'] = credit_card.id
+                elif payment_data.get('type_card'):
                     credit_card = self.env['credit.card'].sudo().browse(payment_data['type_card'])
                     if credit_card.exists():
-                        update_vals['type_card'] = credit_card.id
+                        payment_vals['type_card'] = credit_card.id
 
                 # Campos de CREDITO
-                if payment_data.get('selecteInstitutionCredit') and not matching_payment.selecteInstitutionCredit:
-                    update_vals['selecteInstitutionCredit'] = payment_data.get('selecteInstitutionCredit')
+                if payment_data.get('selecteInstitutionCredit'):
+                    payment_vals['selecteInstitutionCredit'] = payment_data.get('selecteInstitutionCredit')
 
-                if update_vals:
-                    matching_payment.write(update_vals)
-                    _logger.info(
-                        f'Pago {matching_payment.id} actualizado con datos de cheque/tarjeta: '
-                        f'{list(update_vals.keys())}'
-                    )
-                else:
-                    _logger.info(f'Pago {matching_payment.id} no requiere actualización')
-            else:
-                _logger.warning(f'No se encontró pago existente para actualizar: {payment_data}')
+                _logger.info(f'Creando pago con valores: método={payment_method.name}, monto={payment_vals.get("amount")}')
+
+                # Usar contexto para bypasear validaciones de método de pago
+                payment = PosPayment.with_context(
+                    skip_payment_method_check=True,
+                    from_pos_sync=True
+                ).create(payment_vals)
+                _logger.info(f'Pago creado exitosamente: ID={payment.id}, monto={payment.amount}')
+            except Exception as e:
+                _logger.error(f'Error creando pago: {e}', exc_info=True)
 
     def _create_json_storage_from_order(self, order, json_storage_data, session):
         """
@@ -2350,64 +2222,6 @@ class PosSyncManager(models.Model):
         return data
 
     @api.model
-    def serialize_product_template(self, template):
-        """
-        Serializa un product.template para sincronización.
-
-        Args:
-            template: Registro product.template
-
-        Returns:
-            dict: Datos serializados
-        """
-        data = {
-            'id': template.id,
-            'name': template.name,
-            'display_name': template.display_name,
-            'default_code': template.default_code,
-            'barcode': template.barcode if hasattr(template, 'barcode') else None,
-            'list_price': template.list_price,
-            'standard_price': template.standard_price,
-            'type': template.type,
-            'detailed_type': template.detailed_type if hasattr(template, 'detailed_type') else None,
-            'available_in_pos': template.available_in_pos,
-            'sale_ok': template.sale_ok,
-            'purchase_ok': template.purchase_ok,
-            'active': template.active,
-            'categ_id': template.categ_id.id if template.categ_id else None,
-            'categ_name': template.categ_id.complete_name if template.categ_id else None,
-            'uom_id': template.uom_id.id if template.uom_id else None,
-            'uom_name': template.uom_id.name if template.uom_id else None,
-            'uom_po_id': template.uom_po_id.id if template.uom_po_id else None,
-            'uom_po_name': template.uom_po_id.name if template.uom_po_id else None,
-            'description': template.description,
-            'description_sale': template.description_sale,
-            'weight': template.weight,
-            'volume': template.volume,
-            # Campos de sincronización
-            'cloud_sync_id': template.cloud_sync_id if hasattr(template, 'cloud_sync_id') else None,
-            'id_database_old': template.id_database_old if hasattr(template, 'id_database_old') else None,
-            # Impuestos
-            'taxes_id': template.taxes_id.ids if template.taxes_id else [],
-            'supplier_taxes_id': template.supplier_taxes_id.ids if template.supplier_taxes_id else [],
-            # Imagen
-            'image_128': template.image_128.decode('utf-8') if template.image_128 else None,
-        }
-
-        # Campos específicos de POS si existen
-        if hasattr(template, 'pos_categ_ids'):
-            data['pos_categ_ids'] = template.pos_categ_ids.ids
-
-        if hasattr(template, 'to_weight'):
-            data['to_weight'] = template.to_weight
-
-        # Incluir IDs de variantes (product.product) asociadas
-        if template.product_variant_ids:
-            data['product_variant_ids'] = template.product_variant_ids.ids
-
-        return data
-
-    @api.model
     def deserialize_product(self, data, sync_config=None):
         """
         Deserializa datos de producto para crear/actualizar en el sistema.
@@ -2476,182 +2290,6 @@ class PosSyncManager(models.Model):
 
         Args:
             data: Diccionario con datos del producto
-
-        Returns:
-            dict: Valores preparados para Odoo
-        """
-        vals = {
-            'name': data.get('name'),
-            'default_code': data.get('default_code'),
-            'barcode': data.get('barcode'),
-            'list_price': data.get('list_price'),
-            'standard_price': data.get('standard_price'),
-            'type': data.get('type', 'consu'),
-            'available_in_pos': data.get('available_in_pos', True),
-            'sale_ok': data.get('sale_ok', True),
-            'purchase_ok': data.get('purchase_ok', True),
-            'description': data.get('description'),
-            'description_sale': data.get('description_sale'),
-            'weight': data.get('weight'),
-            'volume': data.get('volume'),
-        }
-
-        # Manejar detailed_type si existe
-        if data.get('detailed_type'):
-            vals['detailed_type'] = data['detailed_type']
-
-        # Manejar categoría
-        if data.get('categ_id'):
-            categ = self.env['product.category'].sudo().browse(data['categ_id'])
-            if categ.exists():
-                vals['categ_id'] = categ.id
-        elif data.get('categ_name'):
-            categ = self.env['product.category'].sudo().search([
-                ('complete_name', '=', data['categ_name'])
-            ], limit=1)
-            if categ:
-                vals['categ_id'] = categ.id
-
-        # Manejar UoM
-        if data.get('uom_id'):
-            uom = self.env['uom.uom'].sudo().browse(data['uom_id'])
-            if uom.exists():
-                vals['uom_id'] = uom.id
-                vals['uom_po_id'] = uom.id
-        elif data.get('uom_name'):
-            uom = self.env['uom.uom'].sudo().search([
-                ('name', '=', data['uom_name'])
-            ], limit=1)
-            if uom:
-                vals['uom_id'] = uom.id
-                vals['uom_po_id'] = uom.id
-
-        # Manejar impuestos
-        if data.get('taxes_id'):
-            vals['taxes_id'] = [(6, 0, data['taxes_id'])]
-
-        # Manejar id_database_old
-        if data.get('id_database_old'):
-            vals['id_database_old'] = str(data['id_database_old'])
-
-        # Manejar categorías POS
-        if data.get('pos_categ_ids'):
-            vals['pos_categ_ids'] = [(6, 0, data['pos_categ_ids'])]
-
-        # Limpiar valores None
-        vals = {k: v for k, v in vals.items() if v is not None}
-
-        return vals
-
-    @api.model
-    def deserialize_product_template(self, data, sync_config=None):
-        """
-        Deserializa datos de product.template para crear/actualizar en el sistema.
-
-        Args:
-            data: Diccionario con datos del product.template
-            sync_config: Configuración de sincronización (opcional)
-
-        Returns:
-            product.template: Template creado o actualizado
-        """
-        ProductTemplate = self.env['product.template'].sudo()
-
-        # Buscar template existente
-        template = self._find_product_template(data)
-
-        # Preparar valores
-        vals = self._prepare_product_template_vals(data)
-
-        if template:
-            # Actualizar existente
-            template.write(vals)
-            _logger.info(f'Product template actualizado: {template.name} (ID: {template.id})')
-        else:
-            # Crear nuevo
-            template = ProductTemplate.create(vals)
-            _logger.info(f'Product template creado: {template.name} (ID: {template.id})')
-
-        # Marcar el cloud_sync_id si viene del cloud
-        if data.get('id') and not template.cloud_sync_id:
-            template.write({'cloud_sync_id': data['id']})
-
-        # Marcar como sincronizado
-        template.write({
-            'sync_state': 'synced',
-            'last_sync_date': fields.Datetime.now()
-        })
-
-        return template
-
-    def _find_product_template(self, data):
-        """
-        Busca un product.template existente por diferentes criterios.
-
-        Args:
-            data: Diccionario con datos del template
-
-        Returns:
-            product.template: Template encontrado o None
-        """
-        ProductTemplate = self.env['product.template'].sudo()
-        template = None
-
-        # 1. Buscar por cloud_sync_id
-        if data.get('cloud_sync_id'):
-            template = ProductTemplate.search([
-                ('cloud_sync_id', '=', data['cloud_sync_id'])
-            ], limit=1)
-            if template:
-                _logger.info(f'Template encontrado por cloud_sync_id: {template.name}')
-                return template
-
-        # 2. Buscar por id (el ID del servidor principal)
-        if data.get('id'):
-            template = ProductTemplate.search([
-                ('cloud_sync_id', '=', data['id'])
-            ], limit=1)
-            if template:
-                _logger.info(f'Template encontrado por id como cloud_sync_id: {template.name}')
-                return template
-
-        # 3. Buscar por barcode
-        if data.get('barcode'):
-            template = ProductTemplate.search([
-                ('barcode', '=', data['barcode'])
-            ], limit=1)
-            if template:
-                _logger.info(f'Template encontrado por barcode: {template.name}')
-                return template
-
-        # 4. Buscar por default_code
-        if data.get('default_code'):
-            template = ProductTemplate.search([
-                ('default_code', '=', data['default_code'])
-            ], limit=1)
-            if template:
-                _logger.info(f'Template encontrado por default_code: {template.name}')
-                return template
-
-        # 5. Buscar por id_database_old + name
-        if data.get('id_database_old'):
-            domain = [('id_database_old', '=', str(data['id_database_old']))]
-            if data.get('name'):
-                domain.append(('name', '=', data['name']))
-            template = ProductTemplate.search(domain, limit=1)
-            if template:
-                _logger.info(f'Template encontrado por id_database_old: {template.name}')
-                return template
-
-        _logger.info(f'No se encontró template existente para: {data.get("name")}')
-        return None
-
-    def _prepare_product_template_vals(self, data):
-        """
-        Prepara los valores para crear/actualizar un product.template.
-
-        Args:
-            data: Diccionario con datos del template
 
         Returns:
             dict: Valores preparados para Odoo

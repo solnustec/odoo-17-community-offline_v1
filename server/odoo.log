@@ -9930,3 +9930,653 @@ Traceback (most recent call last):
     from . import survey_branch_visit
 ImportError: cannot import name 'survey_branch_visit' from partially initialized module 'odoo.addons.internal_control.models' (most likely due to a circular import) (c:\users\sanan\documents\github\odoo-17-community-offline_v1\server\addons\internal_control\models\__init__.py)
 2026-01-12 15:15:21,559 10952 INFO ? werkzeug: 127.0.0.1 - - [12/Jan/2026 15:15:21] "GET /websocket?version=17.0-3 HTTP/1.1" 500 - 12 0.014 0.172
+2026-01-12 15:16:13,173 10952 INFO odoo odoo.service.server: Initiating shutdown 
+2026-01-12 15:16:13,174 10952 INFO odoo odoo.service.server: Hit CTRL-C again or send a second signal to force the shutdown. 
+2026-01-12 15:16:13,328 10952 INFO odoo odoo.sql_db: ConnectionPool(used=0/count=0/max=64): Closed 1 connections  
+2026-01-12 15:16:13,332 10952 INFO odoo odoo.service.server: A child process was found, pid is psutil.Process(pid=11580, name='conhost.exe', status='running', started='15:13:43'), process may hang 
+2026-01-12 15:17:05,790 10552 INFO ? odoo: Odoo version 17.0-20251229 
+2026-01-12 15:17:05,790 10552 INFO ? odoo: Using configuration file at C:\Users\sanan\Documents\Github\odoo-17-community-offline_v1\server\odoo.conf 
+2026-01-12 15:17:05,790 10552 INFO ? odoo: addons paths: ['C:\\Users\\sanan\\Documents\\Github\\odoo-17-community-offline_v1\\server\\odoo\\addons', 'c:\\users\\sanan\\documents\\github\\odoo-17-community-offline_v1\\sessions\\addons\\17.0', 'c:\\users\\sanan\\documents\\github\\odoo-17-community-offline_v1\\server\\odoo\\addons', 'c:\\users\\sanan\\documents\\github\\odoo-17-community-offline_v1\\server\\addons'] 
+2026-01-12 15:17:05,791 10552 INFO ? odoo: database: openpg@localhost:5432 
+2026-01-12 15:17:05,998 10552 INFO ? odoo.addons.base.models.ir_actions_report: Will use the Wkhtmltopdf binary at C:\Users\sanan\Documents\Github\odoo-17-community-offline_v1\thirdparty\wkhtmltopdf.exe 
+2026-01-12 15:17:06,293 10552 INFO ? odoo.service.server: HTTP service (werkzeug) running on DESKTOP-E80706A:8069 
+2026-01-12 15:17:06,336 10552 INFO odoo odoo.modules.loading: loading 1 modules... 
+2026-01-12 15:17:06,342 10552 INFO odoo odoo.modules.loading: 1 modules loaded in 0.01s, 0 queries (+0 extra) 
+2026-01-12 15:17:06,359 10552 WARNING odoo odoo.modules.module: Missing `license` key in manifest for 'chatbotapi', defaulting to LGPL-3 
+2026-01-12 15:17:06,361 10552 WARNING odoo odoo.modules.module: Missing `license` key in manifest for 'pos_order_search', defaulting to LGPL-3 
+2026-01-12 15:17:06,362 10552 WARNING odoo odoo.modules.module: Missing `license` key in manifest for 'biometrics_control_access', defaulting to LGPL-3 
+2026-01-12 15:17:06,368 10552 WARNING odoo odoo.modules.module: Missing `license` key in manifest for 'companiesweb', defaulting to LGPL-3 
+2026-01-12 15:17:06,372 10552 WARNING odoo odoo.modules.module: Missing `license` key in manifest for 'replenishment_inventory', defaulting to LGPL-3 
+2026-01-12 15:17:06,375 10552 WARNING odoo odoo.modules.module: Missing `license` key in manifest for 'l10n_ec_invoice_identification', defaulting to LGPL-3 
+2026-01-12 15:17:06,380 10552 WARNING odoo odoo.modules.module: Missing `license` key in manifest for 'res_provider', defaulting to LGPL-3 
+2026-01-12 15:17:06,384 10552 WARNING odoo odoo.modules.module: Missing `license` key in manifest for 'pos-old-ordes', defaulting to LGPL-3 
+2026-01-12 15:17:06,386 10552 WARNING odoo odoo.modules.module: Missing `license` key in manifest for 'purchase_history', defaulting to LGPL-3 
+2026-01-12 15:17:06,387 10552 WARNING odoo odoo.modules.module: Missing `license` key in manifest for 'vademecum', defaulting to LGPL-3 
+2026-01-12 15:17:06,389 10552 WARNING odoo odoo.modules.module: Missing `license` key in manifest for 'custom_attendance', defaulting to LGPL-3 
+2026-01-12 15:17:06,390 10552 WARNING odoo odoo.modules.module: Missing `license` key in manifest for 'hr_job_group_rule', defaulting to LGPL-3 
+2026-01-12 15:17:06,392 10552 WARNING odoo odoo.modules.module: Missing `license` key in manifest for 'global_read_only', defaulting to LGPL-3 
+2026-01-12 15:17:06,395 10552 WARNING odoo odoo.modules.module: Missing `license` key in manifest for 'website_register_form', defaulting to LGPL-3 
+2026-01-12 15:17:06,404 10552 WARNING odoo odoo.modules.module: Missing `license` key in manifest for 'l10n_ec_edi_sale', defaulting to LGPL-3 
+2026-01-12 15:17:06,405 10552 WARNING odoo odoo.modules.module: Missing `license` key in manifest for 'migration', defaulting to LGPL-3 
+2026-01-12 15:17:06,406 10552 WARNING odoo odoo.modules.module: Missing `license` key in manifest for 'promotions_by_day', defaulting to LGPL-3 
+2026-01-12 15:17:06,408 10552 WARNING odoo odoo.modules.module: Missing `license` key in manifest for 'search_warehouse', defaulting to LGPL-3 
+2026-01-12 15:17:06,409 10552 WARNING odoo odoo.modules.module: Missing `license` key in manifest for 'sanitary_registry_for_product', defaulting to LGPL-3 
+2026-01-12 15:17:06,411 10552 WARNING odoo odoo.modules.module: Missing `license` key in manifest for 'purchase_upload_invoice', defaulting to LGPL-3 
+2026-01-12 15:17:06,414 10552 WARNING odoo odoo.modules.module: Missing `license` key in manifest for 'custom_fields_product', defaulting to LGPL-3 
+2026-01-12 15:17:06,415 10552 WARNING odoo odoo.modules.module: Missing `license` key in manifest for 'custom_holidays', defaulting to LGPL-3 
+2026-01-12 15:17:06,420 10552 WARNING odoo odoo.modules.module: Missing `license` key in manifest for 'payments_ahorita', defaulting to LGPL-3 
+2026-01-12 15:17:06,423 10552 WARNING odoo odoo.modules.module: Missing `license` key in manifest for 'pos_search_bar', defaulting to LGPL-3 
+2026-01-12 15:17:06,426 10552 WARNING odoo odoo.modules.module: Missing `license` key in manifest for 'purchase_order_api', defaulting to LGPL-3 
+2026-01-12 15:17:06,427 10552 WARNING odoo odoo.modules.module: Missing `license` key in manifest for 'pos_invoice_note', defaulting to LGPL-3 
+2026-01-12 15:17:06,428 10552 WARNING odoo odoo.modules.module: Missing `license` key in manifest for 'api_client_proassislife', defaulting to LGPL-3 
+2026-01-12 15:17:06,429 10552 WARNING odoo odoo.modules.module: Missing `license` key in manifest for 'guide_remision', defaulting to LGPL-3 
+2026-01-12 15:17:06,431 10552 WARNING odoo odoo.modules.module: Missing `license` key in manifest for 'pos_credit_note', defaulting to LGPL-3 
+2026-01-12 15:17:06,432 10552 WARNING odoo odoo.modules.module: Missing `license` key in manifest for 'conection_promotions_api', defaulting to LGPL-3 
+2026-01-12 15:17:06,436 10552 WARNING odoo odoo.modules.module: Missing `license` key in manifest for 'utilities', defaulting to LGPL-3 
+2026-01-12 15:17:06,512 10552 WARNING odoo odoo.modules.module: Missing `license` key in manifest for 'project_custom', defaulting to LGPL-3 
+2026-01-12 15:17:06,518 10552 WARNING odoo odoo.modules.module: Missing `license` key in manifest for 'products_price', defaulting to LGPL-3 
+2026-01-12 15:17:06,520 10552 WARNING odoo odoo.modules.module: Missing `license` key in manifest for 'base_custom', defaulting to LGPL-3 
+2026-01-12 15:17:06,632 10552 INFO odoo odoo.modules.loading: loading 286 modules... 
+2026-01-12 15:17:06,661 10552 INFO odoo odoo.addons.global_read_only.models.base_inherit: Parche de solo lectura global aplicado exitosamente 
+2026-01-12 15:17:06,673 10552 WARNING odoo odoo.addons.attachment_indexation.models.ir_attachment: Attachment indexation of PDF documents is unavailable because the 'pdfminer' Python library cannot be found on the system. You may install it from https://pypi.org/project/pdfminer.six/ (e.g. `pip3 install pdfminer.six`) 
+2026-01-12 15:17:07,075 10552 WARNING odoo odoo.api.create: The model odoo.addons.firebase_push_notification.models.push_message is not overriding the create method in batch 
+2026-01-12 15:17:07,077 10552 WARNING odoo odoo.models: The model notification.message has no _description 
+2026-01-12 15:17:07,130 10552 WARNING odoo odoo.models: The model notification.message has no _description 
+2026-01-12 15:17:07,135 10552 WARNING odoo odoo.models: The model notification.message has no _description 
+2026-01-12 15:17:07,248 10552 WARNING odoo odoo.models: The model notification.message has no _description 
+2026-01-12 15:17:07,273 10552 WARNING odoo odoo.models: The model notification.message has no _description 
+2026-01-12 15:17:07,275 10552 WARNING odoo odoo.models: The model notification.message has no _description 
+2026-01-12 15:17:07,747 10552 WARNING odoo odoo.models: The model notification.message has no _description 
+2026-01-12 15:17:07,887 10552 WARNING odoo odoo.models: The model notification.message has no _description 
+2026-01-12 15:17:07,935 10552 WARNING odoo odoo.http: <function odoo.addons.res_provider.controllers.res_partner.save_provider_data_from_vf> defined with invalid routing parameter 'method', assuming 'methods' 
+2026-01-12 15:17:07,956 10552 WARNING odoo odoo.models: The model notification.message has no _description 
+2026-01-12 15:17:08,109 10552 WARNING odoo odoo.api.create: The model odoo.addons.formio.models.formio_form_data is not overriding the create method in batch 
+2026-01-12 15:17:08,114 10552 WARNING odoo odoo.models: The model formio.form.data has no _description 
+2026-01-12 15:17:08,503 10552 WARNING odoo odoo.models: The model notification.message has no _description 
+2026-01-12 15:17:08,506 10552 WARNING odoo odoo.models: The model formio.form.data has no _description 
+2026-01-12 15:17:08,541 10552 WARNING odoo odoo.api.create: The model odoo.addons.account_asset_management.models.asset_transfer is not overriding the create method in batch 
+2026-01-12 15:17:08,722 10552 WARNING odoo odoo.models: The model report.guide_remision.report_referral_guide_document_test has no _description 
+2026-01-12 15:17:08,850 10552 WARNING odoo odoo.api.create: The model odoo.addons.stock_transfer_checker.models.stock_transfer_check is not overriding the create method in batch 
+2026-01-12 15:17:08,970 10552 WARNING odoo odoo.api.create: The model odoo.addons.internal_control.models.in_survey_input is not overriding the create method in batch 
+2026-01-12 15:17:08,972 10552 WARNING odoo odoo.api.create: The model odoo.addons.internal_control.models.in_survey_calculate is not overriding the create method in batch 
+2026-01-12 15:17:08,972 10552 WARNING odoo odoo.api.create: The model odoo.addons.internal_control.models.in_survey_calculate is not overriding the create method in batch 
+2026-01-12 15:17:08,977 10552 WARNING odoo odoo.api.create: The model odoo.addons.internal_control.models.in_survey_campaign is not overriding the create method in batch 
+2026-01-12 15:17:08,978 10552 CRITICAL odoo odoo.modules.module: Couldn't load module internal_control 
+2026-01-12 15:17:08,982 10552 WARNING odoo odoo.modules.loading: Transient module states were reset 
+2026-01-12 15:17:08,983 10552 ERROR odoo odoo.modules.registry: Failed to load registry 
+Traceback (most recent call last):
+  File "C:\Users\sanan\Documents\Github\odoo-17-community-offline_v1\server\odoo\modules\registry.py", line 110, in new
+    odoo.modules.load_modules(registry, force_demo, status, update_module)
+  File "C:\Users\sanan\Documents\Github\odoo-17-community-offline_v1\server\odoo\modules\loading.py", line 481, in load_modules
+    processed_modules += load_marked_modules(env, graph,
+                         ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "C:\Users\sanan\Documents\Github\odoo-17-community-offline_v1\server\odoo\modules\loading.py", line 366, in load_marked_modules
+    loaded, processed = load_module_graph(
+                        ^^^^^^^^^^^^^^^^^^
+  File "C:\Users\sanan\Documents\Github\odoo-17-community-offline_v1\server\odoo\modules\loading.py", line 187, in load_module_graph
+    load_openerp_module(package.name)
+  File "C:\Users\sanan\Documents\Github\odoo-17-community-offline_v1\server\odoo\modules\module.py", line 395, in load_openerp_module
+    __import__(qualname)
+  File "c:\users\sanan\documents\github\odoo-17-community-offline_v1\server\addons\internal_control\__init__.py", line 3, in <module>
+    from . import models
+  File "c:\users\sanan\documents\github\odoo-17-community-offline_v1\server\addons\internal_control\models\__init__.py", line 9, in <module>
+    from . import survey_branch_visit
+ImportError: cannot import name 'survey_branch_visit' from partially initialized module 'odoo.addons.internal_control.models' (most likely due to a circular import) (c:\users\sanan\documents\github\odoo-17-community-offline_v1\server\addons\internal_control\models\__init__.py)
+2026-01-12 15:17:08,987 10552 CRITICAL odoo odoo.service.server: Failed to initialize database `odoo`. 
+Traceback (most recent call last):
+  File "C:\Users\sanan\Documents\Github\odoo-17-community-offline_v1\server\odoo\service\server.py", line 1374, in preload_registries
+    registry = Registry.new(dbname, update_module=update_module)
+               ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "C:\Users\sanan\Documents\Github\odoo-17-community-offline_v1\python\Lib\site-packages\decorator.py", line 232, in fun
+    return caller(func, *(extras + args), **kw)
+           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "C:\Users\sanan\Documents\Github\odoo-17-community-offline_v1\server\odoo\tools\func.py", line 87, in locked
+    return func(inst, *args, **kwargs)
+           ^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "C:\Users\sanan\Documents\Github\odoo-17-community-offline_v1\server\odoo\modules\registry.py", line 110, in new
+    odoo.modules.load_modules(registry, force_demo, status, update_module)
+  File "C:\Users\sanan\Documents\Github\odoo-17-community-offline_v1\server\odoo\modules\loading.py", line 481, in load_modules
+    processed_modules += load_marked_modules(env, graph,
+                         ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "C:\Users\sanan\Documents\Github\odoo-17-community-offline_v1\server\odoo\modules\loading.py", line 366, in load_marked_modules
+    loaded, processed = load_module_graph(
+                        ^^^^^^^^^^^^^^^^^^
+  File "C:\Users\sanan\Documents\Github\odoo-17-community-offline_v1\server\odoo\modules\loading.py", line 187, in load_module_graph
+    load_openerp_module(package.name)
+  File "C:\Users\sanan\Documents\Github\odoo-17-community-offline_v1\server\odoo\modules\module.py", line 395, in load_openerp_module
+    __import__(qualname)
+  File "c:\users\sanan\documents\github\odoo-17-community-offline_v1\server\addons\internal_control\__init__.py", line 3, in <module>
+    from . import models
+  File "c:\users\sanan\documents\github\odoo-17-community-offline_v1\server\addons\internal_control\models\__init__.py", line 9, in <module>
+    from . import survey_branch_visit
+ImportError: cannot import name 'survey_branch_visit' from partially initialized module 'odoo.addons.internal_control.models' (most likely due to a circular import) (c:\users\sanan\documents\github\odoo-17-community-offline_v1\server\addons\internal_control\models\__init__.py)
+2026-01-12 15:17:25,818 10552 INFO ? odoo.modules.loading: loading 1 modules... 
+2026-01-12 15:17:25,849 10552 INFO ? odoo.modules.loading: 1 modules loaded in 0.03s, 0 queries (+0 extra) 
+2026-01-12 15:17:25,901 10552 INFO ? odoo.modules.loading: loading 286 modules... 
+2026-01-12 15:17:25,909 10552 WARNING ? odoo.models: The model notification.message has no _description 
+2026-01-12 15:17:25,912 10552 WARNING ? odoo.models: The model notification.message has no _description 
+2026-01-12 15:17:25,914 10552 WARNING ? odoo.models: The model notification.message has no _description 
+2026-01-12 15:17:25,916 10552 WARNING ? odoo.models: The model notification.message has no _description 
+2026-01-12 15:17:25,922 10552 WARNING ? odoo.models: The model notification.message has no _description 
+2026-01-12 15:17:25,924 10552 WARNING ? odoo.models: The model notification.message has no _description 
+2026-01-12 15:17:25,933 10552 WARNING ? odoo.models: The model notification.message has no _description 
+2026-01-12 15:17:25,940 10552 WARNING ? odoo.models: The model notification.message has no _description 
+2026-01-12 15:17:25,948 10552 WARNING ? odoo.models: The model notification.message has no _description 
+2026-01-12 15:17:25,954 10552 WARNING ? odoo.models: The model formio.form.data has no _description 
+2026-01-12 15:17:25,978 10552 WARNING ? odoo.models: The model notification.message has no _description 
+2026-01-12 15:17:25,982 10552 WARNING ? odoo.models: The model formio.form.data has no _description 
+2026-01-12 15:17:25,994 10552 WARNING ? odoo.models: The model report.guide_remision.report_referral_guide_document_test has no _description 
+2026-01-12 15:17:26,010 10552 CRITICAL ? odoo.modules.module: Couldn't load module internal_control 
+2026-01-12 15:17:26,012 10552 WARNING ? odoo.modules.loading: Transient module states were reset 
+2026-01-12 15:17:26,012 10552 ERROR ? odoo.modules.registry: Failed to load registry 
+Traceback (most recent call last):
+  File "C:\Users\sanan\Documents\Github\odoo-17-community-offline_v1\server\odoo\modules\registry.py", line 87, in __new__
+    return cls.registries[db_name]
+           ~~~~~~~~~~~~~~^^^^^^^^^
+  File "C:\Users\sanan\Documents\Github\odoo-17-community-offline_v1\python\Lib\site-packages\decorator.py", line 232, in fun
+    return caller(func, *(extras + args), **kw)
+           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "C:\Users\sanan\Documents\Github\odoo-17-community-offline_v1\server\odoo\tools\func.py", line 87, in locked
+    return func(inst, *args, **kwargs)
+           ^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "C:\Users\sanan\Documents\Github\odoo-17-community-offline_v1\server\odoo\tools\lru.py", line 34, in __getitem__
+    a = self.d[obj]
+        ~~~~~~^^^^^
+KeyError: 'odoo'
+
+During handling of the above exception, another exception occurred:
+
+Traceback (most recent call last):
+  File "C:\Users\sanan\Documents\Github\odoo-17-community-offline_v1\server\odoo\modules\registry.py", line 110, in new
+    odoo.modules.load_modules(registry, force_demo, status, update_module)
+  File "C:\Users\sanan\Documents\Github\odoo-17-community-offline_v1\server\odoo\modules\loading.py", line 481, in load_modules
+    processed_modules += load_marked_modules(env, graph,
+                         ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "C:\Users\sanan\Documents\Github\odoo-17-community-offline_v1\server\odoo\modules\loading.py", line 366, in load_marked_modules
+    loaded, processed = load_module_graph(
+                        ^^^^^^^^^^^^^^^^^^
+  File "C:\Users\sanan\Documents\Github\odoo-17-community-offline_v1\server\odoo\modules\loading.py", line 187, in load_module_graph
+    load_openerp_module(package.name)
+  File "C:\Users\sanan\Documents\Github\odoo-17-community-offline_v1\server\odoo\modules\module.py", line 395, in load_openerp_module
+    __import__(qualname)
+  File "c:\users\sanan\documents\github\odoo-17-community-offline_v1\server\addons\internal_control\__init__.py", line 3, in <module>
+    from . import models
+  File "c:\users\sanan\documents\github\odoo-17-community-offline_v1\server\addons\internal_control\models\__init__.py", line 9, in <module>
+    from . import survey_branch_visit
+ImportError: cannot import name 'survey_branch_visit' from partially initialized module 'odoo.addons.internal_control.models' (most likely due to a circular import) (c:\users\sanan\documents\github\odoo-17-community-offline_v1\server\addons\internal_control\models\__init__.py)
+2026-01-12 15:17:26,016 10552 ERROR ? odoo.http: Exception during request handling. 
+Traceback (most recent call last):
+  File "C:\Users\sanan\Documents\Github\odoo-17-community-offline_v1\server\odoo\modules\registry.py", line 87, in __new__
+    return cls.registries[db_name]
+           ~~~~~~~~~~~~~~^^^^^^^^^
+  File "C:\Users\sanan\Documents\Github\odoo-17-community-offline_v1\python\Lib\site-packages\decorator.py", line 232, in fun
+    return caller(func, *(extras + args), **kw)
+           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "C:\Users\sanan\Documents\Github\odoo-17-community-offline_v1\server\odoo\tools\func.py", line 87, in locked
+    return func(inst, *args, **kwargs)
+           ^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "C:\Users\sanan\Documents\Github\odoo-17-community-offline_v1\server\odoo\tools\lru.py", line 34, in __getitem__
+    a = self.d[obj]
+        ~~~~~~^^^^^
+KeyError: 'odoo'
+
+During handling of the above exception, another exception occurred:
+
+Traceback (most recent call last):
+  File "C:\Users\sanan\Documents\Github\odoo-17-community-offline_v1\server\odoo\http.py", line 2409, in __call__
+    response = request._serve_db()
+               ^^^^^^^^^^^^^^^^^^^
+  File "C:\Users\sanan\Documents\Github\odoo-17-community-offline_v1\server\odoo\http.py", line 1962, in _serve_db
+    self.registry = Registry(self.db).check_signaling()
+                    ^^^^^^^^^^^^^^^^^
+  File "C:\Users\sanan\Documents\Github\odoo-17-community-offline_v1\server\odoo\modules\registry.py", line 89, in __new__
+    return cls.new(db_name)
+           ^^^^^^^^^^^^^^^^
+  File "C:\Users\sanan\Documents\Github\odoo-17-community-offline_v1\python\Lib\site-packages\decorator.py", line 232, in fun
+    return caller(func, *(extras + args), **kw)
+           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "C:\Users\sanan\Documents\Github\odoo-17-community-offline_v1\server\odoo\tools\func.py", line 87, in locked
+    return func(inst, *args, **kwargs)
+           ^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "C:\Users\sanan\Documents\Github\odoo-17-community-offline_v1\server\odoo\modules\registry.py", line 110, in new
+    odoo.modules.load_modules(registry, force_demo, status, update_module)
+  File "C:\Users\sanan\Documents\Github\odoo-17-community-offline_v1\server\odoo\modules\loading.py", line 481, in load_modules
+    processed_modules += load_marked_modules(env, graph,
+                         ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "C:\Users\sanan\Documents\Github\odoo-17-community-offline_v1\server\odoo\modules\loading.py", line 366, in load_marked_modules
+    loaded, processed = load_module_graph(
+                        ^^^^^^^^^^^^^^^^^^
+  File "C:\Users\sanan\Documents\Github\odoo-17-community-offline_v1\server\odoo\modules\loading.py", line 187, in load_module_graph
+    load_openerp_module(package.name)
+  File "C:\Users\sanan\Documents\Github\odoo-17-community-offline_v1\server\odoo\modules\module.py", line 395, in load_openerp_module
+    __import__(qualname)
+  File "c:\users\sanan\documents\github\odoo-17-community-offline_v1\server\addons\internal_control\__init__.py", line 3, in <module>
+    from . import models
+  File "c:\users\sanan\documents\github\odoo-17-community-offline_v1\server\addons\internal_control\models\__init__.py", line 9, in <module>
+    from . import survey_branch_visit
+ImportError: cannot import name 'survey_branch_visit' from partially initialized module 'odoo.addons.internal_control.models' (most likely due to a circular import) (c:\users\sanan\documents\github\odoo-17-community-offline_v1\server\addons\internal_control\models\__init__.py)
+2026-01-12 15:17:26,020 10552 INFO ? werkzeug: 127.0.0.1 - - [12/Jan/2026 15:17:26] "GET /websocket?version=17.0-3 HTTP/1.1" 500 - 12 0.014 0.206
+2026-01-12 15:18:26,901 10552 INFO ? odoo.modules.loading: loading 1 modules... 
+2026-01-12 15:18:26,910 10552 INFO ? odoo.modules.loading: 1 modules loaded in 0.01s, 0 queries (+0 extra) 
+2026-01-12 15:18:27,091 10552 INFO ? odoo.modules.loading: loading 286 modules... 
+2026-01-12 15:18:27,097 10552 WARNING ? odoo.models: The model notification.message has no _description 
+2026-01-12 15:18:27,100 10552 WARNING ? odoo.models: The model notification.message has no _description 
+2026-01-12 15:18:27,101 10552 WARNING ? odoo.models: The model notification.message has no _description 
+2026-01-12 15:18:27,103 10552 WARNING ? odoo.models: The model notification.message has no _description 
+2026-01-12 15:18:27,110 10552 WARNING ? odoo.models: The model notification.message has no _description 
+2026-01-12 15:18:27,112 10552 WARNING ? odoo.models: The model notification.message has no _description 
+2026-01-12 15:18:27,121 10552 WARNING ? odoo.models: The model notification.message has no _description 
+2026-01-12 15:18:27,129 10552 WARNING ? odoo.models: The model notification.message has no _description 
+2026-01-12 15:18:27,139 10552 WARNING ? odoo.models: The model notification.message has no _description 
+2026-01-12 15:18:27,147 10552 WARNING ? odoo.models: The model formio.form.data has no _description 
+2026-01-12 15:18:27,171 10552 WARNING ? odoo.models: The model notification.message has no _description 
+2026-01-12 15:18:27,176 10552 WARNING ? odoo.models: The model formio.form.data has no _description 
+2026-01-12 15:18:27,190 10552 WARNING ? odoo.models: The model report.guide_remision.report_referral_guide_document_test has no _description 
+2026-01-12 15:18:27,205 10552 CRITICAL ? odoo.modules.module: Couldn't load module internal_control 
+2026-01-12 15:18:27,208 10552 WARNING ? odoo.modules.loading: Transient module states were reset 
+2026-01-12 15:18:27,208 10552 ERROR ? odoo.modules.registry: Failed to load registry 
+Traceback (most recent call last):
+  File "C:\Users\sanan\Documents\Github\odoo-17-community-offline_v1\server\odoo\modules\registry.py", line 87, in __new__
+    return cls.registries[db_name]
+           ~~~~~~~~~~~~~~^^^^^^^^^
+  File "C:\Users\sanan\Documents\Github\odoo-17-community-offline_v1\python\Lib\site-packages\decorator.py", line 232, in fun
+    return caller(func, *(extras + args), **kw)
+           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "C:\Users\sanan\Documents\Github\odoo-17-community-offline_v1\server\odoo\tools\func.py", line 87, in locked
+    return func(inst, *args, **kwargs)
+           ^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "C:\Users\sanan\Documents\Github\odoo-17-community-offline_v1\server\odoo\tools\lru.py", line 34, in __getitem__
+    a = self.d[obj]
+        ~~~~~~^^^^^
+KeyError: 'odoo'
+
+During handling of the above exception, another exception occurred:
+
+Traceback (most recent call last):
+  File "C:\Users\sanan\Documents\Github\odoo-17-community-offline_v1\server\odoo\modules\registry.py", line 110, in new
+    odoo.modules.load_modules(registry, force_demo, status, update_module)
+  File "C:\Users\sanan\Documents\Github\odoo-17-community-offline_v1\server\odoo\modules\loading.py", line 481, in load_modules
+    processed_modules += load_marked_modules(env, graph,
+                         ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "C:\Users\sanan\Documents\Github\odoo-17-community-offline_v1\server\odoo\modules\loading.py", line 366, in load_marked_modules
+    loaded, processed = load_module_graph(
+                        ^^^^^^^^^^^^^^^^^^
+  File "C:\Users\sanan\Documents\Github\odoo-17-community-offline_v1\server\odoo\modules\loading.py", line 187, in load_module_graph
+    load_openerp_module(package.name)
+  File "C:\Users\sanan\Documents\Github\odoo-17-community-offline_v1\server\odoo\modules\module.py", line 395, in load_openerp_module
+    __import__(qualname)
+  File "c:\users\sanan\documents\github\odoo-17-community-offline_v1\server\addons\internal_control\__init__.py", line 3, in <module>
+    from . import models
+  File "c:\users\sanan\documents\github\odoo-17-community-offline_v1\server\addons\internal_control\models\__init__.py", line 9, in <module>
+    from . import survey_branch_visit
+ImportError: cannot import name 'survey_branch_visit' from partially initialized module 'odoo.addons.internal_control.models' (most likely due to a circular import) (c:\users\sanan\documents\github\odoo-17-community-offline_v1\server\addons\internal_control\models\__init__.py)
+2026-01-12 15:18:27,212 10552 ERROR ? odoo.http: Exception during request handling. 
+Traceback (most recent call last):
+  File "C:\Users\sanan\Documents\Github\odoo-17-community-offline_v1\server\odoo\modules\registry.py", line 87, in __new__
+    return cls.registries[db_name]
+           ~~~~~~~~~~~~~~^^^^^^^^^
+  File "C:\Users\sanan\Documents\Github\odoo-17-community-offline_v1\python\Lib\site-packages\decorator.py", line 232, in fun
+    return caller(func, *(extras + args), **kw)
+           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "C:\Users\sanan\Documents\Github\odoo-17-community-offline_v1\server\odoo\tools\func.py", line 87, in locked
+    return func(inst, *args, **kwargs)
+           ^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "C:\Users\sanan\Documents\Github\odoo-17-community-offline_v1\server\odoo\tools\lru.py", line 34, in __getitem__
+    a = self.d[obj]
+        ~~~~~~^^^^^
+KeyError: 'odoo'
+
+During handling of the above exception, another exception occurred:
+
+Traceback (most recent call last):
+  File "C:\Users\sanan\Documents\Github\odoo-17-community-offline_v1\server\odoo\http.py", line 2409, in __call__
+    response = request._serve_db()
+               ^^^^^^^^^^^^^^^^^^^
+  File "C:\Users\sanan\Documents\Github\odoo-17-community-offline_v1\server\odoo\http.py", line 1962, in _serve_db
+    self.registry = Registry(self.db).check_signaling()
+                    ^^^^^^^^^^^^^^^^^
+  File "C:\Users\sanan\Documents\Github\odoo-17-community-offline_v1\server\odoo\modules\registry.py", line 89, in __new__
+    return cls.new(db_name)
+           ^^^^^^^^^^^^^^^^
+  File "C:\Users\sanan\Documents\Github\odoo-17-community-offline_v1\python\Lib\site-packages\decorator.py", line 232, in fun
+    return caller(func, *(extras + args), **kw)
+           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "C:\Users\sanan\Documents\Github\odoo-17-community-offline_v1\server\odoo\tools\func.py", line 87, in locked
+    return func(inst, *args, **kwargs)
+           ^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "C:\Users\sanan\Documents\Github\odoo-17-community-offline_v1\server\odoo\modules\registry.py", line 110, in new
+    odoo.modules.load_modules(registry, force_demo, status, update_module)
+  File "C:\Users\sanan\Documents\Github\odoo-17-community-offline_v1\server\odoo\modules\loading.py", line 481, in load_modules
+    processed_modules += load_marked_modules(env, graph,
+                         ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "C:\Users\sanan\Documents\Github\odoo-17-community-offline_v1\server\odoo\modules\loading.py", line 366, in load_marked_modules
+    loaded, processed = load_module_graph(
+                        ^^^^^^^^^^^^^^^^^^
+  File "C:\Users\sanan\Documents\Github\odoo-17-community-offline_v1\server\odoo\modules\loading.py", line 187, in load_module_graph
+    load_openerp_module(package.name)
+  File "C:\Users\sanan\Documents\Github\odoo-17-community-offline_v1\server\odoo\modules\module.py", line 395, in load_openerp_module
+    __import__(qualname)
+  File "c:\users\sanan\documents\github\odoo-17-community-offline_v1\server\addons\internal_control\__init__.py", line 3, in <module>
+    from . import models
+  File "c:\users\sanan\documents\github\odoo-17-community-offline_v1\server\addons\internal_control\models\__init__.py", line 9, in <module>
+    from . import survey_branch_visit
+ImportError: cannot import name 'survey_branch_visit' from partially initialized module 'odoo.addons.internal_control.models' (most likely due to a circular import) (c:\users\sanan\documents\github\odoo-17-community-offline_v1\server\addons\internal_control\models\__init__.py)
+2026-01-12 15:18:27,215 10552 INFO ? werkzeug: 127.0.0.1 - - [12/Jan/2026 15:18:27] "GET /websocket?version=17.0-3 HTTP/1.1" 500 - 12 0.006 0.315
+2026-01-12 15:19:27,884 10552 INFO ? odoo.modules.loading: loading 1 modules... 
+2026-01-12 15:19:27,893 10552 INFO ? odoo.modules.loading: 1 modules loaded in 0.01s, 0 queries (+0 extra) 
+2026-01-12 15:19:27,930 10552 INFO ? odoo.modules.loading: loading 286 modules... 
+2026-01-12 15:19:27,937 10552 WARNING ? odoo.models: The model notification.message has no _description 
+2026-01-12 15:19:27,940 10552 WARNING ? odoo.models: The model notification.message has no _description 
+2026-01-12 15:19:27,943 10552 WARNING ? odoo.models: The model notification.message has no _description 
+2026-01-12 15:19:27,945 10552 WARNING ? odoo.models: The model notification.message has no _description 
+2026-01-12 15:19:27,954 10552 WARNING ? odoo.models: The model notification.message has no _description 
+2026-01-12 15:19:27,956 10552 WARNING ? odoo.models: The model notification.message has no _description 
+2026-01-12 15:19:27,966 10552 WARNING ? odoo.models: The model notification.message has no _description 
+2026-01-12 15:19:27,977 10552 WARNING ? odoo.models: The model notification.message has no _description 
+2026-01-12 15:19:27,990 10552 WARNING ? odoo.models: The model notification.message has no _description 
+2026-01-12 15:19:27,998 10552 WARNING ? odoo.models: The model formio.form.data has no _description 
+2026-01-12 15:19:28,027 10552 WARNING ? odoo.models: The model notification.message has no _description 
+2026-01-12 15:19:28,032 10552 WARNING ? odoo.models: The model formio.form.data has no _description 
+2026-01-12 15:19:28,048 10552 WARNING ? odoo.models: The model report.guide_remision.report_referral_guide_document_test has no _description 
+2026-01-12 15:19:28,066 10552 CRITICAL ? odoo.modules.module: Couldn't load module internal_control 
+2026-01-12 15:19:28,068 10552 WARNING ? odoo.modules.loading: Transient module states were reset 
+2026-01-12 15:19:28,069 10552 ERROR ? odoo.modules.registry: Failed to load registry 
+Traceback (most recent call last):
+  File "C:\Users\sanan\Documents\Github\odoo-17-community-offline_v1\server\odoo\modules\registry.py", line 87, in __new__
+    return cls.registries[db_name]
+           ~~~~~~~~~~~~~~^^^^^^^^^
+  File "C:\Users\sanan\Documents\Github\odoo-17-community-offline_v1\python\Lib\site-packages\decorator.py", line 232, in fun
+    return caller(func, *(extras + args), **kw)
+           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "C:\Users\sanan\Documents\Github\odoo-17-community-offline_v1\server\odoo\tools\func.py", line 87, in locked
+    return func(inst, *args, **kwargs)
+           ^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "C:\Users\sanan\Documents\Github\odoo-17-community-offline_v1\server\odoo\tools\lru.py", line 34, in __getitem__
+    a = self.d[obj]
+        ~~~~~~^^^^^
+KeyError: 'odoo'
+
+During handling of the above exception, another exception occurred:
+
+Traceback (most recent call last):
+  File "C:\Users\sanan\Documents\Github\odoo-17-community-offline_v1\server\odoo\modules\registry.py", line 110, in new
+    odoo.modules.load_modules(registry, force_demo, status, update_module)
+  File "C:\Users\sanan\Documents\Github\odoo-17-community-offline_v1\server\odoo\modules\loading.py", line 481, in load_modules
+    processed_modules += load_marked_modules(env, graph,
+                         ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "C:\Users\sanan\Documents\Github\odoo-17-community-offline_v1\server\odoo\modules\loading.py", line 366, in load_marked_modules
+    loaded, processed = load_module_graph(
+                        ^^^^^^^^^^^^^^^^^^
+  File "C:\Users\sanan\Documents\Github\odoo-17-community-offline_v1\server\odoo\modules\loading.py", line 187, in load_module_graph
+    load_openerp_module(package.name)
+  File "C:\Users\sanan\Documents\Github\odoo-17-community-offline_v1\server\odoo\modules\module.py", line 395, in load_openerp_module
+    __import__(qualname)
+  File "c:\users\sanan\documents\github\odoo-17-community-offline_v1\server\addons\internal_control\__init__.py", line 3, in <module>
+    from . import models
+  File "c:\users\sanan\documents\github\odoo-17-community-offline_v1\server\addons\internal_control\models\__init__.py", line 9, in <module>
+    from . import survey_branch_visit
+ImportError: cannot import name 'survey_branch_visit' from partially initialized module 'odoo.addons.internal_control.models' (most likely due to a circular import) (c:\users\sanan\documents\github\odoo-17-community-offline_v1\server\addons\internal_control\models\__init__.py)
+2026-01-12 15:19:28,073 10552 ERROR ? odoo.http: Exception during request handling. 
+Traceback (most recent call last):
+  File "C:\Users\sanan\Documents\Github\odoo-17-community-offline_v1\server\odoo\modules\registry.py", line 87, in __new__
+    return cls.registries[db_name]
+           ~~~~~~~~~~~~~~^^^^^^^^^
+  File "C:\Users\sanan\Documents\Github\odoo-17-community-offline_v1\python\Lib\site-packages\decorator.py", line 232, in fun
+    return caller(func, *(extras + args), **kw)
+           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "C:\Users\sanan\Documents\Github\odoo-17-community-offline_v1\server\odoo\tools\func.py", line 87, in locked
+    return func(inst, *args, **kwargs)
+           ^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "C:\Users\sanan\Documents\Github\odoo-17-community-offline_v1\server\odoo\tools\lru.py", line 34, in __getitem__
+    a = self.d[obj]
+        ~~~~~~^^^^^
+KeyError: 'odoo'
+
+During handling of the above exception, another exception occurred:
+
+Traceback (most recent call last):
+  File "C:\Users\sanan\Documents\Github\odoo-17-community-offline_v1\server\odoo\http.py", line 2409, in __call__
+    response = request._serve_db()
+               ^^^^^^^^^^^^^^^^^^^
+  File "C:\Users\sanan\Documents\Github\odoo-17-community-offline_v1\server\odoo\http.py", line 1962, in _serve_db
+    self.registry = Registry(self.db).check_signaling()
+                    ^^^^^^^^^^^^^^^^^
+  File "C:\Users\sanan\Documents\Github\odoo-17-community-offline_v1\server\odoo\modules\registry.py", line 89, in __new__
+    return cls.new(db_name)
+           ^^^^^^^^^^^^^^^^
+  File "C:\Users\sanan\Documents\Github\odoo-17-community-offline_v1\python\Lib\site-packages\decorator.py", line 232, in fun
+    return caller(func, *(extras + args), **kw)
+           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "C:\Users\sanan\Documents\Github\odoo-17-community-offline_v1\server\odoo\tools\func.py", line 87, in locked
+    return func(inst, *args, **kwargs)
+           ^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "C:\Users\sanan\Documents\Github\odoo-17-community-offline_v1\server\odoo\modules\registry.py", line 110, in new
+    odoo.modules.load_modules(registry, force_demo, status, update_module)
+  File "C:\Users\sanan\Documents\Github\odoo-17-community-offline_v1\server\odoo\modules\loading.py", line 481, in load_modules
+    processed_modules += load_marked_modules(env, graph,
+                         ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "C:\Users\sanan\Documents\Github\odoo-17-community-offline_v1\server\odoo\modules\loading.py", line 366, in load_marked_modules
+    loaded, processed = load_module_graph(
+                        ^^^^^^^^^^^^^^^^^^
+  File "C:\Users\sanan\Documents\Github\odoo-17-community-offline_v1\server\odoo\modules\loading.py", line 187, in load_module_graph
+    load_openerp_module(package.name)
+  File "C:\Users\sanan\Documents\Github\odoo-17-community-offline_v1\server\odoo\modules\module.py", line 395, in load_openerp_module
+    __import__(qualname)
+  File "c:\users\sanan\documents\github\odoo-17-community-offline_v1\server\addons\internal_control\__init__.py", line 3, in <module>
+    from . import models
+  File "c:\users\sanan\documents\github\odoo-17-community-offline_v1\server\addons\internal_control\models\__init__.py", line 9, in <module>
+    from . import survey_branch_visit
+ImportError: cannot import name 'survey_branch_visit' from partially initialized module 'odoo.addons.internal_control.models' (most likely due to a circular import) (c:\users\sanan\documents\github\odoo-17-community-offline_v1\server\addons\internal_control\models\__init__.py)
+2026-01-12 15:19:28,077 10552 INFO ? werkzeug: 127.0.0.1 - - [12/Jan/2026 15:19:28] "GET /websocket?version=17.0-3 HTTP/1.1" 500 - 12 0.007 0.191
+2026-01-12 15:20:28,578 10552 INFO ? odoo.modules.loading: loading 1 modules... 
+2026-01-12 15:20:28,588 10552 INFO ? odoo.modules.loading: 1 modules loaded in 0.01s, 0 queries (+0 extra) 
+2026-01-12 15:20:28,632 10552 INFO ? odoo.modules.loading: loading 286 modules... 
+2026-01-12 15:20:28,642 10552 WARNING ? odoo.models: The model notification.message has no _description 
+2026-01-12 15:20:28,645 10552 WARNING ? odoo.models: The model notification.message has no _description 
+2026-01-12 15:20:28,648 10552 WARNING ? odoo.models: The model notification.message has no _description 
+2026-01-12 15:20:28,652 10552 WARNING ? odoo.models: The model notification.message has no _description 
+2026-01-12 15:20:28,659 10552 WARNING ? odoo.models: The model notification.message has no _description 
+2026-01-12 15:20:28,662 10552 WARNING ? odoo.models: The model notification.message has no _description 
+2026-01-12 15:20:28,674 10552 WARNING ? odoo.models: The model notification.message has no _description 
+2026-01-12 15:20:28,686 10552 WARNING ? odoo.models: The model notification.message has no _description 
+2026-01-12 15:20:28,700 10552 WARNING ? odoo.models: The model notification.message has no _description 
+2026-01-12 15:20:28,711 10552 WARNING ? odoo.models: The model formio.form.data has no _description 
+2026-01-12 15:20:28,746 10552 WARNING ? odoo.models: The model notification.message has no _description 
+2026-01-12 15:20:28,753 10552 WARNING ? odoo.models: The model formio.form.data has no _description 
+2026-01-12 15:20:28,775 10552 WARNING ? odoo.models: The model report.guide_remision.report_referral_guide_document_test has no _description 
+2026-01-12 15:20:28,798 10552 CRITICAL ? odoo.modules.module: Couldn't load module internal_control 
+2026-01-12 15:20:28,801 10552 WARNING ? odoo.modules.loading: Transient module states were reset 
+2026-01-12 15:20:28,801 10552 ERROR ? odoo.modules.registry: Failed to load registry 
+Traceback (most recent call last):
+  File "C:\Users\sanan\Documents\Github\odoo-17-community-offline_v1\server\odoo\modules\registry.py", line 87, in __new__
+    return cls.registries[db_name]
+           ~~~~~~~~~~~~~~^^^^^^^^^
+  File "C:\Users\sanan\Documents\Github\odoo-17-community-offline_v1\python\Lib\site-packages\decorator.py", line 232, in fun
+    return caller(func, *(extras + args), **kw)
+           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "C:\Users\sanan\Documents\Github\odoo-17-community-offline_v1\server\odoo\tools\func.py", line 87, in locked
+    return func(inst, *args, **kwargs)
+           ^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "C:\Users\sanan\Documents\Github\odoo-17-community-offline_v1\server\odoo\tools\lru.py", line 34, in __getitem__
+    a = self.d[obj]
+        ~~~~~~^^^^^
+KeyError: 'odoo'
+
+During handling of the above exception, another exception occurred:
+
+Traceback (most recent call last):
+  File "C:\Users\sanan\Documents\Github\odoo-17-community-offline_v1\server\odoo\modules\registry.py", line 110, in new
+    odoo.modules.load_modules(registry, force_demo, status, update_module)
+  File "C:\Users\sanan\Documents\Github\odoo-17-community-offline_v1\server\odoo\modules\loading.py", line 481, in load_modules
+    processed_modules += load_marked_modules(env, graph,
+                         ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "C:\Users\sanan\Documents\Github\odoo-17-community-offline_v1\server\odoo\modules\loading.py", line 366, in load_marked_modules
+    loaded, processed = load_module_graph(
+                        ^^^^^^^^^^^^^^^^^^
+  File "C:\Users\sanan\Documents\Github\odoo-17-community-offline_v1\server\odoo\modules\loading.py", line 187, in load_module_graph
+    load_openerp_module(package.name)
+  File "C:\Users\sanan\Documents\Github\odoo-17-community-offline_v1\server\odoo\modules\module.py", line 395, in load_openerp_module
+    __import__(qualname)
+  File "c:\users\sanan\documents\github\odoo-17-community-offline_v1\server\addons\internal_control\__init__.py", line 3, in <module>
+    from . import models
+  File "c:\users\sanan\documents\github\odoo-17-community-offline_v1\server\addons\internal_control\models\__init__.py", line 9, in <module>
+    from . import survey_branch_visit
+ImportError: cannot import name 'survey_branch_visit' from partially initialized module 'odoo.addons.internal_control.models' (most likely due to a circular import) (c:\users\sanan\documents\github\odoo-17-community-offline_v1\server\addons\internal_control\models\__init__.py)
+2026-01-12 15:20:28,806 10552 ERROR ? odoo.http: Exception during request handling. 
+Traceback (most recent call last):
+  File "C:\Users\sanan\Documents\Github\odoo-17-community-offline_v1\server\odoo\modules\registry.py", line 87, in __new__
+    return cls.registries[db_name]
+           ~~~~~~~~~~~~~~^^^^^^^^^
+  File "C:\Users\sanan\Documents\Github\odoo-17-community-offline_v1\python\Lib\site-packages\decorator.py", line 232, in fun
+    return caller(func, *(extras + args), **kw)
+           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "C:\Users\sanan\Documents\Github\odoo-17-community-offline_v1\server\odoo\tools\func.py", line 87, in locked
+    return func(inst, *args, **kwargs)
+           ^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "C:\Users\sanan\Documents\Github\odoo-17-community-offline_v1\server\odoo\tools\lru.py", line 34, in __getitem__
+    a = self.d[obj]
+        ~~~~~~^^^^^
+KeyError: 'odoo'
+
+During handling of the above exception, another exception occurred:
+
+Traceback (most recent call last):
+  File "C:\Users\sanan\Documents\Github\odoo-17-community-offline_v1\server\odoo\http.py", line 2409, in __call__
+    response = request._serve_db()
+               ^^^^^^^^^^^^^^^^^^^
+  File "C:\Users\sanan\Documents\Github\odoo-17-community-offline_v1\server\odoo\http.py", line 1962, in _serve_db
+    self.registry = Registry(self.db).check_signaling()
+                    ^^^^^^^^^^^^^^^^^
+  File "C:\Users\sanan\Documents\Github\odoo-17-community-offline_v1\server\odoo\modules\registry.py", line 89, in __new__
+    return cls.new(db_name)
+           ^^^^^^^^^^^^^^^^
+  File "C:\Users\sanan\Documents\Github\odoo-17-community-offline_v1\python\Lib\site-packages\decorator.py", line 232, in fun
+    return caller(func, *(extras + args), **kw)
+           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "C:\Users\sanan\Documents\Github\odoo-17-community-offline_v1\server\odoo\tools\func.py", line 87, in locked
+    return func(inst, *args, **kwargs)
+           ^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "C:\Users\sanan\Documents\Github\odoo-17-community-offline_v1\server\odoo\modules\registry.py", line 110, in new
+    odoo.modules.load_modules(registry, force_demo, status, update_module)
+  File "C:\Users\sanan\Documents\Github\odoo-17-community-offline_v1\server\odoo\modules\loading.py", line 481, in load_modules
+    processed_modules += load_marked_modules(env, graph,
+                         ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "C:\Users\sanan\Documents\Github\odoo-17-community-offline_v1\server\odoo\modules\loading.py", line 366, in load_marked_modules
+    loaded, processed = load_module_graph(
+                        ^^^^^^^^^^^^^^^^^^
+  File "C:\Users\sanan\Documents\Github\odoo-17-community-offline_v1\server\odoo\modules\loading.py", line 187, in load_module_graph
+    load_openerp_module(package.name)
+  File "C:\Users\sanan\Documents\Github\odoo-17-community-offline_v1\server\odoo\modules\module.py", line 395, in load_openerp_module
+    __import__(qualname)
+  File "c:\users\sanan\documents\github\odoo-17-community-offline_v1\server\addons\internal_control\__init__.py", line 3, in <module>
+    from . import models
+  File "c:\users\sanan\documents\github\odoo-17-community-offline_v1\server\addons\internal_control\models\__init__.py", line 9, in <module>
+    from . import survey_branch_visit
+ImportError: cannot import name 'survey_branch_visit' from partially initialized module 'odoo.addons.internal_control.models' (most likely due to a circular import) (c:\users\sanan\documents\github\odoo-17-community-offline_v1\server\addons\internal_control\models\__init__.py)
+2026-01-12 15:20:28,810 10552 INFO ? werkzeug: 127.0.0.1 - - [12/Jan/2026 15:20:28] "GET /websocket?version=17.0-3 HTTP/1.1" 500 - 12 0.009 0.230
+2026-01-12 15:21:29,743 10552 INFO ? odoo.modules.loading: loading 1 modules... 
+2026-01-12 15:21:29,769 10552 INFO ? odoo.modules.loading: 1 modules loaded in 0.03s, 0 queries (+0 extra) 
+2026-01-12 15:21:29,829 10552 INFO ? odoo.modules.loading: loading 286 modules... 
+2026-01-12 15:21:29,859 10552 WARNING ? odoo.models: The model notification.message has no _description 
+2026-01-12 15:21:30,316 10552 WARNING ? odoo.models: The model notification.message has no _description 
+2026-01-12 15:21:30,325 10552 WARNING ? odoo.models: The model notification.message has no _description 
+2026-01-12 15:21:30,335 10552 WARNING ? odoo.models: The model notification.message has no _description 
+2026-01-12 15:21:30,420 10552 WARNING ? odoo.models: The model notification.message has no _description 
+2026-01-12 15:21:30,565 10552 WARNING ? odoo.models: The model notification.message has no _description 
+2026-01-12 15:21:30,610 10552 WARNING ? odoo.models: The model notification.message has no _description 
+2026-01-12 15:21:30,631 10552 WARNING ? odoo.models: The model notification.message has no _description 
+2026-01-12 15:21:30,649 10552 WARNING ? odoo.models: The model notification.message has no _description 
+2026-01-12 15:21:30,662 10552 WARNING ? odoo.models: The model formio.form.data has no _description 
+2026-01-12 15:21:30,707 10552 WARNING ? odoo.models: The model notification.message has no _description 
+2026-01-12 15:21:30,714 10552 WARNING ? odoo.models: The model formio.form.data has no _description 
+2026-01-12 15:21:30,737 10552 WARNING ? odoo.models: The model report.guide_remision.report_referral_guide_document_test has no _description 
+2026-01-12 15:21:30,769 10552 CRITICAL ? odoo.modules.module: Couldn't load module internal_control 
+2026-01-12 15:21:30,771 10552 WARNING ? odoo.modules.loading: Transient module states were reset 
+2026-01-12 15:21:30,772 10552 ERROR ? odoo.modules.registry: Failed to load registry 
+Traceback (most recent call last):
+  File "C:\Users\sanan\Documents\Github\odoo-17-community-offline_v1\server\odoo\modules\registry.py", line 87, in __new__
+    return cls.registries[db_name]
+           ~~~~~~~~~~~~~~^^^^^^^^^
+  File "C:\Users\sanan\Documents\Github\odoo-17-community-offline_v1\python\Lib\site-packages\decorator.py", line 232, in fun
+    return caller(func, *(extras + args), **kw)
+           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "C:\Users\sanan\Documents\Github\odoo-17-community-offline_v1\server\odoo\tools\func.py", line 87, in locked
+    return func(inst, *args, **kwargs)
+           ^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "C:\Users\sanan\Documents\Github\odoo-17-community-offline_v1\server\odoo\tools\lru.py", line 34, in __getitem__
+    a = self.d[obj]
+        ~~~~~~^^^^^
+KeyError: 'odoo'
+
+During handling of the above exception, another exception occurred:
+
+Traceback (most recent call last):
+  File "C:\Users\sanan\Documents\Github\odoo-17-community-offline_v1\server\odoo\modules\registry.py", line 110, in new
+    odoo.modules.load_modules(registry, force_demo, status, update_module)
+  File "C:\Users\sanan\Documents\Github\odoo-17-community-offline_v1\server\odoo\modules\loading.py", line 481, in load_modules
+    processed_modules += load_marked_modules(env, graph,
+                         ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "C:\Users\sanan\Documents\Github\odoo-17-community-offline_v1\server\odoo\modules\loading.py", line 366, in load_marked_modules
+    loaded, processed = load_module_graph(
+                        ^^^^^^^^^^^^^^^^^^
+  File "C:\Users\sanan\Documents\Github\odoo-17-community-offline_v1\server\odoo\modules\loading.py", line 187, in load_module_graph
+    load_openerp_module(package.name)
+  File "C:\Users\sanan\Documents\Github\odoo-17-community-offline_v1\server\odoo\modules\module.py", line 395, in load_openerp_module
+    __import__(qualname)
+  File "c:\users\sanan\documents\github\odoo-17-community-offline_v1\server\addons\internal_control\__init__.py", line 3, in <module>
+    from . import models
+  File "c:\users\sanan\documents\github\odoo-17-community-offline_v1\server\addons\internal_control\models\__init__.py", line 9, in <module>
+    from . import survey_branch_visit
+ImportError: cannot import name 'survey_branch_visit' from partially initialized module 'odoo.addons.internal_control.models' (most likely due to a circular import) (c:\users\sanan\documents\github\odoo-17-community-offline_v1\server\addons\internal_control\models\__init__.py)
+2026-01-12 15:21:30,776 10552 ERROR ? odoo.http: Exception during request handling. 
+Traceback (most recent call last):
+  File "C:\Users\sanan\Documents\Github\odoo-17-community-offline_v1\server\odoo\modules\registry.py", line 87, in __new__
+    return cls.registries[db_name]
+           ~~~~~~~~~~~~~~^^^^^^^^^
+  File "C:\Users\sanan\Documents\Github\odoo-17-community-offline_v1\python\Lib\site-packages\decorator.py", line 232, in fun
+    return caller(func, *(extras + args), **kw)
+           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "C:\Users\sanan\Documents\Github\odoo-17-community-offline_v1\server\odoo\tools\func.py", line 87, in locked
+    return func(inst, *args, **kwargs)
+           ^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "C:\Users\sanan\Documents\Github\odoo-17-community-offline_v1\server\odoo\tools\lru.py", line 34, in __getitem__
+    a = self.d[obj]
+        ~~~~~~^^^^^
+KeyError: 'odoo'
+
+During handling of the above exception, another exception occurred:
+
+Traceback (most recent call last):
+  File "C:\Users\sanan\Documents\Github\odoo-17-community-offline_v1\server\odoo\http.py", line 2409, in __call__
+    response = request._serve_db()
+               ^^^^^^^^^^^^^^^^^^^
+  File "C:\Users\sanan\Documents\Github\odoo-17-community-offline_v1\server\odoo\http.py", line 1962, in _serve_db
+    self.registry = Registry(self.db).check_signaling()
+                    ^^^^^^^^^^^^^^^^^
+  File "C:\Users\sanan\Documents\Github\odoo-17-community-offline_v1\server\odoo\modules\registry.py", line 89, in __new__
+    return cls.new(db_name)
+           ^^^^^^^^^^^^^^^^
+  File "C:\Users\sanan\Documents\Github\odoo-17-community-offline_v1\python\Lib\site-packages\decorator.py", line 232, in fun
+    return caller(func, *(extras + args), **kw)
+           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "C:\Users\sanan\Documents\Github\odoo-17-community-offline_v1\server\odoo\tools\func.py", line 87, in locked
+    return func(inst, *args, **kwargs)
+           ^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "C:\Users\sanan\Documents\Github\odoo-17-community-offline_v1\server\odoo\modules\registry.py", line 110, in new
+    odoo.modules.load_modules(registry, force_demo, status, update_module)
+  File "C:\Users\sanan\Documents\Github\odoo-17-community-offline_v1\server\odoo\modules\loading.py", line 481, in load_modules
+    processed_modules += load_marked_modules(env, graph,
+                         ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "C:\Users\sanan\Documents\Github\odoo-17-community-offline_v1\server\odoo\modules\loading.py", line 366, in load_marked_modules
+    loaded, processed = load_module_graph(
+                        ^^^^^^^^^^^^^^^^^^
+  File "C:\Users\sanan\Documents\Github\odoo-17-community-offline_v1\server\odoo\modules\loading.py", line 187, in load_module_graph
+    load_openerp_module(package.name)
+  File "C:\Users\sanan\Documents\Github\odoo-17-community-offline_v1\server\odoo\modules\module.py", line 395, in load_openerp_module
+    __import__(qualname)
+  File "c:\users\sanan\documents\github\odoo-17-community-offline_v1\server\addons\internal_control\__init__.py", line 3, in <module>
+    from . import models
+  File "c:\users\sanan\documents\github\odoo-17-community-offline_v1\server\addons\internal_control\models\__init__.py", line 9, in <module>
+    from . import survey_branch_visit
+ImportError: cannot import name 'survey_branch_visit' from partially initialized module 'odoo.addons.internal_control.models' (most likely due to a circular import) (c:\users\sanan\documents\github\odoo-17-community-offline_v1\server\addons\internal_control\models\__init__.py)
+2026-01-12 15:21:30,781 10552 INFO ? werkzeug: 127.0.0.1 - - [12/Jan/2026 15:21:30] "GET /websocket?version=17.0-3 HTTP/1.1" 500 - 12 0.007 1.037
