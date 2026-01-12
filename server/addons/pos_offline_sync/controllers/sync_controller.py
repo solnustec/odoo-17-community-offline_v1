@@ -1884,11 +1884,16 @@ class PosOfflineSyncController(http.Controller):
                 if warehouse.exists() and warehouse.lot_stock_id:
                     domain.append(('location_id', 'child_of', warehouse.lot_stock_id.id))
 
+            # IMPORTANTE: Para product.template y product.product,
+            # solo filtrar por available_in_pos si NO hay last_sync_dt
+            # Esto permite sincronizar TODOS los cambios (incluyendo desactivaciones)
             elif model_name == 'product.template':
-                domain.append(('available_in_pos', '=', True))
+                if not last_sync_dt:
+                    domain.append(('available_in_pos', '=', True))
 
             elif model_name == 'product.product':
-                domain.append(('available_in_pos', '=', True))
+                if not last_sync_dt:
+                    domain.append(('available_in_pos', '=', True))
 
             elif model_name == 'loyalty.program':
                 domain.append(('active', '=', True))
@@ -2316,14 +2321,20 @@ class PosOfflineSyncController(http.Controller):
             if not self._validate_api_auth(kwargs):
                 return {'success': False, 'error': 'Autenticación inválida'}
 
-            domain = [('available_in_pos', '=', True)]
+            # Construir dominio
+            domain = []
 
+            # IMPORTANTE: Si hay last_sync, NO filtrar por available_in_pos
+            # para que se sincronicen TODOS los cambios (incluyendo desactivaciones)
             if last_sync:
                 try:
                     last_sync_dt = datetime.fromisoformat(last_sync)
                     domain.append(('write_date', '>', last_sync_dt))
                 except ValueError:
                     pass
+            else:
+                # Solo en la primera sincronización (sin last_sync), filtrar por available_in_pos
+                domain.append(('available_in_pos', '=', True))
 
             # Usar product.template en lugar de product.product
             ProductTemplate = request.env['product.template'].sudo()
@@ -2828,15 +2839,19 @@ class PosOfflineSyncController(http.Controller):
 
             # Construir dominio para product.template
             domain = []
-            if only_pos:
-                domain.append(('available_in_pos', '=', True))
 
+            # IMPORTANTE: Si hay last_sync, NO filtrar por available_in_pos
+            # para que se sincronicen TODOS los cambios (incluyendo desactivaciones)
             if last_sync:
                 try:
                     last_sync_dt = datetime.fromisoformat(last_sync)
                     domain.append(('write_date', '>', last_sync_dt))
                 except ValueError:
                     pass
+            else:
+                # Solo en la primera sincronización (sin last_sync), filtrar por available_in_pos
+                if only_pos:
+                    domain.append(('available_in_pos', '=', True))
 
             # Usar product.template en lugar de product.product
             ProductTemplate = request.env['product.template'].sudo()
