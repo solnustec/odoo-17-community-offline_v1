@@ -1884,6 +1884,9 @@ class PosOfflineSyncController(http.Controller):
                 if warehouse.exists() and warehouse.lot_stock_id:
                     domain.append(('location_id', 'child_of', warehouse.lot_stock_id.id))
 
+            elif model_name == 'product.template':
+                domain.append(('available_in_pos', '=', True))
+
             elif model_name == 'product.product':
                 domain.append(('available_in_pos', '=', True))
 
@@ -2017,7 +2020,13 @@ class PosOfflineSyncController(http.Controller):
                 result.append(SyncManager.serialize_loyalty_program(record))
             return result
 
-        # Para product.product usar serializer especializado
+        # Para product.template usar serializer especializado
+        if model_name == 'product.template':
+            for record in records:
+                result.append(SyncManager.serialize_product_template(record))
+            return result
+
+        # Para product.product usar serializer especializado (mantener por compatibilidad)
         if model_name == 'product.product':
             for record in records:
                 result.append(SyncManager.serialize_product(record))
@@ -2109,7 +2118,13 @@ class PosOfflineSyncController(http.Controller):
                 result.append(SyncManager.serialize_loyalty_program(record))
             return result
 
-        # Usar serializer especializado para product.product
+        # Usar serializer especializado para product.template
+        if model_name == 'product.template':
+            for record in records:
+                result.append(SyncManager.serialize_product_template(record))
+            return result
+
+        # Usar serializer especializado para product.product (mantener por compatibilidad)
         if model_name == 'product.product':
             for record in records:
                 result.append(SyncManager.serialize_product(record))
@@ -2141,6 +2156,10 @@ class PosOfflineSyncController(http.Controller):
 
         # Campos por modelo para otros modelos
         fields_map = {
+            'product.template': [
+                'id', 'name', 'default_code', 'barcode', 'list_price',
+                'standard_price', 'categ_id', 'uom_id', 'available_in_pos',
+            ],
             'product.product': [
                 'id', 'name', 'default_code', 'barcode', 'list_price',
                 'standard_price', 'categ_id', 'uom_id', 'available_in_pos',
@@ -2282,7 +2301,7 @@ class PosOfflineSyncController(http.Controller):
     def get_products(self, warehouse_id=None, last_sync=None,
                      limit=1000, offset=0, **kwargs):
         """
-        Obtiene productos para sincronización.
+        Obtiene productos (product.template) para sincronización.
 
         Args:
             warehouse_id: ID del almacén
@@ -2291,7 +2310,7 @@ class PosOfflineSyncController(http.Controller):
             offset: Offset para paginación
 
         Returns:
-            dict: Productos
+            dict: Product templates
         """
         try:
             if not self._validate_api_auth(kwargs):
@@ -2306,11 +2325,12 @@ class PosOfflineSyncController(http.Controller):
                 except ValueError:
                     pass
 
-            Product = request.env['product.product'].sudo()
-            total = Product.search_count(domain)
-            products = Product.search(domain, limit=limit, offset=offset)
+            # Usar product.template en lugar de product.product
+            ProductTemplate = request.env['product.template'].sudo()
+            total = ProductTemplate.search_count(domain)
+            templates = ProductTemplate.search(domain, limit=limit, offset=offset)
 
-            products_data = self._serialize_records('product.product', products)
+            products_data = self._serialize_records('product.template', templates)
 
             return {
                 'success': True,
@@ -2321,7 +2341,7 @@ class PosOfflineSyncController(http.Controller):
             }
 
         except Exception as e:
-            _logger.error(f'Error obteniendo productos: {str(e)}')
+            _logger.error(f'Error obteniendo product templates: {str(e)}')
             return {'success': False, 'error': str(e)}
 
     # ==================== ENDPOINTS DE STOCK ====================
@@ -2776,7 +2796,7 @@ class PosOfflineSyncController(http.Controller):
                 methods=['POST'], csrf=False, cors='*')
     def pull_products(self, **kwargs):
         """
-        Endpoint especializado para descargar productos desde el cloud.
+        Endpoint especializado para descargar productos (product.template) desde el cloud.
 
         Payload esperado:
         {
@@ -2788,7 +2808,7 @@ class PosOfflineSyncController(http.Controller):
         }
 
         Returns:
-            dict: Productos para sincronizar
+            dict: Product templates para sincronizar
         """
         try:
             # Parsear JSON del body
@@ -2806,7 +2826,7 @@ class PosOfflineSyncController(http.Controller):
             offset = data.get('offset', 0)
             only_pos = data.get('only_pos', True)
 
-            # Construir dominio
+            # Construir dominio para product.template
             domain = []
             if only_pos:
                 domain.append(('available_in_pos', '=', True))
@@ -2818,22 +2838,23 @@ class PosOfflineSyncController(http.Controller):
                 except ValueError:
                     pass
 
-            Product = request.env['product.product'].sudo()
+            # Usar product.template en lugar de product.product
+            ProductTemplate = request.env['product.template'].sudo()
             SyncManager = request.env['pos.sync.manager'].sudo()
 
-            total = Product.search_count(domain)
-            products = Product.search(domain, limit=limit, offset=offset, order='write_date asc')
+            total = ProductTemplate.search_count(domain)
+            templates = ProductTemplate.search(domain, limit=limit, offset=offset, order='write_date asc')
 
-            # Serializar usando el método especializado
+            # Serializar usando el método especializado para product.template
             products_data = []
-            for product in products:
-                products_data.append(SyncManager.serialize_product(product))
+            for template in templates:
+                products_data.append(SyncManager.serialize_product_template(template))
 
             # Registrar en log
             if warehouse_id:
                 self._log_sync_operation(
                     warehouse_id, 'pull_products',
-                    f'Enviados {len(products_data)} productos'
+                    f'Enviados {len(products_data)} product templates'
                 )
 
             return self._json_response({
@@ -2846,7 +2867,7 @@ class PosOfflineSyncController(http.Controller):
             })
 
         except Exception as e:
-            _logger.error(f'Error obteniendo productos: {str(e)}')
+            _logger.error(f'Error obteniendo product templates: {str(e)}')
             import traceback
             _logger.error(traceback.format_exc())
             return self._json_response({'success': False, 'error': str(e)})
@@ -3742,7 +3763,7 @@ class PosOfflineSyncController(http.Controller):
             data['taxes_id'] = [{'id': t.id, 'name': t.name} for t in record.taxes_id]
             return data
         elif model_name == 'product.template':
-            return self._serialize_product_template(record)
+            return SyncManager.serialize_product_template(record)
         elif model_name == 'res.partner':
             return SyncManager.serialize_partner(record)
         elif model_name == 'product.pricelist':

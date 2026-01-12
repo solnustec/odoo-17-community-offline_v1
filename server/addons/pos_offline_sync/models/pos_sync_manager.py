@@ -2350,6 +2350,64 @@ class PosSyncManager(models.Model):
         return data
 
     @api.model
+    def serialize_product_template(self, template):
+        """
+        Serializa un product.template para sincronización.
+
+        Args:
+            template: Registro product.template
+
+        Returns:
+            dict: Datos serializados
+        """
+        data = {
+            'id': template.id,
+            'name': template.name,
+            'display_name': template.display_name,
+            'default_code': template.default_code,
+            'barcode': template.barcode if hasattr(template, 'barcode') else None,
+            'list_price': template.list_price,
+            'standard_price': template.standard_price,
+            'type': template.type,
+            'detailed_type': template.detailed_type if hasattr(template, 'detailed_type') else None,
+            'available_in_pos': template.available_in_pos,
+            'sale_ok': template.sale_ok,
+            'purchase_ok': template.purchase_ok,
+            'active': template.active,
+            'categ_id': template.categ_id.id if template.categ_id else None,
+            'categ_name': template.categ_id.complete_name if template.categ_id else None,
+            'uom_id': template.uom_id.id if template.uom_id else None,
+            'uom_name': template.uom_id.name if template.uom_id else None,
+            'uom_po_id': template.uom_po_id.id if template.uom_po_id else None,
+            'uom_po_name': template.uom_po_id.name if template.uom_po_id else None,
+            'description': template.description,
+            'description_sale': template.description_sale,
+            'weight': template.weight,
+            'volume': template.volume,
+            # Campos de sincronización
+            'cloud_sync_id': template.cloud_sync_id if hasattr(template, 'cloud_sync_id') else None,
+            'id_database_old': template.id_database_old if hasattr(template, 'id_database_old') else None,
+            # Impuestos
+            'taxes_id': template.taxes_id.ids if template.taxes_id else [],
+            'supplier_taxes_id': template.supplier_taxes_id.ids if template.supplier_taxes_id else [],
+            # Imagen
+            'image_128': template.image_128.decode('utf-8') if template.image_128 else None,
+        }
+
+        # Campos específicos de POS si existen
+        if hasattr(template, 'pos_categ_ids'):
+            data['pos_categ_ids'] = template.pos_categ_ids.ids
+
+        if hasattr(template, 'to_weight'):
+            data['to_weight'] = template.to_weight
+
+        # Incluir IDs de variantes (product.product) asociadas
+        if template.product_variant_ids:
+            data['product_variant_ids'] = template.product_variant_ids.ids
+
+        return data
+
+    @api.model
     def deserialize_product(self, data, sync_config=None):
         """
         Deserializa datos de producto para crear/actualizar en el sistema.
@@ -2418,6 +2476,182 @@ class PosSyncManager(models.Model):
 
         Args:
             data: Diccionario con datos del producto
+
+        Returns:
+            dict: Valores preparados para Odoo
+        """
+        vals = {
+            'name': data.get('name'),
+            'default_code': data.get('default_code'),
+            'barcode': data.get('barcode'),
+            'list_price': data.get('list_price'),
+            'standard_price': data.get('standard_price'),
+            'type': data.get('type', 'consu'),
+            'available_in_pos': data.get('available_in_pos', True),
+            'sale_ok': data.get('sale_ok', True),
+            'purchase_ok': data.get('purchase_ok', True),
+            'description': data.get('description'),
+            'description_sale': data.get('description_sale'),
+            'weight': data.get('weight'),
+            'volume': data.get('volume'),
+        }
+
+        # Manejar detailed_type si existe
+        if data.get('detailed_type'):
+            vals['detailed_type'] = data['detailed_type']
+
+        # Manejar categoría
+        if data.get('categ_id'):
+            categ = self.env['product.category'].sudo().browse(data['categ_id'])
+            if categ.exists():
+                vals['categ_id'] = categ.id
+        elif data.get('categ_name'):
+            categ = self.env['product.category'].sudo().search([
+                ('complete_name', '=', data['categ_name'])
+            ], limit=1)
+            if categ:
+                vals['categ_id'] = categ.id
+
+        # Manejar UoM
+        if data.get('uom_id'):
+            uom = self.env['uom.uom'].sudo().browse(data['uom_id'])
+            if uom.exists():
+                vals['uom_id'] = uom.id
+                vals['uom_po_id'] = uom.id
+        elif data.get('uom_name'):
+            uom = self.env['uom.uom'].sudo().search([
+                ('name', '=', data['uom_name'])
+            ], limit=1)
+            if uom:
+                vals['uom_id'] = uom.id
+                vals['uom_po_id'] = uom.id
+
+        # Manejar impuestos
+        if data.get('taxes_id'):
+            vals['taxes_id'] = [(6, 0, data['taxes_id'])]
+
+        # Manejar id_database_old
+        if data.get('id_database_old'):
+            vals['id_database_old'] = str(data['id_database_old'])
+
+        # Manejar categorías POS
+        if data.get('pos_categ_ids'):
+            vals['pos_categ_ids'] = [(6, 0, data['pos_categ_ids'])]
+
+        # Limpiar valores None
+        vals = {k: v for k, v in vals.items() if v is not None}
+
+        return vals
+
+    @api.model
+    def deserialize_product_template(self, data, sync_config=None):
+        """
+        Deserializa datos de product.template para crear/actualizar en el sistema.
+
+        Args:
+            data: Diccionario con datos del product.template
+            sync_config: Configuración de sincronización (opcional)
+
+        Returns:
+            product.template: Template creado o actualizado
+        """
+        ProductTemplate = self.env['product.template'].sudo()
+
+        # Buscar template existente
+        template = self._find_product_template(data)
+
+        # Preparar valores
+        vals = self._prepare_product_template_vals(data)
+
+        if template:
+            # Actualizar existente
+            template.write(vals)
+            _logger.info(f'Product template actualizado: {template.name} (ID: {template.id})')
+        else:
+            # Crear nuevo
+            template = ProductTemplate.create(vals)
+            _logger.info(f'Product template creado: {template.name} (ID: {template.id})')
+
+        # Marcar el cloud_sync_id si viene del cloud
+        if data.get('id') and not template.cloud_sync_id:
+            template.write({'cloud_sync_id': data['id']})
+
+        # Marcar como sincronizado
+        template.write({
+            'sync_state': 'synced',
+            'last_sync_date': fields.Datetime.now()
+        })
+
+        return template
+
+    def _find_product_template(self, data):
+        """
+        Busca un product.template existente por diferentes criterios.
+
+        Args:
+            data: Diccionario con datos del template
+
+        Returns:
+            product.template: Template encontrado o None
+        """
+        ProductTemplate = self.env['product.template'].sudo()
+        template = None
+
+        # 1. Buscar por cloud_sync_id
+        if data.get('cloud_sync_id'):
+            template = ProductTemplate.search([
+                ('cloud_sync_id', '=', data['cloud_sync_id'])
+            ], limit=1)
+            if template:
+                _logger.info(f'Template encontrado por cloud_sync_id: {template.name}')
+                return template
+
+        # 2. Buscar por id (el ID del servidor principal)
+        if data.get('id'):
+            template = ProductTemplate.search([
+                ('cloud_sync_id', '=', data['id'])
+            ], limit=1)
+            if template:
+                _logger.info(f'Template encontrado por id como cloud_sync_id: {template.name}')
+                return template
+
+        # 3. Buscar por barcode
+        if data.get('barcode'):
+            template = ProductTemplate.search([
+                ('barcode', '=', data['barcode'])
+            ], limit=1)
+            if template:
+                _logger.info(f'Template encontrado por barcode: {template.name}')
+                return template
+
+        # 4. Buscar por default_code
+        if data.get('default_code'):
+            template = ProductTemplate.search([
+                ('default_code', '=', data['default_code'])
+            ], limit=1)
+            if template:
+                _logger.info(f'Template encontrado por default_code: {template.name}')
+                return template
+
+        # 5. Buscar por id_database_old + name
+        if data.get('id_database_old'):
+            domain = [('id_database_old', '=', str(data['id_database_old']))]
+            if data.get('name'):
+                domain.append(('name', '=', data['name']))
+            template = ProductTemplate.search(domain, limit=1)
+            if template:
+                _logger.info(f'Template encontrado por id_database_old: {template.name}')
+                return template
+
+        _logger.info(f'No se encontró template existente para: {data.get("name")}')
+        return None
+
+    def _prepare_product_template_vals(self, data):
+        """
+        Prepara los valores para crear/actualizar un product.template.
+
+        Args:
+            data: Diccionario con datos del template
 
         Returns:
             dict: Valores preparados para Odoo
