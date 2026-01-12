@@ -689,7 +689,8 @@ class WhatsappBase(http.Controller):
         privacy_ok = bool(chatbot_session and chatbot_session.privacy_polic)
 
         # Detectar si la sesión está cerrada (por inactividad o salida) y reiniciar el flujo
-        closed_states = ['salir', 'salir_conversacion', 'cerrar_chat', 'canceled']
+        closed_states = ['salir', 'salir_conversacion', 'cerrar_chat', 'canceled','finalizar']
+
         if chatbot_session and chatbot_session.state in closed_states:
 
             # Reiniciar la sesión: limpiar orden y flag de inactividad

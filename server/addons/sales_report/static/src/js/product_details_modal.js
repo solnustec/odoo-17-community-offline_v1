@@ -96,9 +96,9 @@ export class ProductDetailsModal extends Component {
         })
         const price_with_discount = productData.product_tmpl_id.price_with_tax - (productData.product_tmpl_id.price_with_tax * (productData.product_discount / 100));
         const cost_include_taxes = productData.product_tmpl_id.avg_standar_price_old * (1 + (productData.product_tmpl_id.supplier_taxes_info.amount / 100))
-        const utility = 0.0
+        let utility = 0.0
         if (productData.product_tmpl_id.avg_standar_price_old > 0.01) {
-            const utility = ((price_with_discount - cost_include_taxes) / cost_include_taxes) * 100
+            utility = ((price_with_discount - cost_include_taxes) / cost_include_taxes) * 100
         }
         // const utility = ((price_with_discount - cost_include_taxes) / cost_include_taxes) * 100
         //Programs

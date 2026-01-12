@@ -232,33 +232,33 @@ class WhatsappChatbot(models.Model):
         - Cancela órdenes en estado 'to invoice' tras 40 minutos de inactividad
         - Cierra sesiones inactivas por más de 60 minutos
         - Cancela órdenes asociadas si no han sido facturadas
-        - Envía mensaje de despedida (si está habilitado)
-
-        Mejoras aplicadas:
-        - Flag inactivity_notified para evitar mensajes duplicados
-        - Manejo especial de órdenes 'to invoice' con timeout de 40 minutos
-        - Manejo correcto de órdenes en estado 'to invoice'
+        - Envía mensaje de despedida (solo una vez)
         """
         try:
-            # Usar hora local (America/Guayaquil) para las comparaciones
-            # ya que last_activity se guarda en hora local
             user_tz = pytz.timezone('America/Guayaquil')
             now_utc = datetime.utcnow().replace(tzinfo=pytz.UTC)
             now_local = now_utc.astimezone(user_tz)
 
             sessions = self.sudo().search([
-                ('state', 'not in', ['salir', 'salir_conversacion', 'cerrar_chat']),
+                ('state', 'not in', ['salir', 'salir_conversacion', 'cerrar_chat', 'finalizar']),
             ])
 
-            for session in sessions:
+            # Guardar IDs para evitar "object unbound" durante iteración
+            session_ids = sessions.ids
+
+            for session_id in session_ids:
                 try:
+                    # Obtener sesión fresca en cada iteración
+                    session = self.sudo().browse(session_id)
+                    if not session.exists():
+                        continue
+
                     if not session.last_activity:
                         continue
 
-                    # Comparar en hora local
                     tiempo_transcurrido = now_local.replace(tzinfo=None) - session.last_activity
 
-                    # Obtener datos de la orden asociada a la sesión
+                    # Obtener datos de la orden asociada
                     order_data = json.loads(session.orden) if session.orden else {}
                     sale_order_id = order_data.get("sale_order_id", 0)
                     sale_order = None
@@ -268,55 +268,57 @@ class WhatsappChatbot(models.Model):
                         if not sale_order.exists():
                             sale_order = None
 
-                    # FILTRO ESPECIAL: Órdenes con estado 'to invoice' - 40 minutos de inactividad
+                    # ===== CASO ESPECIAL: Órdenes 'to invoice' - 40 minutos =====
                     if sale_order and sale_order.invoice_status == 'to invoice':
                         if tiempo_transcurrido >= timedelta(minutes=40):
                             self._cancel_sale_order_safely(sale_order, session)
 
-                            # Enviar mensaje específico para timeout
-                            mensaje = "Tu orden ha sido cancelada por inactividad. Si deseas continuar, por favor inicia una nueva conversación."
+                            mensaje = (
+                                "Tu orden ha sido cancelada por inactividad. "
+                                "Si deseas continuar, por favor inicia una nueva conversación."
+                            )
                             MetaAPi.enviar_mensaje_texto(session.number, mensaje, env=self.env)
 
-                            # Cerrar la sesión
                             session.sudo().write({
                                 'state': 'cerrar_chat',
                                 'orden': '',
                                 'inactivity_notified': True,
                                 'last_activity': now_local.replace(tzinfo=None)
                             })
-                        continue  # Pasar a la siguiente sesión
+                        continue
 
-                    # FLUJO NORMAL: 60 minutos de inactividad para el resto
-                    if session.inactivity_notified:
-                        continue  # Ya fue notificada, saltar
-
-                    # Solo procesar si han pasado al menos 60 minutos
+                    # ===== FLUJO NORMAL: 60+ minutos de inactividad =====
                     if tiempo_transcurrido < timedelta(minutes=60):
                         continue
 
-                    # PASO 1: Marcar como notificado PRIMERO para evitar duplicados
-                    session.sudo().write({'inactivity_notified': True})
-
-                    # PASO 2: Procesar cancelación de orden (solo si está en ventana de 60-120 min)
+                    # Cancelar orden si existe y está en ventana 60-120 min
                     if tiempo_transcurrido <= timedelta(minutes=120):
                         if sale_order and sale_order.invoice_status != 'invoiced':
                             self._cancel_sale_order_safely(sale_order, session)
 
-                        # PASO 3: Enviar mensaje de inactividad (descomentar si se requiere)
-                        mensaje = "Notamos que no has tenido actividad en los últimos 60 minutos, así que el chat se ha cerrado automáticamente. ¡Gracias por visitarnos! 👋"
-                        MetaAPi.enviar_mensaje_texto(session.number, mensaje, env=self.env)
+                        # Enviar mensaje SOLO si no fue notificada antes
+                        if not session.inactivity_notified:
+                            mensaje = (
+                                "Notamos que no has tenido actividad en los últimos "
+                                "60 minutos, así que el chat se ha cerrado automáticamente. "
+                                "¡Gracias por visitarnos! 👋"
+                            )
+                            MetaAPi.enviar_mensaje_texto(session.number, mensaje, env=self.env)
 
-                    # PASO 4: Cerrar la sesión
+                    # SIEMPRE cerrar la sesión
                     session.sudo().write({
                         'state': 'cerrar_chat',
                         'orden': '',
+                        'inactivity_notified': True,
                         'last_activity': now_local.replace(tzinfo=None)
                     })
 
                 except Exception as e:
-                    _logger.error(f"Error al procesar la sesión {session.number}: {str(e)}")
+                    _logger.error(f"Error al procesar la sesión {session_id}: {str(e)}")
+
         except Exception as e:
             _logger.error(f"Error general en cron_check_inactivity: {str(e)}")
+
 
     def _cancel_sale_order_safely(self, sale_order, session):
         """

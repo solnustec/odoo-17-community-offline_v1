@@ -52,6 +52,7 @@ class ProductSalesStatsRolling(models.Model):
             ('sale', 'Venta'),
             ('transfer', 'Transferencia'),
             ('combined', 'Combinado (Venta + Transferencia)'),
+            ('global', 'Global (Todas las Bodegas)'),
         ],
         string='Tipo',
         required=True,
@@ -147,6 +148,7 @@ class ProductSalesStatsRolling(models.Model):
             ('queue', 'Cola de Eventos'),
             ('full_recalc', 'Recálculo Completo'),
             ('migration', 'Migración'),
+            ('global_calc', 'Cálculo Global'),
         ],
         string='Fuente de Cálculo',
         default='queue'
@@ -299,8 +301,163 @@ class ProductSalesStatsRolling(models.Model):
                     )
                     updated += 1
 
+        # Actualizar estadísticas globales para bodega principal
+        # Solo los productos que fueron actualizados en este batch
+        global_updated = self._update_global_stats_for_products(
+            product_warehouse_pairs, periods, today, source
+        )
+        updated += global_updated
+
         _logger.debug("Rolling stats actualizadas: %s registros", updated)
         return updated
+
+    def _update_global_stats_for_products(self, product_warehouse_pairs, periods, today, source):
+        """
+        Actualiza estadísticas globales para los productos del batch.
+
+        Suma las daily_stats de TODAS las bodegas para cada producto y
+        actualiza el registro 'global' en la bodega principal.
+
+        Args:
+            product_warehouse_pairs: Lista de tuplas (product_id, warehouse_id)
+            periods: Dict con períodos {key: (date_from, date_to, days)}
+            today: Fecha actual
+            source: Fuente del cálculo
+
+        Returns:
+            int: Número de registros globales actualizados
+        """
+        # Obtener productos únicos del batch
+        product_ids = list(set(p[0] for p in product_warehouse_pairs))
+
+        if not product_ids:
+            return 0
+
+        # Buscar bodega principal
+        main_warehouse = self.env['stock.warehouse'].search([
+            ('is_main_warehouse', '=', True)
+        ], limit=1)
+
+        if not main_warehouse:
+            return 0
+
+        main_wh_id = main_warehouse.id
+        updated = 0
+
+        # Para cada producto, calcular el global sumando TODAS las bodegas
+        for product_id in product_ids:
+            try:
+                global_stats = self._calculate_global_stats_for_product(
+                    product_id, periods, today
+                )
+
+                if global_stats:
+                    self._upsert_rolling_stat(
+                        product_id=product_id,
+                        warehouse_id=main_wh_id,
+                        record_type='global',
+                        stats_30d=global_stats['30d'],
+                        stats_60d=global_stats['60d'],
+                        stats_90d=global_stats['90d'],
+                        source=source
+                    )
+                    updated += 1
+            except Exception as e:
+                _logger.warning(
+                    "Error actualizando global stats para producto %s: %s",
+                    product_id, e
+                )
+
+        return updated
+
+    def _calculate_global_stats_for_product(self, product_id, periods, today):
+        """
+        Calcula estadísticas globales para UN producto sumando TODAS las bodegas.
+
+        Args:
+            product_id: ID del producto
+            periods: Dict con períodos
+            today: Fecha actual
+
+        Returns:
+            dict: {'30d': stats, '60d': stats, '90d': stats} o None si no hay datos
+        """
+        from datetime import timedelta
+
+        date_30d = periods['30d'][0]
+        date_60d = periods['60d'][0]
+        date_90d = periods['90d'][0]
+
+        # Consulta SQL que suma todas las bodegas por fecha
+        self.env.cr.execute("""
+            WITH daily_global AS (
+                SELECT date, SUM(quantity_total) as daily_qty
+                FROM product_sales_stats_daily
+                WHERE product_id = %s
+                  AND record_type IN ('sale', 'transfer')
+                  AND date >= %s
+                GROUP BY date
+            )
+            SELECT
+                -- Stats 30 días
+                (SELECT COUNT(*) FROM daily_global WHERE date >= %s) as days_30,
+                (SELECT COALESCE(SUM(daily_qty), 0) FROM daily_global WHERE date >= %s) as total_30,
+                -- Stats 60 días
+                (SELECT COUNT(*) FROM daily_global WHERE date >= %s) as days_60,
+                (SELECT COALESCE(SUM(daily_qty), 0) FROM daily_global WHERE date >= %s) as total_60,
+                -- Stats 90 días
+                (SELECT COUNT(*) FROM daily_global) as days_90,
+                (SELECT COALESCE(SUM(daily_qty), 0) FROM daily_global) as total_90
+        """, (product_id, date_90d, date_30d, date_30d, date_60d, date_60d))
+
+        row = self.env.cr.fetchone()
+
+        if not row or (row[1] == 0 and row[3] == 0 and row[5] == 0):
+            return None
+
+        days_30, total_30 = row[0] or 0, row[1] or 0
+        days_60, total_60 = row[2] or 0, row[3] or 0
+        days_90, total_90 = row[4] or 0, row[5] or 0
+
+        # Calcular medias (dividiendo por el período completo, no solo días con venta)
+        mean_30 = total_30 / 30
+        mean_60 = total_60 / 60
+        mean_90 = total_90 / 90
+
+        # Calcular stddev global
+        stddev_30, stddev_60, stddev_90 = self._calculate_global_stddev(
+            product_id, date_30d, date_60d, date_90d, today,
+            mean_30, mean_60, mean_90
+        )
+
+        # Calcular CV
+        cv_30 = stddev_30 / mean_30 if mean_30 > 0 else 0
+        cv_60 = stddev_60 / mean_60 if mean_60 > 0 else 0
+        cv_90 = stddev_90 / mean_90 if mean_90 > 0 else 0
+
+        return {
+            '30d': {
+                'mean': round(mean_30, 4),
+                'stddev': round(stddev_30, 4),
+                'cv': round(cv_30, 4),
+                'total_qty': round(total_30, 4),
+                'days_with_sales': days_30
+            },
+            '60d': {
+                'mean': round(mean_60, 4),
+                'stddev': round(stddev_60, 4),
+                'cv': round(cv_60, 4),
+                'total_qty': round(total_60, 4),
+                'days_with_sales': days_60
+            },
+            '90d': {
+                'mean': round(mean_90, 4),
+                'stddev': round(stddev_90, 4),
+                'cv': round(cv_90, 4),
+                'total_qty': round(total_90, 4),
+                'days_with_sales': days_90
+            }
+        }
 
     def _upsert_rolling_stat(self, product_id, warehouse_id, record_type,
                              stats_30d, stats_60d, stats_90d, source='queue'):
@@ -509,3 +666,305 @@ class ProductSalesStatsRolling(models.Model):
             _logger.info("Rolling stats: %s registros huérfanos eliminados", deleted)
 
         return deleted
+
+    # =========================================================================
+    # ESTADÍSTICAS GLOBALES (Todas las Bodegas para Bodega Principal)
+    # =========================================================================
+    @api.model
+    def update_global_rolling_stats(self, batch_size=1000):
+        """
+        Calcula y actualiza estadísticas globales para la bodega principal.
+
+        Agrega las ventas de TODAS las bodegas por producto y las almacena
+        con record_type='global' en la bodega principal.
+
+        Optimizado para alto volumen (240+ bodegas, 10,000+ productos).
+
+        Returns:
+            dict: {updated: int, errors: int}
+        """
+        from datetime import date, timedelta
+
+        _logger.info("Iniciando cálculo de estadísticas globales...")
+
+        # Encontrar la bodega principal
+        main_warehouse = self.env['stock.warehouse'].search([
+            ('is_main_warehouse', '=', True)
+        ], limit=1)
+
+        if not main_warehouse:
+            _logger.warning("No se encontró bodega principal (is_main_warehouse=True)")
+            return {'updated': 0, 'errors': 0, 'message': 'No main warehouse found'}
+
+        main_wh_id = main_warehouse.id
+        today = date.today()
+
+        # Períodos a calcular
+        periods = [
+            ('30d', today - timedelta(days=30), today, 30),
+            ('60d', today - timedelta(days=60), today, 60),
+            ('90d', today - timedelta(days=90), today, 90),
+        ]
+
+        updated = 0
+        errors = 0
+
+        try:
+            # Paso 1: Obtener todos los productos únicos con estadísticas
+            self.env.cr.execute("""
+                SELECT DISTINCT product_id
+                FROM product_sales_stats_daily
+                WHERE record_type IN ('sale', 'transfer')
+                  AND date >= %s
+            """, (today - timedelta(days=90),))
+
+            all_products = [row[0] for row in self.env.cr.fetchall()]
+            total_products = len(all_products)
+
+            _logger.info(
+                "Calculando stats globales para %s productos en bodega %s",
+                total_products, main_warehouse.name
+            )
+
+            # Paso 2: Procesar en batches para no saturar memoria
+            for i in range(0, total_products, batch_size):
+                batch_products = all_products[i:i + batch_size]
+
+                try:
+                    batch_updated = self._calculate_global_stats_batch(
+                        batch_products, main_wh_id, periods, today
+                    )
+                    updated += batch_updated
+                    self.env.cr.commit()
+
+                    _logger.info(
+                        "Global stats: batch %s/%s - %s productos actualizados",
+                        (i // batch_size) + 1,
+                        (total_products // batch_size) + 1,
+                        batch_updated
+                    )
+                except Exception as e:
+                    errors += 1
+                    _logger.error("Error en batch %s: %s", i, e)
+                    self.env.cr.rollback()
+
+        except Exception as e:
+            _logger.error("Error general en update_global_rolling_stats: %s", e)
+            errors += 1
+
+        _logger.info(
+            "Cálculo global completado: %s actualizados, %s errores",
+            updated, errors
+        )
+
+        return {'updated': updated, 'errors': errors}
+
+    def _calculate_global_stats_batch(self, product_ids, main_wh_id, periods, today):
+        """
+        Calcula estadísticas globales para un batch de productos.
+
+        Usa SQL directo para máxima eficiencia con alto volumen.
+
+        Args:
+            product_ids: Lista de IDs de productos
+            main_wh_id: ID de la bodega principal
+            periods: Lista de tuplas (key, date_from, date_to, days)
+            today: Fecha actual
+
+        Returns:
+            int: Número de productos actualizados
+        """
+        if not product_ids:
+            return 0
+
+        # Consulta SQL que agrega todas las bodegas por producto y fecha
+        # Calcula: total por día (sumando todas las bodegas), luego media y stddev
+        query = """
+            WITH daily_totals AS (
+                -- Sumar cantidades de todas las bodegas por producto/fecha
+                SELECT
+                    product_id,
+                    date,
+                    SUM(quantity_total) as daily_qty
+                FROM product_sales_stats_daily
+                WHERE product_id = ANY(%s)
+                  AND record_type IN ('sale', 'transfer')
+                  AND date >= %s
+                GROUP BY product_id, date
+            ),
+            stats_30d AS (
+                SELECT
+                    product_id,
+                    COUNT(*) as days_with_sales,
+                    SUM(daily_qty) as total_qty,
+                    AVG(daily_qty) as avg_qty
+                FROM daily_totals
+                WHERE date >= %s
+                GROUP BY product_id
+            ),
+            stats_60d AS (
+                SELECT
+                    product_id,
+                    COUNT(*) as days_with_sales,
+                    SUM(daily_qty) as total_qty,
+                    AVG(daily_qty) as avg_qty
+                FROM daily_totals
+                WHERE date >= %s
+                GROUP BY product_id
+            ),
+            stats_90d AS (
+                SELECT
+                    product_id,
+                    COUNT(*) as days_with_sales,
+                    SUM(daily_qty) as total_qty,
+                    AVG(daily_qty) as avg_qty
+                FROM daily_totals
+                WHERE date >= %s
+                GROUP BY product_id
+            )
+            SELECT
+                COALESCE(s30.product_id, s60.product_id, s90.product_id) as product_id,
+                COALESCE(s30.days_with_sales, 0) as days_30,
+                COALESCE(s30.total_qty, 0) as total_30,
+                COALESCE(s30.avg_qty, 0) as avg_30,
+                COALESCE(s60.days_with_sales, 0) as days_60,
+                COALESCE(s60.total_qty, 0) as total_60,
+                COALESCE(s60.avg_qty, 0) as avg_60,
+                COALESCE(s90.days_with_sales, 0) as days_90,
+                COALESCE(s90.total_qty, 0) as total_90,
+                COALESCE(s90.avg_qty, 0) as avg_90
+            FROM stats_30d s30
+            FULL OUTER JOIN stats_60d s60 ON s30.product_id = s60.product_id
+            FULL OUTER JOIN stats_90d s90 ON COALESCE(s30.product_id, s60.product_id) = s90.product_id
+        """
+
+        date_90d = periods[2][1]  # 90 días atrás
+        date_60d = periods[1][1]  # 60 días atrás
+        date_30d = periods[0][1]  # 30 días atrás
+
+        self.env.cr.execute(query, (
+            product_ids,
+            date_90d,  # Para daily_totals
+            date_30d,  # Para stats_30d
+            date_60d,  # Para stats_60d
+            date_90d,  # Para stats_90d
+        ))
+
+        rows = self.env.cr.fetchall()
+
+        if not rows:
+            return 0
+
+        # Calcular stddev y preparar UPSERTs
+        # Para stddev necesitamos calcular la varianza de los totales diarios
+        updated = 0
+
+        for row in rows:
+            product_id = row[0]
+            if not product_id:
+                continue
+
+            days_30, total_30, avg_30 = row[1], row[2], row[3]
+            days_60, total_60, avg_60 = row[4], row[5], row[6]
+            days_90, total_90, avg_90 = row[7], row[8], row[9]
+
+            # Calcular mean considerando días sin venta
+            mean_30 = total_30 / 30 if total_30 else 0
+            mean_60 = total_60 / 60 if total_60 else 0
+            mean_90 = total_90 / 90 if total_90 else 0
+
+            # Calcular stddev (necesitamos consulta separada para varianza)
+            stddev_30, stddev_60, stddev_90 = self._calculate_global_stddev(
+                product_id, date_30d, date_60d, date_90d, today,
+                mean_30, mean_60, mean_90
+            )
+
+            # Calcular CV
+            cv_30 = stddev_30 / mean_30 if mean_30 > 0 else 0
+            cv_60 = stddev_60 / mean_60 if mean_60 > 0 else 0
+            cv_90 = stddev_90 / mean_90 if mean_90 > 0 else 0
+
+            # UPSERT
+            self._upsert_rolling_stat(
+                product_id=product_id,
+                warehouse_id=main_wh_id,
+                record_type='global',
+                stats_30d={
+                    'mean': round(mean_30, 4),
+                    'stddev': round(stddev_30, 4),
+                    'cv': round(cv_30, 4),
+                    'total_qty': round(total_30, 4),
+                    'days_with_sales': days_30
+                },
+                stats_60d={
+                    'mean': round(mean_60, 4),
+                    'stddev': round(stddev_60, 4),
+                    'cv': round(cv_60, 4),
+                    'total_qty': round(total_60, 4),
+                    'days_with_sales': days_60
+                },
+                stats_90d={
+                    'mean': round(mean_90, 4),
+                    'stddev': round(stddev_90, 4),
+                    'cv': round(cv_90, 4),
+                    'total_qty': round(total_90, 4),
+                    'days_with_sales': days_90
+                },
+                source='global_calc'
+            )
+            updated += 1
+
+        return updated
+
+    def _calculate_global_stddev(self, product_id, date_30d, date_60d, date_90d,
+                                  today, mean_30, mean_60, mean_90):
+        """
+        Calcula la desviación estándar global para un producto.
+
+        Agrega las cantidades diarias de todas las bodegas y calcula
+        el stddev sobre esos totales.
+
+        Returns:
+            tuple: (stddev_30, stddev_60, stddev_90)
+        """
+        # Obtener totales diarios globales
+        self.env.cr.execute("""
+            SELECT date, SUM(quantity_total) as daily_total
+            FROM product_sales_stats_daily
+            WHERE product_id = %s
+              AND record_type IN ('sale', 'transfer')
+              AND date >= %s
+            GROUP BY date
+            ORDER BY date
+        """, (product_id, date_90d))
+
+        daily_data = {row[0]: row[1] for row in self.env.cr.fetchall()}
+
+        def calc_stddev(date_from, period_days, mean):
+            """Calcula stddev para un período, incluyendo días sin venta como 0."""
+            from datetime import timedelta
+
+            values = []
+            current = date_from
+            while current <= today:
+                values.append(daily_data.get(current, 0.0))
+                current += timedelta(days=1)
+
+            # Asegurar que tenemos exactamente period_days valores
+            if len(values) < period_days:
+                values.extend([0.0] * (period_days - len(values)))
+            elif len(values) > period_days:
+                values = values[-period_days:]
+
+            if not values or len(values) < 2:
+                return 0.0
+
+            # Varianza poblacional
+            variance = sum((x - mean) ** 2 for x in values) / len(values)
+            return math.sqrt(variance)
+
+        stddev_30 = calc_stddev(date_30d, 30, mean_30)
+        stddev_60 = calc_stddev(date_60d, 60, mean_60)
+        stddev_90 = calc_stddev(date_90d, 90, mean_90)
+
+        return stddev_30, stddev_60, stddev_90

@@ -448,17 +448,38 @@ class QueueProcessor(models.AbstractModel):
                         )
                     result['errors'] += 1
 
-            # Ejecutar updates en batch
+            # Ejecutar updates en batch usando SQL directo (mucho más rápido)
             if to_update:
-                for op_id, vals in to_update.items():
-                    try:
-                        Orderpoint.browse(op_id).sudo().write(vals)
-                        result['updated'] += 1
-                    except Exception as e:
-                        _logger.warning("Error actualizando orderpoint %s: %s", op_id, e)
-                        result['errors'] += 1
+                try:
+                    # Preparar datos para UPDATE batch
+                    update_data = []
+                    for op_id, vals in to_update.items():
+                        update_data.append((
+                            vals.get('product_max_qty', 0),
+                            vals.get('product_min_qty', 0),
+                            vals.get('point_reorder', 0),
+                            vals.get('trigger', 'auto'),
+                            op_id
+                        ))
 
-            # Ejecutar creates en batch
+                    # UPDATE batch con execute_values (más eficiente)
+                    self.env.cr.execute("""
+                        UPDATE stock_warehouse_orderpoint AS op
+                        SET product_max_qty = v.max_qty,
+                            product_min_qty = v.min_qty,
+                            point_reorder = v.point_reorder,
+                            trigger = v.trigger_type
+                        FROM (VALUES %s) AS v(max_qty, min_qty, point_reorder, trigger_type, id)
+                        WHERE op.id = v.id
+                    """ % ','.join(['(%s, %s, %s, %s, %s)'] * len(update_data)),
+                    [item for sublist in update_data for item in sublist])
+
+                    result['updated'] += len(to_update)
+                except Exception as e:
+                    _logger.warning("Error en batch update de orderpoints: %s", e)
+                    result['errors'] += len(to_update)
+
+            # Ejecutar creates en batch (ya está optimizado)
             if to_create:
                 try:
                     Orderpoint.sudo().create(to_create)
@@ -531,13 +552,48 @@ class QueueProcessor(models.AbstractModel):
         """
         _logger.info("Iniciando recálculo de todos los orderpoints...")
 
-        # Obtener todos los pares producto/warehouse de rolling_stats
-        self.env.cr.execute("""
-            SELECT DISTINCT product_id, warehouse_id
-            FROM product_sales_stats_rolling
-            WHERE record_type = 'sale'
-        """)
-        pairs = self.env.cr.fetchall()
+        # Primero obtener la configuración de cada warehouse para saber qué record_type usar
+        Warehouse = self.env['stock.warehouse']
+        warehouses = Warehouse.search([])
+
+        # Construir mapeo warehouse_id -> record_type
+        warehouse_record_types = {}
+        for wh in warehouses:
+            if getattr(wh, 'is_main_warehouse', False):
+                # Bodega principal usa estadísticas globales (suma de todas)
+                warehouse_record_types[wh.id] = 'global'
+            else:
+                based_on_sales = getattr(wh, 'replenishment_based_on_sales', False)
+                based_on_transfers = getattr(wh, 'replenishment_based_on_transfers', False)
+
+                if based_on_sales and based_on_transfers:
+                    warehouse_record_types[wh.id] = 'combined'
+                elif based_on_transfers and not based_on_sales:
+                    warehouse_record_types[wh.id] = 'transfer'
+                else:
+                    # Default: usar 'sale' si solo ventas, o si ninguno está marcado
+                    warehouse_record_types[wh.id] = 'sale'
+
+        _logger.info("Configuración de warehouses: %s", warehouse_record_types)
+
+        # Agrupar warehouses por record_type para consultas optimizadas
+        type_to_warehouses = {}
+        for wh_id, rec_type in warehouse_record_types.items():
+            if rec_type not in type_to_warehouses:
+                type_to_warehouses[rec_type] = []
+            type_to_warehouses[rec_type].append(wh_id)
+
+        # Consultar solo los pares producto/warehouse relevantes
+        pairs = []
+        for rec_type, wh_ids in type_to_warehouses.items():
+            if not wh_ids:
+                continue
+            self.env.cr.execute("""
+                SELECT DISTINCT product_id, warehouse_id
+                FROM product_sales_stats_rolling
+                WHERE record_type = %s AND warehouse_id IN %s
+            """, (rec_type, tuple(wh_ids)))
+            pairs.extend(self.env.cr.fetchall())
 
         total = len(pairs)
         result = {'updated': 0, 'created': 0, 'errors': 0}

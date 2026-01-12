@@ -457,7 +457,26 @@ class ProductWarehouseSaleSummary(models.Model):
                 matilde_op_map[op.product_id.id] = op.id
 
         # =====================================================================
-        # PASO 7: Construir resultados (sin queries adicionales en el loop)
+        # PASO 7: Pendiente de recibir (OC/Cotizaciones) - 1 query
+        # =====================================================================
+        pending_qty_map = {}
+        try:
+            POLine = self.env['purchase.order.line']
+            # Estados: draft=cotización, sent=enviada, purchase=confirmada
+            po_lines = POLine.search([
+                ('product_id', 'in', active_product_ids),
+                ('order_id.state', 'in', ['draft', 'sent', 'purchase']),
+            ])
+            for line in po_lines:
+                pending = line.product_qty - line.qty_received
+                if pending > 0:
+                    product_id = line.product_id.id
+                    pending_qty_map[product_id] = pending_qty_map.get(product_id, 0) + pending
+        except Exception as e:
+            _logger.warning("Error obteniendo cantidades pendientes de OC: %s", e)
+
+        # =====================================================================
+        # PASO 8: Construir resultados (sin queries adicionales en el loop)
         # =====================================================================
         results = []
         for product in products:
@@ -563,6 +582,7 @@ class ProductWarehouseSaleSummary(models.Model):
                 'avg_standar_price_old': round(avg_standar_price_old, 3) if avg_standar_price_old > 0 else standar_price_old,
                 'matilde_qty_to_order': matilde_qty_map.get(product_id, 0.0),
                 'matilde_orderpoint_id': matilde_op_map.get(product_id),
+                'pending_qty': pending_qty_map.get(product_id, 0.0),
             })
 
         results.sort(key=lambda x: (not x['product_sales_priority'],
@@ -1015,6 +1035,120 @@ class ProductWarehouseSaleSummary(models.Model):
             'next_offset': next_offset,
             'total_count': total_count,
         }
+
+    @api.model
+    def get_products_by_laboratories_for_export(self, date_from, date_to):
+        """
+        Obtiene TODOS los productos de TODOS los laboratorios para exportación a Excel.
+        Retorna solo 6 columnas: COD ITEM, LABORATORIO, producto, UNIDADES POR CAJA, cantidad vendida, stock.
+
+        Args:
+            date_from: Fecha de inicio del período
+            date_to: Fecha de fin del período
+
+        Returns:
+            Lista de productos con las 6 columnas requeridas
+        """
+        start_time = time.time()
+
+        Lab = self.env['product.laboratory']
+        Product = self.env['product.product']
+
+        # Obtener TODOS los laboratorios
+        labs = Lab.search([], order='name asc')
+
+        if not labs:
+            return []
+
+        # Obtener todos los productos de todos los laboratorios
+        products = Product.search([
+            ('laboratory_id', 'in', labs.ids),
+            ('active', '=', True),
+            ('type', '=', 'product'),
+            ('sale_ok', '=', True),
+        ])
+
+        if not products:
+            return []
+
+        active_product_ids = products.ids
+
+        # Obtener datos de ventas agregados
+        Summary = self.env['product.warehouse.sale.summary']
+        sales_data = Summary.read_group(
+            [
+                ('date', '>=', date_from),
+                ('date', '<=', date_to),
+                ('product_id', 'in', active_product_ids),
+                ('is_legacy_system', '=', True),
+            ],
+            ['product_id', 'quantity_sold:sum'],
+            ['product_id']
+        )
+        summary_map = {s['product_id'][0]: s['quantity_sold'] for s in sales_data}
+
+        # Leer productos con campos necesarios
+        products_data = products.read([
+            'default_code', 'laboratory_id', 'name', 'uom_po_id', 'product_tmpl_id'
+        ])
+
+        # Pre-cargar templates para stock
+        template_ids = [p['product_tmpl_id'][0] for p in products_data if p.get('product_tmpl_id')]
+        if template_ids:
+            templates_data = self.env['product.template'].browse(template_ids).read([
+                'id', 'sales_stock_total'
+            ])
+            template_map = {t['id']: t for t in templates_data}
+        else:
+            template_map = {}
+
+        # Pre-cargar UOM ratios
+        uom_ids = [p['uom_po_id'][0] for p in products_data if p.get('uom_po_id')]
+        if uom_ids:
+            uom_data = self.env['uom.uom'].browse(uom_ids).read(['id', 'ratio'])
+            uom_ratio_map = {u['id']: u['ratio'] for u in uom_data}
+        else:
+            uom_ratio_map = {}
+
+        # Mapa de laboratorios para nombres
+        lab_map = {lab.id: lab.name for lab in labs}
+
+        results = []
+        for product in products_data:
+            # Obtener datos del template
+            tmpl_id = product.get('product_tmpl_id', (0,))[0] if product.get('product_tmpl_id') else 0
+            tmpl_data = template_map.get(tmpl_id, {})
+
+            # Obtener ratio de UoM (unidades por caja)
+            uom_po_id = product.get('uom_po_id', (0,))[0] if product.get('uom_po_id') else 0
+            uom_po_ratio = uom_ratio_map.get(uom_po_id, 1.0) or 1.0
+
+            # Obtener nombre del laboratorio
+            lab_id = product.get('laboratory_id', (0, ''))[0] if isinstance(product.get('laboratory_id'), tuple) else 0
+            laboratory_name = lab_map.get(lab_id, '')
+
+            # Cantidad vendida
+            quantity_sold = summary_map.get(product['id'], 0.0)
+
+            # Stock total
+            stock_total = tmpl_data.get('sales_stock_total', 0.0) or 0.0
+
+            results.append({
+                'product_code': product.get('default_code', ''),
+                'laboratory': laboratory_name,
+                'product_name': product.get('name', '').lower().title(),
+                'units_per_box': round(uom_po_ratio, 2),
+                'quantity_sold': round(quantity_sold, 3),
+                'stock': round(stock_total, 3),
+            })
+
+        # Ordenar por laboratorio y luego por nombre de producto
+        results.sort(key=lambda x: (x['laboratory'].lower(), x['product_name'].lower()))
+
+        end_time = time.time()
+        _logger.info(f"get_products_by_laboratories_for_export: {end_time - start_time:.3f}s para {len(results)} productos")
+
+        return results
 
     # @api.model
     # def get_stock_by_warehouse(self, product_id, date_from, date_to):

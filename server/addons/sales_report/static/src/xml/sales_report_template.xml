@@ -94,6 +94,15 @@
                     <div class="col-12">
             <div class="col-sm-12 col-md-12 p-0 m-0">
             <t t-if="state.products_filtered.length > 0 ">
+                <!-- Indicador de paginación -->
+                <div t-if="state.total_count > 0" class="d-flex justify-content-between align-items-center mb-1 px-2" style="font-size: 11px;">
+                    <span class="text-muted">
+                        Mostrando <strong t-esc="state.products_filtered.length"/> de <strong t-esc="state.total_count"/> productos
+                    </span>
+                    <span t-if="state.has_more" class="badge bg-info text-white">
+                        Hay más productos disponibles
+                    </span>
+                </div>
                 <div t-ref="container"
                      t-att-class="'overflow-y-auto ' + (state.search_mode === 'laboratory' and 'product-table-scroll-labs' or '')"
                      style="max-height: 70vh; position:relative; font-size:12px;font-weight:500">
@@ -384,6 +393,15 @@
                             <!--                tabla de productos-->
                     <div class="col-sm-9 col-md-9 p-0 m-0">
                         <t t-if="state.products_filtered.length > 0 ">
+                            <!-- Indicador de paginación -->
+                            <div t-if="state.total_count > 0" class="d-flex justify-content-between align-items-center mb-1 px-2" style="font-size: 11px;">
+                                <span class="text-muted">
+                                    Mostrando <strong t-esc="state.products_filtered.length"/> de <strong t-esc="state.total_count"/> productos
+                                </span>
+                                <span t-if="state.has_more" class="badge bg-info text-white">
+                                    Hay más productos disponibles
+                                </span>
+                            </div>
                             <div t-ref="container"
                                  t-att-class="'overflow-y-auto ' + (state.search_mode === 'laboratory' and 'product-table-scroll-labs' or '')"
                                  style="max-height: 70vh; position:relative; font-size:12px;font-weight:600">
@@ -420,6 +438,12 @@
                                                 style="cursor: pointer; background-color: #e3f2fd; color: #1976d2; font-weight: bold;">Reab.
                                                 <i t-if="state.sortColumn === 'matilde_qty_to_order' and state.sortDirection === 'desc'" class="fa fa-sort-desc ms-1"/>
                                                 <i t-elif="state.sortColumn === 'matilde_qty_to_order' and state.sortDirection === 'asc'" class="fa fa-sort-asc ms-1"/>
+                                            </th>
+                                            <th t-on-click="() => this.handleSortRow('pending_qty')"
+                                                style="cursor: pointer; background-color: #fff3e0; color: #e65100; font-weight: bold;"
+                                                title="Cantidad pendiente de recibir (OC/Cotizaciones)">Pend.
+                                                <i t-if="state.sortColumn === 'pending_qty' and state.sortDirection === 'desc'" class="fa fa-sort-desc ms-1"/>
+                                                <i t-elif="state.sortColumn === 'pending_qty' and state.sortDirection === 'asc'" class="fa fa-sort-asc ms-1"/>
                                             </th>
                                             <th t-on-click="()=> this.handleSortRow('amount_total')"
                                                 style="cursor: pointer;">Tot.
@@ -534,6 +558,10 @@
                                                     <td t-on-click="() => this.openMatildeReplenish(product)"
                                                         style="background-color: #e3f2fd; color: #1976d2; font-weight: bold; cursor: pointer;">
                                                                 <t t-esc="product.matilde_qty_to_order or '0'"/>
+                                                    </td>
+                                                    <td style="background-color: #fff3e0; color: #e65100; font-weight: bold;"
+                                                        title="Pendiente de recibir">
+                                                                <t t-esc="product.pending_qty or '0'"/>
                                                     </td>
 
                                                     <td t-on-click="() => this.selectProduct(product.product_id)"
@@ -661,6 +689,13 @@
                                                     Cargando más laboratorios...
                                                 </td>
                                             </tr>
+                                            <!-- Indicador de carga para productos (infinite scroll) -->
+                                            <tr t-if="state.products_loading_more and state.search_mode === 'product'">
+                                                <td colspan="15" class="text-center py-2">
+                                                    <i class="fa fa-spinner fa-spin text-primary"/>
+                                                    Cargando más productos...
+                                                </td>
+                                            </tr>
                                         </t>
                                     </tbody>
                                     <tfoot class="fw-bold borderless sticky-bottom bg-white"
@@ -680,8 +715,14 @@
                                                 <td>
                                                     <t t-esc="state.product_totals.stock_total.toFixed(0)"/>
                                                 </td>
-                                                <!-- Columna Reab. Matilde (sin totales agregados por simplicidad) -->
-                                                <td style="background-color: #e3f2fd;"/>
+                                                <!-- Columna Reab. Matilde -->
+                                                <td style="background-color: #e3f2fd; color: #1976d2; font-weight: bold;">
+                                                    <t t-esc="state.product_totals.matilde_qty_to_order || 0"/>
+                                                </td>
+                                                <!-- Columna Pendiente Recibir -->
+                                                <td style="background-color: #fff3e0; color: #e65100; font-weight: bold;">
+                                                    <t t-esc="state.product_totals.pending_qty || 0"/>
+                                                </td>
                                                 <td>$
                                                     <t t-esc="state.product_totals.amount_total.toFixed(2)"/>
                                                 </td>
