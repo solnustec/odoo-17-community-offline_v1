@@ -894,6 +894,11 @@ class PosSyncManager(models.Model):
             'check_info_json': order.check_info_json if hasattr(order, 'check_info_json') else None,
             'card_info_json': order.card_info_json if hasattr(order, 'card_info_json') else None,
             'key_order': order.key_order if hasattr(order, 'key_order') else None,
+            # Campos de transferencia bancaria (almacenados en pos.order)
+            'payment_transfer_number': order.payment_transfer_number if hasattr(order, 'payment_transfer_number') else None,
+            'payment_bank_name': order.payment_bank_name if hasattr(order, 'payment_bank_name') else None,
+            'payment_transaction_id': order.payment_transaction_id if hasattr(order, 'payment_transaction_id') else None,
+            'orderer_identification': order.orderer_identification if hasattr(order, 'orderer_identification') else None,
             # NUEVOS CAMPOS: Posición fiscal y reembolsos
             'fiscal_position_id': order.fiscal_position_id.id if order.fiscal_position_id else None,
             'fiscal_position_name': order.fiscal_position_id.name if order.fiscal_position_id else None,
