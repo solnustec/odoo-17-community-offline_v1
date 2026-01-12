@@ -309,6 +309,121 @@ class PosOfflineSyncController(http.Controller):
                 'error': str(e),
             }
 
+    def _update_existing_order_payments(self, order, data):
+        """
+        Actualiza los pagos de una orden existente con los datos de cheque/tarjeta/transferencia.
+
+        Esta función se llama cuando una orden ya existe en el servidor principal
+        pero los pagos pueden no tener los campos adicionales de cheque, tarjeta o transferencia.
+
+        Args:
+            order: pos.order existente
+            data: Datos de sincronización que incluyen check_info_json, card_info_json, etc.
+        """
+        try:
+            import json as json_lib
+
+            # Actualizar campos de transferencia en la orden
+            order_update_vals = {}
+            if data.get('payment_transfer_number') and not order.payment_transfer_number:
+                order_update_vals['payment_transfer_number'] = data.get('payment_transfer_number')
+            if data.get('payment_bank_name') and not order.payment_bank_name:
+                order_update_vals['payment_bank_name'] = data.get('payment_bank_name')
+            if data.get('payment_transaction_id') and not order.payment_transaction_id:
+                order_update_vals['payment_transaction_id'] = data.get('payment_transaction_id')
+            if data.get('orderer_identification') and not order.orderer_identification:
+                order_update_vals['orderer_identification'] = data.get('orderer_identification')
+            if data.get('check_info_json') and not order.check_info_json:
+                order_update_vals['check_info_json'] = data.get('check_info_json')
+            if data.get('card_info_json') and not order.card_info_json:
+                order_update_vals['card_info_json'] = data.get('card_info_json')
+
+            if order_update_vals:
+                order.with_context(skip_sync_queue=True).write(order_update_vals)
+                _logger.info(f'Orden {order.name} actualizada con campos de transferencia: {list(order_update_vals.keys())}')
+
+            # Parsear check_info_json
+            check_info_list = []
+            if data.get('check_info_json'):
+                try:
+                    check_info_list = json_lib.loads(data.get('check_info_json')) if isinstance(data.get('check_info_json'), str) else data.get('check_info_json')
+                    if not isinstance(check_info_list, list):
+                        check_info_list = []
+                except (json_lib.JSONDecodeError, TypeError):
+                    check_info_list = []
+
+            # Parsear card_info_json
+            card_info_list = []
+            if data.get('card_info_json'):
+                try:
+                    card_info_list = json_lib.loads(data.get('card_info_json')) if isinstance(data.get('card_info_json'), str) else data.get('card_info_json')
+                    if not isinstance(card_info_list, list):
+                        card_info_list = []
+                except (json_lib.JSONDecodeError, TypeError):
+                    card_info_list = []
+
+            if not check_info_list and not card_info_list:
+                _logger.info(f'No hay datos de cheque/tarjeta para actualizar en orden {order.name}')
+                return
+
+            _logger.info(f'Actualizando pagos de orden existente {order.name}: check_info={check_info_list}, card_info={card_info_list}')
+
+            # Aplicar datos de cheque a los pagos
+            check_info_dict = {}
+            for payment in order.payment_ids:
+                if payment.payment_method_id.allow_check_info:
+                    for check_info in check_info_list:
+                        if payment.id not in check_info_dict and check_info not in check_info_dict.values():
+                            check_info_dict[payment.id] = check_info
+                            break
+
+            for payment_id, check_info in check_info_dict.items():
+                payment = request.env['pos.payment'].sudo().browse(payment_id)
+                if payment.exists():
+                    update_vals = {}
+                    # Solo actualizar si el pago no tiene el campo ya establecido
+                    if check_info.get('check_number') and not payment.check_number:
+                        update_vals['check_number'] = check_info.get('check_number')
+                    if check_info.get('check_owner') and not payment.check_owner:
+                        update_vals['check_owner'] = check_info.get('check_owner')
+                    if check_info.get('check_bank_account') and not payment.check_bank_account:
+                        update_vals['check_bank_account'] = check_info.get('check_bank_account')
+                    if check_info.get('bank_id') and not payment.bank_id:
+                        update_vals['bank_id'] = check_info.get('bank_id')
+                    if update_vals:
+                        payment.write(update_vals)
+                        _logger.info(f'Pago {payment.id} actualizado con datos de cheque: {update_vals}')
+
+            # Aplicar datos de tarjeta a los pagos
+            card_info_dict = {}
+            for payment in order.payment_ids:
+                if payment.payment_method_id.allow_check_info:
+                    for card_info in card_info_list:
+                        if payment.id not in card_info_dict and card_info not in card_info_dict.values():
+                            card_info_dict[payment.id] = card_info
+                            break
+
+            for payment_id, card_info in card_info_dict.items():
+                payment = request.env['pos.payment'].sudo().browse(payment_id)
+                if payment.exists():
+                    update_vals = {}
+                    if card_info.get('number_voucher') and not payment.number_voucher:
+                        update_vals['number_voucher'] = card_info.get('number_voucher')
+                    if card_info.get('type_card') and not payment.type_card:
+                        update_vals['type_card'] = card_info.get('type_card')
+                    if card_info.get('number_lote') and not payment.number_lote:
+                        update_vals['number_lote'] = card_info.get('number_lote')
+                    if card_info.get('holder_card') and not payment.holder_card:
+                        update_vals['holder_card'] = card_info.get('holder_card')
+                    if card_info.get('bin_tc') and not payment.bin_tc:
+                        update_vals['bin_tc'] = card_info.get('bin_tc')
+                    if update_vals:
+                        payment.write(update_vals)
+                        _logger.info(f'Pago {payment.id} actualizado con datos de tarjeta: {update_vals}')
+
+        except Exception as e:
+            _logger.error(f'Error actualizando pagos de orden existente {order.name}: {e}', exc_info=True)
+
     def _process_pos_order(self, queue_id, local_id, data, warehouse_id):
         """
         Procesa una orden POS completa desde el sistema offline.
@@ -366,6 +481,10 @@ class PosOfflineSyncController(http.Controller):
                         f'factura={existing.account_move.name if existing.account_move else "N/A"}, '
                         f'necesita_factura={needs_invoice}'
                     )
+
+                    # ACTUALIZAR CAMPOS DE PAGO PARA ÓRDENES EXISTENTES
+                    # Aunque la orden exista, los pagos pueden no tener los campos de cheque/tarjeta
+                    self._update_existing_order_payments(existing, data)
 
                     # CASO 1: Si ya tiene factura, está completa
                     # Solo necesitamos asegurar que el estado sea 'invoiced'
@@ -580,6 +699,22 @@ class PosOfflineSyncController(http.Controller):
                 if employee.exists():
                     order_vals['employee_id'] = employee.id
 
+            # Agregar campos de transferencia bancaria
+            if data.get('payment_transfer_number'):
+                order_vals['payment_transfer_number'] = data.get('payment_transfer_number')
+            if data.get('payment_bank_name'):
+                order_vals['payment_bank_name'] = data.get('payment_bank_name')
+            if data.get('payment_transaction_id'):
+                order_vals['payment_transaction_id'] = data.get('payment_transaction_id')
+            if data.get('orderer_identification'):
+                order_vals['orderer_identification'] = data.get('orderer_identification')
+
+            # Agregar campos JSON de cheque y tarjeta
+            if data.get('check_info_json'):
+                order_vals['check_info_json'] = data.get('check_info_json')
+            if data.get('card_info_json'):
+                order_vals['card_info_json'] = data.get('card_info_json')
+
             # Crear orden con contexto para evitar que se agregue a cola de sync
             order = request.env['pos.order'].sudo().with_context(
                 skip_sync_queue=True
@@ -591,46 +726,99 @@ class PosOfflineSyncController(http.Controller):
                 f'(OFFLINE ref: {pos_reference})'
             )
 
-            # ==================== PASO 2: CREAR PAGOS ====================
+            # ==================== PASO 2: SINCRONIZAR DATOS DE PAGOS ====================
+            # IMPORTANTE: Los pagos (pos.payment) se crean automáticamente al crear la orden.
+            # Este paso SOLO actualiza los campos de cheque/tarjeta en los pagos existentes.
             payments_data = data.get('payments', [])
-            _logger.info(f'Creando {len(payments_data)} pagos para orden {order.name}')
+            _logger.info(f'Sincronizando datos de {len(payments_data)} pagos para orden {order.name}')
 
-            for payment_data in payments_data:
-                payment_method = None
+            if order.payment_ids:
+                _logger.info(f'Orden {order.name} tiene {len(order.payment_ids)} pagos existentes. Sincronizando campos...')
+            else:
+                _logger.warning(f'Orden {order.name} no tiene pagos. Los pagos deberían haberse creado automáticamente.')
 
-                # Buscar método de pago por nombre
-                if payment_data.get('payment_method_name'):
-                    payment_method = request.env['pos.payment.method'].sudo().search([
-                        ('name', '=', payment_data['payment_method_name'])
-                    ], limit=1)
+            # ==================== PASO 2.5: ACTUALIZAR PAGOS CON CHECK_INFO_JSON Y CARD_INFO_JSON ====================
+            # Los datos de cheque/tarjeta pueden estar en los campos JSON de la orden
+            # y deben aplicarse a los pagos correspondientes
+            try:
+                import json as json_lib
+                check_info_list = []
+                card_info_list = []
 
-                # Buscar por ID si no se encontró por nombre
-                if not payment_method and payment_data.get('payment_method_id'):
-                    payment_method = request.env['pos.payment.method'].sudo().browse(
-                        payment_data['payment_method_id']
-                    )
-                    if not payment_method.exists():
-                        payment_method = None
-
-                # Fallback: usar primer método de pago de la sesión
-                if not payment_method:
-                    payment_method = session.config_id.payment_method_ids[:1]
-                    if payment_method:
-                        _logger.warning(f'Usando método de pago por defecto: {payment_method.name}')
-
-                if payment_method:
+                # Parsear check_info_json si existe
+                if data.get('check_info_json'):
                     try:
-                        request.env['pos.payment'].sudo().create({
-                            'pos_order_id': order.id,
-                            'payment_method_id': payment_method.id,
-                            'amount': payment_data.get('amount', 0),
-                            'session_id': session.id,
-                        })
-                        _logger.info(f'Pago creado: {payment_method.name} - {payment_data.get("amount", 0)}')
-                    except Exception as e:
-                        _logger.error(f'Error creando pago: {e}')
-                else:
-                    _logger.warning(f'No se encontró método de pago para: {payment_data}')
+                        check_info_list = json_lib.loads(data.get('check_info_json')) if isinstance(data.get('check_info_json'), str) else data.get('check_info_json')
+                        if not isinstance(check_info_list, list):
+                            check_info_list = []
+                    except (json_lib.JSONDecodeError, TypeError):
+                        check_info_list = []
+
+                # Parsear card_info_json si existe
+                if data.get('card_info_json'):
+                    try:
+                        card_info_list = json_lib.loads(data.get('card_info_json')) if isinstance(data.get('card_info_json'), str) else data.get('card_info_json')
+                        if not isinstance(card_info_list, list):
+                            card_info_list = []
+                    except (json_lib.JSONDecodeError, TypeError):
+                        card_info_list = []
+
+                _logger.info(f'check_info_json: {check_info_list}, card_info_json: {card_info_list}')
+
+                # Aplicar datos de cheque a los pagos correspondientes
+                check_info_dict = {}
+                for payment in order.payment_ids:
+                    if payment.payment_method_id.allow_check_info:
+                        for check_info in check_info_list:
+                            if payment.id not in check_info_dict and check_info not in check_info_dict.values():
+                                check_info_dict[payment.id] = check_info
+                                break
+
+                for payment_id, check_info in check_info_dict.items():
+                    payment = request.env['pos.payment'].sudo().browse(payment_id)
+                    if payment.exists():
+                        update_vals = {}
+                        if check_info.get('check_number'):
+                            update_vals['check_number'] = check_info.get('check_number')
+                        if check_info.get('check_owner'):
+                            update_vals['check_owner'] = check_info.get('check_owner')
+                        if check_info.get('check_bank_account'):
+                            update_vals['check_bank_account'] = check_info.get('check_bank_account')
+                        if check_info.get('bank_id'):
+                            update_vals['bank_id'] = check_info.get('bank_id')
+                        if update_vals:
+                            payment.write(update_vals)
+                            _logger.info(f'Pago {payment.id} actualizado con datos de cheque: {update_vals}')
+
+                # Aplicar datos de tarjeta a los pagos correspondientes
+                card_info_dict = {}
+                for payment in order.payment_ids:
+                    if payment.payment_method_id.allow_check_info:
+                        for card_info in card_info_list:
+                            if payment.id not in card_info_dict and card_info not in card_info_dict.values():
+                                card_info_dict[payment.id] = card_info
+                                break
+
+                for payment_id, card_info in card_info_dict.items():
+                    payment = request.env['pos.payment'].sudo().browse(payment_id)
+                    if payment.exists():
+                        update_vals = {}
+                        if card_info.get('number_voucher'):
+                            update_vals['number_voucher'] = card_info.get('number_voucher')
+                        if card_info.get('type_card'):
+                            update_vals['type_card'] = card_info.get('type_card')
+                        if card_info.get('number_lote'):
+                            update_vals['number_lote'] = card_info.get('number_lote')
+                        if card_info.get('holder_card'):
+                            update_vals['holder_card'] = card_info.get('holder_card')
+                        if card_info.get('bin_tc'):
+                            update_vals['bin_tc'] = card_info.get('bin_tc')
+                        if update_vals:
+                            payment.write(update_vals)
+                            _logger.info(f'Pago {payment.id} actualizado con datos de tarjeta: {update_vals}')
+
+            except Exception as e:
+                _logger.error(f'Error actualizando pagos con check_info_json/card_info_json: {e}', exc_info=True)
 
             # ==================== PASO 3: MARCAR COMO PAGADA ====================
             if order.payment_ids and order_state in ['paid', 'done', 'invoiced']:
@@ -1696,8 +1884,16 @@ class PosOfflineSyncController(http.Controller):
                 if warehouse.exists() and warehouse.lot_stock_id:
                     domain.append(('location_id', 'child_of', warehouse.lot_stock_id.id))
 
+            # IMPORTANTE: Para product.template y product.product,
+            # solo filtrar por available_in_pos si NO hay last_sync_dt
+            # Esto permite sincronizar TODOS los cambios (incluyendo desactivaciones)
+            elif model_name == 'product.template':
+                if not last_sync_dt:
+                    domain.append(('available_in_pos', '=', True))
+
             elif model_name == 'product.product':
-                domain.append(('available_in_pos', '=', True))
+                if not last_sync_dt:
+                    domain.append(('available_in_pos', '=', True))
 
             elif model_name == 'loyalty.program':
                 domain.append(('active', '=', True))
@@ -1829,7 +2025,13 @@ class PosOfflineSyncController(http.Controller):
                 result.append(SyncManager.serialize_loyalty_program(record))
             return result
 
-        # Para product.product usar serializer especializado
+        # Para product.template usar serializer especializado
+        if model_name == 'product.template':
+            for record in records:
+                result.append(SyncManager.serialize_product_template(record))
+            return result
+
+        # Para product.product usar serializer especializado (mantener por compatibilidad)
         if model_name == 'product.product':
             for record in records:
                 result.append(SyncManager.serialize_product(record))
@@ -1921,7 +2123,13 @@ class PosOfflineSyncController(http.Controller):
                 result.append(SyncManager.serialize_loyalty_program(record))
             return result
 
-        # Usar serializer especializado para product.product
+        # Usar serializer especializado para product.template
+        if model_name == 'product.template':
+            for record in records:
+                result.append(SyncManager.serialize_product_template(record))
+            return result
+
+        # Usar serializer especializado para product.product (mantener por compatibilidad)
         if model_name == 'product.product':
             for record in records:
                 result.append(SyncManager.serialize_product(record))
@@ -1953,6 +2161,10 @@ class PosOfflineSyncController(http.Controller):
 
         # Campos por modelo para otros modelos
         fields_map = {
+            'product.template': [
+                'id', 'name', 'default_code', 'barcode', 'list_price',
+                'standard_price', 'categ_id', 'uom_id', 'available_in_pos',
+            ],
             'product.product': [
                 'id', 'name', 'default_code', 'barcode', 'list_price',
                 'standard_price', 'categ_id', 'uom_id', 'available_in_pos',
@@ -2094,7 +2306,7 @@ class PosOfflineSyncController(http.Controller):
     def get_products(self, warehouse_id=None, last_sync=None,
                      limit=1000, offset=0, **kwargs):
         """
-        Obtiene productos para sincronización.
+        Obtiene productos (product.template) para sincronización.
 
         Args:
             warehouse_id: ID del almacén
@@ -2103,26 +2315,33 @@ class PosOfflineSyncController(http.Controller):
             offset: Offset para paginación
 
         Returns:
-            dict: Productos
+            dict: Product templates
         """
         try:
             if not self._validate_api_auth(kwargs):
                 return {'success': False, 'error': 'Autenticación inválida'}
 
-            domain = [('available_in_pos', '=', True)]
+            # Construir dominio
+            domain = []
 
+            # IMPORTANTE: Si hay last_sync, NO filtrar por available_in_pos
+            # para que se sincronicen TODOS los cambios (incluyendo desactivaciones)
             if last_sync:
                 try:
                     last_sync_dt = datetime.fromisoformat(last_sync)
                     domain.append(('write_date', '>', last_sync_dt))
                 except ValueError:
                     pass
+            else:
+                # Solo en la primera sincronización (sin last_sync), filtrar por available_in_pos
+                domain.append(('available_in_pos', '=', True))
 
-            Product = request.env['product.product'].sudo()
-            total = Product.search_count(domain)
-            products = Product.search(domain, limit=limit, offset=offset)
+            # Usar product.template en lugar de product.product
+            ProductTemplate = request.env['product.template'].sudo()
+            total = ProductTemplate.search_count(domain)
+            templates = ProductTemplate.search(domain, limit=limit, offset=offset)
 
-            products_data = self._serialize_records('product.product', products)
+            products_data = self._serialize_records('product.template', templates)
 
             return {
                 'success': True,
@@ -2133,7 +2352,7 @@ class PosOfflineSyncController(http.Controller):
             }
 
         except Exception as e:
-            _logger.error(f'Error obteniendo productos: {str(e)}')
+            _logger.error(f'Error obteniendo product templates: {str(e)}')
             return {'success': False, 'error': str(e)}
 
     # ==================== ENDPOINTS DE STOCK ====================
@@ -2588,7 +2807,7 @@ class PosOfflineSyncController(http.Controller):
                 methods=['POST'], csrf=False, cors='*')
     def pull_products(self, **kwargs):
         """
-        Endpoint especializado para descargar productos desde el cloud.
+        Endpoint especializado para descargar productos (product.template) desde el cloud.
 
         Payload esperado:
         {
@@ -2600,7 +2819,7 @@ class PosOfflineSyncController(http.Controller):
         }
 
         Returns:
-            dict: Productos para sincronizar
+            dict: Product templates para sincronizar
         """
         try:
             # Parsear JSON del body
@@ -2618,34 +2837,39 @@ class PosOfflineSyncController(http.Controller):
             offset = data.get('offset', 0)
             only_pos = data.get('only_pos', True)
 
-            # Construir dominio
+            # Construir dominio para product.template
             domain = []
-            if only_pos:
-                domain.append(('available_in_pos', '=', True))
 
+            # IMPORTANTE: Si hay last_sync, NO filtrar por available_in_pos
+            # para que se sincronicen TODOS los cambios (incluyendo desactivaciones)
             if last_sync:
                 try:
                     last_sync_dt = datetime.fromisoformat(last_sync)
                     domain.append(('write_date', '>', last_sync_dt))
                 except ValueError:
                     pass
+            else:
+                # Solo en la primera sincronización (sin last_sync), filtrar por available_in_pos
+                if only_pos:
+                    domain.append(('available_in_pos', '=', True))
 
-            Product = request.env['product.product'].sudo()
+            # Usar product.template en lugar de product.product
+            ProductTemplate = request.env['product.template'].sudo()
             SyncManager = request.env['pos.sync.manager'].sudo()
 
-            total = Product.search_count(domain)
-            products = Product.search(domain, limit=limit, offset=offset, order='write_date asc')
+            total = ProductTemplate.search_count(domain)
+            templates = ProductTemplate.search(domain, limit=limit, offset=offset, order='write_date asc')
 
-            # Serializar usando el método especializado
+            # Serializar usando el método especializado para product.template
             products_data = []
-            for product in products:
-                products_data.append(SyncManager.serialize_product(product))
+            for template in templates:
+                products_data.append(SyncManager.serialize_product_template(template))
 
             # Registrar en log
             if warehouse_id:
                 self._log_sync_operation(
                     warehouse_id, 'pull_products',
-                    f'Enviados {len(products_data)} productos'
+                    f'Enviados {len(products_data)} product templates'
                 )
 
             return self._json_response({
@@ -2658,7 +2882,7 @@ class PosOfflineSyncController(http.Controller):
             })
 
         except Exception as e:
-            _logger.error(f'Error obteniendo productos: {str(e)}')
+            _logger.error(f'Error obteniendo product templates: {str(e)}')
             import traceback
             _logger.error(traceback.format_exc())
             return self._json_response({'success': False, 'error': str(e)})
@@ -3554,7 +3778,7 @@ class PosOfflineSyncController(http.Controller):
             data['taxes_id'] = [{'id': t.id, 'name': t.name} for t in record.taxes_id]
             return data
         elif model_name == 'product.template':
-            return self._serialize_product_template(record)
+            return SyncManager.serialize_product_template(record)
         elif model_name == 'res.partner':
             return SyncManager.serialize_partner(record)
         elif model_name == 'product.pricelist':
