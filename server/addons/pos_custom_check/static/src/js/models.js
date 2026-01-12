@@ -28,6 +28,9 @@ patch(Payment.prototype, {
     this.payment_bank_name = this.payment_bank_name || false;
     this.orderer_identification = this.orderer_identification || false;
     this.selecteInstitutionCredit = this.selecteInstitutionCredit || false;
+    // Autorización manual
+    this.self_authorized = this.self_authorized || false;
+    this.self_authorized_by = this.self_authorized_by || false;
   },
   getCheckInfo() {
     const check_info = this;
@@ -189,6 +192,9 @@ patch(Payment.prototype, {
     this.payment_bank_name = json.payment_bank_name || false;
     this.orderer_identification = json.orderer_identification || false;
     this.selecteInstitutionCredit = json.selecteInstitutionCredit || false;
+    // Autorización manual
+    this.self_authorized = json.self_authorized || false;
+    this.self_authorized_by = json.self_authorized_by || false;
   },
 
   export_as_JSON() {
@@ -214,6 +220,9 @@ patch(Payment.prototype, {
     json.payment_bank_name = this.payment_bank_name || false;
     json.orderer_identification = this.orderer_identification || false;
     json.selecteInstitutionCredit = this.selecteInstitutionCredit || false;
+    // Autorización manual
+    json.self_authorized = this.self_authorized || false;
+    json.self_authorized_by = this.self_authorized_by || false;
     return json;
   },
 

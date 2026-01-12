@@ -13,7 +13,7 @@
     "currency": 'EUR',
     'depends': ['base', 'web', 'sale', 'point_of_sale', 'product', 'stock',
                 'barcodes', 'web_editor', 'digest', 'stock_account',
-                'pos_loyalty', "pos_connect_flask","pos_restrict_product_stock"],
+                'pos_loyalty', "pos_connect_flask", "pos_restrict_product_stock"],
     'data': [
         'security/ir.model.access.csv',
         'views/digital_payment_config_views.xml',
@@ -30,6 +30,7 @@
         'views/ahorita_payment_views.xml',
         'views/deuna_payment_views.xml',
         'views/id_digital_payment.xml',
+        'data/ir_cron.xml',
     ],
     'demo': [],
     'test': [],

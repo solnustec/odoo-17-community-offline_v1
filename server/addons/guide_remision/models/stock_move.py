@@ -59,8 +59,20 @@ class StockMove(models.Model):
                 precision_rounding=move.company_id.currency_id.rounding
             )
 
-    @api.onchange('product_id')
+    @api.onchange('product_id', 'location_id')
     def _onchange_product_id(self):
+        for move in self:
+            if move.product_id and move.location_id:
+                stock_quant = self.env['stock.quant'].search([
+                    ('product_id', '=', move.product_id.id),
+                    ('location_id', '=', move.location_id.id)
+                ], limit=1)
+                move.stock_product = stock_quant.inventory_quantity_auto_apply - stock_quant.reserved_quantity if stock_quant else 0
+            else:
+                move.stock_product = 0.0
+
+    def _update_stock_product(self):
+        """Método auxiliar para actualizar stock_product basado en product_id y location_id"""
         for move in self:
             if move.product_id and move.location_id:
                 stock_quant = self.env['stock.quant'].search([

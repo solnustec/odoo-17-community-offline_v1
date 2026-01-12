@@ -400,14 +400,16 @@ class QueueProcessor(models.AbstractModel):
                     if not calculated_values:
                         continue
 
-                    # Preparar valores para orderpoint (redondeo hacia arriba para productos)
-                    max_qty = math.ceil(calculated_values.get('MAX', 0))
-                    min_qty = math.ceil(calculated_values.get('MIN', 0))
-                    point_reorder = math.ceil(calculated_values.get('POINT_REORDER', min_qty))
+                    # Preparar valores para orderpoint (redondeo estándar: >= 0.5 sube, < 0.5 baja)
+                    max_qty = round(calculated_values.get('MAX', 0))
+                    min_qty = round(calculated_values.get('MIN', 0))
+                    point_reorder = round(calculated_values.get('POINT_REORDER', min_qty))
 
                     # Buscar orderpoint existente
                     key = (location_id.id, product_id)
                     existing = existing_orderpoints.get(key)
+                    trigger_type = 'manual' if warehouse.is_main_warehouse else 'auto'
+                    # Trigger: 'manual' si es bodega principal, 'auto' si no
 
                     if existing:
                         # Actualizar si cambió (existing es un dict de _get_orderpoints_batch)
@@ -423,6 +425,7 @@ class QueueProcessor(models.AbstractModel):
                                 'product_max_qty': max_qty,
                                 'product_min_qty': min_qty,
                                 'point_reorder': point_reorder,
+                                'trigger': trigger_type,
                             })
                     else:
                         # Crear nuevo
@@ -433,6 +436,7 @@ class QueueProcessor(models.AbstractModel):
                             'product_max_qty': max_qty,
                             'product_min_qty': min_qty,
                             'point_reorder': point_reorder,
+                            'trigger': trigger_type,
                         })
 
                 except Exception as e:
@@ -625,3 +629,109 @@ class QueueProcessor(models.AbstractModel):
         _logger.info("Limpieza completada: %s", stats)
 
         return stats
+
+    @api.model
+    def migrate_transfers_to_daily_stats(self, days=90, batch_size=500):
+        """
+        Migra directamente los registros de transferencia a daily stats,
+        sin pasar por la cola. Luego recalcula rolling stats.
+
+        Este método es más rápido que backfill_transfer_stats porque
+        no usa la cola intermedia.
+
+        Args:
+            days: Número de días hacia atrás para procesar
+            batch_size: Tamaño del batch
+
+        Returns:
+            dict: {daily_updated: int, rolling_updated: int, errors: int}
+        """
+        from datetime import date, timedelta
+
+        _logger.info(
+            "Migrando transferencias directamente a daily stats (últimos %s días)...",
+            days
+        )
+
+        cutoff_date = date.today() - timedelta(days=days)
+
+        SaleSummary = self.env['product.warehouse.sale.summary']
+        DailyStats = self.env['product.sales.stats.daily']
+        RollingStats = self.env['product.sales.stats.rolling']
+
+        # Obtener todas las transferencias en el período
+        transfers = SaleSummary.search([
+            ('record_type', '=', 'transfer'),
+            ('date', '>=', cutoff_date),
+            ('quantity_sold', '>', 0),
+            ('product_id', '!=', False),
+            ('warehouse_id', '!=', False),
+        ])
+
+        total = len(transfers)
+        _logger.info("Encontradas %s transferencias para migrar", total)
+
+        if not transfers:
+            return {'daily_updated': 0, 'rolling_updated': 0, 'errors': 0}
+
+        # Convertir a formato para upsert_daily_stats
+        records = []
+        product_warehouse_pairs = set()
+
+        for transfer in transfers:
+            records.append({
+                'product_id': transfer.product_id.id,
+                'warehouse_id': transfer.warehouse_id.id,
+                'quantity': transfer.quantity_sold,
+                'event_date': transfer.date,
+                'record_type': 'transfer',
+                'created_at': transfer.create_date,
+            })
+            product_warehouse_pairs.add((
+                transfer.product_id.id,
+                transfer.warehouse_id.id
+            ))
+
+        # UPSERT a daily stats
+        daily_updated = 0
+        errors = 0
+
+        for i in range(0, len(records), batch_size):
+            batch = records[i:i + batch_size]
+            try:
+                count = DailyStats.upsert_daily_stats(batch)
+                daily_updated += count
+                self.env.cr.commit()
+                _logger.info(
+                    "Daily stats batch %s/%s: %s actualizados",
+                    (i // batch_size) + 1,
+                    (len(records) // batch_size) + 1,
+                    count
+                )
+            except Exception as e:
+                errors += 1
+                _logger.error("Error en batch daily stats: %s", e)
+                self.env.cr.rollback()
+
+        # Recalcular rolling stats para los pares afectados
+        _logger.info(
+            "Recalculando rolling stats para %s pares producto/warehouse...",
+            len(product_warehouse_pairs)
+        )
+
+        rolling_updated = RollingStats.update_rolling_stats(
+            list(product_warehouse_pairs),
+            source='migration'
+        )
+        self.env.cr.commit()
+
+        _logger.info(
+            "Migración completada: daily=%s, rolling=%s, errores=%s",
+            daily_updated, rolling_updated, errors
+        )
+
+        return {
+            'daily_updated': daily_updated,
+            'rolling_updated': rolling_updated,
+            'errors': errors
+        }

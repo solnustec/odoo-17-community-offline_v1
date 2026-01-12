@@ -1,0 +1,35 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<templates xml:space="preserve">
+    <t t-name="pos_custom_check.ResendOptionsPopup" owl="1">
+        <div class="popup popup-resend-options" style="max-width: 500px;">
+            <div class="modal-header">
+                <h4 class="modal-title">
+                    <i class="fa fa-link me-2" style="color: #17a2b8;"/>
+                    <t t-esc="props.title"/>
+                </h4>
+            </div>
+
+            <div class="modal-body">
+                <p class="mb-3" style="font-size: 15px;">
+                    <t t-esc="props.body"/>
+                </p>
+
+                <div class="alert alert-info mb-0" role="alert" style="font-size: 14px;">
+                    <i class="fa fa-info-circle me-1"/>
+                    Puede reenviar el link de pago existente por WhatsApp sin generar uno nuevo.
+                </div>
+            </div>
+
+            <div class="modal-footer d-flex flex-wrap justify-content-center gap-2">
+                <button class="btn btn-lg btn-success" t-on-click="onResendCurrent">
+                    <i class="fa fa-whatsapp me-1"/>
+                    <t t-esc="props.resendCurrentText"/>
+                </button>
+
+                <button class="btn btn-lg btn-secondary" t-on-click="onCancel">
+                    <t t-esc="props.cancelText"/>
+                </button>
+            </div>
+        </div>
+    </t>
+</templates>

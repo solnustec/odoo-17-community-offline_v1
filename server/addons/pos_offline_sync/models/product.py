@@ -19,12 +19,12 @@ class ProductProduct(models.Model):
         index=True,
         help='ID del registro en el servidor cloud'
     )
-    id_database_old = fields.Char(
-        string='ID Base de Datos Origen',
-        copy=False,
-        index=True,
-        help='ID del registro en la base de datos de origen (para migraciones)'
-    )
+    # id_database_old = fields.Char(
+    #     string='ID Base de Datos Origen',
+    #     copy=False,
+    #     index=True,
+    #     help='ID del registro en la base de datos de origen (para migraciones)'
+    # )
     sync_state = fields.Selection([
         ('local', 'Solo Local'),
         ('pending', 'Pendiente de Sync'),

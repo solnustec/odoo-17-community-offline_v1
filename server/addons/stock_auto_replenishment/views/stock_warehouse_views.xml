@@ -1,0 +1,43 @@
+<?xml version="1.0" encoding="utf-8"?>
+<odoo>
+    <!-- Extensión de la vista formulario de warehouse -->
+    <record id="view_warehouse_form_auto_replenishment" model="ir.ui.view">
+        <field name="name">stock.warehouse.form.inherit.auto.replenishment</field>
+        <field name="model">stock.warehouse</field>
+        <field name="inherit_id" ref="stock.view_warehouse"/>
+        <field name="arch" type="xml">
+            <!-- Agregar campos de auto replenishment -->
+            <xpath expr="//page[@name='warehouse_config']" position="after">
+                <page name="auto_replenishment" string="Reabastecimiento Automático">
+                    <group>
+                        <group string="Configuración">
+                            <field name="auto_replenishment_enabled"/>
+                            <field name="auto_replenishment_source_warehouse_id"
+                                   invisible="not auto_replenishment_enabled"/>
+                        </group>
+                        <group string="Acciones">
+                            <button name="action_view_auto_replenishment_pickings"
+                                    type="object"
+                                    string="Ver Transferencias Automáticas"
+                                    class="btn-secondary"
+                                    icon="fa-truck"/>
+                        </group>
+                    </group>
+                </page>
+            </xpath>
+        </field>
+    </record>
+
+    <!-- Vista tree de warehouse con columnas de auto replenishment -->
+    <record id="view_warehouse_tree_auto_replenishment" model="ir.ui.view">
+        <field name="name">stock.warehouse.tree.inherit.auto.replenishment</field>
+        <field name="model">stock.warehouse</field>
+        <field name="inherit_id" ref="stock.view_warehouse_tree"/>
+        <field name="arch" type="xml">
+            <xpath expr="//field[@name='company_id']" position="after">
+                <field name="auto_replenishment_enabled" optional="hide"/>
+                <field name="auto_replenishment_source_warehouse_id" optional="hide"/>
+            </xpath>
+        </field>
+    </record>
+</odoo>

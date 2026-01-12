@@ -36,7 +36,7 @@ Long description of module's purpose
         'views/loyalty_reward.xml',
         'views/loyalty_program.xml',
         'data/cron.xml',
-        'data/temporary_discount_cron.xml'
+        'data/temporary_discount_cron.xml',
     ],
     'assets': {
         'web.assets_backend': [
@@ -51,5 +51,4 @@ Long description of module's purpose
     'auto_install': False,
     'application': True,
     'license': 'LGPL-3',
-
 }

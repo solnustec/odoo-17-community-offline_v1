@@ -1,10 +1,13 @@
 from collections import OrderedDict
 from datetime import datetime, date
+import logging
 
 from odoo import models, api, fields
 
 from odoo.exceptions import UserError
 from odoo.tools.zeep import Client
+
+_logger = logging.getLogger(__name__)
 
 PRODUCTION_ENVIRONMENT = 2
 SRI_FETCH_WS = {
@@ -18,6 +21,65 @@ class ImportXmlWizard(models.TransientModel):
 
     file = fields.Binary(string="Archivo XML", required=False)
     access_token = fields.Char(string="Clave de Acceso SRI", required=True)
+
+    def _calculate_discount_percentage(self, cantidad, precio_unitario, descuento):
+        """
+        Calcula el porcentaje de descuento a partir del valor absoluto.
+
+        Fórmula: descuento_porcentaje = (descuento / subtotal_bruto) * 100
+
+        Args:
+            cantidad: Cantidad total
+            precio_unitario: Precio unitario
+            descuento: Descuento en valor absoluto del XML
+
+        Returns:
+            float: Porcentaje de descuento (0-100)
+        """
+        try:
+            cantidad = float(cantidad) if cantidad else 0.0
+            precio_unitario = float(precio_unitario) if precio_unitario else 0.0
+            descuento = float(descuento) if descuento else 0.0
+
+            if cantidad <= 0 or precio_unitario <= 0:
+                return 0.0
+
+            subtotal_bruto = cantidad * precio_unitario
+
+            if subtotal_bruto <= 0:
+                return 0.0
+
+            porcentaje = (descuento / subtotal_bruto) * 100
+
+            return round(porcentaje, 2)
+        except (ValueError, TypeError, ZeroDivisionError):
+            return 0.0
+
+    def _get_additional_info_text(self, det_adicional_list):
+        """
+        Extrae información adicional relevante para mostrar en la nota.
+
+        Args:
+            det_adicional_list: Lista de diccionarios con @nombre y @valor
+
+        Returns:
+            str: Texto con la información adicional formateada
+        """
+        if not det_adicional_list:
+            return ""
+
+        # Asegurar que es una lista
+        if isinstance(det_adicional_list, dict):
+            det_adicional_list = [det_adicional_list]
+
+        info_parts = []
+        for det in det_adicional_list:
+            nombre = det.get('@nombre', '')
+            valor = det.get('@valor', '')
+            if nombre and valor:
+                info_parts.append(f"{nombre}: {valor}")
+
+        return " | ".join(info_parts) if info_parts else ""
 
     def _convert_authorization_date(self, fecha_auth):
         if not fecha_auth:
@@ -154,57 +216,73 @@ class ImportXmlWizard(models.TransientModel):
                         "sri_authorization_code": authorization_number,
                     })
             if type(invoice_products) is list:
+                _logger.info("Procesando %d productos de la factura", len(invoice_products))
                 for detail_product in invoice_products:
-                    product_name = detail_product.get('descripcion')
-                    default_code = detail_product.get('codigoPrincipal')
-                    cantidad = detail_product.get('cantidad')
-                    precio_unitario = detail_product.get('precioUnitario')
-                    detalles_adicionales = detail_product.get(
-                        'detallesAdicionales', {})
-                    det_adicional = detalles_adicionales.get('detAdicional',
-                                                             {})
-                    # seccion impurso
+                    product_name = detail_product.get('descripcion', '')
+                    default_code = detail_product.get('codigoPrincipal', '')
+                    cantidad = detail_product.get('cantidad', '0')
+                    precio_unitario = detail_product.get('precioUnitario', '0')
+                    # Obtener descuento directamente del campo 'descuento' del detalle
+                    descuento_xml = detail_product.get('descuento', '0')
+
+                    detalles_adicionales = detail_product.get('detallesAdicionales', {}) or {}
+                    det_adicional = detalles_adicionales.get('detAdicional', {})
+
+                    # Asegurar que det_adicional sea una lista
+                    det_adicional_list = det_adicional if isinstance(det_adicional, list) else [det_adicional] if det_adicional else []
+
+                    # Calcular el descuento porcentual
+                    discount_percentage = self._calculate_discount_percentage(
+                        cantidad, precio_unitario, descuento_xml
+                    )
+
+                    # Obtener información adicional para la nota
+                    additional_info = self._get_additional_info_text(det_adicional_list)
+
+                    _logger.debug(
+                        "Producto: %s, Código: %s, Cantidad: %s, Precio: %s, "
+                        "Descuento XML: %s, Descuento %%: %s",
+                        product_name, default_code, cantidad, precio_unitario,
+                        descuento_xml, discount_percentage
+                    )
+
+                    # seccion impuestos
                     impuestos_list = detail_product.get('impuestos', {}).get(
                         'impuesto', [])
                     if isinstance(impuestos_list, dict):
                         impuestos_list = [impuestos_list]
-                    impuestos_list_filtrados = [d for d in impuestos_list if d['valor'] != '0.00']
-                    # if isinstance(impuestos_list, dict):
-                    #     impuestos_list = [impuestos_list_filtrados]
+                    impuestos_list_filtrados = [d for d in impuestos_list if d.get('valor', '0.00') != '0.00']
+
                     for impuesto in impuestos_list_filtrados:
-                        if isinstance(
-                                impuesto, dict
-                        ):  # aseguramos que sea un diccionario
-                            tax =None
-                            # impuesto de iva es 2
-                            sri_code = impuesto.get('codigoPorcentaje')
-                            if impuesto.get('codigo') == '2' and float(impuesto.get('tarifa')) > 0.00:
+                        if isinstance(impuesto, dict):
+                            tax = None
+                            sri_code = impuesto.get('codigoPorcentaje', '')
+                            tarifa = impuesto.get('tarifa', '0')
+                            try:
+                                tarifa_float = float(tarifa)
+                            except (ValueError, TypeError):
+                                tarifa_float = 0.0
+
+                            if impuesto.get('codigo') == '2' and tarifa_float > 0.00:
+                                # IVA
                                 tax = self.env['account.tax'].search(
-                                    [('amount', '=', impuesto.get('tarifa')),
+                                    [('amount', '=', tarifa),
                                      ('type_tax_use', '=', 'purchase'),
-                                     ('l10n_ec_code_taxsupport', '=', sri_code if len(sri_code)> 1 else f"0{sri_code}")],limit=1)
-                            elif impuesto.get('codigo') == '3' and float(impuesto.get('tarifa')) > 0.00 and float(impuesto.get('valor')) > 0.00:
-                                # impuesto de ice es 3
-                                # print(impuesto.get('codigoPorcentaje'),'impuesto.get(codigoPorcentaje)')
+                                     ('l10n_ec_code_taxsupport', '=', sri_code if len(sri_code) > 1 else f"0{sri_code}")], limit=1)
+                            elif impuesto.get('codigo') == '3' and tarifa_float > 0.00:
+                                # ICE
                                 tax = self.env['account.tax'].search(
                                     [('type_tax_use', '=', 'purchase'),
-                                     ('l10n_ec_code_applied', '=',
-                                      impuesto.get('codigoPorcentaje'))],limit=1)
-                            elif impuesto.get('codigo') == '5' and float(impuesto.get('tarifa')) > 0.00:
-                                # impuesto de irbpn es 4
+                                     ('l10n_ec_code_applied', '=', sri_code)], limit=1)
+                            elif impuesto.get('codigo') == '5' and tarifa_float > 0.00:
+                                # IRBPNR
                                 tax = self.env['account.tax'].search(
-                                    [('amount', '=', impuesto.get('tarifa')),
+                                    [('amount', '=', tarifa),
                                      ('type_tax_use', '=', 'purchase'),
-                                     ('l10n_ec_code_applied', '=',
-                                      impuesto.get('codigoPorcentaje'))],limit=1)
+                                     ('l10n_ec_code_applied', '=', sri_code)], limit=1)
                             impuesto["tax"] = [tax] if tax else []
 
-                    descuento_value = next(
-                        (item['@valor'] for item in det_adicional if
-                         item[
-                             '@nombre'] == 'detAdicionalDescuento'),
-                        None)
-
+                    # Buscar producto
                     product_id = self.env['product.product'].search([
                         '|',
                         '|',
@@ -212,44 +290,73 @@ class ImportXmlWizard(models.TransientModel):
                         ('default_code', '=', default_code),
                         ('multi_barcode_ids.product_multi_barcode', '=', default_code),
                     ], limit=1)
-                    tax_ids = [item['tax'][0].id  for item in impuestos_list_filtrados]
+
+                    tax_ids = [item['tax'][0].id for item in impuestos_list_filtrados if item.get('tax') and item['tax'][0]]
+
                     if product_id:
+                        # Producto encontrado - crear línea normal
                         purchase_order.write({
                             'order_line': [(0, 0, {
                                 'product_id': product_id.id,
                                 'name': product_id.name,
-                                'product_qty': cantidad,
-                                'price_unit': precio_unitario,
-                                'discount': descuento_value if descuento_value else 0.0,
+                                'product_qty': float(cantidad),
+                                'price_unit': float(precio_unitario),
+                                'discount': discount_percentage,
                                 'taxes_id': [(6, 0, tax_ids)] if tax_ids else [],
                             })]
                         })
-                    # create a note in the order line when prodcut is not found
                     else:
+                        # Producto NO encontrado - crear nota informativa (formato original)
+                        nota_info = f"[{default_code}] {product_name} | Cant: {cantidad} | P.Unit: {precio_unitario} | Desc: {descuento_xml} ({discount_percentage}%)"
+                        if additional_info:
+                            nota_info += f" | {additional_info}"
                         purchase_order.write({
                             'order_line': [(0, 0, {
-                                'name': f"Producto no encontrado: {product_name} ({default_code})",
-                                'product_qty': 0,  # Cantidad cero
-                                'price_unit': 0.0,  # Precio cero
-                                "display_type": 'line_note',
-                                "product_uom": False,
-                                "product_id": False,
+                                'name': nota_info,
+                                'product_qty': 0,
+                                'price_unit': 0.0,
+                                'display_type': 'line_note',
+                                'product_uom': False,
+                                'product_id': False,
                             })]
                         })
 
 
             elif type(invoice_products) is dict:
-                product_name = invoice_products.get('descripcion')
-                default_code = invoice_products.get('codigoPrincipal')
-                cantidad = invoice_products.get('cantidad')
-                precio_unitario = invoice_products.get('precioUnitario')
-                detalles_adicionales = invoice_products.get(
-                    'detallesAdicionales')
-                det_adicional = detalles_adicionales.get('detAdicional')
-                impuestos = invoice_products.get('impuestos')
-                impuesto = impuestos.get('impuesto')
-                sri_code = impuesto.get('codigoPorcentaje')
-                tarifa = impuesto.get('tarifa')
+                _logger.info("Procesando 1 producto de la factura (dict)")
+                product_name = invoice_products.get('descripcion', '')
+                default_code = invoice_products.get('codigoPrincipal', '')
+                cantidad = invoice_products.get('cantidad', '0')
+                precio_unitario = invoice_products.get('precioUnitario', '0')
+                # Obtener descuento directamente del campo 'descuento' del detalle
+                descuento_xml = invoice_products.get('descuento', '0')
+
+                detalles_adicionales = invoice_products.get('detallesAdicionales', {}) or {}
+                det_adicional = detalles_adicionales.get('detAdicional') if detalles_adicionales else None
+
+                # Asegurar que det_adicional sea una lista
+                det_adicional_list = det_adicional if isinstance(det_adicional, list) else [det_adicional] if det_adicional else []
+
+                # Calcular el descuento porcentual
+                discount_percentage = self._calculate_discount_percentage(
+                    cantidad, precio_unitario, descuento_xml
+                )
+
+                # Obtener información adicional para la nota
+                additional_info = self._get_additional_info_text(det_adicional_list)
+
+                _logger.debug(
+                    "Producto: %s, Código: %s, Cantidad: %s, Precio: %s, "
+                    "Descuento XML: %s, Descuento %%: %s",
+                    product_name, default_code, cantidad, precio_unitario,
+                    descuento_xml, discount_percentage
+                )
+
+                impuestos = invoice_products.get('impuestos', {}) or {}
+                impuesto = impuestos.get('impuesto', {}) if impuestos else {}
+                sri_code = impuesto.get('codigoPorcentaje', '')
+                tarifa = impuesto.get('tarifa', '0')
+
                 product_id = self.env['product.product'].search([
                     '|',
                     '|',
@@ -257,35 +364,42 @@ class ImportXmlWizard(models.TransientModel):
                     ('default_code', '=', default_code),
                     ('multi_barcode_ids.product_multi_barcode', '=', default_code),
                 ], limit=1)
-                tax = self.env['account.tax'].search(
-                    [('amount', '=', tarifa),
-                     ('type_tax_use', '=', 'purchase'),
-                     ('l10n_ec_code_taxsupport', '=', sri_code)])
+
+                tax = None
+                try:
+                    if float(tarifa) > 0:
+                        tax = self.env['account.tax'].search(
+                            [('amount', '=', tarifa),
+                             ('type_tax_use', '=', 'purchase'),
+                             ('l10n_ec_code_taxsupport', '=', sri_code if len(sri_code) > 1 else f"0{sri_code}")], limit=1)
+                except (ValueError, TypeError):
+                    pass
 
                 if product_id:
+                    # Producto encontrado - crear línea normal
                     purchase_order.write({
                         'order_line': [(0, 0, {
                             'product_id': product_id.id,
                             'name': product_id.name,
-                            'product_qty': cantidad,  # Cantidad deseada
-                            'price_unit': precio_unitario,  # Precio por unidad
-                            'discount': det_adicional[0][
-                                '@valor'] if det_adicional and
-                                             det_adicional[0][
-                                                 '@nombre'] == 'detAdicionalDescuento' else 0.0,
-                            'taxes_id': [(6, 0, tax.ids)],
+                            'product_qty': float(cantidad),
+                            'price_unit': float(precio_unitario),
+                            'discount': discount_percentage,
+                            'taxes_id': [(6, 0, tax.ids)] if tax else [],
                         })]
                     })
-                # create a note in the order line when prodcut is not found
                 else:
+                    # Producto NO encontrado - crear nota informativa (formato original)
+                    nota_info = f"[{default_code}] {product_name} | Cant: {cantidad} | P.Unit: {precio_unitario} | Desc: {descuento_xml} ({discount_percentage}%)"
+                    if additional_info:
+                        nota_info += f" | {additional_info}"
                     purchase_order.write({
                         'order_line': [(0, 0, {
-                            'name': f"Producto no encontrado: {product_name} ({default_code})",
-                            'product_qty': 0,  # Cantidad cero
-                            'price_unit': 0.0,  # Precio cero
-                            "display_type": 'line_note',
-                            "product_uom": False,
-                            "product_id": False,
+                            'name': nota_info,
+                            'product_qty': 0,
+                            'price_unit': 0.0,
+                            'display_type': 'line_note',
+                            'product_uom': False,
+                            'product_id': False,
                         })]
                     })
             #formta date yyyy-mm-dd

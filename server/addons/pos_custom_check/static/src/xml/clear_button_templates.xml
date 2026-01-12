@@ -9,7 +9,7 @@
            <i class="fa fa-user"/>
            <span style="padding-left:5px">Historial cliente</span>
        </button>
-        <div class="bg-white px-md-2 pb-1 w-100" t-if="this.state.institutions.length > 0" t-key="'inst-container-' + (this.state.currentPartnerId || 'none')">
+        <div class="bg-white px-md-2 pb-1 w-100" t-if="this.state.institutions.length > 0 and !this.state.isRefund" t-key="'inst-container-' + (this.state.currentPartnerId || 'none')">
                 <select id="inst-select"
                             class="form-select mt-2 institutions-field"
                             t-att-value="this.state.selected || ''"

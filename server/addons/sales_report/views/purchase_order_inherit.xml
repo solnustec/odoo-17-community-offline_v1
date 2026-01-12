@@ -1,15 +1,42 @@
 <?xml version="1.0" encoding="utf-8"?>
 <odoo>
+    <!-- Heredar la vista de búsqueda para agregar filtros de periodo, marca y laboratorio -->
+    <record id="view_purchase_order_filter_inherit_period" model="ir.ui.view">
+        <field name="name">purchase.order.search.inherit.period.filters</field>
+        <field name="model">purchase.order</field>
+        <field name="inherit_id" ref="purchase.view_purchase_order_filter"/>
+        <field name="arch" type="xml">
+            <!-- Agregar campos de búsqueda por marca y laboratorio -->
+            <xpath expr="//field[@name='product_id']" position="after">
+                <field name="brand_ids" string="Marca"/>
+                <field name="laboratory_ids" string="Laboratorio"/>
+            </xpath>
+
+            <!-- Agregar filtros de periodo después del filtro de Order Date -->
+            <xpath expr="//filter[@name='order_date']" position="after">
+                <separator/>
+                <filter string="Hoy" name="filter_today"
+                        domain="[('date_order', '&gt;=', time.strftime('%Y-%m-%d 00:00:00')),
+                                 ('date_order', '&lt;=', time.strftime('%Y-%m-%d 23:59:59'))]"/>
+                <filter string="Este Mes" name="filter_this_month"
+                        domain="[('date_order', '&gt;=', time.strftime('%Y-%m-01 00:00:00'))]"/>
+                <filter string="Este Año" name="filter_this_year"
+                        domain="[('date_order', '&gt;=', time.strftime('%Y-01-01 00:00:00'))]"/>
+            </xpath>
+
+        </field>
+    </record>
+
     <!-- Heredar la vista de purchase.order para agregar campos -->
     <record id="purchase_order_form_inherit_brand_lab" model="ir.ui.view">
         <field name="name">purchase.order.form.inherit.brand.lab</field>
         <field name="model">purchase.order</field>
         <field name="inherit_id" ref="purchase.purchase_order_form"/>
         <field name="arch" type="xml">
-            <!-- Mostrar marca y laboratorio después de partner_ref -->
+            <!-- Mostrar marca y laboratorio después de partner_ref (campos relacionales) -->
             <xpath expr="//field[@name='partner_ref']" position="after">
-                <field name="brand_name" string="Marca"/>
-                <field name="laboratory_name" string="Laboratorio"/>
+                <field name="brand_ids" string="Marcas" widget="many2many_tags" options="{'no_create': True}"/>
+                <field name="laboratory_ids" string="Laboratorios" widget="many2many_tags" options="{'no_create': True}"/>
             </xpath>
 
 
@@ -48,15 +75,16 @@
         </field>
     </record>
 
-    <!-- Heredar la vista de lista de purchase.order para agregar brand_name -->
+    <!-- Heredar la vista de lista de purchase.order para agregar marca y laboratorio -->
     <record id="purchase_order_tree_inherit_brand" model="ir.ui.view">
         <field name="name">purchase.order.tree.inherit.brand</field>
         <field name="model">purchase.order</field>
         <field name="inherit_id" ref="purchase.purchase_order_kpis_tree"/>
         <field name="arch" type="xml">
-            <!-- Agregar brand_name directamente dentro del tree, sin condicionar posición -->
+            <!-- Agregar marca y laboratorio en la lista -->
             <xpath expr="//tree" position="inside">
-                <field name="brand_name" string="Marca" optional="show"/>
+                <field name="brand_ids" string="Marcas" widget="many2many_tags" optional="show"/>
+                <field name="laboratory_ids" string="Laboratorios" widget="many2many_tags" optional="hide"/>
             </xpath>
         </field>
     </record>

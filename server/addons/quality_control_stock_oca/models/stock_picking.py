@@ -30,6 +30,29 @@ class StockPicking(models.Model):
     failed_inspections = fields.Integer(
         compute="_compute_count_inspections", string="Inspections failed"
     )
+    show_qc_buttons = fields.Boolean(
+        compute="_compute_show_qc_buttons",
+        string="Mostrar botones QC",
+        help="Indica si los botones de inspección de calidad deben mostrarse según la configuración",
+    )
+
+    @api.depends('picking_type_code')
+    def _compute_show_qc_buttons(self):
+        """Determina si los botones de inspección deben mostrarse basándose en la configuración"""
+        ICP = self.env['ir.config_parameter'].sudo()
+        show_incoming = ICP.get_param('quality_control_stock_oca.qc_show_in_incoming', 'True') in ('True', True, '1', 1)
+        show_outgoing = ICP.get_param('quality_control_stock_oca.qc_show_in_outgoing', 'False') in ('True', True, '1', 1)
+        show_internal = ICP.get_param('quality_control_stock_oca.qc_show_in_internal', 'False') in ('True', True, '1', 1)
+
+        for picking in self:
+            if picking.picking_type_code == 'incoming':
+                picking.show_qc_buttons = show_incoming
+            elif picking.picking_type_code == 'outgoing':
+                picking.show_qc_buttons = show_outgoing
+            elif picking.picking_type_code == 'internal':
+                picking.show_qc_buttons = show_internal
+            else:
+                picking.show_qc_buttons = False
 
     @api.depends("qc_inspections_ids", "qc_inspections_ids.state")
     def _compute_count_inspections(self):

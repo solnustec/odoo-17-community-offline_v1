@@ -1,0 +1,101 @@
+<?xml version="1.0" encoding="utf-8"?>
+<odoo>
+    <!-- Extensión de la vista formulario de picking -->
+    <record id="view_picking_form_auto_replenishment" model="ir.ui.view">
+        <field name="name">stock.picking.form.inherit.auto.replenishment</field>
+        <field name="model">stock.picking</field>
+        <field name="inherit_id" ref="stock.view_picking_form"/>
+        <field name="arch" type="xml">
+            <xpath expr="//field[@name='origin']" position="after">
+                <field name="is_auto_replenishment" invisible="1"/>
+                <field name="auto_replenishment_orderpoint_id"
+                       invisible="not is_auto_replenishment"
+                       readonly="1"/>
+            </xpath>
+        </field>
+    </record>
+
+    <!-- Extender búsqueda de transferencias internas con filtros Automáticas/Manuales -->
+    <record id="view_picking_internal_search_auto_manual" model="ir.ui.view">
+        <field name="name">stock.picking.search.auto.manual.filters</field>
+        <field name="model">stock.picking</field>
+        <field name="inherit_id" ref="stock.view_picking_internal_search"/>
+        <field name="priority">30</field>
+        <field name="arch" type="xml">
+            <xpath expr="//filter[@name='backorder']" position="after">
+                <separator/>
+                <filter string="Manuales" name="filter_manual"
+                        domain="[('is_auto_replenishment', '=', False)]"/>
+                <filter string="Automáticas" name="filter_automatic"
+                        domain="[('is_auto_replenishment', '=', True)]"/>
+            </xpath>
+        </field>
+    </record>
+
+    <!-- Vista tree para transferencias automáticas (usada en dashboard) -->
+    <record id="view_auto_replenishment_picking_tree" model="ir.ui.view">
+        <field name="name">stock.picking.auto.replenishment.tree</field>
+        <field name="model">stock.picking</field>
+        <field name="arch" type="xml">
+            <tree string="Transferencias Automáticas"
+                  decoration-info="state == 'draft'"
+                  decoration-muted="state == 'cancel'"
+                  decoration-warning="state == 'waiting'"
+                  decoration-success="state == 'done'"
+                  decoration-danger="state not in ('done', 'cancel') and scheduled_date &lt; current_date">
+                <field name="name" decoration-bf="1"/>
+                <field name="auto_replenishment_orderpoint_id" optional="show"/>
+                <field name="origin_warehouse_id" string="Almacén Origen" optional="show"/>
+                <field name="dest_warehouse_id" string="Almacén Destino" optional="show"/>
+                <field name="location_id" groups="stock.group_stock_multi_locations" optional="hide"/>
+                <field name="location_dest_id" groups="stock.group_stock_multi_locations" optional="hide"/>
+                <field name="scheduled_date"/>
+                <field name="origin" optional="hide"/>
+                <field name="company_id" groups="base.group_multi_company" optional="hide"/>
+                <field name="state" widget="badge"
+                       decoration-success="state == 'done'"
+                       decoration-info="state in ('draft', 'waiting', 'confirmed')"
+                       decoration-warning="state == 'assigned'"/>
+            </tree>
+        </field>
+    </record>
+
+    <!-- Filtros de búsqueda para transferencias automáticas -->
+    <record id="view_auto_replenishment_picking_search" model="ir.ui.view">
+        <field name="name">stock.picking.auto.replenishment.search</field>
+        <field name="model">stock.picking</field>
+        <field name="arch" type="xml">
+            <search string="Transferencias Automáticas">
+                <field name="name"/>
+                <field name="origin"/>
+                <field name="auto_replenishment_orderpoint_id"/>
+                <field name="origin_warehouse_id"/>
+                <field name="dest_warehouse_id"/>
+                <field name="location_id"/>
+                <field name="location_dest_id"/>
+                <separator/>
+                <filter string="Por Hacer" name="filter_todo"
+                        domain="[('state', 'not in', ['done', 'cancel'])]"/>
+                <filter string="Listas para Transferir" name="filter_ready"
+                        domain="[('state', '=', 'assigned')]"/>
+                <filter string="Completadas" name="filter_done"
+                        domain="[('state', '=', 'done')]"/>
+                <filter string="Canceladas" name="filter_cancel"
+                        domain="[('state', '=', 'cancel')]"/>
+                <separator/>
+                <filter string="Hoy" name="filter_today"
+                        domain="[('create_date', '&gt;=', (context_today()).strftime('%Y-%m-%d'))]"/>
+                <separator/>
+                <group expand="0" string="Agrupar por">
+                    <filter string="Estado" name="group_state" context="{'group_by': 'state'}"/>
+                    <filter string="Regla de Reorden" name="group_orderpoint"
+                            context="{'group_by': 'auto_replenishment_orderpoint_id'}"/>
+                    <filter string="Almacén Origen" name="group_origin_wh"
+                            context="{'group_by': 'origin_warehouse_id'}"/>
+                    <filter string="Almacén Destino" name="group_dest_wh"
+                            context="{'group_by': 'dest_warehouse_id'}"/>
+                </group>
+            </search>
+        </field>
+    </record>
+</odoo>

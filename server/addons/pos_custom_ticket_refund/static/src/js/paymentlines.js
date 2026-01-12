@@ -350,6 +350,36 @@ patch(PaymentScreen.prototype, {
 
         super.updateSelectedPaymentline(amount);
 
+        // Validar montos para métodos de pago no efectivo
+        const selectedMethod = selectedPaymentLine.payment_method;
+        const isCash = selectedMethod.is_cash_count || selectedMethod.type === "cash";
+
+        if (!isCash) {
+            const totalOrder = parseFloat(Math.abs(this.get_total_amount_order(order)).toFixed(2));
+            const currentAmount = selectedPaymentLine.amount;
+            const paymentName = selectedMethod.originalName || selectedMethod.name;
+
+            // Validar que el monto no sea menor a 0
+            if (currentAmount < 0) {
+                this.popup.add(ErrorPopup, {
+                    title: _t("Monto inválido"),
+                    body: _t(`El método de pago "${paymentName}" no puede tener un monto menor a 0.`),
+                });
+                selectedPaymentLine.set_amount(0);
+                return;
+            }
+
+            // Validar que el monto no sea mayor al total de la factura
+            if (currentAmount > totalOrder) {
+                this.popup.add(ErrorPopup, {
+                    title: _t("Monto excede el total"),
+                    body: _t(`El método de pago "${paymentName}" no puede exceder el total de la factura ($${totalOrder.toFixed(2)}). Solo el efectivo puede exceder el total.`),
+                });
+                selectedPaymentLine.set_amount(totalOrder);
+                return;
+            }
+        }
+
 
         if (selectedPaymentLine.payment_method.code_payment_method === "CREDITO") {
             // const total_amount = Math.abs(this.get_total_amount_order(order));
@@ -934,10 +964,16 @@ patch(PaymentScreen.prototype, {
 
         const paymentLines = order.get_paymentlines();
 
+        let hasError = false;
         if (order.get_orderlines()[0]?.refunded_orderline_id) {
-            await this.rules_with_refund(paymentLines, paymentMethod, order);
+            hasError = await this.rules_with_refund(paymentLines, paymentMethod, order);
         } else {
-            await this.rules_without_refund(paymentLines, paymentMethod, order);
+            hasError = await this.rules_without_refund(paymentLines, paymentMethod, order);
+        }
+
+        // Si hubo error en las validaciones, no continuar
+        if (hasError) {
+            return;
         }
 
         let lineExists = order
@@ -1044,7 +1080,7 @@ patch(PaymentScreen.prototype, {
                     title: _t("Método de Pago Inválido"),
                     body: _t("No es posible usar 'Cuenta a favor cliente' com otro métodos de pago. Elimine primero los otros metodos de pago."),
                 });
-                return;
+                return true; // Indica que hubo error
             }
         } else {
             if (isCuentaAFavorClienteSelected) {
@@ -1052,7 +1088,7 @@ patch(PaymentScreen.prototype, {
                     title: _t("Método de Pago Inválido"),
                     body: _t("No es posible usar otros métodos de pago con 'Cuenta a favor cliente'. Primero elimine el método pago 'Cuenta a favor cliente'."),
                 });
-                return;
+                return true; // Indica que hubo error
             }
         }
 
@@ -1080,6 +1116,7 @@ patch(PaymentScreen.prototype, {
                 super.addNewPaymentLine(paymentMethod);
             }
         }
+        return false; // Sin error
     },
 
     is_order_with_change(order) {
@@ -1134,13 +1171,13 @@ patch(PaymentScreen.prototype, {
         if (isCuentaAFavorClienteSelected) {
             if (paymentMethod.is_cash_count || paymentMethod.originalName === "CREDITO") {
                 super.addNewPaymentLine(paymentMethod);
-                return
+                return false; // Sin error, ya se agregó la línea
             } else {
                 await this.popup.add(ErrorPopup, {
                     title: _t("Método de Pago Inválido"),
                     body: "EL método de pago Saldo a favor cliente, solo puedes combinarlo con Efectivo",
                 });
-                return;
+                return true; // Indica que hubo error
             }
 
         }
@@ -1157,13 +1194,13 @@ patch(PaymentScreen.prototype, {
                         super.addNewPaymentLine(paymentMethod);
                         const newLine = order.selected_paymentline;
                         newLine.set_amount(creditNoteTotal);
-                        return
+                        return false; // Sin error, ya se agregó la línea
                     } else {
                         await this.popup.add(ErrorPopup, {
                             title: _t("El valor de la orden no es suficiente"),
                             body: _t("No es posible usar 'Cuenta a favor cliente' porque se debe usar todo el monto para realizar la compra."),
                         });
-                        return;
+                        return true; // Indica que hubo error
                     }
                 } else if (isCashLineSelected) {
                     const creditNoteTotal = this.state.creditNoteTotal || 0;
@@ -1179,26 +1216,28 @@ patch(PaymentScreen.prototype, {
                         super.addNewPaymentLine(paymentMethod);
                         const newLine = order.selected_paymentline;
                         newLine.set_amount(creditNoteTotal);
-                        return
+                        return false; // Sin error, ya se agregó la línea
                     } else {
-
+                        return true; // Indica que hubo error
                     }
 
 
                 } else {
                     console.log("eeeeeee")
+                    return true; // Caso no manejado, tratar como error
                 }
             } else {
                 await this.popup.add(ErrorPopup, {
                     title: _t("Método de Pago Inválido"),
                     body: _t("No es posible usar esos metodos de pagos juntos."),
                 });
-                return;
+                return true; // Indica que hubo error
             }
 
         }
 
-        super.addNewPaymentLine(paymentMethod);
+        // No llamar a super aquí, se hace en addNewPaymentLine
+        return false; // Sin error
 
     },
 

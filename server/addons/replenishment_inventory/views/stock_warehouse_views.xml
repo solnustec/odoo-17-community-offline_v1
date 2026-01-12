@@ -11,6 +11,7 @@
                         <group>
                             <field name="replenishment_based_on_sales"/>
                             <field name="replenishment_based_on_transfers"/>
+                            <field name="is_main_warehouse"/>
                         </group>
                     </group>
                 </xpath>

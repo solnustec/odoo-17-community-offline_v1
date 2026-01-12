@@ -110,3 +110,44 @@ class StockPicking(models.Model):
             })
 
         return stock_updates
+
+    @api.model
+    def get_transfer_config(self, config_id):
+        """Obtiene la configuración del POS para las transferencias.
+
+        Devuelve información sobre si se deben mostrar las transferencias
+        automáticas y si el campo is_auto_replenishment existe en el modelo.
+
+        :param config_id: ID de la configuración del POS
+        :return dict: Diccionario con la configuración
+        """
+        result = {
+            'show_auto_transfers': True,  # Por defecto mostrar todo
+            'has_auto_replenishment_field': False,
+            'filter_auto_transfers': False,
+        }
+
+        try:
+            if not config_id:
+                return result
+
+            config = self.env['pos.config'].sudo().browse(config_id)
+
+            if not config.exists():
+                return result
+
+            # Verificar si el campo is_auto_replenishment existe en stock.picking
+            has_field = 'is_auto_replenishment' in self._fields
+            result['has_auto_replenishment_field'] = has_field
+
+            # Obtener la configuración de show_auto_transfers
+            show_auto = getattr(config, 'show_auto_transfers', True)
+            result['show_auto_transfers'] = show_auto
+
+            # Solo filtrar si el campo existe Y la configuración indica no mostrar
+            result['filter_auto_transfers'] = has_field and not show_auto
+
+        except Exception:
+            pass
+
+        return result

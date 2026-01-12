@@ -433,11 +433,57 @@
                                                     <t t-if="!purchase.order_id">—</t>
                                                 </td>
                                                 <td>
-                                                    <a t-if="purchase.invoice_id" href="#"
-                                                       t-on-click="() => this.openVendorBill(purchase.invoice_id)">
-                                                        <t t-esc="purchase.invoice_name or 'Factura'"/>
-                                                    </a>
-                                                    <t t-if="!purchase.invoice_id">—</t>
+                                                    <!-- Sin facturas -->
+                                                    <t t-if="!purchase.invoices or purchase.invoices.length === 0">—</t>
+
+                                                    <!-- Una sola factura -->
+                                                    <t t-elif="purchase.invoices.length === 1">
+                                                        <a href="#" t-on-click="() => this.openVendorBill(purchase.invoices[0].id)"
+                                                           t-att-class="purchase.invoices[0].move_type === 'in_refund' ? 'text-success fw-bold' : ''">
+                                                            <t t-esc="purchase.invoices[0].name"/>
+                                                        </a>
+                                                    </t>
+
+                                                    <!-- Múltiples facturas - Acordeón -->
+                                                    <t t-else="">
+                                                        <div class="invoice-accordion">
+                                                            <!-- Última factura con botón desplegable -->
+                                                            <div class="d-flex align-items-center">
+                                                                <a href="#" t-on-click="() => this.openVendorBill(purchase.invoices[0].id)"
+                                                                   t-att-class="'me-1' + (purchase.invoices[0].move_type === 'in_refund' ? ' text-success fw-bold' : '')">
+                                                                    <t t-esc="purchase.invoices[0].name"/>
+                                                                </a>
+                                                                <button type="button"
+                                                                        class="btn btn-link btn-sm p-0 text-secondary"
+                                                                        t-att-data-bs-toggle="'collapse'"
+                                                                        t-att-data-bs-target="'#invoices-collapse-' + purchase_index"
+                                                                        t-att-aria-expanded="'false'"
+                                                                        t-att-aria-controls="'invoices-collapse-' + purchase_index"
+                                                                        title="Ver más facturas">
+                                                                    <i class="fa fa-chevron-down"/>
+                                                                    <span class="badge bg-secondary ms-1" style="font-size: 0.65rem;">
+                                                                        +<t t-esc="purchase.invoices.length - 1"/>
+                                                                    </span>
+                                                                </button>
+                                                            </div>
+                                                            <!-- Lista colapsable de facturas adicionales -->
+                                                            <div class="collapse" t-att-id="'invoices-collapse-' + purchase_index">
+                                                                <div class="mt-1 ps-2 border-start border-2">
+                                                                    <t t-foreach="purchase.invoices.slice(1)" t-as="inv" t-key="inv.id">
+                                                                        <div class="small">
+                                                                            <a href="#" t-on-click="() => this.openVendorBill(inv.id)"
+                                                                               t-att-class="inv.move_type === 'in_refund' ? 'text-success fw-bold' : ''">
+                                                                                <t t-esc="inv.name"/>
+                                                                            </a>
+                                                                            <span class="text-muted ms-1" t-if="inv.date">
+                                                                                (<t t-esc="inv.date"/>)
+                                                                            </span>
+                                                                        </div>
+                                                                    </t>
+                                                                </div>
+                                                            </div>
+                                                        </div>
+                                                    </t>
                                                 </td>
                                             </tr>
                                         </tbody>

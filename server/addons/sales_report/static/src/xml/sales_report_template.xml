@@ -182,7 +182,7 @@
 
         <!--        fin vista pra grupo de promociones-->
         <t t-if="this.state.is_purchase_admin and this.state.is_promotion_user">
-            <div class="dashboard_for_report_sales p-1 h-100">
+            <div class="dashboard_for_report_sales px-3 py-2 h-100">
                 <!-- Aviso de productos en carrito (localStorage) -->
                 <t t-if="state.cart.length > 0">
                     <div class="alert alert-warning alert-dismissible fade show py-2 px-3 mb-2 d-flex align-items-center justify-content-between" role="alert" style="font-size: 0.85rem;">
@@ -208,193 +208,162 @@
                         </button>
                     </div>
                 </t>
-                <div class="row mt-1">
-                    <div class="col-sm-12 col-md-8 ">
-                        <div class="row p-0 m-0">
-                            <div class="col-2">
-                                <label class="o_field_widget o_field_date" for="start_date">Desde
-                                    <br/>
-                                    <input type="date" id="start_date" name="start_date"
-                                           t-ref="start_date"
-                                           class="o_input cursor-pointer"
-                                           placeholder="Fecha de inicio"
-                                           t-att-value="start_date"
-                                           t-on-change="(ev) => this.onStartDateChange(ev)"/>
-                                </label>
-                            </div>
-                            <div class="col-2">
-                                <label class="o_field_widget o_field_date" for="end_date">Hasta
-                                    <br/>
-                                    <input type="date" id="end_date" name="end_date"
-                                           t-ref="end_date"
-                                           class="o_input "
-                                           t-att-value="end_date"
-                                           t-on-change="(ev) => this.onEndDateChange(ev)"/>
-                                </label>
-                            </div>
-                            <div class="col-1">
-                                <label class="form-label" for="end_date">Buscar
-                                    <br/>
-                                    <button class="btn btn-secondary"
-                                            t-on-click="getSalesInformation">
-                                        <i class="fa fa-search"/>
-                                    </button>
-                                </label>
-                            </div>
-                            <div class="col-1 pt-3">
-                                <button class="btn btn-secondary" t-on-click="getPendingProducts"
-                                        t-att-class="state.pendingProducts ? 'btn-primary' : 'btn-secondary'">
-                                    <i class="fa fa-list"/>
-                                </button>
-                            </div>
-                            <div class="col-2">
+
+                <!-- Barra de filtros principal - Layout compacto -->
+                <div class="d-flex align-items-end gap-2 mb-2 pb-2 border-bottom" style="flex-wrap: nowrap; overflow-x: auto;">
+                    <!-- Fechas -->
+                    <div class="d-flex align-items-end gap-1" style="flex-shrink: 0;">
+                        <div>
+                            <small class="text-muted d-block mb-1">Desde</small>
+                            <input type="date" id="start_date" name="start_date"
+                                   t-ref="start_date"
+                                   class="form-control form-control-sm"
+                                   style="width: 125px;"
+                                   t-att-value="start_date"
+                                   t-on-change="(ev) => this.onStartDateChange(ev)"/>
+                        </div>
+                        <div>
+                            <small class="text-muted d-block mb-1">Hasta</small>
+                            <input type="date" id="end_date" name="end_date"
+                                   t-ref="end_date"
+                                   class="form-control form-control-sm"
+                                   style="width: 125px;"
+                                   t-att-value="end_date"
+                                   t-on-change="(ev) => this.onEndDateChange(ev)"/>
+                        </div>
+                        <button class="btn btn-primary btn-sm" style="height: 31px;" t-on-click="getSalesInformation" title="Buscar">
+                            <i class="fa fa-search"/>
+                        </button>
+                        <button class="btn btn-sm" style="height: 31px;"
+                                t-att-class="state.pendingProducts ? 'btn-warning' : 'btn-outline-secondary'"
+                                t-on-click="getPendingProducts" title="Productos pendientes">
+                            <i class="fa fa-list"/>
+                        </button>
+                    </div>
+
+                    <div class="vr mx-1" style="height: 31px; align-self: flex-end; opacity: 0.3;"/>
+
+                    <!-- Selectores: Marca, Laboratorio, Bodega - con overflow hidden -->
+                    <div class="d-flex align-items-end gap-2" style="flex-shrink: 0;">
+                        <div style="width: 150px;">
+                            <small class="text-muted d-block mb-1">Marca</small>
+                            <div class="selector-container">
                                 <RecordSelector
                                         resModel="'product.brand'"
                                         resId="state.selectedBrand"
                                         update.bind="onUpdateSelectedBrand"
-                                        placeholder="'Marca'"/>
-                                <!--                                        <label class="form-label">-->
-                                <!--                                            Marca-->
-                                <!--                                            <br/>-->
-                                <!--                                            <input list="brands" name="brand" t-model="state.selectedBrand"-->
-                                <!--                                                   class="form-control form-control-sm"-->
-                                <!--                                                   t-on-change="onBrandChange"/>-->
-
-                                <!--                                            <datalist id="brands">-->
-                                <!--                                                <t t-foreach="state.brands" t-as="brand" t-key="brand.id">-->
-                                <!--                                                    <option t-att-value="brand.name" class="o_input"-->
-                                <!--                                                            style="cursor: pointer!important"/>-->
-                                <!--                                                </t>-->
-                                <!--                                            </datalist>-->
-                                <!--                                        </label>-->
+                                        placeholder="'Marca...'"/>
                             </div>
-                            <div class="col-2">
+                        </div>
+                        <div style="width: 150px;">
+                            <small class="text-muted d-block mb-1">Laboratorio</small>
+                            <div class="selector-container">
                                 <RecordSelector
                                         resModel="'product.laboratory'"
                                         resId="state.selectedLaboratory"
                                         update.bind="onUpdateSelectedLaboratory"
-                                        placeholder="'Laboratorio'"/>
+                                        placeholder="'Lab...'"/>
                             </div>
-                            <div class="col-2">
+                        </div>
+                        <div style="width: 150px;">
+                            <small class="text-muted d-block mb-1">Bodega</small>
+                            <div class="selector-container">
                                 <RecordSelector
                                         resModel="'stock.warehouse'"
                                         resId="state.selectedWarehouse"
                                         update.bind="onUpdateSelectedWarehouse"
-                                        placeholder="'Bodega'"/>
+                                        placeholder="'Bodega...'"/>
                             </div>
                         </div>
                     </div>
-                    <div class="cols-ms-12 col-md-4">
-                        <div class="row p-0 m-0">
-                            <div class="col-sm-12  col-12">
-                                <div class="row p-0 m-0">
-                                    <div class="col-sm-6 col-md-5">
-                                        <button type="button" class="btn btn-primary "
-                                                t-on-click="createPurchaseOrder">
-                                            Guardar
-                                            <i class="fa fa-fw fa-shopping-cart"/>
-                                        </button>
-                                    </div>
-                                    <div class="col-sm-6 col-md-6 col-7 p-0 justify-content-around align-items-center ">
-                                        <span class="badge rounded-pill text-bg-danger cursor-pointer"
-                                              t-on-click="()=> this.warehousesStock('stock_0')">Sin Stock
-                                                </span>
-                                        <span class="badge rounded-pill text-bg-warning cursor-pointer"
-                                              t-on-click="()=> this.warehousesStock('stock_1')">1 a 10
-                                                </span>
-                                        <span class="badge rounded-pill text-bg-success cursor-pointer"
-                                              t-on-click="()=> this.warehousesStock('stock_2')">Más de 10
-                                                </span>
-                                    </div>
-                                </div>
-                            </div>
-                            <div class="col-12">
-                                <div class="mt-1">
-                                    <div class="d-flex align-items-center">
-                                        <select t-on-change="onPurchaseOrderChange" class="form-select"
-                                                style="flex: 1">
-                                            <option value="">Seleccione una orden</option>
-                                            <t t-foreach="state.lastPurchaseOrders" t-as="order"
-                                               t-key="order.id">
-                                                <option t-att-value="order.id">
-                                                    <t t-esc="order.name + ' - ' + order.partner_id[1] + ' (' + order.date_order + ')'"/>
-                                                </option>
-                                            </t>
-                                        </select>
-                                        <button type="button" class="btn btn-outline-secondary ms-2"
-                                                t-on-click="openPurchaseOrderModal"
-                                                title="Ver orden de compra">
-                                                    <i class="fa fa-eye"/>
-                                        </button>
-                                    </div>
-                                </div>
-                            </div>
+
+                    <div class="vr mx-1" style="height: 31px; align-self: flex-end; opacity: 0.3;"/>
+
+                    <!-- Botón Guardar Orden -->
+                    <button type="button" class="btn btn-primary btn-sm" style="height: 31px; flex-shrink: 0;" t-on-click="createPurchaseOrder">
+                        <i class="fa fa-shopping-cart me-1"/> Guardar Orden
+                    </button>
+
+                    <div class="vr mx-1" style="height: 31px; align-self: flex-end; opacity: 0.3;"/>
+
+                    <!-- Selector de Orden de Compra -->
+                    <div style="flex-shrink: 0;">
+                        <div class="btn-group btn-group-sm mb-1 d-flex justify-content-center">
+                            <button type="button"
+                                    t-att-class="'btn btn-sm ' + (state.purchaseOrderPeriodFilter === 'day' ? 'btn-secondary' : 'btn-outline-secondary')"
+                                    t-on-click="() => this.onPurchaseOrderPeriodChange('day')">D</button>
+                            <button type="button"
+                                    t-att-class="'btn btn-sm ' + (state.purchaseOrderPeriodFilter === 'month' ? 'btn-secondary' : 'btn-outline-secondary')"
+                                    t-on-click="() => this.onPurchaseOrderPeriodChange('month')">M</button>
+                            <button type="button"
+                                    t-att-class="'btn btn-sm ' + (state.purchaseOrderPeriodFilter === 'year' ? 'btn-secondary' : 'btn-outline-secondary')"
+                                    t-on-click="() => this.onPurchaseOrderPeriodChange('year')">A</button>
+                        </div>
+                        <div class="d-flex gap-1">
+                            <select t-on-change="onPurchaseOrderChange" class="form-select form-select-sm" style="width: 160px;">
+                                <option value="">Orden (<t t-esc="state.lastPurchaseOrders.length"/>)</option>
+                                <t t-foreach="state.lastPurchaseOrders" t-as="order" t-key="order.id">
+                                    <option t-att-value="order.id">
+                                        <t t-esc="order.name + ' - ' + order.partner_id[1]"/>
+                                    </option>
+                                </t>
+                            </select>
+                            <button type="button" class="btn btn-outline-secondary btn-sm" t-on-click="openPurchaseOrderModal" title="Ver orden">
+                                <i class="fa fa-eye"/>
+                            </button>
                         </div>
                     </div>
                 </div>
                 <div class="row p-0 m-0">
                     <div class="col-9 mb-1">
-                        <div class="row p-0 m-0">
-                            <div class="col-6">
-                                <input type="text" class="form-control bg-white" style="width: 100%;"
-                                       t-att-placeholder="state.search_mode === 'product' ? 'Escriba el nombre de un producto...' : 'Escriba el nombre de un laboratorio...'"
+                        <div class="d-flex align-items-center gap-3">
+                            <!-- Barra de búsqueda con icono -->
+                            <div class="search-box position-relative" style="width: 320px;">
+                                <i class="fa fa-search search-icon"/>
+                                <input type="text" class="form-control form-control-sm search-input"
+                                       t-att-placeholder="state.search_mode === 'product' ? 'Buscar producto...' : 'Buscar laboratorio...'"
                                        t-model="state.product_query"
                                        t-on-input="(ev)=> this.onSearchInputProd(ev)"/>
                             </div>
-                            <div class="col-3">
-                                <button class="btn btn-sm btn-success"
-                                        t-on-click=" ()=> this.exportProductsToExcel()">
+                            <!-- Modo de búsqueda -->
+                            <div class="btn-group btn-group-sm">
+                                <button type="button"
+                                        t-att-class="'btn btn-sm ' + (state.search_mode === 'product' ? 'btn-secondary' : 'btn-outline-secondary')"
+                                        t-on-click="() => this.setSearchMode('product')">
+                                    Prod.
+                                </button>
+                                <button type="button"
+                                        t-att-class="'btn btn-sm ' + (state.search_mode === 'laboratory' ? 'btn-secondary' : 'btn-outline-secondary')"
+                                        t-on-click="() => this.setSearchMode('laboratory')">
+                                    Lab.
+                                </button>
+                            </div>
+                            <!-- Excel y códigos -->
+                            <div class="d-flex align-items-center gap-2">
+                                <button class="btn btn-sm btn-success px-2" style="height: 31px;" t-on-click="()=> this.exportProductsToExcel()" title="Exportar a Excel">
                                     <i class="fa fa-file-excel-o"/>
                                 </button>
-                                <t t-if="this.state.product_code">
-                                            Código: <t class="mx-1" t-esc="this.state.product_code"/>
+                                <t t-if="this.state.product_code or this.state.product_id_old">
+                                    <div class="code-badge d-flex align-items-center">
+                                        <t t-if="this.state.product_code">
+                                            <span class="code-item">
+                                                <i class="fa fa-barcode"/>
+                                                <span t-esc="this.state.product_code"/>
+                                            </span>
+                                        </t>
+                                        <t t-if="this.state.product_id_old">
+                                            <span class="code-item">
+                                                <i class="fa fa-database"/>
+                                                <span t-esc="this.state.product_id_old"/>
+                                            </span>
+                                        </t>
+                                    </div>
                                 </t>
                             </div>
-                            <div class="col-3">
-                                <div class="row">
-                                    <div class="col-3">
-                                        <div class="form-check">
-                                            <input class="form-check-input" type="checkbox" name="searchMode"
-                                                   id="searchModeProduct" value="product"
-                                                   t-on-change="onSearchModeChange"
-                                                   t-att-checked="state.search_mode === 'product'"/>
-                                            <label class="form-check-label" for="searchModeProduct">
-                                                Prod.
-                                            </label>
-                                        </div>
-                                    </div>
-                                    <div class="col-4">
-                                        <div class="form-check">
-                                            <input class="form-check-input" type="checkbox" name="searchMode"
-                                                   id="searchModeLaboratory" value="laboratory"
-                                                   t-on-change="onSearchModeChange"
-                                                   t-att-checked="state.search_mode === 'laboratory'"/>
-                                            <label class="form-check-label" for="searchModeLaboratory">
-                                                Lab.
-                                            </label>
-                                        </div>
-                                    </div>
-                                </div>
-                            </div>
-                            <!--                        <div class="col-3 float-left">-->
-                            <!--                            <button class="btn btn-outline-secondary text-dark float-end" t-on-click="addNewProduct">Agregar producto-->
-                            <!--                                <i class="fa fa-external-link"/>-->
-                            <!--                            </button>-->
-                            <!--                        </div>-->
                         </div>
                     </div>
-                    <div class="col-3">
-                        <t t-if="state.selected_product_id or state.selected_laboratory_row_id">
-                            <div class=" position-relative">
-                                <i class="fa fa-search"
-                                   style="position:absolute; left:10px; top:50%; transform:translateY(-50%); color:#6c757d; pointer-events:none;"/>
-                                <input type="text" class="form-control bg-white"
-                                       style="width: 100%; padding-left: 2rem;"
-                                       placeholder="Buscar bodega..."
-                                       t-model="state.warehouse_query"
-                                       t-on-input="(ev)=> this.onSearchInputWarehouse(ev)"/>
-                            </div>
-                        </t>
+                    <div class="col-3 px-0">
+                        <!-- Espacio vacío para mantener alineación -->
                     </div>
                 </div>
                 <t>
@@ -420,27 +389,74 @@
                                         <tr t-if="state.search_mode === 'product'" class="p-2">
                                             <th t-on-click="()=> this.handleSortRow('product_name')"
                                                 style="cursor: pointer;">Nombre
+                                                <i t-if="state.sortColumn === 'product_name' and state.sortDirection === 'desc'" class="fa fa-sort-desc ms-1"/>
+                                                <i t-elif="state.sortColumn === 'product_name' and state.sortDirection === 'asc'" class="fa fa-sort-asc ms-1"/>
                                             </th>
                                             <th t-on-click="()=> this.handleSortRow('quantity_sold')"
                                                 style="cursor: pointer;">Cant(U)
-                                                    </th>
+                                                <i t-if="state.sortColumn === 'quantity_sold' and state.sortDirection === 'desc'" class="fa fa-sort-desc ms-1"/>
+                                                <i t-elif="state.sortColumn === 'quantity_sold' and state.sortDirection === 'asc'" class="fa fa-sort-asc ms-1"/>
+                                            </th>
                                             <th t-on-click="()=> this.handleSortRow('boxes')"
-                                                style="cursor: pointer;">Cajas</th>
+                                                style="cursor: pointer;">Cajas
+                                                <i t-if="state.sortColumn === 'boxes' and state.sortDirection === 'desc'" class="fa fa-sort-desc ms-1"/>
+                                                <i t-elif="state.sortColumn === 'boxes' and state.sortDirection === 'asc'" class="fa fa-sort-asc ms-1"/>
+                                            </th>
                                             <th t-on-click="()=> this.handleSortRow('units')"
-                                                style="cursor: pointer;">Unids.</th>
+                                                style="cursor: pointer;">Unids.
+                                                <i t-if="state.sortColumn === 'units' and state.sortDirection === 'desc'" class="fa fa-sort-desc ms-1"/>
+                                                <i t-elif="state.sortColumn === 'units' and state.sortDirection === 'asc'" class="fa fa-sort-asc ms-1"/>
+                                            </th>
                                             <th t-on-click="()=> this.handleSortRow('stock_total')"
                                                 style="cursor: pointer;">Stock(U)
-                                                    </th>
-                                            <th t-on-click="() => this.handleSortReab()"
-                                                style="cursor: pointer; background-color: #e3f2fd; color: #1976d2; font-weight: bold;">Reab.</th>
-                                            <th>Tot.</th>
-                                            <th>Costo</th>
-                                            <th>CP</th>
-                                            <th>UC</th>
-                                            <th>PVF</th>
-                                            <th>%CP.PVF</th>
-                                            <th>%D.Esp</th>
-                                            <th>%Util</th>
+                                                <i t-if="state.sortColumn === 'stock_total' and state.sortDirection === 'desc'" class="fa fa-sort-desc ms-1"/>
+                                                <i t-elif="state.sortColumn === 'stock_total' and state.sortDirection === 'asc'" class="fa fa-sort-asc ms-1"/>
+                                            </th>
+                                            <th t-on-click="() => this.handleSortRow('matilde_qty_to_order')"
+                                                style="cursor: pointer; background-color: #e3f2fd; color: #1976d2; font-weight: bold;">Reab.
+                                                <i t-if="state.sortColumn === 'matilde_qty_to_order' and state.sortDirection === 'desc'" class="fa fa-sort-desc ms-1"/>
+                                                <i t-elif="state.sortColumn === 'matilde_qty_to_order' and state.sortDirection === 'asc'" class="fa fa-sort-asc ms-1"/>
+                                            </th>
+                                            <th t-on-click="()=> this.handleSortRow('amount_total')"
+                                                style="cursor: pointer;">Tot.
+                                                <i t-if="state.sortColumn === 'amount_total' and state.sortDirection === 'desc'" class="fa fa-sort-desc ms-1"/>
+                                                <i t-elif="state.sortColumn === 'amount_total' and state.sortDirection === 'asc'" class="fa fa-sort-asc ms-1"/>
+                                            </th>
+                                            <th t-on-click="()=> this.handleSortRow('total_cost')"
+                                                style="cursor: pointer;">Costo
+                                                <i t-if="state.sortColumn === 'total_cost' and state.sortDirection === 'desc'" class="fa fa-sort-desc ms-1"/>
+                                                <i t-elif="state.sortColumn === 'total_cost' and state.sortDirection === 'asc'" class="fa fa-sort-asc ms-1"/>
+                                            </th>
+                                            <th t-on-click="()=> this.handleSortRow('avg_standar_price_old')"
+                                                style="cursor: pointer;">CP
+                                                <i t-if="state.sortColumn === 'avg_standar_price_old' and state.sortDirection === 'desc'" class="fa fa-sort-desc ms-1"/>
+                                                <i t-elif="state.sortColumn === 'avg_standar_price_old' and state.sortDirection === 'asc'" class="fa fa-sort-asc ms-1"/>
+                                            </th>
+                                            <th t-on-click="()=> this.handleSortRow('standar_price_old')"
+                                                style="cursor: pointer;">UC
+                                                <i t-if="state.sortColumn === 'standar_price_old' and state.sortDirection === 'desc'" class="fa fa-sort-desc ms-1"/>
+                                                <i t-elif="state.sortColumn === 'standar_price_old' and state.sortDirection === 'asc'" class="fa fa-sort-asc ms-1"/>
+                                            </th>
+                                            <th t-on-click="()=> this.handleSortRow('pvf')"
+                                                style="cursor: pointer;">PVF
+                                                <i t-if="state.sortColumn === 'pvf' and state.sortDirection === 'desc'" class="fa fa-sort-desc ms-1"/>
+                                                <i t-elif="state.sortColumn === 'pvf' and state.sortDirection === 'asc'" class="fa fa-sort-asc ms-1"/>
+                                            </th>
+                                            <th t-on-click="()=> this.handleSortRow('percentage_change_average_cost')"
+                                                style="cursor: pointer;">%CP.PVF
+                                                <i t-if="state.sortColumn === 'percentage_change_average_cost' and state.sortDirection === 'desc'" class="fa fa-sort-desc ms-1"/>
+                                                <i t-elif="state.sortColumn === 'percentage_change_average_cost' and state.sortDirection === 'asc'" class="fa fa-sort-asc ms-1"/>
+                                            </th>
+                                            <th t-on-click="()=> this.handleSortRow('discount')"
+                                                style="cursor: pointer;">%D.Esp
+                                                <i t-if="state.sortColumn === 'discount' and state.sortDirection === 'desc'" class="fa fa-sort-desc ms-1"/>
+                                                <i t-elif="state.sortColumn === 'discount' and state.sortDirection === 'asc'" class="fa fa-sort-asc ms-1"/>
+                                            </th>
+                                            <th t-on-click="()=> this.handleSortRow('utility')"
+                                                style="cursor: pointer;">%Util
+                                                <i t-if="state.sortColumn === 'utility' and state.sortDirection === 'desc'" class="fa fa-sort-desc ms-1"/>
+                                                <i t-elif="state.sortColumn === 'utility' and state.sortDirection === 'asc'" class="fa fa-sort-asc ms-1"/>
+                                            </th>
                                             <th>Inf.</th>
                                             <th aria-label="Acciones">
                                                 <div class="d-flex align-items-center justify-content-center">
@@ -726,10 +742,29 @@
                         <t t-else="">
                             <div class="overflow-y-auto"
                                  style="max-height: 70vh;font-size:12px;font-weight:500">
+                                <!-- Controles de bodega - siempre visibles si hay datos base -->
+                                <t t-if="state.warehouses_base and state.warehouses_base.length > 0">
+                                    <div class="warehouse-controls bg-white pb-1 mb-1" style="position: sticky; top: 0; z-index: 2;">
+                                        <div class="d-flex gap-1 align-items-center">
+                                            <div class="search-box position-relative flex-grow-1">
+                                                <i class="fa fa-search search-icon"/>
+                                                <input type="text" class="form-control form-control-sm search-input"
+                                                       placeholder="Buscar bodega..."
+                                                       t-model="state.warehouse_query"
+                                                       t-on-input="(ev)=> this.onSearchInputWarehouse(ev)"/>
+                                            </div>
+                                            <div class="btn-group btn-group-sm">
+                                                <button type="button" class="btn btn-outline-danger btn-sm px-2" t-on-click="()=> this.warehousesStock('stock_0')" title="Sin Stock">0</button>
+                                                <button type="button" class="btn btn-outline-warning btn-sm px-2" t-on-click="()=> this.warehousesStock('stock_1')" title="Stock bajo">1-10</button>
+                                                <button type="button" class="btn btn-outline-success btn-sm px-2" t-on-click="()=> this.warehousesStock('stock_2')" title="Stock alto">+10</button>
+                                            </div>
+                                        </div>
+                                    </div>
+                                </t>
                                 <t t-if="state.warehouses.length > 0">
                                     <table class="table table-sm table-hover table-responsive fw-bold ">
                                         <thead class="bg-light  text-dark"
-                                               style="position: sticky; top: 0; z-index: 1;">
+                                               style="position: sticky; top: 40px; z-index: 1;">
                                             <tr>
                                                 <th t-on-click="()=> this.sortWarehouseData('warehouse_name')"
                                                     style="cursor:pointer;width:40%">Bodega
@@ -803,6 +838,14 @@
                                             </tr>
                                         </tfoot>
                                     </table>
+                                </t>
+                                <t t-else="">
+                                    <!-- Mensaje cuando no hay bodegas que coincidan con el filtro -->
+                                    <div class="d-flex flex-column align-items-center justify-content-center text-muted py-4">
+                                        <i class="fa fa-filter fa-2x mb-2 text-secondary"/>
+                                        <p class="mb-1">No se encontraron bodegas</p>
+                                        <small>Intenta con otro filtro de stock</small>
+                                    </div>
                                 </t>
                             </div>
                         </t>
@@ -1062,7 +1105,8 @@
                                                             </td>
                                                             <td>
                                                                 <a t-if="purchase.invoice_id" href="#"
-                                                                   t-on-click="() => this.openVendorBill(purchase.invoice_id)">
+                                                                   t-on-click="() => this.openVendorBill(purchase.invoice_id)"
+                                                                   t-att-class="purchase.is_credit_note ? 'text-success fw-bold' : ''">
                                                                     <t t-esc="purchase.invoice_name or 'Factura'"/>
                                                                 </a>
                                                                 <t t-if="!purchase.invoice_id">—</t>

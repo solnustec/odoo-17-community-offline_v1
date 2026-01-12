@@ -12,7 +12,6 @@ class StockPickingController(http.Controller):
 
     @http.route('/api/stock_picking/create', type='http', auth='public', methods=['POST'], csrf=False)
     def create_stock_picking(self, **kwargs):
-        # try:
         # Obtener los datos del cuerpo de la solicitud
         data = json.loads(request.httprequest.data)
 
@@ -114,6 +113,11 @@ class StockPickingController(http.Controller):
             force_company=company_id_origin
         ).create(stock_picking_vals)
 
+        # Obtener configuración ANTES de crear los moves: si está activo, NO mover stock
+        sync_without_moves = request.env['ir.config_parameter'].sudo().get_param(
+            'stock.sync_transfer_without_moves', 'False'
+        ) == 'True'
+
         # Procesar las líneas de movimiento (stock.move)
         if 'move_lines' in data and isinstance(data['move_lines'], list):
             for line in data['move_lines']:
@@ -192,11 +196,31 @@ class StockPickingController(http.Controller):
             stock_picking.action_cancel()
             final_state = stock_picking.state
             action_applied = 'created_and_cancelled'
+
         # PRIORIDAD 2: Aplicar state
         elif state == 'done':
-            stock_picking.button_validate()
-            final_state = stock_picking.state
-            action_applied = 'created_and_validated'
+            if sync_without_moves:
+                # Llamar con contexto para saltar action_assign y no reservar stock
+                stock_picking.with_context(skip_action_assign=True).button_validate()
+
+                # Forzar reserved_quantity = 0 usando ORM
+                for move in stock_picking.move_ids:
+                    quants = request.env['stock.quant'].sudo().search([
+                        ('product_id', '=', move.product_id.id),
+                        ('location_id', '=', move.location_id.id),
+                        ('reserved_quantity', '>', 0)
+                    ])
+                    if quants:
+                        quants.sudo().write({'reserved_quantity': 0})
+
+                final_state = 'done'
+                action_applied = 'created_without_stock_movement'
+            else:
+                stock_picking.button_validate()
+                stock_picking = request.env['stock.picking'].sudo().browse(stock_picking.id)
+                final_state = stock_picking.state
+                action_applied = 'created_and_validated'
+
         # Si state es 'draft', dejar en draft
         elif state == 'draft':
             final_state = 'draft'
@@ -214,12 +238,9 @@ class StockPickingController(http.Controller):
             'state': final_state,
             'company_id': stock_picking.company_id.id,
             'company_name': stock_picking.company_id.name,
-            'action': action_applied
+            'action': action_applied,
+            'sync_without_moves': sync_without_moves
         }, 201)
-
-        # except Exception as e:
-        #     _logger.error(f"Error processing stock picking: {str(e)}", exc_info=True)
-        #     return self._json_response({'status': 'error', 'message': str(e)}, 500)
 
     def _handle_existing_picking(self, existing_picking, data):
         """Maneja la actualización o cancelación de un picking existente"""
@@ -229,6 +250,11 @@ class StockPickingController(http.Controller):
             cancel = cancel.lower() == 'true'
 
         state = data.get('state', '')
+
+        # Obtener configuración
+        sync_without_moves = request.env['ir.config_parameter'].sudo().get_param(
+            'stock.sync_transfer_without_moves', 'False'
+        ) == 'True'
 
         # PRIORIDAD 1: Manejo de cancelación
         if cancel:
@@ -342,10 +368,7 @@ class StockPickingController(http.Controller):
             updated_fields['note'] = data['note']
 
         # Actualizar type_transfer
-        print("revisar el transfer", data)
-
         if 'type_transfer' in data:
-            print("ingresa al type")
             update_vals['type_transfer'] = data['type_transfer']
             updated_fields['type_transfer'] = data['type_transfer']
 
@@ -400,21 +423,45 @@ class StockPickingController(http.Controller):
 
         # PRIORIDAD 3: Validación del picking
         if state == 'done':
-            existing_picking.button_validate()
-            action = 'updated_and_validated' if updated_fields else 'validated'
-            message = 'Stock picking updated and validated successfully' if updated_fields else 'Stock picking validated successfully'
+            if sync_without_moves:
+                # Llamar con contexto para saltar action_assign y no reservar stock
+                existing_picking.with_context(skip_action_assign=True).button_validate()
+
+                # Forzar reserved_quantity = 0 usando ORM
+                for move in existing_picking.move_ids:
+                    quants = request.env['stock.quant'].sudo().search([
+                        ('product_id', '=', move.product_id.id),
+                        ('location_id', '=', move.location_id.id),
+                        ('reserved_quantity', '>', 0)
+                    ])
+                    if quants:
+                        quants.sudo().write({'reserved_quantity': 0})
+
+                action = 'updated_without_stock_movement' if updated_fields else 'done_without_stock_movement'
+                message = 'Stock picking marked as done without stock movement'
+            else:
+                existing_picking.button_validate()
+                action = 'updated_and_validated' if updated_fields else 'validated'
+                message = 'Stock picking updated and validated successfully' if updated_fields else 'Stock picking validated successfully'
         else:
             action = 'updated' if updated_fields else 'no_changes'
             message = 'Stock picking updated successfully' if updated_fields else 'No changes detected in the picking'
+
+        # Determinar el estado a retornar
+        if state == 'done' and sync_without_moves:
+            final_state = 'done'  # Directamente 'done', no leer del ORM
+        else:
+            final_state = existing_picking.state
 
         return self._json_response({
             'status': 'success' if updated_fields or state == 'done' else 'info',
             'message': message,
             'picking_id': existing_picking.id,
             'picking_name': existing_picking.name,
-            'state': existing_picking.state,
+            'state': final_state,
             'updated_fields': updated_fields,
-            'action': action
+            'action': action,
+            'sync_without_moves': sync_without_moves
         }, 200)
 
     def _json_response(self, data, status=200):

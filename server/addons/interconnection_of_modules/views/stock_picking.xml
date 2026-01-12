@@ -86,6 +86,23 @@
                     </attribute>
                 </xpath>
 
+                <!-- ========================================== -->
+                <!-- Restricción: Botón Devolver en Recepciones -->
+                <!-- ========================================== -->
+
+                <!-- Modificar el botón original: Ocultar solo en recepciones -->
+                <xpath expr="//header//button[@name='1096']" position="attributes">
+                    <attribute name="invisible">picking_type_code == 'incoming' or state != 'done'</attribute>
+                </xpath>
+                <!-- Añadir botón nuevo solo en recepciones para usuarios en modo debug -->
+                <xpath expr="//header//button[@name='1096']" position="after">
+                    <button name="1096"
+                            string="Devolver"
+                            type="action"
+                            invisible="picking_type_code != 'incoming' or state != 'done'"
+                            groups="base.group_no_one"
+                            data-hotkey="k"/>
+                </xpath>
             </field>
         </record>
 
@@ -210,6 +227,7 @@
             <field name="context">{
                 'restricted_picking_type_code': 'internal',
                 'search_default_filter_last_7_days': 1,
+                'search_default_filter_manual': 1,
                 'default_picking_type_id': False,
             }</field>
             <field name="search_view_id" ref="stock.view_picking_internal_search"/>

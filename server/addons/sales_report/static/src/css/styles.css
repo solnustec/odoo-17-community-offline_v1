@@ -1,6 +1,244 @@
+/* ========== MEJORAS UX/UI DASHBOARD ========== */
+
+/* Contenedor de selectores - altura fija pero con overflow visible */
+.dashboard_for_report_sales .selector-container {
+    position: relative;
+    width: 100%;
+    height: 31px;
+    overflow: visible !important;
+}
+
+/* Asegurar que los contenedores padres no corten el dropdown */
+.dashboard_for_report_sales .d-flex {
+    overflow: visible !important;
+}
+
+/* Estilos para los selectores de Odoo - Más compactos */
+.dashboard_for_report_sales .o_record_selector {
+    width: 100%;
+    overflow: visible !important;
+}
+
+.dashboard_for_report_sales .o_record_selector input {
+    height: 31px !important;
+    font-size: 0.8rem !important;
+    padding: 0.2rem 0.4rem !important;
+    border-radius: 0.25rem !important;
+    border: 1px solid #ced4da !important;
+    background-color: #fff !important;
+}
+
+.dashboard_for_report_sales .o_record_selector input:focus {
+    border-color: #80bdff !important;
+    box-shadow: 0 0 0 0.15rem rgba(0, 123, 255, 0.15) !important;
+}
+
+.dashboard_for_report_sales .o_record_selector .o_input_dropdown {
+    width: 100%;
+    overflow: visible !important;
+}
+
+/* Dropdown como overlay - asegurar visibilidad */
+.dashboard_for_report_sales .o-autocomplete,
+.dashboard_for_report_sales .o_field_many2one_selection {
+    position: relative;
+    overflow: visible !important;
+}
+
+/* Dropdown del autocomplete - solo dentro del dashboard */
+.dashboard_for_report_sales .o-autocomplete--dropdown-menu,
+.dashboard_for_report_sales .dropdown-menu,
+.dashboard_for_report_sales ul.o-autocomplete--dropdown-menu {
+    position: absolute !important;
+    top: 100% !important;
+    left: 0 !important;
+    z-index: 99999 !important;
+    background: #fff !important;
+    border: 1px solid #ced4da !important;
+    box-shadow: 0 4px 12px rgba(0,0,0,0.15) !important;
+    min-width: 200px !important;
+    max-height: 300px !important;
+    overflow-y: auto !important;
+}
+
+/* Quitar la línea/underline en hover del selector */
+.dashboard_for_report_sales .selector-container .o_field_widget,
+.dashboard_for_report_sales .selector-container .o_field_many2one,
+.dashboard_for_report_sales .selector-container .o_record_selector,
+.dashboard_for_report_sales .selector-container .o_input_dropdown {
+    border-bottom: none !important;
+    box-shadow: none !important;
+    overflow: visible !important;
+}
+
+.dashboard_for_report_sales .selector-container .o_field_widget:hover,
+.dashboard_for_report_sales .selector-container .o_field_many2one:hover,
+.dashboard_for_report_sales .selector-container .o_record_selector:hover,
+.dashboard_for_report_sales .selector-container .o_input_dropdown:hover,
+.dashboard_for_report_sales .selector-container:hover .o_field_widget {
+    border-bottom: none !important;
+    box-shadow: none !important;
+    background: transparent !important;
+}
+
+/* Remover línea de separación/underline en cualquier estado */
+.dashboard_for_report_sales .selector-container::after,
+.dashboard_for_report_sales .selector-container::before,
+.dashboard_for_report_sales .selector-container .o_field_widget::after,
+.dashboard_for_report_sales .selector-container .o_field_widget::before {
+    display: none !important;
+    border: none !important;
+}
+
+/* Asegurar que el input mantenga su estilo */
+.dashboard_for_report_sales .selector-container input:hover {
+    border: 1px solid #80bdff !important;
+}
+
+/* Ocultar la flechita/dropdown toggle del selector */
+.dashboard_for_report_sales .selector-container .o-autocomplete--dropdown-item-caret,
+.dashboard_for_report_sales .selector-container .dropdown-toggle::after,
+.dashboard_for_report_sales .selector-container .o_dropdown_button,
+.dashboard_for_report_sales .selector-container .fa-caret-down,
+.dashboard_for_report_sales .selector-container .o_input_dropdown .dropdown-toggle,
+.dashboard_for_report_sales .selector-container button.dropdown-toggle {
+    display: none !important;
+}
+
+/* Botones con mejor feedback visual */
+.dashboard_for_report_sales .btn-group .btn {
+    transition: all 0.15s ease-in-out;
+}
+
+.dashboard_for_report_sales .btn-group .btn:hover {
+    transform: translateY(-1px);
+    box-shadow: 0 2px 4px rgba(0,0,0,0.1);
+}
+
+/* ========== SEARCH BOX MEJORADO ========== */
+.dashboard_for_report_sales .search-box {
+    position: relative;
+}
+
+.dashboard_for_report_sales .search-box .search-icon {
+    position: absolute;
+    left: 10px;
+    top: 50%;
+    transform: translateY(-50%);
+    color: #6c757d;
+    pointer-events: none;
+    font-size: 0.8rem;
+    z-index: 2;
+}
+
+.dashboard_for_report_sales .search-box .search-input {
+    padding-left: 2rem !important;
+    height: 31px;
+    border: 1px solid #dee2e6;
+    border-radius: 6px;
+    background-color: #f8f9fa;
+    transition: all 0.2s ease;
+}
+
+.dashboard_for_report_sales .search-box .search-input:focus {
+    background-color: #fff;
+    border-color: #80bdff;
+    box-shadow: 0 0 0 2px rgba(0, 123, 255, 0.1);
+}
+
+.dashboard_for_report_sales .search-box .search-input::placeholder {
+    color: #adb5bd;
+    font-size: 0.8rem;
+}
+
+/* ========== CODE BADGE MEJORADO ========== */
+.dashboard_for_report_sales .code-badge {
+    background: linear-gradient(135deg, #f8f9fa 0%, #e9ecef 100%);
+    border: 1px solid #dee2e6;
+    border-radius: 6px;
+    padding: 4px 10px;
+    height: 31px;
+    gap: 12px;
+}
+
+.dashboard_for_report_sales .code-badge .code-item {
+    display: flex;
+    align-items: center;
+    gap: 5px;
+    font-size: 0.8rem;
+    font-weight: 500;
+    color: #495057;
+}
+
+.dashboard_for_report_sales .code-badge .code-item i {
+    color: #6c757d;
+    font-size: 0.85rem;
+}
+
+.dashboard_for_report_sales .code-badge .code-item:not(:last-child)::after {
+    content: '';
+    width: 1px;
+    height: 14px;
+    background: #ced4da;
+    margin-left: 12px;
+}
+
+/* Select mejorado */
+.dashboard_for_report_sales .form-select-sm {
+    font-size: 0.8rem;
+    padding-right: 1.5rem;
+    height: 31px;
+}
+
+/* Labels pequeños uniformes */
+.dashboard_for_report_sales small.text-muted {
+    font-size: 0.7rem;
+    font-weight: 500;
+    text-transform: uppercase;
+    letter-spacing: 0.03em;
+}
+
+/* Tabla con mejor legibilidad */
+.dashboard_for_report_sales .table tbody tr:hover {
+    background-color: rgba(0, 123, 255, 0.08) !important;
+}
+
+.dashboard_for_report_sales .table thead th {
+    white-space: nowrap;
+    user-select: none;
+    transition: background-color 0.15s ease;
+}
+
+.dashboard_for_report_sales .table thead th:hover {
+    background-color: rgba(0,0,0,0.1);
+}
+
+/* Indicador de columna ordenada */
+.dashboard_for_report_sales .table thead th .fa-sort-desc,
+.dashboard_for_report_sales .table thead th .fa-sort-asc {
+    color: #007bff;
+}
+
+/* Colores semánticos para utilidad */
+.utility-high {
+    color: #198754 !important;
+    font-weight: 600;
+}
+
+.utility-medium {
+    color: #fd7e14 !important;
+    font-weight: 600;
+}
+
+.utility-low {
+    color: #dc3545 !important;
+    font-weight: 600;
+}
+
+/* ========== ESTILOS ORIGINALES ========== */
+
 .stock-status-green {
     color: #229954;
-
 }
 
 .stock-status-orange {
@@ -12,8 +250,9 @@
 }
 
 .product-selected {
-    background-color: #f1f0d1;
+    background-color: #e8f4fd;
     color: #000000 !important;
+    border-left: 3px solid #007bff !important;
 }
 
 .fade-transition {
@@ -69,8 +308,8 @@
     color: white;
 }
 
-/* Estilos para backdrop completo de todos los modales */
-.modal.show {
+/* Estilos para backdrop de modales del dashboard de ventas */
+.dashboard_for_report_sales .sales-report-modal.modal.show {
     background: rgba(0,0,0,0.5) !important;
     position: fixed !important;
     top: 0 !important;
@@ -210,22 +449,28 @@
     }
 }
 
+/* Estilos responsivos para pantallas medianas - solo dentro del dashboard */
 @media (max-width: 1366px) and (min-width: 768px) {
-    .dashboard_for_report_sales{
-        font-size: 10px !important;
-    }
-    .table.table-sm {
+    .dashboard_for_report_sales {
         font-size: 10px !important;
     }
 
-    .o_web_client.o_touch_device .btn, .o_web_client.o_touch_device .btn .btn-sm {
+    /* Tablas solo dentro del dashboard */
+    .dashboard_for_report_sales .table.table-sm {
+        font-size: 10px !important;
+    }
+
+    /* Botones solo dentro del dashboard en dispositivos touch */
+    .dashboard_for_report_sales .btn,
+    .dashboard_for_report_sales .btn.btn-sm {
         font-size: 0.875rem;
         padding: 1px 5px;
     }
-    .modal{
+
+    /* Modales solo dentro del dashboard */
+    .dashboard_for_report_sales .sales-report-modal {
         font-size: 12px !important;
         font-weight: 500 !important;
         max-height: 100% !important;
     }
-
 }

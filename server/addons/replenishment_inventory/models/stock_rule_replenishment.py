@@ -415,20 +415,36 @@ class StockRuleReplenishment(models.Model):
     # =========================================================================
     # WRAPPERS PARA ROLLING STATS (compatibilidad con reglas existentes)
     # =========================================================================
-    def _get_stddev_from_rolling(self, product_id, warehouse_id, days=30, record_type='sale'):
+    def _get_stddev_from_rolling(self, product_id, warehouse_id, days=30, record_type=None):
         """
         Wrapper que obtiene stddev desde product.sales.stats.rolling.
-        Mantiene la misma firma que product.sales.stats.get_stats() para compatibilidad.
+        Determina el record_type según la configuración del warehouse si no se especifica.
 
         Args:
             product_id: ID del producto
             warehouse_id: ID del warehouse
             days: Período (30, 60 o 90)
-            record_type: 'sale', 'transfer' o 'combined'
+            record_type: 'sale', 'transfer' o 'combined' (si None, usa config del warehouse)
 
         Returns:
             float: Desviación estándar
         """
+        # Si no se especifica record_type, determinarlo según config del warehouse
+        if record_type is None:
+            wh = self.env['stock.warehouse'].browse(warehouse_id)
+            if wh.exists():
+                based_on_sales = getattr(wh, 'replenishment_based_on_sales', True)
+                based_on_transfers = getattr(wh, 'replenishment_based_on_transfers', False)
+
+                if based_on_sales and based_on_transfers:
+                    record_type = 'combined'
+                elif based_on_transfers:
+                    record_type = 'transfer'
+                else:
+                    record_type = 'sale'
+            else:
+                record_type = 'sale'
+
         RollingStats = self.env['product.sales.stats.rolling']
         stats = RollingStats.get_stats(
             product_id=product_id,
@@ -752,7 +768,8 @@ class StockRuleReplenishment(models.Model):
                     if key not in all_orderpoint_data:
                         all_orderpoint_data[key] = {'max_qty': 0, 'min_qty': 0, 'point_qty': 0}
 
-                    qty = math.ceil(val['amount'])
+                    # Redondeo estándar: >= 0.5 sube, < 0.5 baja
+                    qty = round(val['amount'])
                     code = val['code']
                     if code == 'MAX':
                         all_orderpoint_data[key]['max_qty'] = qty

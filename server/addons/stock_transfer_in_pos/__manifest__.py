@@ -19,13 +19,12 @@
 
 ###############################################################################
 {
-    'name': 'Point of Sale Stock Transfer',
+    'name': 'Transferencia de Stock en POS',
     'version': '17.0.1.0.0',
     'category': 'Point of Sale',
-    'summary': "Allows to Directly Transfer the Stock From the Current POS"
-               " Session",
-    'description': "This module allows for the immediate movement of stock "
-                   "within the same point-of-sale (POS) session.",
+    'summary': "Permite transferir stock directamente desde la sesión del POS",
+    'description': "Este módulo permite el movimiento inmediato de stock "
+                   "dentro de la misma sesión del punto de venta (POS).",
     'author': 'Cybrosys Techno Solutions',
     'company': 'Cybrosys Techno Solutions',
     'maintainer': 'Cybrosys Techno Solutions',

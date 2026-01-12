@@ -1,8 +1,30 @@
 import json
+import re
 from datetime import datetime
 
 from odoo import models, fields, api
 from odoo.http import Response
+
+
+def _shorten_invoice_name(name, move_type='in_invoice'):
+    """
+    Acorta el nombre de factura/nota de crédito.
+    Ej: 'Fact 001-001-000017392' -> 'FACT17392'
+    Ej: 'NC 001-001-000017392' -> 'NC17392'
+    """
+    if not name:
+        return ''
+    # Extraer solo los dígitos del final del nombre
+    digits = re.findall(r'\d+', name)
+    if digits:
+        # Tomar el último grupo de dígitos (el secuencial)
+        last_digits = digits[-1].lstrip('0') or '0'
+        # Determinar prefijo según tipo de documento
+        if move_type == 'in_refund':
+            return f'NC{last_digits}'
+        else:
+            return f'FACT{last_digits}'
+    return name[:15] if len(name) > 15 else name
 
 
 class ProductProduct(models.Model):
@@ -79,25 +101,77 @@ class ProductProduct(models.Model):
                 return []
 
             # Search in product.purchase.history (purchase_history module) with limit and offset for pagination
+            # Incluir tanto compras normales como notas de crédito
             purchase_history = self.env['product.purchase.history'].search([
-                ('product_tmpl_id', '=', product.product_tmpl_id.id), ('credit_note', '=', False)
+                ('product_tmpl_id', '=', product.product_tmpl_id.id)
             ], order='date_order desc', limit=limit, offset=offset)
 
             result = []
 
             # Process purchase history records and map to expected format
             for line in purchase_history:
-                # Obtener una factura relacionada (si existe)
-                invoice = False
-                invoice_name = ''
+                # Obtener las facturas donde el PRODUCTO ESPECÍFICO aparece en las líneas
+                # No todas las facturas de la PO, solo las que contienen este producto
+                invoices_list = []
                 try:
                     po = line.purchase_order_id
-                    if po and hasattr(po, 'invoice_ids') and po.invoice_ids:
-                        invoice = po.invoice_ids[0]
-                        invoice_name = invoice.name or invoice.ref or invoice.display_name or ''
+                    product_tmpl_id = line.product_tmpl_id.id
+
+                    if po and product_tmpl_id:
+                        found_invoice_ids = set()  # Para evitar duplicados
+
+                        # Buscar facturas de la PO donde el producto específico está en las líneas
+                        if po.name:
+                            # Buscar líneas de factura que:
+                            # 1. Pertenezcan a facturas con invoice_origin = nombre de la PO
+                            # 2. Contengan el producto específico (por product_tmpl_id)
+                            # Incluir facturas (in_invoice) y notas de crédito (in_refund)
+                            invoice_lines = self.env['account.move.line'].search([
+                                ('move_id.invoice_origin', '=', po.name),
+                                ('move_id.move_type', 'in', ['in_invoice', 'in_refund']),
+                                ('move_id.state', '=', 'posted'),
+                                ('product_id.product_tmpl_id', '=', product_tmpl_id),
+                            ])
+
+                            for inv_line in invoice_lines:
+                                inv = inv_line.move_id
+                                if inv and inv.id not in found_invoice_ids:
+                                    found_invoice_ids.add(inv.id)
+                                    full_name = inv.name or inv.ref or inv.display_name or ''
+                                    invoices_list.append({
+                                        'id': inv.id,
+                                        'name': _shorten_invoice_name(full_name, inv.move_type),
+                                        'date': str(inv.invoice_date) if inv.invoice_date else '',
+                                        'state': inv.state,
+                                        'move_type': inv.move_type,
+                                    })
+
+                                    # Buscar notas de crédito vinculadas por reversed_entry_id
+                                    credit_notes = self.env['account.move'].search([
+                                        ('reversed_entry_id', '=', inv.id),
+                                        ('move_type', '=', 'in_refund'),
+                                        ('state', '=', 'posted'),
+                                    ])
+                                    for cn in credit_notes:
+                                        if cn.id not in found_invoice_ids:
+                                            found_invoice_ids.add(cn.id)
+                                            cn_full_name = cn.name or cn.ref or cn.display_name or ''
+                                            invoices_list.append({
+                                                'id': cn.id,
+                                                'name': _shorten_invoice_name(cn_full_name, cn.move_type),
+                                                'date': str(cn.invoice_date) if cn.invoice_date else '',
+                                                'state': cn.state,
+                                                'move_type': cn.move_type,
+                                            })
+
+                        # Ordenar por fecha descendente (más reciente primero)
+                        invoices_list.sort(key=lambda x: x['date'], reverse=True)
+
                 except Exception:
-                    invoice = False
-                    invoice_name = ''
+                    invoices_list = []
+
+                # Para compatibilidad, mantener invoice_id e invoice_name con la última factura
+                last_invoice = invoices_list[0] if invoices_list else None
                 # Lógica para determinar el precio unitario correcto
                 # Si tiene purchase_order_id = es de Odoo, usar price_unit_per_unit (con cálculos)
                 # Si NO tiene purchase_order_id = es importado, usar price_unit (original)
@@ -133,15 +207,20 @@ class ProductProduct(models.Model):
                     'product_qty': line.quantity,
                     'paid_quantity': line.paid_quantity,
                     'free_product_qty': line.free_product_qty or 0.0,
-                    # Producto gratis real del historial, antiguo 'pvf': round(line.price_unit - (line.price_unit * 0.1666),2),  # No PVF field in this model
+                    # Producto gratis real del historial
                     'date_order': line.date_order if line.date_order else '',
-                    # Return as date object for template compatibility
                     'pvf': round(pvf_display, 3),
                     'supplier': line.partner_id.name if line.partner_id else '',
                     'order_name': line.purchase_order_id.name if line.purchase_order_id else '',
                     'order_id': line.purchase_order_id.id if line.purchase_order_id else False,
-                    'invoice_name': invoice_name,
-                    'invoice_id': invoice.id if invoice else False,
+                    # Indicador de nota de crédito
+                    'is_credit_note': getattr(line, 'credit_note', False),
+                    # Última factura (para compatibilidad)
+                    'invoice_name': last_invoice['name'] if last_invoice else '',
+                    'invoice_id': last_invoice['id'] if last_invoice else False,
+                    # Array con todas las facturas relacionadas
+                    'invoices': invoices_list,
+                    'invoices_count': len(invoices_list),
                     'description': f"{product.name} - {line.purchase_order_id.name}" if line.purchase_order_id else product.name
                 })
 

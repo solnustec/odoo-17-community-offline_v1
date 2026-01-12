@@ -38,12 +38,15 @@
         <field name="inherit_id" ref="stock.view_picking_form" />
         <field name="arch" type="xml">
             <div name="button_box" position="inside">
+                <!-- Campo invisible para controlar visibilidad de botones QC -->
+                <field name="show_qc_buttons" invisible="1"/>
                 <button
                     class="oe_inline oe_stat_button"
                     type="action"
                     name="%(action_qc_inspection_per_picking)d"
                     icon="fa-list"
                     groups="quality_control_oca.group_quality_control_user"
+                    invisible="not show_qc_buttons"
                 >
                     <field
                         name="created_inspections"
@@ -57,6 +60,7 @@
                     name="%(action_qc_inspection_per_picking_done)d"
                     icon="fa-pencil"
                     groups="quality_control_oca.group_quality_control_user"
+                    invisible="not show_qc_buttons"
                 >
                     <field name="done_inspections" widget="statinfo" />
                 </button>
@@ -66,6 +70,7 @@
                     name="%(action_qc_inspection_per_picking_passed)d"
                     icon="fa-thumbs-o-up"
                     groups="quality_control_oca.group_quality_control_user"
+                    invisible="not show_qc_buttons"
                 >
                     <field name="passed_inspections" widget="statinfo" />
                 </button>
@@ -75,6 +80,7 @@
                     name="%(action_qc_inspection_per_picking_failed)d"
                     icon="fa-thumbs-o-down"
                     groups="quality_control_oca.group_quality_control_user"
+                    invisible="not show_qc_buttons"
                 >
                     <field
                         name="failed_inspections"

@@ -113,7 +113,7 @@ class JsonStorageAPI(http.Controller):
                     json_data_parsed = {"error": "Invalid JSON format in json_data"}
                 result.append({
                     'json_data': json_data_parsed,
-                    'date_invoices': note.create_date.strftime("%Y-%m-%d"),
+                    'date_invoices': note.date_invoices if note.date_invoices else note.create_date.strftime("%Y-%m-%d"),
                     'db_key': note.db_key
                 })
 

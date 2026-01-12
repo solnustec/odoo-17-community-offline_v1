@@ -38,6 +38,21 @@ class PosOrder(models.Model):
         readonly=True,
     )
 
+    # Autorización manual de pago digital
+    self_authorized = fields.Boolean(
+        string='Autorizado manualmente',
+        default=False,
+        help='Indica si el pago digital fue autorizado manualmente por el empleado'
+    )
+    self_authorized_by = fields.Many2one(
+        'res.users',
+        string='Autorizado por',
+        help='Usuario que autorizó el pago manualmente'
+    )
+    self_authorization_date = fields.Datetime(
+        string='Fecha de autorización'
+    )
+
     @api.model
     def get_payment_methods_for_order(self, order_id):
         order = self.browse(order_id)
@@ -391,14 +406,13 @@ class PosOrder(models.Model):
                         "returned_to_institution": should_return_to_institution,
                     }
 
-                    fecha_actual = date.today()
                     pos_config = pos_session.config_id
 
                     self.env['json.note.credit'].create({
                         'json_data': json.dumps([refund_data], indent=4),
                         'pos_order_id': pos_session.config_id.id,
                         'id_point_of_sale': pos_config.point_of_sale_id,
-                        'date_invoices': fecha_actual.isoformat(),
+                        'date_invoices': invoice_date.isoformat(),
                         'db_key': invoice_normal,
                     })
                 else:
@@ -619,12 +633,21 @@ class PosOrder(models.Model):
                     if data.get('payment_transaction_id') or data.get(
                             'payment_transfer_number') or data.get(
                         'payment_bank_name') or data.get('orderer_identification'):
-                        pos_order.write({
+
+                        write_data = {
                             'payment_transaction_id': data.get('payment_transaction_id'),
                             'payment_transfer_number': data.get('payment_transfer_number'),
                             'payment_bank_name': data.get('payment_bank_name'),
                             'orderer_identification': data.get('orderer_identification'),
-                        })
+                        }
+
+                        # Agregar datos de autorización manual si existen
+                        if data.get('self_authorized'):
+                            write_data['self_authorized'] = True
+                            write_data['self_authorized_by'] = data.get('self_authorized_by')
+                            write_data['self_authorization_date'] = fields.Datetime.now()
+
+                        pos_order.write(write_data)
                         break
 
                 for check in pos_order.payment_ids:
@@ -1360,6 +1383,32 @@ class PosOrder(models.Model):
     def get_is_order_with_coupon(self, lines):
         return any(int(line[2].get('coupon_id', 0) or 0) > 1 for line in lines)
 
+    def _get_product_iditem(self, product):
+        """
+        Obtiene el iditem (id_database_old) del producto de forma robusta.
+        Busca primero en product.product, luego en product.template.
+
+        Args:
+            product: Registro de product.product
+
+        Returns:
+            int: El id_database_old como entero, o 0 si no existe
+        """
+        # Primero intentar obtener del product.product
+        id_db_old = product.id_database_old
+
+        # Si no existe, intentar del template
+        if not id_db_old and product.product_tmpl_id:
+            id_db_old = product.product_tmpl_id.id_database_old
+
+        # Convertir a entero de forma segura
+        if id_db_old:
+            try:
+                return int(id_db_old)
+            except (ValueError, TypeError):
+                return 0
+        return 0
+
     def procesar_lineas_orden(self, lineas_entrada):
         """
         Procesa líneas de orden fusionando productos normales con sus recompensas
@@ -1460,7 +1509,7 @@ class PosOrder(models.Model):
             pdesc = producto_gratis.get('discount', 99.99)
 
             linea_producto_gratis = [
-                int(product.id_database_old),
+                self._get_product_iditem(product),
                 cantidad_gratis,
                 precio_producto,
                 piva,
@@ -1505,7 +1554,7 @@ class PosOrder(models.Model):
                 tipo_promocion = 4
 
         return [
-            int(product.id_database_old),  # iditem
+            self._get_product_iditem(product),  # iditem
             cantidad,  # cantidad
             precio_unit,  # precio
             piva,  # piva

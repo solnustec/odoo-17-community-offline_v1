@@ -85,9 +85,6 @@ export class CreateTransferPopup extends AbstractAwaitablePopup {
 
             var line = this.pos?.get_order()?.orderlines?.filter((line) => line.product?.type == "product" && line.quantity > 0);
 
-
-            console.log("aaa", line)
-
             if(line.length === 0){
                 await this.env.services.popup.add(ErrorPopup, {
                     title: _t("Transferencia no válida"),

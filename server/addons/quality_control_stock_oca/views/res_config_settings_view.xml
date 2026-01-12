@@ -1,16 +1,39 @@
 <?xml version="1.0" encoding="utf-8"?>
 <odoo>
     <data>
+        <!-- Vista para modo estricto (hereda de stock) -->
         <record id="res_config_settings_view_form" model="ir.ui.view">
-            <field name="name">res.config.settings.view.form.inherit.stock</field>
+            <field name="name">res.config.settings.view.form.inherit.qc.stock</field>
             <field name="model">res.config.settings</field>
             <field name="priority" eval="30"/>
-            <field name="inherit_id" ref="base.res_config_settings_view_form" />
+            <field name="inherit_id" ref="stock.res_config_settings_view_form"/>
             <field name="arch" type="xml">
-                <xpath expr="//block[@id='production_lot_info']" position="inside" >
+                <xpath expr="//block[@id='production_lot_info']" position="inside">
                     <setting id="mode_strict_setting" help="Habilita la validación de lotes en inventario">
                         <field name="mode_strict"/>
                     </setting>
+                </xpath>
+                <!-- Bloque de Control de Calidad después de production_lot_info -->
+                <xpath expr="//block[@id='production_lot_info']" position="after">
+                    <block title="Control de Calidad" id="qc_buttons_visibility">
+                        <setting id="qc_visibility_setting" string="Visibilidad de inspecciones"
+                                 help="Selecciona en qué tipos de operación mostrar los botones de inspección de calidad">
+                            <div class="content-group">
+                                <div class="row mt16">
+                                    <label class="col-lg-3 o_light_label" for="qc_show_in_incoming"/>
+                                    <field name="qc_show_in_incoming"/>
+                                </div>
+                                <div class="row">
+                                    <label class="col-lg-3 o_light_label" for="qc_show_in_outgoing"/>
+                                    <field name="qc_show_in_outgoing"/>
+                                </div>
+                                <div class="row">
+                                    <label class="col-lg-3 o_light_label" for="qc_show_in_internal"/>
+                                    <field name="qc_show_in_internal"/>
+                                </div>
+                            </div>
+                        </setting>
+                    </block>
                 </xpath>
             </field>
         </record>

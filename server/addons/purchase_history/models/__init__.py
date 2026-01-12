@@ -2,5 +2,4 @@
 
 
 from . import product_template
-# Import moved inside functions to avoid circular import
-# from . import account_move
+from . import account_move

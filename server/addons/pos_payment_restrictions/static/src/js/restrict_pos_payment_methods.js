@@ -60,11 +60,8 @@ patch(PaymentScreen.prototype, {
                     }
                 }
             }
-
-
-        } else {
-            super.addNewPaymentLine(paymentMethod);
         }
+
         super.addNewPaymentLine(paymentMethod);
         // abri el modal de informacionde la tarjeta o transferencia
         let check_info = []

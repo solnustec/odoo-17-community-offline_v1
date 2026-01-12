@@ -1,6 +1,6 @@
 <?xml version="1.0" encoding="utf-8" ?>
 <odoo>
-    <!--    Adding the field scan_barcode in purchase order-->
+    <!-- Vista de líneas de orden de compra con campos de barcode mejorados -->
     <record id="purchase_order_form" model="ir.ui.view">
         <field name="name">
             purchase.order.view.form.inherit.multi.barcode.for.products
@@ -8,9 +8,52 @@
         <field name="model">purchase.order</field>
         <field name="inherit_id" ref="purchase.purchase_order_form"/>
         <field name="arch" type="xml">
+            <!-- Campos ocultos necesarios -->
             <xpath expr="//field[@name='order_line']/tree/field[@name='product_id']"
                    position="before">
-                <field name="scan_barcode" optional="hide"/>
+                <field name="display_type" column_invisible="True"/>
+                <field name="barcode_not_found" column_invisible="True"/>
+                <field name="pending_barcode" column_invisible="True"/>
+            </xpath>
+
+            <!-- Campo de barcode y botón DESPUÉS del producto -->
+            <xpath expr="//field[@name='order_line']/tree/field[@name='product_id']"
+                   position="after">
+                <field name="scan_barcode" optional="show"
+                       decoration-warning="barcode_not_found == True"
+                       invisible="display_type"/>
+                <!-- Botón siempre visible para reservar espacio -->
+                <button name="action_assign_pending_barcode"
+                        type="object"
+                        icon="fa-plus-circle"
+                        title="Asignar código de barras pendiente"
+                        invisible="display_type"
+                        class="text-warning"
+                        readonly="not pending_barcode or not product_id"/>
+            </xpath>
+        </field>
+    </record>
+
+    <!-- Vista de formulario de línea de compra (modal) -->
+    <record id="purchase_order_line_form_barcode" model="ir.ui.view">
+        <field name="name">
+            purchase.order.line.form.inherit.multi.barcode.for.products
+        </field>
+        <field name="model">purchase.order.line</field>
+        <field name="inherit_id" ref="purchase.purchase_order_line_form2"/>
+        <field name="arch" type="xml">
+            <xpath expr="//field[@name='product_id']" position="before">
+                <field name="scan_barcode" invisible="display_type"/>
+                <field name="barcode_not_found" invisible="1"/>
+                <field name="pending_barcode" invisible="1"/>
+            </xpath>
+
+            <!-- Mensaje de advertencia cuando el barcode no existe -->
+            <xpath expr="//field[@name='product_id']" position="after">
+                <div invisible="not barcode_not_found or display_type" class="alert alert-warning mb-2" role="alert">
+                    <i class="fa fa-exclamation-triangle"/>
+                    El código de barras no está registrado. Seleccione un producto manualmente para asignarlo.
+                </div>
             </xpath>
         </field>
     </record>

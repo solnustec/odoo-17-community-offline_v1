@@ -110,6 +110,97 @@ class StockPicking(models.Model):
 
     # BOTON DE VALIDACION DE TRANSFERENCIAS ESTADO "HECHO"
     def button_validate(self):
+        # Verificar si sync_without_moves está activo para transferencias internas
+        sync_without_moves = self.env['ir.config_parameter'].sudo().get_param(
+            'stock.sync_transfer_without_moves', 'False'
+        ) == 'True'
+
+        picking_type_code = self.picking_type_id.code if self.picking_type_id else None
+        _logger.info(f"button_validate: sync_without_moves={sync_without_moves}, picking_type_code={picking_type_code}, state={self.state}")
+
+        if sync_without_moves and picking_type_code == 'internal':
+            # Marcar como done SIN mover stock usando SQL para evitar triggers
+            for picking in self:
+                # Solo confirmar (NO asignar para no reservar stock)
+                if picking.state == 'draft':
+                    picking.action_confirm()
+
+                picking_id = picking.id
+
+                # Crear move_lines manualmente (sin reservar stock)
+                for move in picking.move_ids:
+                    if not move.move_line_ids:
+                        self.env['stock.move.line'].create({
+                            'move_id': move.id,
+                            'picking_id': picking_id,
+                            'product_id': move.product_id.id,
+                            'product_uom_id': move.product_uom.id,
+                            'location_id': move.location_id.id,
+                            'location_dest_id': move.location_dest_id.id,
+                            'quantity': move.product_uom_qty,
+                            'company_id': move.company_id.id,
+                        })
+
+                # Refrescar para obtener los IDs actualizados
+                picking.invalidate_recordset()
+                move_ids = picking.move_ids.ids
+                move_line_ids = picking.move_line_ids.ids
+
+                # Actualizar move_lines: quantity desde el move y state=done
+                if move_line_ids:
+                    self.env.cr.execute("""
+                        UPDATE stock_move_line sml
+                        SET state = 'done',
+                            quantity = COALESCE(
+                                (SELECT sm.product_uom_qty FROM stock_move sm WHERE sm.id = sml.move_id),
+                                sml.quantity
+                            )
+                        WHERE id IN %s
+                    """, [tuple(move_line_ids)])
+
+                # Actualizar moves: state=done, quantity desde product_uom_qty
+                if move_ids:
+                    self.env.cr.execute("""
+                        UPDATE stock_move
+                        SET state = 'done',
+                            quantity = product_uom_qty,
+                            reservation_date = NULL,
+                            product_qty = 0
+                        WHERE id IN %s
+                    """, [tuple(move_ids)])
+
+                # Actualizar picking
+                self.env.cr.execute("""
+                    UPDATE stock_picking
+                    SET state = 'done'
+                    WHERE id = %s
+                """, [picking_id])
+
+                _logger.info(f"button_validate: SQL executed for picking_id={picking_id}, move_ids={move_ids}, move_line_ids={move_line_ids}")
+
+                # Forzar reserved_quantity = 0 usando ORM (igual que el API)
+                for move in picking.move_ids:
+                    quants = self.env['stock.quant'].sudo().search([
+                        ('product_id', '=', move.product_id.id),
+                        ('location_id', '=', move.location_id.id),
+                        ('reserved_quantity', '>', 0)
+                    ])
+                    if quants:
+                        quants.sudo().write({'reserved_quantity': 0})
+
+            # Invalidar cache solo de los registros específicos (no todo el modelo)
+            self.invalidate_recordset()
+            self.move_ids.invalidate_recordset()
+            self.move_line_ids.invalidate_recordset()
+
+            # Llamar a _update_transfer_summary para actualizar registros de resumen
+            # (ya que _action_done no se ejecuta al usar SQL directo)
+            for picking in self:
+                if picking.move_line_ids:
+                    picking.move_line_ids._update_transfer_summary()
+
+            return True
+
         result = super(StockPicking, self).button_validate()
 
         if self.picking_type_id.code == 'internal' and self.location_id.warehouse_id.code == 'BODMA' and not self.key_transfer:

@@ -101,6 +101,8 @@ class DataMigration(models.AbstractModel):
         )
 
         # Query para agregar datos existentes
+        # IMPORTANTE: Para ventas solo se toman datos del sistema legado,
+        # para transferencias se toman todos los registros
         query = """
             INSERT INTO product_sales_stats_daily
                 (product_id, warehouse_id, date, record_type,
@@ -122,6 +124,13 @@ class DataMigration(models.AbstractModel):
             WHERE date >= %s
               AND product_id IS NOT NULL
               AND warehouse_id IS NOT NULL
+              AND (
+                  -- Para ventas: solo sistema legado
+                  (COALESCE(record_type, 'sale') = 'sale' AND is_legacy_system = TRUE)
+                  OR
+                  -- Para transferencias: todos los registros
+                  (record_type = 'transfer')
+              )
             GROUP BY product_id, warehouse_id, date, COALESCE(record_type, 'sale')
             ON CONFLICT (product_id, warehouse_id, date, record_type)
             DO UPDATE SET
@@ -271,11 +280,16 @@ class DataMigration(models.AbstractModel):
                     f"original {orig[2]}, daily {daily[2]}"
                 )
 
-        # Verificar totales
+        # Verificar totales (con la misma lógica de filtrado)
         self.env.cr.execute("""
             SELECT SUM(quantity_sold)
             FROM product_warehouse_sale_summary
             WHERE date >= CURRENT_DATE - INTERVAL '90 days'
+              AND (
+                  (COALESCE(record_type, 'sale') = 'sale' AND is_legacy_system = TRUE)
+                  OR
+                  (record_type = 'transfer')
+              )
         """)
         orig_total = self.env.cr.fetchone()[0] or 0
 

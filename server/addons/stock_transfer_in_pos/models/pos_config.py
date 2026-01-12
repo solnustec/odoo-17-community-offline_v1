@@ -27,9 +27,17 @@ class PosConfig(models.Model):
                 that allows to transfer stock from pos session"""
     _inherit = 'pos.config'
 
-    stock_transfer = fields.Boolean(string="Enable Stock Transfer",
-                                    help="Enable if you want to transfer "
-                                         "stock from PoS session")
+    stock_transfer = fields.Boolean(
+        string="Habilitar Transferencias de Stock",
+        help="Habilita la opción para transferir stock desde la sesión del POS"
+    )
+    show_auto_transfers = fields.Boolean(
+        string="Permitir ver transferencias automáticas",
+        help="Si está habilitado, el usuario podrá ver y validar las "
+             "transferencias generadas automáticamente por el sistema de "
+             "reabastecimiento. Por defecto está deshabilitado.",
+        default=False,
+    )
 
     @api.model
     def get_stock_transfer_list(self):

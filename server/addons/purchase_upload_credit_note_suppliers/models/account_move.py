@@ -106,29 +106,25 @@ class AccountMove(models.Model):
         # ---------------------------------------------------------
         # PASO 1: Validaciones básicas y factura original
         # ---------------------------------------------------------
-        picking = self.stock_picking_id
-        if picking:
-            self.message_post(
-                body=Markup(
-                    _(
-                        "La devolución de inventario "
-                        "<a href='/web#id=%s&model=stock.picking&view_type=form'>"
-                        "<b>%s</b></a> ya fue creada previamente."
-                    ) % (
-                        picking.id,
-                        picking.name,
-                    )
-                )
-            )
-            return
+        # picking = self.stock_picking_id
+        # if picking:
+        #     self.message_post(
+        #         body=Markup(
+        #             _(
+        #                 "La devolución de inventario "
+        #                 "<a href='/web#id=%s&model=stock.picking&view_type=form'>"
+        #                 "<b>%s</b></a> ya fue creada previamente."
+        #             ) % (
+        #                 picking.id,
+        #                 picking.name,
+        #             )
+        #         )
+        #     )
+        #     return
 
         # Solo aplica para notas de credito de proveedores
         if self.move_type != 'in_refund':
             return
-
-        # Verificar si la nota de credito es de tipo devolucion de producto
-        #if not self.credit_note_type or self.credit_note_type.code != 'product_return':
-        #    return
 
         # Verificar si la nota de credito tiene almacen/bodega seleccionada
         if not self.warehouse_id:
@@ -142,7 +138,7 @@ class AccountMove(models.Model):
 
         # Verificar si la factura de la nota de credito esta publicada
         if invoice.state != 'posted':
-            raise UserError(_("La factura de la nota de credito debe estar en estado Publicado.") % (invoice.name or invoice.id))
+            raise UserError(_("La factura de la nota de credito (%s) debe estar en estado Publicado.") % (invoice.name or invoice.id))
 
         # ---------------------------------------------------------
         # PASO 2: Obtener Orden de Compra desde la factura
@@ -162,8 +158,12 @@ class AccountMove(models.Model):
             raise UserError(_("La Orden de Compra no tiene recepciones asociadas.") % (po.name))
 
         pickings = po.picking_ids.filtered(
-            lambda p: p.state == 'done' and p.picking_type_id.code == 'incoming'
-        )
+            lambda p: (
+                    p.state == 'done'
+                    and p.picking_type_id.code == 'incoming'
+                    and p.location_id.usage != 'internal'
+            )
+        ).sorted('date_done')
 
         if not pickings:
             raise UserError(_("La Orden de Compra %s no tiene recepciones de tipo Recepcion en estado Confirmado") % (po.name))
@@ -262,14 +262,14 @@ class AccountMove(models.Model):
             ) % error_lines)
 
         # ---------------------------------------------------------
-        # PASO 6: Validación de productos contra el wizard (por TEMPLATE)
+        # PASO 6: Validación de productos contra el wizard (product_id)
         # ---------------------------------------------------------
-        invoice_templates = lines_with_product.mapped('product_id.product_tmpl_id')
-        wizard_templates = wizard.product_return_moves.mapped('product_id.product_tmpl_id')
+        credit_note_products = lines_with_product.mapped('product_id')
+        wizard_products = wizard.product_return_moves.mapped('product_id')
 
-        invalid_templates = invoice_templates - wizard_templates
-        if invalid_templates:
-            invalid_names = "\n".join([f"- {t.display_name}" for t in invalid_templates])
+        invalid_products = credit_note_products - wizard_products
+        if invalid_products:
+            invalid_names = "\n".join([f"- {t.display_name}" for t in invalid_products])
             raise UserError(_(
                 "No se puede realizar la devolución.\n\n"
                 "Hay productos en la Nota de Crédito que no pertenecen a la recepción seleccionada:\n%s"
@@ -280,7 +280,7 @@ class AccountMove(models.Model):
         # ---------------------------------------------------------
         for return_line in wizard.product_return_moves:
             matched_nc_lines = lines_with_product.filtered(
-                lambda l: l.product_id.product_tmpl_id == return_line.product_id.product_tmpl_id
+                lambda l: l.product_id == return_line.product_id
             )
             nc_qty = sum(matched_nc_lines.mapped('quantity'))
 
@@ -307,34 +307,50 @@ class AccountMove(models.Model):
         # ---------------------------------------------------------
         # PASO 9: Validar picking automáticamente
         # ---------------------------------------------------------
+        # Confirmar:
+        # Pasar de borrador a confirmado
+        # Crear movimientos de stock (stock.move)
         picking_return.action_confirm()
+
+        # Asignar/Reservar:
+        # Reserva el stock necesario, verifica que hay stock disponible
+        # Crea las líneas detalladas (stock.move.line), asigna lotes y ubicaciones específicas
         picking_return.action_assign()
 
-        for mv in picking_return.move_ids:
-            if not mv.move_line_ids:
-                mv._generate_move_line_ids()
-            for line in mv.move_line_ids:
-                line.quantity = mv.product_uom_qty
-
+        # Validar/Ejecutar:
+        # Cambia estado a completado, ejecuta fisicamente los movimientos de stock
+        # Actualiza las cantiades en ubicaciones, mueve el stock del origen al destino
         picking_return.button_validate()
 
         # ---------------------------------------------------------
-        # PASO 10: Enlazar devolución
+        # PASO 10: Enlazar devolución y mostrar mensaje
         # ---------------------------------------------------------
         self.stock_picking_id = picking_return.id
+
+        # Nombre del almacen
+        warehouse_name = self.warehouse_id.display_name
 
         self.message_post(
             body=Markup(
                 _(
-                    "Se creó la devolución de inventario "
-                    "<a href='/web#id=%s&model=stock.picking&view_type=form'>"
-                    "<b>%s</b></a> desde esta Nota de Crédito.<br/>"
-                    "<b>Almacén seleccionado:</b> %s<br/>"
-                    "<b>Ubicación de destino:</b> %s"
+                "✅ Se creó y validó la devolución de inventario:<br/>"
+                "• <b>Recepción original:</b> "
+                "<a href='/web#id=%s&model=stock.picking&view_type=form'>%s</a> "
+                "(%s → %s)<br/>"
+                "• <b>Devolución:</b> "
+                "<a href='/web#id=%s&model=stock.picking&view_type=form'>%s</a> "
+                "(%s → %s)<br/>"
+                "• <b>Almacén de destino:</b> %s<br/>"
+                "• <b>Ubicación de destino:</b> %s<br/><br/>"
+                "Los productos han sido devueltos a la ubicación de destino<br/>"
                 ) % (
-                    picking_return.id,
-                    picking_return.name,
-                    self.warehouse_id.display_name,
+                    picking.id, picking.name,
+                    picking.location_id.display_name,
+                    picking.location_dest_id.display_name,
+                    picking_return.id, picking_return.name,
+                    picking_return.location_id.display_name,
+                    picking_return.location_dest_id.display_name,
+                    warehouse_name,
                     location.display_name,
                 )
             )
@@ -375,3 +391,136 @@ class AccountMove(models.Model):
                 move._create_stock_return_from_credit_note()
 
         return res
+
+    def button_draft(self):
+        for move in self:
+            # ---------------------------------------------------------
+            # PASO 1: Validaciones básicas
+            # ---------------------------------------------------------
+            # Solo aplica para notas de crédito de proveedores
+            if move.move_type != 'in_refund':
+                continue
+
+            # ------------------------------------------------------------------------
+            # PASO 2: Obtener devolución (stock.picking) desde la Nota de crédito
+            # ------------------------------------------------------------------------
+            # Verificar si tiene devolución asociada
+            picking = move.stock_picking_id
+            if not picking:
+                continue
+
+            # Verificar que el picking existe
+            if not picking.exists():
+                move.stock_picking_id = False
+                continue
+
+            # Solo revertir si la devolución está validada
+            if picking.state != 'done':
+                # Si no está validada, simplemente cancelarla
+                if picking.state not in ('cancel', 'draft'):
+                    try:
+                        picking.action_cancel()
+                    except:
+                        pass
+                move.stock_picking_id = False
+                continue
+
+            # --------------------------------------------------------------------------
+            # PASO 3: Crear wizard estándar de devolución (en este caso para reversión)
+            # --------------------------------------------------------------------------
+            # Crear wizard de retorno para revertir la devolución
+            wizard = self.env['stock.return.picking'].with_context(
+                active_id=picking.id,
+                active_ids=[picking.id],
+                active_model='stock.picking',
+            ).create({})
+
+            if not wizard.product_return_moves:
+                move.message_post(
+                    body=Markup(_(
+                        "⚠️ No se pudo crear la reversión automática de la devolución "
+                        "<a href='/web#id=%s&model=stock.picking&view_type=form'><b>%s</b></a>.<br/>"
+                        "El picking no tiene líneas disponibles para revertir.<br/>"
+                        "Se limpiará el vínculo con la devolución."
+                    ) % (picking.id, picking.name))
+                )
+                move.stock_picking_id = False
+                continue
+
+            # Ubicación origen: De dónde salieron en la devolución los productos = a dónde deben regresar los productos
+            origin_location_id = picking.location_id
+
+            # Almacén: Se lo obtiene de la ubicación
+            origin_warehouse = self.env['stock.warehouse'].search([
+                ('lot_stock_id', '=', origin_location_id.id),
+            ], limit=1)
+
+            # Configurar wizard
+            wizard.write({
+                'warehouse_id': origin_warehouse.id if origin_warehouse else False,
+                'location_id': origin_location_id.id,
+            })
+
+            # --------------------------------------------------------------------
+            # PASO 4: Ejecutar devolución (reversión) y obtener picking retornado
+            # --------------------------------------------------------------------
+            # Ejecutar la reversión
+            res = wizard.create_returns()
+            picking_reverse = self.env['stock.picking'].browse(res.get('res_id'))
+
+            if not picking_reverse:
+                raise UserError(_("No se pudo crear el picking de reversión."))
+
+            # Personalizar el origen de la reversión
+            picking_reverse.write({
+                'origin': f'Reversión de {picking.name}'
+            })
+
+            # ---------------------------------------------------------
+            # PASO 5: Validar picking automáticamente
+            # ---------------------------------------------------------
+            # Confirmar
+            picking_reverse.action_confirm()
+            # Asignar/Reservar
+            picking_reverse.action_assign()
+            # Validar/Ejecutar
+            picking_reverse.button_validate()
+
+            # -------------------------------------------------------------------
+            # PASO 6: Limpiar devolución de la nota de crédito y mostrar mensaje
+            # -------------------------------------------------------------------
+            # Limpiar stock_picking_id después de validar
+            move.stock_picking_id = False
+
+            # Nombre del almacen
+            warehouse_name = origin_warehouse.name if origin_warehouse else "No especificado"
+
+            move.message_post(
+                body=Markup(
+                    _(
+                    "✅ Se creó y validó la reversión de la devolución:<br/>"
+                    "• <b>Devolución original:</b> "
+                    "<a href='/web#id=%s&model=stock.picking&view_type=form'>%s</a> "
+                    "(%s → %s)<br/>"
+                    "• <b>Reversión:</b> "
+                    "<a href='/web#id=%s&model=stock.picking&view_type=form'>%s</a> "
+                    "(%s → %s)<br/>"
+                    "• <b>Almacén de destino:</b> %s<br/>"
+                    "• <b>Ubicación de destino:</b> %s<br/><br/>"
+                    "Los productos han sido devueltos a la ubicación de destino.<br/>"
+                    "Puede volver a confirmar la Nota de Crédito para generar una nueva devolución."
+                    ) % (
+                    picking.id, picking.name,
+                    picking.location_id.display_name,
+                    picking.location_dest_id.display_name,
+                    picking_reverse.id, picking_reverse.name,
+                    picking_reverse.location_id.display_name,
+                    picking_reverse.location_dest_id.display_name,
+                    warehouse_name,
+                    picking_reverse.location_dest_id.display_name,
+                    )
+                )
+            )
+
+        # Llamar a la función padre para completar el proceso
+        return super().button_draft()

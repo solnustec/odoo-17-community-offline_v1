@@ -1,0 +1,62 @@
+<?xml version="1.0" encoding="utf-8"?>
+<odoo>
+    <!-- =========================================================== -->
+    <!-- MENÚS -->
+    <!-- =========================================================== -->
+
+    <!-- Submenú: Cola de Procurements en Reporting -->
+    <menuitem id="menu_procurement_queue"
+              name="Cola de Procurements"
+              parent="stock.menu_warehouse_report"
+              action="action_procurement_queue"
+              sequence="50"
+              groups="stock.group_stock_manager"/>
+
+    <!-- Menú Dashboard -->
+    <menuitem id="menu_replenishment_dashboard"
+              name="Dashboard Reabastecimiento"
+              parent="stock.menu_warehouse_report"
+              action="action_replenishment_dashboard"
+              sequence="5"
+              groups="stock.group_stock_manager"/>
+
+    <!-- =========================================================== -->
+    <!-- ACCIONES DE SERVIDOR (para ejecución manual) -->
+    <!-- =========================================================== -->
+
+    <!-- Acción para ejecutar el procesador manualmente -->
+    <record id="action_run_procurement_queue_processor" model="ir.actions.server">
+        <field name="name">Procesar Cola de Reabastecimiento</field>
+        <field name="model_id" ref="model_auto_replenishment_processor"/>
+        <field name="state">code</field>
+        <field name="code">
+result = env['auto.replenishment.processor'].process_queue()
+if result.get('pickings_created', 0) > 0:
+    action = {
+        'type': 'ir.actions.client',
+        'tag': 'display_notification',
+        'params': {
+            'title': 'Procesamiento completado',
+            'message': 'Se crearon %s transferencias' % result['pickings_created'],
+            'type': 'success',
+            'sticky': False,
+        }
+    }
+else:
+    action = {
+        'type': 'ir.actions.client',
+        'tag': 'display_notification',
+        'params': {
+            'title': 'Sin transferencias',
+            'message': 'Procesados: %s, Omitidos: %s, Fallidos: %s' % (
+                result.get('processed', 0),
+                result.get('skipped', 0),
+                result.get('failed', 0)
+            ),
+            'type': 'warning',
+            'sticky': False,
+        }
+    }
+        </field>
+    </record>
+</odoo>
