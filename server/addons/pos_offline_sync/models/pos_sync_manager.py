@@ -1607,148 +1607,33 @@ class PosSyncManager(models.Model):
 
     def _create_order_payments(self, order, payments_data, session):
         """
-        Crea o actualiza los pagos para una orden sincronizada.
+        Sincroniza los datos de pago (cheque/tarjeta) para una orden.
 
-        IMPORTANTE: Si la orden ya tiene pagos, se actualizan los existentes
-        con los datos de cheque/tarjeta. Solo se crean nuevos si no hay pagos.
+        IMPORTANTE: Este método NUNCA crea nuevos pagos.
+        Los pagos (pos.payment) se crean automáticamente cuando se crea la orden.
+        Este método solo actualiza los pagos existentes con los datos de cheque/tarjeta.
 
         Args:
-            order: pos.order
-            payments_data: Lista de diccionarios con datos de pagos
+            order: pos.order (ya tiene pagos creados automáticamente)
+            payments_data: Lista de diccionarios con datos de pagos sincronizados
             session: pos.session
         """
-        PosPayment = self.env['pos.payment'].sudo()
-        PaymentMethod = self.env['pos.payment.method'].sudo()
+        _logger.info(f'Sincronizando datos de {len(payments_data)} pagos para orden {order.name}')
 
-        _logger.info(f'Procesando {len(payments_data)} pagos para orden {order.name}')
-
-        # Si la orden ya tiene pagos, actualizar los existentes
-        if order.payment_ids:
-            _logger.info(f'Orden {order.name} ya tiene {len(order.payment_ids)} pagos. Actualizando...')
-            self._update_existing_payments(order, payments_data)
+        # Verificar que la orden tenga pagos
+        if not order.payment_ids:
+            _logger.warning(
+                f'Orden {order.name} no tiene pagos. '
+                f'Los pagos deberían haberse creado automáticamente al crear la orden.'
+            )
             return
 
-        _logger.info(f'Creando {len(payments_data)} pagos nuevos para orden {order.name}')
+        _logger.info(f'Orden {order.name} tiene {len(order.payment_ids)} pagos existentes. Sincronizando campos...')
 
-        for i, payment_data in enumerate(payments_data):
-            _logger.info(f'Procesando pago {i+1}: {payment_data}')
+        # Actualizar los pagos existentes con los datos de cheque/tarjeta
+        self._update_existing_payments(order, payments_data)
 
-            # Buscar método de pago por nombre
-            payment_method = None
-            payment_method_name = payment_data.get('payment_method_name')
-
-            if payment_method_name:
-                payment_method = PaymentMethod.search([
-                    ('name', '=', payment_method_name)
-                ], limit=1)
-                if payment_method:
-                    _logger.info(f'Método de pago encontrado por nombre: {payment_method.name}')
-
-            # Buscar por ID si no se encontró por nombre
-            if not payment_method and payment_data.get('payment_method_id'):
-                payment_method = PaymentMethod.browse(payment_data['payment_method_id'])
-                if payment_method.exists():
-                    _logger.info(f'Método de pago encontrado por ID: {payment_method.name}')
-                else:
-                    payment_method = None
-
-            # Verificar si el método de pago está permitido en la sesión
-            # Si no está permitido, usar el primer método de pago de la sesión
-            if payment_method and session.config_id.payment_method_ids:
-                if payment_method.id not in session.config_id.payment_method_ids.ids:
-                    _logger.warning(
-                        f'Método de pago {payment_method.name} no está permitido en sesión {session.name}. '
-                        f'Usando método de pago de la sesión.'
-                    )
-                    payment_method = session.config_id.payment_method_ids[:1]
-
-            # Si no se encuentra, usar el primer método de pago de la sesión
-            if not payment_method:
-                payment_method = session.config_id.payment_method_ids[:1]
-                if payment_method:
-                    _logger.warning(f'Usando método de pago por defecto de sesión: {payment_method.name}')
-                else:
-                    _logger.error(f'No se encontró ningún método de pago para la sesión {session.name}')
-                    continue
-
-            try:
-                payment_vals = {
-                    'pos_order_id': order.id,
-                    'payment_method_id': payment_method.id,
-                    'amount': payment_data.get('amount', 0),
-                    'session_id': session.id,
-                }
-
-                # Campos de CHEQUE
-                if payment_data.get('check_number'):
-                    payment_vals['check_number'] = payment_data.get('check_number')
-                if payment_data.get('check_bank_account'):
-                    payment_vals['check_bank_account'] = payment_data.get('check_bank_account')
-                if payment_data.get('check_owner'):
-                    payment_vals['check_owner'] = payment_data.get('check_owner')
-                if payment_data.get('institution_cheque'):
-                    payment_vals['institution_cheque'] = payment_data.get('institution_cheque')
-                if payment_data.get('institution_discount'):
-                    payment_vals['institution_discount'] = payment_data.get('institution_discount')
-
-                # Buscar banco por nombre si no existe el ID
-                if payment_data.get('bank_name'):
-                    bank = self.env['res.bank'].sudo().search([
-                        ('name', '=', payment_data.get('bank_name'))
-                    ], limit=1)
-                    if bank:
-                        payment_vals['bank_id'] = bank.id
-                elif payment_data.get('bank_id'):
-                    bank = self.env['res.bank'].sudo().browse(payment_data['bank_id'])
-                    if bank.exists():
-                        payment_vals['bank_id'] = bank.id
-
-                # Fecha del cheque
-                if payment_data.get('date'):
-                    from datetime import date as date_type
-                    try:
-                        payment_vals['date'] = date_type.fromisoformat(payment_data['date'])
-                    except (ValueError, TypeError):
-                        pass
-
-                # Campos de TARJETA
-                if payment_data.get('number_voucher'):
-                    payment_vals['number_voucher'] = payment_data.get('number_voucher')
-                if payment_data.get('number_lote'):
-                    payment_vals['number_lote'] = payment_data.get('number_lote')
-                if payment_data.get('holder_card'):
-                    payment_vals['holder_card'] = payment_data.get('holder_card')
-                if payment_data.get('bin_tc'):
-                    payment_vals['bin_tc'] = payment_data.get('bin_tc')
-                if payment_data.get('institution_card'):
-                    payment_vals['institution_card'] = payment_data.get('institution_card')
-
-                # Buscar tipo de tarjeta por nombre
-                if payment_data.get('type_card_name'):
-                    credit_card = self.env['credit.card'].sudo().search([
-                        ('name', '=', payment_data.get('type_card_name'))
-                    ], limit=1)
-                    if credit_card:
-                        payment_vals['type_card'] = credit_card.id
-                elif payment_data.get('type_card'):
-                    credit_card = self.env['credit.card'].sudo().browse(payment_data['type_card'])
-                    if credit_card.exists():
-                        payment_vals['type_card'] = credit_card.id
-
-                # Campos de CREDITO
-                if payment_data.get('selecteInstitutionCredit'):
-                    payment_vals['selecteInstitutionCredit'] = payment_data.get('selecteInstitutionCredit')
-
-                _logger.info(f'Creando pago con valores: método={payment_method.name}, monto={payment_vals.get("amount")}')
-
-                # Usar contexto para bypasear validaciones de método de pago
-                payment = PosPayment.with_context(
-                    skip_payment_method_check=True,
-                    from_pos_sync=True
-                ).create(payment_vals)
-                _logger.info(f'Pago creado exitosamente: ID={payment.id}, monto={payment.amount}')
-            except Exception as e:
-                _logger.error(f'Error creando pago: {e}', exc_info=True)
+        _logger.info(f'Pagos sincronizados exitosamente. Total: {len(order.payment_ids)}')
 
     def _update_existing_payments(self, order, payments_data):
         """

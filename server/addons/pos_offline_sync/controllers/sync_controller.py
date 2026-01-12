@@ -726,109 +726,16 @@ class PosOfflineSyncController(http.Controller):
                 f'(OFFLINE ref: {pos_reference})'
             )
 
-            # ==================== PASO 2: CREAR PAGOS ====================
+            # ==================== PASO 2: SINCRONIZAR DATOS DE PAGOS ====================
+            # IMPORTANTE: Los pagos (pos.payment) se crean automáticamente al crear la orden.
+            # Este paso SOLO actualiza los campos de cheque/tarjeta en los pagos existentes.
             payments_data = data.get('payments', [])
-            _logger.info(f'Creando {len(payments_data)} pagos para orden {order.name}')
+            _logger.info(f'Sincronizando datos de {len(payments_data)} pagos para orden {order.name}')
 
-            for payment_data in payments_data:
-                payment_method = None
-
-                # Buscar método de pago por nombre
-                if payment_data.get('payment_method_name'):
-                    payment_method = request.env['pos.payment.method'].sudo().search([
-                        ('name', '=', payment_data['payment_method_name'])
-                    ], limit=1)
-
-                # Buscar por ID si no se encontró por nombre
-                if not payment_method and payment_data.get('payment_method_id'):
-                    payment_method = request.env['pos.payment.method'].sudo().browse(
-                        payment_data['payment_method_id']
-                    )
-                    if not payment_method.exists():
-                        payment_method = None
-
-                # Fallback: usar primer método de pago de la sesión
-                if not payment_method:
-                    payment_method = session.config_id.payment_method_ids[:1]
-                    if payment_method:
-                        _logger.warning(f'Usando método de pago por defecto: {payment_method.name}')
-
-                if payment_method:
-                    try:
-                        # Valores básicos del pago
-                        payment_vals = {
-                            'pos_order_id': order.id,
-                            'payment_method_id': payment_method.id,
-                            'amount': payment_data.get('amount', 0),
-                            'session_id': session.id,
-                        }
-
-                        # Campos de CHEQUE
-                        if payment_data.get('check_number'):
-                            payment_vals['check_number'] = payment_data.get('check_number')
-                        if payment_data.get('check_bank_account'):
-                            payment_vals['check_bank_account'] = payment_data.get('check_bank_account')
-                        if payment_data.get('check_owner'):
-                            payment_vals['check_owner'] = payment_data.get('check_owner')
-                        if payment_data.get('institution_cheque'):
-                            payment_vals['institution_cheque'] = payment_data.get('institution_cheque')
-                        if payment_data.get('institution_discount'):
-                            payment_vals['institution_discount'] = payment_data.get('institution_discount')
-
-                        # Buscar banco por nombre si no existe el ID
-                        if payment_data.get('bank_name'):
-                            bank = request.env['res.bank'].sudo().search([
-                                ('name', '=', payment_data.get('bank_name'))
-                            ], limit=1)
-                            if bank:
-                                payment_vals['bank_id'] = bank.id
-                        elif payment_data.get('bank_id'):
-                            bank = request.env['res.bank'].sudo().browse(payment_data['bank_id'])
-                            if bank.exists():
-                                payment_vals['bank_id'] = bank.id
-
-                        # Fecha del cheque
-                        if payment_data.get('date'):
-                            from datetime import date as date_type
-                            try:
-                                payment_vals['date'] = date_type.fromisoformat(payment_data['date'])
-                            except (ValueError, TypeError):
-                                pass
-
-                        # Campos de TARJETA
-                        if payment_data.get('number_voucher'):
-                            payment_vals['number_voucher'] = payment_data.get('number_voucher')
-                        if payment_data.get('number_lote'):
-                            payment_vals['number_lote'] = payment_data.get('number_lote')
-                        if payment_data.get('holder_card'):
-                            payment_vals['holder_card'] = payment_data.get('holder_card')
-                        if payment_data.get('bin_tc'):
-                            payment_vals['bin_tc'] = payment_data.get('bin_tc')
-                        if payment_data.get('institution_card'):
-                            payment_vals['institution_card'] = payment_data.get('institution_card')
-
-                        # Buscar tipo de tarjeta por nombre
-                        if payment_data.get('type_card_name'):
-                            credit_card = request.env['credit.card'].sudo().search([
-                                ('name', '=', payment_data.get('type_card_name'))
-                            ], limit=1)
-                            if credit_card:
-                                payment_vals['type_card'] = credit_card.id
-                        elif payment_data.get('type_card'):
-                            credit_card = request.env['credit.card'].sudo().browse(payment_data['type_card'])
-                            if credit_card.exists():
-                                payment_vals['type_card'] = credit_card.id
-
-                        # Campos de CREDITO
-                        if payment_data.get('selecteInstitutionCredit'):
-                            payment_vals['selecteInstitutionCredit'] = payment_data.get('selecteInstitutionCredit')
-
-                        request.env['pos.payment'].sudo().create(payment_vals)
-                        _logger.info(f'Pago creado: {payment_method.name} - {payment_data.get("amount", 0)}, campos adicionales: check_number={payment_data.get("check_number")}, check_owner={payment_data.get("check_owner")}')
-                    except Exception as e:
-                        _logger.error(f'Error creando pago: {e}')
-                else:
-                    _logger.warning(f'No se encontró método de pago para: {payment_data}')
+            if order.payment_ids:
+                _logger.info(f'Orden {order.name} tiene {len(order.payment_ids)} pagos existentes. Sincronizando campos...')
+            else:
+                _logger.warning(f'Orden {order.name} no tiene pagos. Los pagos deberían haberse creado automáticamente.')
 
             # ==================== PASO 2.5: ACTUALIZAR PAGOS CON CHECK_INFO_JSON Y CARD_INFO_JSON ====================
             # Los datos de cheque/tarjeta pueden estar en los campos JSON de la orden
