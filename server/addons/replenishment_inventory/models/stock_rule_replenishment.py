@@ -420,11 +420,14 @@ class StockRuleReplenishment(models.Model):
         Wrapper que obtiene stddev desde product.sales.stats.rolling.
         Determina el record_type según la configuración del warehouse si no se especifica.
 
+        IMPORTANTE: Si el warehouse es bodega principal (is_main_warehouse=True),
+        usa record_type='global' para obtener el stddev acumulado de todas las bodegas.
+
         Args:
             product_id: ID del producto
             warehouse_id: ID del warehouse
             days: Período (30, 60 o 90)
-            record_type: 'sale', 'transfer' o 'combined' (si None, usa config del warehouse)
+            record_type: 'sale', 'transfer', 'combined' o 'global' (si None, usa config del warehouse)
 
         Returns:
             float: Desviación estándar
@@ -433,15 +436,19 @@ class StockRuleReplenishment(models.Model):
         if record_type is None:
             wh = self.env['stock.warehouse'].browse(warehouse_id)
             if wh.exists():
-                based_on_sales = getattr(wh, 'replenishment_based_on_sales', True)
-                based_on_transfers = getattr(wh, 'replenishment_based_on_transfers', False)
-
-                if based_on_sales and based_on_transfers:
-                    record_type = 'combined'
-                elif based_on_transfers:
-                    record_type = 'transfer'
+                # Si es bodega principal, usar estadísticas globales
+                if getattr(wh, 'is_main_warehouse', False):
+                    record_type = 'global'
                 else:
-                    record_type = 'sale'
+                    based_on_sales = getattr(wh, 'replenishment_based_on_sales', True)
+                    based_on_transfers = getattr(wh, 'replenishment_based_on_transfers', False)
+
+                    if based_on_sales and based_on_transfers:
+                        record_type = 'combined'
+                    elif based_on_transfers:
+                        record_type = 'transfer'
+                    else:
+                        record_type = 'sale'
             else:
                 record_type = 'sale'
 
@@ -459,6 +466,9 @@ class StockRuleReplenishment(models.Model):
         Wrapper que obtiene total de ventas desde product.sales.stats.rolling.
         Mantiene la misma firma que product.sales.stats.get_sales() para compatibilidad.
 
+        IMPORTANTE: Si el warehouse es bodega principal (is_main_warehouse=True),
+        usa record_type='global' para obtener las ventas acumuladas de TODAS las bodegas.
+
         Args:
             lapse: Días del período (30, 60 o 90)
             product: Producto o ID
@@ -475,16 +485,20 @@ class StockRuleReplenishment(models.Model):
         if not wh.exists():
             return 0.0
 
-        based_on_sales = getattr(wh, 'replenishment_based_on_sales', True)
-        based_on_transfers = getattr(wh, 'replenishment_based_on_transfers', False)
-
-        # Determinar el record_type según configuración del warehouse
-        if based_on_sales and based_on_transfers:
-            record_type = 'combined'
-        elif based_on_transfers:
-            record_type = 'transfer'
+        # Si es bodega principal, usar estadísticas globales (todas las bodegas)
+        if getattr(wh, 'is_main_warehouse', False):
+            record_type = 'global'
         else:
-            record_type = 'sale'
+            based_on_sales = getattr(wh, 'replenishment_based_on_sales', True)
+            based_on_transfers = getattr(wh, 'replenishment_based_on_transfers', False)
+
+            # Determinar el record_type según configuración del warehouse
+            if based_on_sales and based_on_transfers:
+                record_type = 'combined'
+            elif based_on_transfers:
+                record_type = 'transfer'
+            else:
+                record_type = 'sale'
 
         RollingStats = self.env['product.sales.stats.rolling']
         stats = RollingStats.get_stats(

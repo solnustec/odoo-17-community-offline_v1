@@ -5,22 +5,26 @@ class LoyaltyProgram(models.Model):
     _inherit = 'loyalty.program'
 
     @api.model
-    def cron_set_all_loyalty_programs_2026(self):
-        start_date = date(2026, 1, 1)
+    def cron_set_loyalty_cards_2026(self):
+        start_date = date(2025, 10, 1)
         end_date = date(2026, 12, 31)
 
-        # 1️⃣ ACTUALIZAR TODAS LAS RECOMPENSAS (cualquier tipo)
-        rewards = self.env['loyalty.reward'].search([])
+        # 1️⃣ SOLO PROGRAMAS TIPO TARJETA DE LEALTAD
+        programs = self.search([
+            ('program_type', '=', 'loyalty'),
+        ])
 
-        rewards.write({
+        programs.write({
             'date_from': start_date,
             'date_to': end_date,
         })
 
-        # 2️⃣ ACTUALIZAR TODOS LOS PROGRAMAS (todos los tipos)
-        programs = self.search([])
+        # 2️⃣ SOLO RECOMPENSAS DE TARJETAS DE LEALTAD
+        rewards = self.env['loyalty.reward'].search([
+            ('program_id.program_type', '=', 'loyalty'),
+        ])
 
-        programs.write({
+        rewards.write({
             'date_from': start_date,
             'date_to': end_date,
         })

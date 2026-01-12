@@ -527,9 +527,8 @@ export class WhatsappChat extends Component {
                 return '#dc3545';
             case 'confirmar_pago':
                 return '#28a745';
-            default:
-                // Para otros estados activos, mostrar un color neutro
-                return '#6c757d';
+            case 'cerrar_chat':
+                return 'transparent';
         }
     }
 

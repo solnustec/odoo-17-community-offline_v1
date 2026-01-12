@@ -29,6 +29,7 @@ class ReplenishmentMigrationWizard(models.TransientModel):
     action_type = fields.Selection([
         ('migrate', 'Migrar Datos Históricos'),
         ('recalculate', 'Recalcular Rolling Stats'),
+        ('recalculate_global', 'Recalcular Stats Globales (Bodega Principal)'),
         ('recalculate_orderpoints', 'Recalcular MAX/MIN (Orderpoints)'),
         ('verify', 'Verificar Migración'),
         ('cleanup', 'Limpiar y Reiniciar (PELIGROSO)'),
@@ -98,6 +99,11 @@ class ReplenishmentMigrationWizard(models.TransientModel):
             RollingStats = self.env['product.sales.stats.rolling']
             result = RollingStats.recalculate_all_stats(batch_size=self.batch_size)
             self.result_text = self._format_recalculate_result(result)
+
+        elif self.action_type == 'recalculate_global':
+            RollingStats = self.env['product.sales.stats.rolling']
+            result = RollingStats.update_global_rolling_stats(batch_size=self.batch_size)
+            self.result_text = self._format_global_result(result)
 
         elif self.action_type == 'recalculate_orderpoints':
             Processor = self.env['replenishment.queue.processor']
@@ -177,6 +183,32 @@ class ReplenishmentMigrationWizard(models.TransientModel):
 
         return "\n".join(lines)
 
+    def _format_global_result(self, result):
+        """Formatea el resultado del recálculo de stats globales."""
+        lines = [
+            "═" * 50,
+            "  STATS GLOBALES COMPLETADO",
+            "═" * 50,
+            "",
+            f"✓ Productos actualizados: {result.get('updated', 0):,}",
+            f"✗ Errores: {result.get('errors', 0)}",
+            "",
+            "Las estadísticas globales (suma de todas las bodegas)",
+            "ahora están disponibles para la bodega principal.",
+            "",
+            "Nota: Las stats se actualizan automáticamente con cada",
+            "procesamiento de la cola. Este recálculo masivo solo es",
+            "necesario para la carga inicial de datos históricos.",
+        ]
+
+        if result.get('message'):
+            lines.extend([
+                "",
+                f"⚠ {result.get('message')}",
+            ])
+
+        return "\n".join(lines)
+
     def _format_orderpoints_result(self, result):
         """Formatea el resultado del recálculo de orderpoints."""
         lines = [
@@ -203,12 +235,24 @@ class ReplenishmentMigrationWizard(models.TransientModel):
             "",
             f"Estado: {'✓ OK' if result.get('status') == 'ok' else '⚠ ADVERTENCIA'}",
             "",
-            "CONTADORES:",
+            "CONTADORES PRINCIPALES:",
         ]
 
         counts = result.get('counts', {})
-        for key, value in counts.items():
-            lines.append(f"  • {key}: {value:,}")
+        lines.append(f"  • Registros originales: {counts.get('original_records', 0):,}")
+        lines.append(f"  • Daily stats: {counts.get('daily_stats', 0):,}")
+        lines.append(f"  • Rolling stats (total): {counts.get('rolling_stats', 0):,}")
+
+        # Desglose de rolling stats por tipo
+        if counts.get('rolling_stats_sale', 0) > 0:
+            lines.extend([
+                "",
+                "ROLLING STATS POR TIPO:",
+                f"  • sale: {counts.get('rolling_stats_sale', 0):,}",
+                f"  • transfer: {counts.get('rolling_stats_transfer', 0):,}",
+                f"  • combined: {counts.get('rolling_stats_combined', 0):,}",
+                f"  • global (bodega principal): {counts.get('rolling_stats_global', 0):,}",
+            ])
 
         issues = result.get('issues', [])
         if issues:
@@ -217,7 +261,31 @@ class ReplenishmentMigrationWizard(models.TransientModel):
                 "PROBLEMAS DETECTADOS:",
             ])
             for issue in issues:
-                lines.append(f"  ⚠ {issue}")
+                if issue.startswith("  →"):
+                    lines.append(f"    {issue}")
+                else:
+                    lines.append(f"  ⚠ {issue}")
+
+        # Agregar conclusión sobre productos faltantes
+        details = result.get('details', {})
+        missing = details.get('missing_products', {})
+        if missing and missing.get('total', 0) > 0:
+            no_recent = missing.get('no_recent_sales', 0)
+            total = missing.get('total', 0)
+            if no_recent == total:
+                lines.extend([
+                    "",
+                    "CONCLUSIÓN:",
+                    "  ✓ Todos los productos faltantes NO tienen ventas",
+                    "    en los últimos 90 días. Esto es NORMAL.",
+                ])
+            elif missing.get('inactive', 0) > 0:
+                lines.extend([
+                    "",
+                    "CONCLUSIÓN:",
+                    f"  ℹ {missing.get('inactive', 0)} productos faltantes están INACTIVOS.",
+                    "    Considere si necesita migrar datos más antiguos.",
+                ])
 
         return "\n".join(lines)
 

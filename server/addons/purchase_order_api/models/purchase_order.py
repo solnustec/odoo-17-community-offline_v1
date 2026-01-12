@@ -3,6 +3,7 @@ import json
 import requests
 from datetime import datetime
 from odoo import api, fields, models
+from odoo.exceptions import UserError
 import logging
 import random
 from bs4 import BeautifulSoup
@@ -40,8 +41,11 @@ class AccountMove(models.Model):
         data_provider = provider_id.provider_config
         print(data_provider)
         if not data_provider:
-            raise ValueError(
-                f"El proveedor con id_database_old_provider {invoice.partner_id.id_database_old_provider} no tiene 'provider_config'."
+            raise UserError(
+                f"No se puede procesar la factura.\n\n"
+                f"El proveedor '{invoice.partner_id.name}' no tiene 'Datos de Retenciones' "
+                f"configurados para sincronización con el sistema externo.\n\n"
+                f"Por favor contacte a soporte técnico: 👍 Novacode"
             )
         json_string = data_provider.replace("'", '"')
         data_json = json.loads(json_string)

@@ -250,10 +250,10 @@ export class SalesReport extends Component {
             this.state.today_sales_date = result.date || null;
             // this.state.loading = false;
             setTimeout(() => this.setupScrollListener(), 100);
-            // this.state.today_sales_loading = false;
+            this.state.today_sales_loading = false;
         } catch (error) {
-            // this.state.loading = false;
-            this.state.today_sales_has_more = false
+            this.state.today_sales_loading = false;
+            this.state.today_sales_has_more = false;
             this.notification.add(
                 "Error al cargar el resumen de ventas del día" + error,
                 {type: "danger"}
@@ -538,6 +538,8 @@ export class SalesReport extends Component {
             boxes: products.reduce((sum, p) => sum + (p.boxes || 0), 0),
             units: products.reduce((sum, p) => sum + (p.units || 0), 0),
             stock_total: products_quantity_sold.reduce((sum, p) => sum + (p.stock_total || 0), 0),
+            matilde_qty_to_order: products.reduce((sum, p) => sum + (p.matilde_qty_to_order || 0), 0),
+            pending_qty: products.reduce((sum, p) => sum + (p.pending_qty || 0), 0),
             amount_total: products.reduce((sum, p) => sum + (p.amount_total || 0), 0),
             total_cost: products.reduce((sum, p) => sum + (p.total_cost || 0), 0),
             avg_standar_price_old: products.reduce((sum, p) => sum + (p.avg_standar_price_old || 0), 0),
@@ -2794,44 +2796,38 @@ export class SalesReport extends Component {
     };
 
     /**
-     * Ejecuta el reabastecimiento para la Bodega Matilde usando el mismo
-     * método action_replenish que el botón estándar de las reglas de stock.
-     * Muestra un cuadro de confirmación antes de ejecutar.
+     * Muestra información del orderpoint (mín, punto reorden, máx) al hacer click.
+     * Consulta solo cuando se hace click para no sobrecargar.
      */
     openMatildeReplenish = async (product) => {
         try {
             if (!product || !product.matilde_orderpoint_id) {
-                this.showWarning("No hay una regla de reabastecimiento configurada para Bodega Matilde.");
+                this.showWarning("No hay regla de reabastecimiento para Bodega Matilde.");
                 return;
             }
 
-            // Mostrar cuadro de confirmación
-            const productName = product.product_name || 'este producto';
-            const qtyToOrder = product.matilde_qty_to_order || 0;
-            const confirmed = confirm(
-                `¿Desea ejecutar el reabastecimiento para ${productName}?\n\n` +
-                `Cantidad a reabastecer: ${qtyToOrder}\n\n` +
-                `Esto generará una orden de compra para Bodega Matilde.`
-            );
-
-            if (!confirmed) {
-                return; // El usuario canceló
-            }
-
             const orderpointId = product.matilde_orderpoint_id;
-            const result = await this.orm.call(
+            const productName = product.product_name || 'Producto';
+
+            // Consultar datos del orderpoint solo al hacer click
+            const opData = await this.orm.read(
                 "stock.warehouse.orderpoint",
-                "action_replenish",
-                [[orderpointId]]
+                [orderpointId],
+                ["product_min_qty", "point_reorder", "product_max_qty"]
             );
-            // Si devuelve una acción/cliente, la ejecutamos
-            if (result) {
-                await this.action.doAction(result);
-            } else {
-                this.showSucess("Reabastecimiento ejecutado para Bodega Matilde.");
+
+            if (opData && opData.length > 0) {
+                const op = opData[0];
+                const message = `📦 ${productName}\nMín: ${op.product_min_qty || 0} | Reorden: ${op.point_reorder || 0} | Máx: ${op.product_max_qty || 0}`;
+
+                this.notification.add(message, {
+                    type: 'info',
+                    sticky: false,
+                });
             }
         } catch (error) {
-            this.showError("No se pudo ejecutar el reabastecimiento para Bodega Matilde.");
+            console.error("Error obteniendo datos del orderpoint:", error);
+            this.showWarning("No se pudo obtener la información del orderpoint.");
         }
     };
 
@@ -2840,6 +2836,12 @@ export class SalesReport extends Component {
 // javascript
 // javascript
     async exportProductsToExcel() {
+        // Si estamos en modo laboratorio, exportar todos los productos de los laboratorios
+        if (this.state.search_mode === 'laboratory') {
+            await this.exportLaboratoryProductsToExcel();
+            return;
+        }
+
         const products = this.state.products_filtered || [];
         if (!products.length) {
             this.showError("No hay productos para exportar.");
@@ -2897,6 +2899,76 @@ export class SalesReport extends Component {
             URL.revokeObjectURL(url);
         }
         this.showSucess("Exportado correctamente (CSV).");
+    }
+
+    /**
+     * Exporta TODOS los productos de TODOS los laboratorios a Excel/CSV.
+     * Columnas: COD ITEM, LABORATORIO, producto, UNIDADES POR CAJA, cantidad vendida, stock
+     */
+    async exportLaboratoryProductsToExcel() {
+        try {
+            this.state.loading = true;
+
+            // Llamar al backend para obtener TODOS los productos de TODOS los laboratorios
+            const products = await this.orm.call(
+                'product.warehouse.sale.summary',
+                'get_products_by_laboratories_for_export',
+                [this.start_date, this.end_date]
+            );
+
+            if (!products || !products.length) {
+                this.showError("No se encontraron productos en los laboratorios.");
+                this.state.loading = false;
+                return;
+            }
+
+            // Definir las 6 columnas en el orden requerido
+            const columns = [
+                {key: "product_code", label: "COD ITEM"},
+                {key: "laboratory", label: "LABORATORIO"},
+                {key: "product_name", label: "PRODUCTO"},
+                {key: "units_per_box", label: "UNIDADES POR CAJA"},
+                {key: "quantity_sold", label: "CANTIDAD VENDIDA"},
+                {key: "stock", label: "STOCK"},
+            ];
+
+            const normalizeValue = (v) => {
+                if (v == null) return "";
+                if (Array.isArray(v)) return v.length > 1 ? String(v[1]) : String(v[0] ?? "");
+                if (typeof v === "object") return JSON.stringify(v);
+                return String(v);
+            };
+
+            // Generar CSV
+            const escapeCell = (text) => `"${String(text).replace(/"/g, '""')}"`;
+            const headerRow = columns.map(col => escapeCell(col.label)).join(",");
+            const dataRows = products.map(prod =>
+                columns.map(col => escapeCell(normalizeValue(prod[col.key]))).join(",")
+            );
+            const csvContent = [headerRow, ...dataRows].join("\r\n");
+
+            // Descargar archivo
+            const blob = new Blob([csvContent], {type: "text/csv;charset=utf-8;"});
+            const filename = `laboratorios_productos_export_${new Date().toISOString().slice(0, 10)}.csv`;
+            if (navigator.msSaveBlob) {
+                navigator.msSaveBlob(blob, filename);
+            } else {
+                const link = document.createElement("a");
+                const url = URL.createObjectURL(blob);
+                link.href = url;
+                link.setAttribute("download", filename);
+                document.body.appendChild(link);
+                link.click();
+                link.remove();
+                URL.revokeObjectURL(url);
+            }
+
+            this.state.loading = false;
+            this.showSucess(`Exportado correctamente: ${products.length} productos de todos los laboratorios.`);
+        } catch (error) {
+            this.state.loading = false;
+            this.showError(`Error al exportar: ${error.message || error}`);
+        }
     }
 
 

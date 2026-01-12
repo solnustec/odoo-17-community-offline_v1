@@ -234,7 +234,8 @@ class DataMigration(models.AbstractModel):
         result = {
             'status': 'ok',
             'issues': [],
-            'counts': {}
+            'counts': {},
+            'details': {}
         }
 
         # Contar registros en cada tabla
@@ -247,10 +248,22 @@ class DataMigration(models.AbstractModel):
         self.env.cr.execute("SELECT COUNT(*) FROM product_sales_stats_rolling")
         rolling_count = self.env.cr.fetchone()[0]
 
+        # Contar rolling stats por tipo (excluyendo 'global' del conteo principal)
+        self.env.cr.execute("""
+            SELECT record_type, COUNT(*)
+            FROM product_sales_stats_rolling
+            GROUP BY record_type
+        """)
+        rolling_by_type = dict(self.env.cr.fetchall())
+
         result['counts'] = {
             'original_records': original_count,
             'daily_stats': daily_count,
-            'rolling_stats': rolling_count
+            'rolling_stats': rolling_count,
+            'rolling_stats_global': rolling_by_type.get('global', 0),
+            'rolling_stats_sale': rolling_by_type.get('sale', 0),
+            'rolling_stats_transfer': rolling_by_type.get('transfer', 0),
+            'rolling_stats_combined': rolling_by_type.get('combined', 0),
         }
 
         # Verificar que daily_stats cubre el mismo período
@@ -275,10 +288,27 @@ class DataMigration(models.AbstractModel):
                 )
 
             if orig[2] != daily[2]:
+                diff = orig[2] - daily[2]
                 result['issues'].append(
                     f"Diferencia en productos: "
-                    f"original {orig[2]}, daily {daily[2]}"
+                    f"original {orig[2]}, daily {daily[2]} ({diff} faltantes)"
                 )
+
+                # Analizar los productos faltantes
+                missing_analysis = self._analyze_missing_products(daily[0])
+                result['details']['missing_products'] = missing_analysis
+
+                # Agregar resumen al issues
+                if missing_analysis:
+                    result['issues'].append(
+                        f"  → Productos faltantes activos: {missing_analysis.get('active', 0)}"
+                    )
+                    result['issues'].append(
+                        f"  → Productos faltantes inactivos: {missing_analysis.get('inactive', 0)}"
+                    )
+                    result['issues'].append(
+                        f"  → Sin ventas en últimos 90 días: {missing_analysis.get('no_recent_sales', 0)}"
+                    )
 
         # Verificar totales (con la misma lógica de filtrado)
         self.env.cr.execute("""
@@ -311,6 +341,68 @@ class DataMigration(models.AbstractModel):
         _logger.info("Verificación completada: %s", result)
 
         return result
+
+    @api.model
+    def _analyze_missing_products(self, daily_min_date):
+        """
+        Analiza los productos que están en original pero no en daily_stats.
+
+        Args:
+            daily_min_date: Fecha mínima en daily_stats
+
+        Returns:
+            dict: Análisis de productos faltantes
+        """
+        try:
+            # Productos en original que NO están en daily_stats
+            self.env.cr.execute("""
+                WITH missing AS (
+                    SELECT DISTINCT s.product_id
+                    FROM product_warehouse_sale_summary s
+                    WHERE s.product_id IS NOT NULL
+                      AND s.product_id NOT IN (
+                          SELECT DISTINCT product_id
+                          FROM product_sales_stats_daily
+                      )
+                )
+                SELECT
+                    COUNT(*) as total_missing,
+                    COUNT(*) FILTER (
+                        WHERE EXISTS (
+                            SELECT 1 FROM product_product p
+                            WHERE p.id = missing.product_id AND p.active = TRUE
+                        )
+                    ) as active_products,
+                    COUNT(*) FILTER (
+                        WHERE EXISTS (
+                            SELECT 1 FROM product_product p
+                            WHERE p.id = missing.product_id AND p.active = FALSE
+                        )
+                    ) as inactive_products,
+                    COUNT(*) FILTER (
+                        WHERE NOT EXISTS (
+                            SELECT 1 FROM product_warehouse_sale_summary s2
+                            WHERE s2.product_id = missing.product_id
+                              AND s2.date >= CURRENT_DATE - INTERVAL '90 days'
+                        )
+                    ) as no_recent_sales
+                FROM missing
+            """)
+
+            row = self.env.cr.fetchone()
+
+            if row:
+                return {
+                    'total': row[0] or 0,
+                    'active': row[1] or 0,
+                    'inactive': row[2] or 0,
+                    'no_recent_sales': row[3] or 0,
+                }
+
+        except Exception as e:
+            _logger.warning("Error analizando productos faltantes: %s", e)
+
+        return {}
 
     @api.model
     def cleanup_and_reset(self):
