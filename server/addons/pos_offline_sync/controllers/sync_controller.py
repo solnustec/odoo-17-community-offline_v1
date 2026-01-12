@@ -620,13 +620,76 @@ class PosOfflineSyncController(http.Controller):
 
                 if payment_method:
                     try:
-                        request.env['pos.payment'].sudo().create({
+                        # Valores básicos del pago
+                        payment_vals = {
                             'pos_order_id': order.id,
                             'payment_method_id': payment_method.id,
                             'amount': payment_data.get('amount', 0),
                             'session_id': session.id,
-                        })
-                        _logger.info(f'Pago creado: {payment_method.name} - {payment_data.get("amount", 0)}')
+                        }
+
+                        # Campos de CHEQUE
+                        if payment_data.get('check_number'):
+                            payment_vals['check_number'] = payment_data.get('check_number')
+                        if payment_data.get('check_bank_account'):
+                            payment_vals['check_bank_account'] = payment_data.get('check_bank_account')
+                        if payment_data.get('check_owner'):
+                            payment_vals['check_owner'] = payment_data.get('check_owner')
+                        if payment_data.get('institution_cheque'):
+                            payment_vals['institution_cheque'] = payment_data.get('institution_cheque')
+                        if payment_data.get('institution_discount'):
+                            payment_vals['institution_discount'] = payment_data.get('institution_discount')
+
+                        # Buscar banco por nombre si no existe el ID
+                        if payment_data.get('bank_name'):
+                            bank = request.env['res.bank'].sudo().search([
+                                ('name', '=', payment_data.get('bank_name'))
+                            ], limit=1)
+                            if bank:
+                                payment_vals['bank_id'] = bank.id
+                        elif payment_data.get('bank_id'):
+                            bank = request.env['res.bank'].sudo().browse(payment_data['bank_id'])
+                            if bank.exists():
+                                payment_vals['bank_id'] = bank.id
+
+                        # Fecha del cheque
+                        if payment_data.get('date'):
+                            from datetime import date as date_type
+                            try:
+                                payment_vals['date'] = date_type.fromisoformat(payment_data['date'])
+                            except (ValueError, TypeError):
+                                pass
+
+                        # Campos de TARJETA
+                        if payment_data.get('number_voucher'):
+                            payment_vals['number_voucher'] = payment_data.get('number_voucher')
+                        if payment_data.get('number_lote'):
+                            payment_vals['number_lote'] = payment_data.get('number_lote')
+                        if payment_data.get('holder_card'):
+                            payment_vals['holder_card'] = payment_data.get('holder_card')
+                        if payment_data.get('bin_tc'):
+                            payment_vals['bin_tc'] = payment_data.get('bin_tc')
+                        if payment_data.get('institution_card'):
+                            payment_vals['institution_card'] = payment_data.get('institution_card')
+
+                        # Buscar tipo de tarjeta por nombre
+                        if payment_data.get('type_card_name'):
+                            credit_card = request.env['credit.card'].sudo().search([
+                                ('name', '=', payment_data.get('type_card_name'))
+                            ], limit=1)
+                            if credit_card:
+                                payment_vals['type_card'] = credit_card.id
+                        elif payment_data.get('type_card'):
+                            credit_card = request.env['credit.card'].sudo().browse(payment_data['type_card'])
+                            if credit_card.exists():
+                                payment_vals['type_card'] = credit_card.id
+
+                        # Campos de CREDITO
+                        if payment_data.get('selecteInstitutionCredit'):
+                            payment_vals['selecteInstitutionCredit'] = payment_data.get('selecteInstitutionCredit')
+
+                        request.env['pos.payment'].sudo().create(payment_vals)
+                        _logger.info(f'Pago creado: {payment_method.name} - {payment_data.get("amount", 0)}, campos adicionales: check_number={payment_data.get("check_number")}, check_owner={payment_data.get("check_owner")}')
                     except Exception as e:
                         _logger.error(f'Error creando pago: {e}')
                 else:
