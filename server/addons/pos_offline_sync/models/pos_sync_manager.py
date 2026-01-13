@@ -410,7 +410,8 @@ class PosSyncManager(models.Model):
                 )
 
         # OPTIMIZACIÓN: Procesar en lotes con savepoint para atomicidad
-        batch_size = 50  # Tamaño de lote para transacciones
+        # Usar batch_size configurable (default 50 si no está configurado)
+        batch_size = sync_config.batch_size if sync_config and sync_config.batch_size else 50
         for i in range(0, len(unique_records_list), batch_size):
             batch = unique_records_list[i:i + batch_size]
             try:
@@ -1003,7 +1004,7 @@ class PosSyncManager(models.Model):
 
         # Serializar pagos con todos los campos adicionales (cheque, tarjeta, crédito)
         # Los datos pueden estar en los campos del pago O en check_info_json/card_info_json de la orden
-        _logger.info(f'Serializando {len(order.payment_ids)} pagos para orden {order.name}')
+        _logger.debug(f'Serializando {len(order.payment_ids)} pagos para orden {order.name}')
 
         # Parsear check_info_json y card_info_json de la orden para usar como fallback
         import json as json_lib
@@ -1026,25 +1027,12 @@ class PosSyncManager(models.Model):
             except (json_lib.JSONDecodeError, TypeError):
                 card_info_list = []
 
-        _logger.info(f'check_info_json tiene {len(check_info_list)} registros, card_info_json tiene {len(card_info_list)} registros')
+        _logger.debug(f'check_info_json tiene {len(check_info_list)} registros, card_info_json tiene {len(card_info_list)} registros')
 
         check_info_idx = 0
         card_info_idx = 0
 
         for payment in order.payment_ids:
-            # DEBUG: Log de valores RAW del pago antes de cualquier procesamiento
-            _logger.info(
-                f'=== DEBUG PAGO ID={payment.id} ===\n'
-                f'   payment.check_number = {repr(payment.check_number)}\n'
-                f'   payment.check_bank_account = {repr(payment.check_bank_account)}\n'
-                f'   payment.check_owner = {repr(payment.check_owner)}\n'
-                f'   payment.bank_id = {payment.bank_id.id if payment.bank_id else None} ({payment.bank_id.name if payment.bank_id else None})\n'
-                f'   payment.number_voucher = {repr(payment.number_voucher)}\n'
-                f'   payment.holder_card = {repr(payment.holder_card)}\n'
-                f'   payment.type_card = {payment.type_card.id if payment.type_card else None} ({payment.type_card.name if payment.type_card else None})\n'
-                f'   payment.institution_cheque = {repr(payment.institution_cheque)}\n'
-                f'   payment.institution_card = {repr(payment.institution_card)}'
-            )
 
             # Datos básicos del pago
             payment_data = {
@@ -1075,7 +1063,7 @@ class PosSyncManager(models.Model):
                     if bank.exists():
                         bank_name = bank.name
                 check_info_idx += 1
-                _logger.info(f'Usando datos de check_info_json: check_number={check_number}, check_owner={check_owner}')
+                _logger.debug(f'Usando datos de check_info_json: check_number={check_number}, check_owner={check_owner}')
 
             payment_data.update({
                 'check_number': check_number,
@@ -1111,7 +1099,7 @@ class PosSyncManager(models.Model):
                     if credit_card.exists():
                         type_card_name = credit_card.name
                 card_info_idx += 1
-                _logger.info(f'Usando datos de card_info_json: number_voucher={number_voucher}, holder_card={holder_card}')
+                _logger.debug(f'Usando datos de card_info_json: number_voucher={number_voucher}, holder_card={holder_card}')
 
             payment_data.update({
                 'number_voucher': number_voucher,
@@ -1125,7 +1113,7 @@ class PosSyncManager(models.Model):
             })
 
             data['payments'].append(payment_data)
-            _logger.info(f'Pago serializado: método={payment.payment_method_id.name}, monto={payment.amount}, check_number={check_number}, number_voucher={number_voucher}')
+            _logger.debug(f'Pago serializado: método={payment.payment_method_id.name}, monto={payment.amount}')
 
         _logger.info(f'Orden {order.name} serializada con {len(data["payments"])} pagos, estado: {order.state}')
 

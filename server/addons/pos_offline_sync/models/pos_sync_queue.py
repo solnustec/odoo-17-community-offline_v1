@@ -542,79 +542,56 @@ class PosSyncQueue(models.Model):
         Marca como sincronizados SOLO los registros json.storage cuya orden
         asociada YA fue sincronizada exitosamente.
 
-        IMPORTANTE: No elimina registros cuya orden aún no se ha sincronizado,
-        ya que esos datos se enviarán junto con la orden cuando haya conexión.
+        OPTIMIZADO: Usa SQL para evitar N+1 queries.
 
         Returns:
             int: Número de registros actualizados
         """
         now = fields.Datetime.now()
-        count = 0
 
-        # Buscar registros json.storage pendientes en la cola
-        pending_records = self.search([
-            ('model_name', 'in', ['json.storage', 'json.note.credit']),
-            ('state', 'in', ['pending', 'error', 'processing'])
-        ])
+        # OPTIMIZACIÓN: Usar SQL directo para encontrar json.storage/json.note.credit
+        # cuyas órdenes ya están sincronizadas, evitando el problema N+1
+        self.env.cr.execute("""
+            UPDATE pos_sync_queue q1
+            SET state = 'synced', sync_date = %s
+            WHERE q1.model_name IN ('json.storage', 'json.note.credit')
+              AND q1.state IN ('pending', 'error', 'processing')
+              AND (
+                  -- Caso 1: El registro original ya no existe (limpiar)
+                  NOT EXISTS (
+                      SELECT 1 FROM json_storage js
+                      WHERE js.id = q1.record_id AND q1.model_name = 'json.storage'
+                  )
+                  AND NOT EXISTS (
+                      SELECT 1 FROM json_note_credit jnc
+                      WHERE jnc.id = q1.record_id AND q1.model_name = 'json.note.credit'
+                  )
+                  -- Caso 2: La orden asociada ya fue sincronizada
+                  OR EXISTS (
+                      SELECT 1 FROM pos_sync_queue q2
+                      JOIN json_storage js ON js.id = q1.record_id
+                      WHERE q2.model_name = 'pos.order'
+                        AND q2.record_id = js.pos_order
+                        AND q2.state = 'synced'
+                        AND q1.model_name = 'json.storage'
+                  )
+                  OR EXISTS (
+                      SELECT 1 FROM pos_sync_queue q2
+                      JOIN json_note_credit jnc ON jnc.id = q1.record_id
+                      WHERE q2.model_name = 'pos.order'
+                        AND q2.record_id = jnc.pos_order_id
+                        AND q2.state = 'synced'
+                        AND q1.model_name = 'json.note.credit'
+                  )
+              )
+            RETURNING id
+        """, (now,))
 
-        if not pending_records:
-            return 0
+        updated_ids = self.env.cr.fetchall()
+        count = len(updated_ids)
 
-        ids_to_sync = []
-
-        for queue_record in pending_records:
-            try:
-                # Obtener el registro json.storage original
-                if queue_record.model_name == 'json.storage':
-                    storage_record = self.env['json.storage'].sudo().browse(queue_record.record_id)
-                else:  # json.note.credit
-                    storage_record = self.env['json.note.credit'].sudo().browse(queue_record.record_id)
-
-                if not storage_record.exists():
-                    # El registro ya no existe, marcar como synced para limpiar
-                    ids_to_sync.append(queue_record.id)
-                    continue
-
-                # Verificar si la orden asociada ya fue sincronizada
-                pos_order = storage_record.pos_order if hasattr(storage_record, 'pos_order') else None
-
-                if not pos_order:
-                    # Sin orden asociada, marcar como synced
-                    ids_to_sync.append(queue_record.id)
-                    continue
-
-                # Buscar si la orden está en la cola y ya fue sincronizada
-                order_queue = self.search([
-                    ('model_name', '=', 'pos.order'),
-                    ('record_id', '=', pos_order.id),
-                    ('state', '=', 'synced')
-                ], limit=1)
-
-                if order_queue:
-                    # La orden ya fue sincronizada, podemos marcar json.storage como synced
-                    ids_to_sync.append(queue_record.id)
-                    _logger.info(
-                        f'{queue_record.model_name}#{queue_record.record_id}: '
-                        f'Orden {pos_order.id} ya sincronizada, marcando como synced'
-                    )
-
-            except Exception as e:
-                _logger.warning(
-                    f'Error verificando {queue_record.model_name}#{queue_record.record_id}: {e}'
-                )
-
-        # Actualizar los registros que pueden ser marcados como synced
-        if ids_to_sync:
-            self.env.cr.execute("""
-                UPDATE pos_sync_queue
-                SET state = 'synced', sync_date = %s
-                WHERE id IN %s
-                RETURNING id
-            """, (now, tuple(ids_to_sync)))
-
-            count = len(self.env.cr.fetchall())
+        if count > 0:
             self.invalidate_model()
-
             _logger.info(
                 f'Marcados {count} registros json.storage/json.note.credit como sincronizados '
                 f'(sus órdenes asociadas ya fueron sincronizadas)'
